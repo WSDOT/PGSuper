@@ -39,11 +39,6 @@
 #include <psgLib/SpecificationCriteria.h>
 
 
-/****************************************************************************
-CLASS
-   CCritSectionChapterBuilder
-****************************************************************************/
-
 CCritSectionChapterBuilder::CCritSectionChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -51,8 +46,6 @@ CPGSuperChapterBuilder(bSelect)
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CCritSectionChapterBuilder::GetName() const
 {
    return TEXT("Critical Section for Shear Details");
@@ -328,27 +321,3 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
       *pPara << rptNewLine;
    } // next CS
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCritSectionChapterBuilder::Clone() const
-{
-   return std::make_unique<CCritSectionChapterBuilder>(m_bDesign,m_bRating);
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

@@ -54,7 +54,7 @@
 #include <EAF\EAFUtilities.h> // so all files have EAFGetBroker
 #include <EAF\EAFResources.h> // so all files have EAF resource identifiers
 #include <EAF\EAFHints.h>     // so all files have EAF Doc/View hints
-#include <EAF\EAFHelp.h>
+#include <EAF\Help.h>
 
 #include <afxdlgs.h>
 

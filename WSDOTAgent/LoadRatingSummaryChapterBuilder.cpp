@@ -37,10 +37,6 @@
 #include <IFace\AnalysisResults.h>
 
 
-/****************************************************************************
-CLASS
-   CLoadRatingSummaryChapterBuilder
-****************************************************************************/
 
 CLoadRatingSummaryChapterBuilder::CLoadRatingSummaryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -467,11 +463,6 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
    *pChapter << pRemarks;
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CLoadRatingSummaryChapterBuilder>();
 }
 
 void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType& row,const pgsRatingArtifact* pRatingArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptParagraph* pRemarks) const

@@ -31,23 +31,11 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-
-/****************************************************************************
-CLASS
-   CSegmentTendonGeometryChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CSegmentTendonGeometryChapterBuilder::CSegmentTendonGeometryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CSegmentTendonGeometryChapterBuilder::GetName() const
 {
    return TEXT("Segment Tendon Geometry");
@@ -202,9 +190,4 @@ rptChapter* CSegmentTendonGeometryChapterBuilder::Build(const std::shared_ptr<co
 
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSegmentTendonGeometryChapterBuilder::Clone() const
-{
-   return std::make_unique<CSegmentTendonGeometryChapterBuilder>();
 }

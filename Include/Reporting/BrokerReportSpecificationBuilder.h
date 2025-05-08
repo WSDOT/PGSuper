@@ -32,12 +32,13 @@ class REPORTINGCLASS CBrokerReportSpecificationBuilder :
    public WBFL::Reporting::ReportSpecificationBuilder
 {
 public:
-   CBrokerReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   CBrokerReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CBrokerReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const override;
 
 protected:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
 };

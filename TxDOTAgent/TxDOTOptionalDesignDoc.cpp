@@ -322,18 +322,23 @@ void CTxDOTOptionalDesignDoc::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // CTxDOTOptionalDesignDoc commands
 
-BOOL CTxDOTOptionalDesignDoc::LoadSpecialAgents()
+std::pair<bool, WBFL::EAF::AgentErrors> CTxDOTOptionalDesignDoc::LoadSpecialAgents()
 {
-   if ( !CEAFBrokerDocument::LoadSpecialAgents() )
-      return FALSE;
+   auto errors = CEAFBrokerDocument::LoadSpecialAgents();
 
-   m_pTxDOTOptionalDesignDocProxyAgent = std::make_shared<CTxDOTOptionalDesignDocProxyAgent>();
-   m_pTxDOTOptionalDesignDocProxyAgent->SetDocument( this );
+   m_pTxDOTOptionalDesignDocProxyAgent = std::make_shared<CTxDOTOptionalDesignDocProxyAgent>(this);
+   auto result = m_pBroker->AddAgent(m_pTxDOTOptionalDesignDocProxyAgent);
+   if (result.first == false)
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      result.second.component.dll = AfxGetApp()->m_pszExeName;
+      result.second.reason += _T(" - could not add TxDOTOptionalDesignDocProxyAgent to broker");
+      errors.second.push_back(result.second);
+   }
 
-   if (!m_pBroker->AddAgent(m_pTxDOTOptionalDesignDocProxyAgent))
-      return FALSE;
+   errors.first = errors.second.empty();
 
-   return TRUE;
+   return errors;
 }
 
 BOOL CTxDOTOptionalDesignDoc::Init()

@@ -51,7 +51,6 @@
 #include <psgLib/SpecificationCriteria.h>
 #include <psgLib/GirderLibraryEntry.h>
 
-
 using namespace PGS::Beams;
 
 
@@ -370,9 +369,9 @@ void IBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF
    }
 }
 
-std::shared_ptr<DistFactorEngineerBase> IBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::unique_ptr<DistFactorEngineer> IBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<IBeamDistFactorEngineer>(pBroker, statusGroupID);
+   return std::make_unique<IBeamDistFactorEngineer>(pBroker, statusGroupID);
 }
 
 std::unique_ptr<PsLossEngineerBase> IBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
@@ -889,25 +888,9 @@ CLSID IBeamFactory::GetCLSID() const
    return CLSID_WFBeamFactory;
 }
 
-std::_tstring IBeamFactory::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID IBeamFactory::GetFamilyCLSID() const
 {
    return CLSID_WFBeamFamily;
-}
-
-std::_tstring IBeamFactory::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
 }
 
 std::_tstring IBeamFactory::GetPublisher() const

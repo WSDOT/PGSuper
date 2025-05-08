@@ -38,7 +38,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
 
    // Load Importers
    UINT cmdImporter = FIRST_DATA_IMPORTER_PLUGIN;
-   auto components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(GetImporterCATID());
+   auto components = WBFL::EAF::ComponentManager::GetInstance().GetComponents(GetImporterCATID());
    for(const auto& component : components)
    {
       if (LAST_DATA_IMPORTER_PLUGIN <= cmdImporter)
@@ -53,7 +53,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
 
       if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         auto importer = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::IDataImporter>(component);
+         auto importer = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::IDataImporter>(component);
          if (importer)
          {
             ImporterRecord record;
@@ -69,7 +69,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
          else
          {
             CString strMsg;
-            strMsg.Format(_T("Failed to load %s PGSuper Data Importer plug in.\n\nWould you like to disable this plug-in?"), component.name.c_str());
+            strMsg.Format(_T("Failed to load %s PGSuper Data Importer plug-in (%s).\n\nWould you like to disable this plug-in?"), component.name.c_str(),OLE2T(pszCLSID));
             if (AfxMessageBox(strMsg, MB_YESNO | MB_ICONQUESTION) == IDYES)
             {
                pApp->WriteProfileString(_T("Plugins"), OLE2T(pszCLSID), _T("Disabled"));
@@ -82,7 +82,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
 
    // Load Exporters
    UINT cmdExporter = FIRST_DATA_EXPORTER_PLUGIN;
-   components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(GetExporterCATID());
+   components = WBFL::EAF::ComponentManager::GetInstance().GetComponents(GetExporterCATID());
    for(const auto& component : components)
    {
       if (LAST_DATA_EXPORTER_PLUGIN <= cmdExporter)
@@ -97,7 +97,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
 
       if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         auto exporter = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::IDataExporter>(component);
+         auto exporter = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::IDataExporter>(component);
          if (exporter)
          {
             ExporterRecord record;
@@ -113,7 +113,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
          else
          {
             CString strMsg;
-            strMsg.Format(_T("Failed to load %s PGSuper Data Export plug in.\n\nWould you like to disable this plug-in?"), component.name.c_str());
+            strMsg.Format(_T("Failed to load %s PGSuper Data Export plug-in (%s).\n\nWould you like to disable this plug-in?"), component.name.c_str(),OLE2T(pszCLSID));
             if (AfxMessageBox(strMsg, MB_YESNO | MB_ICONQUESTION) == IDYES)
             {
                pApp->WriteProfileString(_T("Plugins"), OLE2T(pszCLSID), _T("Disabled"));

@@ -121,8 +121,3 @@ void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, s
 
    CFlexuralStressCheckTable().BuildTable(pChapter, pBroker, pFactoredGdrArtifact, fabrSegmentKey.segmentIndex, pDisplayUnits, task, true/*girder stresses*/);
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaStressChecksChapterBuilder::Clone() const
-{
-   return std::make_unique<CTogaStressChecksChapterBuilder>();
-}

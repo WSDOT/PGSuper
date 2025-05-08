@@ -31,7 +31,7 @@
 
 
 
-CEquilibriumCheckReportSpecificationBuilder::CEquilibriumCheckReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
+CEquilibriumCheckReportSpecificationBuilder::CEquilibriumCheckReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -46,7 +46,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CEquilibriumCheckReportSpe
 
    // Prompt for span, girder, and chapter list
    // initialize dialog for the current cut location
-   GET_IFACE(ISelection,pSelection);
+   GET_IFACE2(GetBroker(),ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
    CGirderKey girderKey;
    if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
@@ -60,7 +60,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CEquilibriumCheckReportSpe
       girderKey.girderIndex  = 0;
    }
 
-   GET_IFACE(IPointOfInterest,pPOI);
+   GET_IFACE2(GetBroker(),IPointOfInterest,pPOI);
    PoiList vPoi;
    pPOI->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_5L | POI_SPAN, &vPoi);
    ATLASSERT(vPoi.size() == 1);
@@ -69,7 +69,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CEquilibriumCheckReportSpe
    // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
    std::shared_ptr<CEquilibriumCheckReportSpecification> pOldGRptSpec = std::dynamic_pointer_cast<CEquilibriumCheckReportSpecification>(pOldRptSpec);
 
-   CEquilibriumCheckDlg dlg(m_pBroker, pOldGRptSpec, initial_poi, 0);
+   CEquilibriumCheckDlg dlg(GetBroker(), pOldGRptSpec, initial_poi, 0);
 
    if ( dlg.DoModal() == IDOK )
    {     

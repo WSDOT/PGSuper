@@ -27,16 +27,6 @@
 
 class IEAFDisplayUnits;
 
-/*****************************************************************************
-CLASS 
-   CEquilibriumCheckChapterBuilder
-
-
-DESCRIPTION
-   This is basically a debugging chapter that list the details of a
-   time step equilibrium check
-*****************************************************************************/
-
 class REPORTINGCLASS CEquilibriumCheckChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
@@ -44,11 +34,5 @@ public:
 
    virtual LPCTSTR GetName() const override;
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-private:
-   // Prevent accidental copying and assignment
-   CEquilibriumCheckChapterBuilder(const CEquilibriumCheckChapterBuilder&) = delete;
-   CEquilibriumCheckChapterBuilder& operator=(const CEquilibriumCheckChapterBuilder&) = delete;
 };
 

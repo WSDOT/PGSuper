@@ -32,27 +32,17 @@
 #include <IFace\DocumentType.h>
 
 
-/****************************************************************************
-CLASS
-   CDistributionFactorDetailsChapterBuilder
-****************************************************************************/
-
 
 // free functions
 rptRcTable* BuildDfTable(const WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& G1, const WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& G2, bool isExterior);
 void FillRow(int row, rptRcTable* pTable, const std::_tstring& rowtit, const WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& res, bool isExterior);
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CDistributionFactorDetailsChapterBuilder::CDistributionFactorDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CDistributionFactorDetailsChapterBuilder::GetName() const
 {
    return TEXT("Live Load Distribution Factor Details");
@@ -120,9 +110,4 @@ rptChapter* CDistributionFactorDetailsChapterBuilder::Build(const std::shared_pt
       }
    }
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDistributionFactorDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CDistributionFactorDetailsChapterBuilder>();
 }

@@ -26,18 +26,6 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CLoadRatingReactionsChapterBuilder
-
-DESCRIPTION
-   Summary of reactings for the load ratings report
-
-LOG
-   rab : 09.10.2014 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CLoadRatingReactionsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
@@ -45,10 +33,4 @@ public:
 
    virtual LPCTSTR GetName() const override;
    rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-private:
-   // Prevent accidental copying and assignment
-   CLoadRatingReactionsChapterBuilder(const CLoadRatingReactionsChapterBuilder&) = delete;
-   CLoadRatingReactionsChapterBuilder& operator=(const CLoadRatingReactionsChapterBuilder&) = delete;
 };

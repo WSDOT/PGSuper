@@ -205,9 +205,9 @@ void MultiWebFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::
    pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
-std::shared_ptr<DistFactorEngineerBase> MultiWebFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::unique_ptr<DistFactorEngineer> MultiWebFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<MultiWebDistFactorEngineer>(MultiWebDistFactorEngineer::BeamType::MultiWebTee, pBroker, statusGroupID);
+   return std::make_unique<MultiWebDistFactorEngineer>(MultiWebDistFactorEngineer::BeamType::MultiWebTee, pBroker, statusGroupID);
 }
 
 std::unique_ptr<PsLossEngineerBase> MultiWebFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
@@ -595,25 +595,9 @@ CLSID MultiWebFactory::GetCLSID() const
    return CLSID_MultiWebFactory;
 }
 
-std::_tstring MultiWebFactory::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID MultiWebFactory::GetFamilyCLSID() const
 {
    return CLSID_RibbedBeamFamily;
-}
-
-std::_tstring MultiWebFactory::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
 }
 
 std::_tstring MultiWebFactory::GetPublisher() const

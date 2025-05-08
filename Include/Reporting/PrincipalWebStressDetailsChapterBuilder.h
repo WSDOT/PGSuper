@@ -33,39 +33,18 @@ class IIntervals;
 class IMaterials;
 
 
-/*****************************************************************************
-CLASS 
-   CPrincipalWebStressDetailsChapterBuilder
-
-DESCRIPTION
-   Chapter builder for reporting details of time-step analysis calculations
-   at a specified POI
-*****************************************************************************/
-
 class REPORTINGCLASS CPrincipalWebStressDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CPrincipalWebStressDetailsChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 protected:
    void BuildIncrementalStressTables(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IntervalIndexType intervalIdx, PoiList vPoi, const std::vector<pgsTypes::ProductForceType>& vLoads, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    void BuildLiveLoadStressTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IntervalIndexType intervalIdx, PoiList vPoi, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    void BuildCombinedStressTables(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IntervalIndexType intervalIdx, PoiList vPoi, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
-
-
-   // Prevent accidental copying and assignment
-   CPrincipalWebStressDetailsChapterBuilder(const CPrincipalWebStressDetailsChapterBuilder&) = delete;
-   CPrincipalWebStressDetailsChapterBuilder& operator=(const CPrincipalWebStressDetailsChapterBuilder&) = delete;
 
    mutable bool m_bReportShear;
    mutable bool m_bReportAxial;

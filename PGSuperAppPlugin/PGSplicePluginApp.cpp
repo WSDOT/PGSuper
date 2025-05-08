@@ -289,47 +289,24 @@ void CPGSplicePluginApp::UpdateTemplates()
 
    // take note of the state of all extension agents
    // disable all extension agents
-   // NOTE: This only changes the values in the registery... the actual extensions are not
+   // NOTE: This only changes the values in the registry... the actual extensions are not
    // unloaded and disabled... this is a bug
+
    std::vector<std::pair<CString,CString>> extension_states;
-   CComPtr<ICatRegister> pICatReg;
-   HRESULT hr = pICatReg.CoCreateInstance(CLSID_StdComponentCategoriesMgr);
-   if ( FAILED(hr) )
-   {
-      AfxMessageBox(_T("Failed to create the component category manager"));
-      return;
-   }
-
-   CComQIPtr<ICatInformation> pICatInfo(pICatReg);
-   CComPtr<IEnumCLSID> pIEnumCLSID;
-
-   const int nID = 1;
-   CATID ID[nID];
-
-   ID[0] = CATID_PGSpliceExtensionAgent;
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
-
-   const int nPlugins = 5;
-   CLSID clsid[nPlugins]; 
-   ULONG nFetched = 0;
-
    CString strSection(_T("Extensions"));
 
-   while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
+   auto components = WBFL::EAF::ComponentManager::GetInstance().GetComponents(CATID_PGSpliceExtensionAgent);
+   for (auto& component : components)
    {
-      for ( ULONG i = 0; i < nFetched; i++ )
-      {
-         LPOLESTR pszCLSID;
-         ::StringFromCLSID(clsid[i],&pszCLSID);
-         
-         CString strState = pApp->GetProfileString(strSection,OLE2T(pszCLSID),_T("Enabled"));
-         extension_states.emplace_back(OLE2T(pszCLSID),strState);
+      LPOLESTR pszCLSID;
+      ::StringFromCLSID(component.clsid, &pszCLSID);
 
-         // Disable the extension
-         pApp->WriteProfileString(strSection,OLE2T(pszCLSID),_T("Disabled"));
+      CString strState = pApp->GetProfileString(strSection, OLE2T(pszCLSID), _T("Enabled"));
+      extension_states.emplace_back(OLE2T(pszCLSID), strState);
 
-         ::CoTaskMemFree((void*)pszCLSID);
-      }
+      // Disable the extension
+      pApp->WriteProfileString(strSection, OLE2T(pszCLSID), _T("Disabled"));
+      ::CoTaskMemFree((void*)pszCLSID);
    }
 
    // Update the templates

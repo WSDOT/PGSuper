@@ -29,9 +29,5 @@
 
 #include "TxDOTAgentApp.h"
 
-
-
-CTxDOTAgentModule _AtlModule;
-
 CTxDOTAgentApp theApp;
 

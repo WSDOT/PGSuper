@@ -25,7 +25,7 @@
 #include <IFace\Bridge.h>
 
 
-CBridgeAnalysisReportSpecification::CBridgeAnalysisReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,GirderIndexType gdrIdx,bool bDesign,bool bRating) :
+CBridgeAnalysisReportSpecification::CBridgeAnalysisReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,GirderIndexType gdrIdx,bool bDesign,bool bRating) :
 CGirderLineReportSpecification(strReportName,pBroker,gdrIdx)
 {
    SetOptions(bDesign,bRating);

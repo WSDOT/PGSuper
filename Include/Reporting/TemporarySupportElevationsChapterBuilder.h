@@ -19,36 +19,18 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
 #pragma once
+
 #include <Reporting\ReportingExp.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-/////////////////////////////////////////////////////////////////////////
 class REPORTINGCLASS CTemporarySupportElevationsChapterBuilder :
    public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CTemporarySupportElevationsChapterBuilder(bool bSelect=true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-protected:
-
-private:
-
-   // Prevent accidental copying and assignment
-   CTemporarySupportElevationsChapterBuilder(const CTemporarySupportElevationsChapterBuilder&) = delete;
-   CTemporarySupportElevationsChapterBuilder& operator=(const CTemporarySupportElevationsChapterBuilder&) = delete;
 };

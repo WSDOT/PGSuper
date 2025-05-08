@@ -193,11 +193,6 @@ rptChapter* CCrackedSectionChapterBuilder::Build(const std::shared_ptr<const WBF
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCrackedSectionChapterBuilder::Clone() const
-{
-   return std::make_unique<CCrackedSectionChapterBuilder>();
-}
-
 rptRcImage* CCrackedSectionChapterBuilder::CreateImage(ICrackedSectionSolution* pSolution,bool bPositiveMoment) const
 {
    CImage image;

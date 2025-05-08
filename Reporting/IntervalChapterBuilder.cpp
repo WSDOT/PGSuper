@@ -33,22 +33,11 @@
 #include <PsgLib\ClosureJointData.h>
 
 
-/****************************************************************************
-CLASS
-   CIntervalChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CIntervalChapterBuilder::CIntervalChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CIntervalChapterBuilder::GetName() const
 {
    return TEXT("Analysis Intervals");
@@ -104,9 +93,4 @@ rptChapter* CIntervalChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CIntervalChapterBuilder::Clone() const
-{
-   return std::make_unique<CIntervalChapterBuilder>();
 }

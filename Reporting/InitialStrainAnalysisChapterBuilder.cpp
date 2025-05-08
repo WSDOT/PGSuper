@@ -38,8 +38,6 @@ CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CInitialStrainAnalysisChapterBuilder::GetName() const
 {
    return TEXT("Initial Strain Analysis");
@@ -121,9 +119,4 @@ rptChapter* CInitialStrainAnalysisChapterBuilder::Build(const std::shared_ptr<co
    } // next i
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CInitialStrainAnalysisChapterBuilder::Clone() const
-{
-   return std::make_unique<CInitialStrainAnalysisChapterBuilder>();
 }

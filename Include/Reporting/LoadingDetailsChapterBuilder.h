@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_LOADINGDETAILSCHAPTERBUILDER_H_
-#define INCLUDED_LOADINGDETAILSCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
@@ -32,48 +31,18 @@ class IProductLoads;
 class IEAFDisplayUnits;
 class IRatingSpecification;
 
-/*****************************************************************************
-CLASS 
-   CLoadingDetailsChapterBuilder
-
-   Loading details chapter
-
-
-DESCRIPTION
-   Loading details chapter builder. Details loads applied to the structure.
-
-LOG
-   rab : 11.03.1998 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CLoadingDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CLoadingDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect);
 
-   // use this constructor if a simplified (shortened) version of the chapter
-   // is desired
+   // use this constructor if a simplified (shortened) version of the chapter is desired
    CLoadingDetailsChapterBuilder(bool SimplifiedVersion,bool bDesign,bool bRating,bool bSelect);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 protected:
-   // GROUP: DATA MEMBERS
    void ReportPedestrianLoad(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IProductLoads> pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const;
    void ReportSlabLoad(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IProductLoads> pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const;
    void ReportOverlayLoad(rptChapter* pChapter,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IProductLoads> pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bRating,const CSegmentKey& thisSegmentKey) const;
@@ -92,36 +61,9 @@ protected:
    rptParagraph* CreateDistributedLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSpanKey& spanKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level) const;
    rptParagraph* CreateMomentLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSpanKey& spanKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level) const;
 
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
-
    // set this to true for a shortened version of the chapter
    bool m_bSimplifiedVersion;
    bool m_bDesign;
    bool m_bRating;
-
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CLoadingDetailsChapterBuilder(const CLoadingDetailsChapterBuilder&) = delete;
-   CLoadingDetailsChapterBuilder& operator=(const CLoadingDetailsChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_LOADINGDETAILSCHAPTERBUILDER_H_

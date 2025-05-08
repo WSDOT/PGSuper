@@ -25,12 +25,7 @@
 #include "SpecLibraryEntryImpl.h"
 #include <EAF/EAFDisplayUnits.h>
 
-#pragma Reminder("WORKING HERE - Removing COM - PrestressLossCriteria data types could be more general")
-// The enums could be more general. there are places where this entire header is included
-// just for the enum values. Liike Project.h. same problem as with ConnectionLibraryEntry
-
 inline constexpr auto operator+(WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod a) noexcept { return std::underlying_type<WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod>::type(a); }
-
 
 bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {

@@ -31,7 +31,7 @@ class CCrackedSectionReportSpecification :
    public CPoiReportSpecification
 {
 public:
-	CCrackedSectionReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment);
+	CCrackedSectionReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment);
    ~CCrackedSectionReportSpecification(void);
 
    void SetOptions(const pgsPointOfInterest& poi,bool bPositiveMoment);

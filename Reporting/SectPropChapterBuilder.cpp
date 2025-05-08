@@ -41,25 +41,12 @@
 
 #include <psgLib/TrafficBarrierEntry.h>
 
-
-/****************************************************************************
-CLASS
-   CSectPropChapterBuilder
-****************************************************************************/
-
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CSectPropChapterBuilder::CSectPropChapterBuilder(bool bSelect,bool simplifiedVersion) :
 CPGSuperChapterBuilder(bSelect),
 m_SimplifiedVersion(simplifiedVersion)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CSectPropChapterBuilder::GetName() const
 {
    return TEXT("Section Properties");
@@ -393,9 +380,4 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    (*pPara) << CColumnPropertiesTable().Build(pBroker,pDisplayUnits) << rptNewLine;
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSectPropChapterBuilder::Clone() const
-{
-   return std::make_unique<CSectPropChapterBuilder> ();
 }

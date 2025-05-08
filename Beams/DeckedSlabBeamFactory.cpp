@@ -294,9 +294,9 @@ void DeckedSlabBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<
    }
 }
 
-std::shared_ptr<DistFactorEngineerBase> DeckedSlabBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::unique_ptr<DistFactorEngineer> DeckedSlabBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<MultiWebDistFactorEngineer>(MultiWebDistFactorEngineer::BeamType::DeckedSlabBeam, pBroker, statusGroupID);
+   return std::make_unique<MultiWebDistFactorEngineer>(MultiWebDistFactorEngineer::BeamType::DeckedSlabBeam, pBroker, statusGroupID);
 }
 
 std::unique_ptr<PsLossEngineerBase> DeckedSlabBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
@@ -683,25 +683,9 @@ CLSID DeckedSlabBeamFactory::GetCLSID() const
    return CLSID_DeckedSlabBeamFactory;
 }
 
-std::_tstring DeckedSlabBeamFactory::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID DeckedSlabBeamFactory::GetFamilyCLSID() const
 {
    return CLSID_DeckedSlabBeamFamily;
-}
-
-std::_tstring DeckedSlabBeamFactory::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
 }
 
 std::_tstring DeckedSlabBeamFactory::GetPublisher() const

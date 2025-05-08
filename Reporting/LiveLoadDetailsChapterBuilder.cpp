@@ -56,11 +56,6 @@ void ReportPedestrian(ILiveLoads::PedestrianLoadApplicationType pedType, rptPara
    }
 }
 
-/****************************************************************************
-CLASS
-   CLiveLoadDetailsChapterBuilder
-****************************************************************************/
-
 CLiveLoadDetailsChapterBuilder::CLiveLoadDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -553,9 +548,4 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(std::shared_ptr<WBFL::EAF::B
          }
       }
    }
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLiveLoadDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CLiveLoadDetailsChapterBuilder>(m_bDesign,m_bRating);
 }

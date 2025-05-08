@@ -45,22 +45,11 @@
 #include <PsgLib\PierData2.h>
 
 
-/****************************************************************************
-CLASS
-   CBearingDesignParametersChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CBearingDesignParametersChapterBuilder::CBearingDesignParametersChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CBearingDesignParametersChapterBuilder::GetName() const
 {
    return TEXT("Bearing Design Parameters (Obsolete)");
@@ -502,9 +491,4 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingRecessSlope.png")) << rptNewLine;
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder>CBearingDesignParametersChapterBuilder::Clone() const
-{
-   return std::make_unique<CBearingDesignParametersChapterBuilder>();
 }

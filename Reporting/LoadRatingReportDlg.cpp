@@ -393,10 +393,8 @@ void CLoadRatingReportDlg::LoadSettings()
    // loads last settings from the registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-#pragma Reminder("WORKING HERE - Removing COM")
-   // is there a better way to deal with this pointer cast?
    auto pluginApp = pTemplate->GetPluginApp();
-   CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
@@ -417,10 +415,8 @@ void CLoadRatingReportDlg::SaveSettings()
    // save settings to registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-#pragma Reminder("WORKING HERE - Removing COM")
-   // is there a better way to deal with this pointer cast?
    auto pluginApp = pTemplate->GetPluginApp();
-   CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);

@@ -28,16 +28,6 @@
 class IPointOfInterest;
 class IEAFDisplayUnits;
 
-/*****************************************************************************
-CLASS 
-   CPointOfInterestChapterBuilder
-
-
-DESCRIPTION
-   This is basically a debugging chapter that list the location of
-   the points of interest
-*****************************************************************************/
-
 class REPORTINGCLASS CPointOfInterestChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
@@ -45,14 +35,8 @@ public:
 
    virtual LPCTSTR GetName() const override;
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 private:
-   // Prevent accidental copying and assignment
-   CPointOfInterestChapterBuilder(const CPointOfInterestChapterBuilder&) = delete;
-   CPointOfInterestChapterBuilder& operator=(const CPointOfInterestChapterBuilder&) = delete;
-
-
    void ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IPointOfInterest> pPoi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const;
 };
 

@@ -37,22 +37,17 @@
 #include <IFace\Intervals.h>
 
 
-CTxDOTOptionalDesignDocProxyAgent::CTxDOTOptionalDesignDocProxyAgent():
+CTxDOTOptionalDesignDocProxyAgent::CTxDOTOptionalDesignDocProxyAgent(CTxDOTOptionalDesignDoc* pDoc):
 m_NeedValidate(true),
 m_GirderArtifact(CSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0))
-{
-   m_pTxDOTOptionalDesignDoc = nullptr;
-}
-
-CTxDOTOptionalDesignDocProxyAgent::~CTxDOTOptionalDesignDocProxyAgent()
-{
-}
-
-void CTxDOTOptionalDesignDocProxyAgent::SetDocument(CTxDOTOptionalDesignDoc* pDoc)
 {
    m_pTxDOTOptionalDesignDoc = pDoc;
 
    pDoc->m_ProjectData.Attach(this);
+}
+
+CTxDOTOptionalDesignDocProxyAgent::~CTxDOTOptionalDesignDocProxyAgent()
+{
 }
 
 

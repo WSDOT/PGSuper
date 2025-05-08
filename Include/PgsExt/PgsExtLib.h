@@ -30,7 +30,7 @@
 #include <LRFD\LRFD.h>
 
 #include <EAF\EAFUtilities.h>
-#include <EAF\EAFHelp.h>
+#include <EAF\Help.h>
 
 #if defined _NOGRID
 #include <NoGrid.h>

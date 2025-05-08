@@ -447,9 +447,9 @@ void PCIDeckedBulbTeeFactory::LayoutSectionChangePointsOfInterest(std::shared_pt
    }
 }
 
-std::shared_ptr<DistFactorEngineerBase> PCIDeckedBulbTeeFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::unique_ptr<DistFactorEngineer> PCIDeckedBulbTeeFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<BulbTeeDistFactorEngineer>(pBroker, statusGroupID);
+   return std::make_unique<BulbTeeDistFactorEngineer>(pBroker, statusGroupID);
 }
 
 std::unique_ptr<PsLossEngineerBase> PCIDeckedBulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
@@ -920,25 +920,9 @@ CLSID PCIDeckedBulbTeeFactory::GetCLSID() const
    return CLSID_PCIDeckedBulbTeeFactory;
 }
 
-std::_tstring PCIDeckedBulbTeeFactory::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID PCIDeckedBulbTeeFactory::GetFamilyCLSID() const
 {
    return CLSID_DeckBulbTeeBeamFamily;
-}
-
-std::_tstring PCIDeckedBulbTeeFactory::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
 }
 
 std::_tstring PCIDeckedBulbTeeFactory::GetPublisher() const

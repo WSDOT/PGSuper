@@ -59,22 +59,12 @@
 #define CREEP_tb_to  CREEP(Sub2(_T("t"),_T("b")),Sub2(_T("t"),_T("o")))
 #define CREEP_te_to  CREEP(Sub2(_T("t"),_T("e")),Sub2(_T("t"),_T("o")))
 
-/****************************************************************************
-CLASS
-   CTimeStepDetailsChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTimeStepDetailsChapterBuilder::CTimeStepDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTimeStepDetailsChapterBuilder::GetName() const
 {
    return TEXT("Time Step Details");
@@ -534,11 +524,6 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimeStepDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CTimeStepDetailsChapterBuilder>();
 }
 
 rptRcTable* CTimeStepDetailsChapterBuilder::BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IIntervals> pIntervals,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const

@@ -54,10 +54,6 @@ void build_max_spacing_paragraph_uhpc(std::shared_ptr<WBFL::EAF::Broker> pBroker
    IntervalIndexType intervalIdx, pgsTypes::LimitState ls,bool doIncludeSpanAndGirderForPois,
    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-/****************************************************************************
-CLASS
-   CStirrupDetailingCheckChapterBuilder
-****************************************************************************/
 
 CStirrupDetailingCheckChapterBuilder::CStirrupDetailingCheckChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -108,11 +104,6 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(const std::shared_ptr<co
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CStirrupDetailingCheckChapterBuilder::Clone() const
-{
-   return std::make_unique<CStirrupDetailingCheckChapterBuilder>();
 }
 
 void build_min_avs_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,const CGirderKey& girderKey,

@@ -34,24 +34,11 @@
 #include <IFace\Artifact.h>
 #include <IFace\Intervals.h>
 
-
-
-/****************************************************************************
-CLASS
-   CTexasMomentCapacityChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTexasMomentCapacityChapterBuilder::CTexasMomentCapacityChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTexasMomentCapacityChapterBuilder::GetName() const
 {
    return TEXT("Moment Capacity");
@@ -100,9 +87,4 @@ rptChapter* CTexasMomentCapacityChapterBuilder::Build(const std::shared_ptr<cons
    *pChapter << p;
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasMomentCapacityChapterBuilder::Clone() const
-{
-   return std::make_unique<CTexasMomentCapacityChapterBuilder>();
 }

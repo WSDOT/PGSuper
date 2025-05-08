@@ -39,22 +39,11 @@
 #include <PsgLib/SpecLibraryEntry.h>
 
 
-/****************************************************************************
-CLASS
-   CLRFDCreepCoefficientChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CLRFDCreepCoefficientChapterBuilder::CLRFDCreepCoefficientChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CLRFDCreepCoefficientChapterBuilder::GetName() const
 {
    return TEXT("Creep Coefficient Details");
@@ -108,29 +97,7 @@ rptChapter* CLRFDCreepCoefficientChapterBuilder::Build(const std::shared_ptr<con
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLRFDCreepCoefficientChapterBuilder::Clone() const
-{
-   return std::make_unique<CLRFDCreepCoefficientChapterBuilder>();
-}
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
                                                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,

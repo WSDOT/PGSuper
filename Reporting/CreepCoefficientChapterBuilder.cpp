@@ -28,22 +28,11 @@
 #include <IFace\Project.h>
 
 
-/****************************************************************************
-CLASS
-   CCreepCoefficientChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CCreepCoefficientChapterBuilder::CCreepCoefficientChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CCreepCoefficientChapterBuilder::GetName() const
 {
    return TEXT("Creep Coefficient Details");
@@ -69,9 +58,4 @@ rptChapter* CCreepCoefficientChapterBuilder::Build(const std::shared_ptr<const W
       pChapter = CLRFDCreepCoefficientChapterBuilder().Build(pRptSpec,level);
    }
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCreepCoefficientChapterBuilder::Clone() const
-{
-   return std::make_unique<CCreepCoefficientChapterBuilder>();
 }

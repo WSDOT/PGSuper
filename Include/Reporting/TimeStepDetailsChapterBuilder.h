@@ -33,29 +33,13 @@ class IIntervals;
 class IMaterials;
 
 
-/*****************************************************************************
-CLASS 
-   CTimeStepDetailsChapterBuilder
-
-DESCRIPTION
-   Chapter builder for reporting details of time-step analysis calculations
-   at a specified POI
-*****************************************************************************/
-
 class REPORTINGCLASS CTimeStepDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CTimeStepDetailsChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 protected:
    rptRcTable* BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IIntervals> pIntervals,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
@@ -81,8 +65,4 @@ protected:
    void ReportStrandRelaxationDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    void ReportSegmentTendonRelaxationDetails(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi, IntervalIndexType firstIntervalIdx, IntervalIndexType lastIntervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    void ReportGirderTendonRelaxationDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
-
-   // Prevent accidental copying and assignment
-   CTimeStepDetailsChapterBuilder(const CTimeStepDetailsChapterBuilder&) = delete;
-   CTimeStepDetailsChapterBuilder& operator=(const CTimeStepDetailsChapterBuilder&) = delete;
 };

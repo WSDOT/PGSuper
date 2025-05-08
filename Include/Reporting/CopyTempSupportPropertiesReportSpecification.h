@@ -28,7 +28,7 @@ class REPORTINGCLASS CCopyTempSupportPropertiesReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CCopyTempSupportPropertiesReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   CCopyTempSupportPropertiesReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CCopyTempSupportPropertiesReportSpecification(void);
 
    virtual bool IsValid() const override;

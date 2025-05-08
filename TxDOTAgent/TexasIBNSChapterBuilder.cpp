@@ -44,28 +44,16 @@
 #include <psgLib\GirderLibraryEntry.h>
 
 
-/****************************************************************************
-CLASS	CTexasIBNSChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTexasIBNSChapterBuilder::CTexasIBNSChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-/*--------------------------------------------------------------------*/
 LPCTSTR CTexasIBNSChapterBuilder::GetName() const
 {
    return TEXT("Girder Schedule");
 }
 
-/*--------------------------------------------------------------------*/
 rptChapter* CTexasIBNSChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
@@ -146,10 +134,3 @@ rptChapter* CTexasIBNSChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    return nullptr;
 
 }
-
-/*--------------------------------------------------------------------*/
-std::unique_ptr<WBFL::Reporting::ChapterBuilder>CTexasIBNSChapterBuilder::Clone() const
-{
-   return std::make_unique<CTexasIBNSChapterBuilder>();
-}
-

@@ -39,22 +39,11 @@
 #include <WBFLCogo.h>
 
 
-/****************************************************************************
-CLASS
-   CDeckElevationChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CDeckElevationChapterBuilder::CDeckElevationChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CDeckElevationChapterBuilder::GetName() const
 {
    return TEXT("Roadway Elevations");
@@ -76,12 +65,6 @@ rptChapter* CDeckElevationChapterBuilder::Build(const std::shared_ptr<const WBFL
       return BuildDeckOnGirder(pRptSpec, level);
    }
 
-}
-
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDeckElevationChapterBuilder::Clone() const
-{
-   return std::make_unique<CDeckElevationChapterBuilder>();
 }
 
 rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const

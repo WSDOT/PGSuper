@@ -35,8 +35,6 @@ CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CCopyGirderPropertiesChapterBuilder::GetName() const
 {
    return TEXT("Girder Property Comparison");
@@ -69,11 +67,6 @@ rptChapter* CCopyGirderPropertiesChapterBuilder::Build(const std::shared_ptr<con
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCopyGirderPropertiesChapterBuilder::Clone() const
-{
-   return std::make_unique<CCopyGirderPropertiesChapterBuilder>();
 }
 
 void CCopyGirderPropertiesChapterBuilder::SetCopyGirderProperties(std::vector<ICopyGirderPropertiesCallback*>& rCallBacks, const CGirderKey& fromGirderKey)

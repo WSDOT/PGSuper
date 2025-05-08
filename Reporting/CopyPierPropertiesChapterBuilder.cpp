@@ -36,8 +36,6 @@ m_FromPierIdx(INVALID_INDEX)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CCopyPierPropertiesChapterBuilder::GetName() const
 {
    return TEXT("Pier Properties Comparison");
@@ -69,11 +67,6 @@ rptChapter* CCopyPierPropertiesChapterBuilder::Build(const std::shared_ptr<const
       *pPara << _T("Nothing to report. Please select a property type");
    }
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCopyPierPropertiesChapterBuilder::Clone() const
-{
-   return std::make_unique<CCopyPierPropertiesChapterBuilder>();
 }
 
 void CCopyPierPropertiesChapterBuilder::SetCopyPierProperties(std::vector<ICopyPierPropertiesCallback*>& rCallbacks, PierIndexType fromPierIdx, const std::vector<PierIndexType>& toPiers)

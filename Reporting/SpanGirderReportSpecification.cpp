@@ -197,7 +197,7 @@ int CGirderReportHint::IsMyGirder(const std::shared_ptr<const WBFL::Reporting::R
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-CSpanReportSpecification::CSpanReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker>pBroker,SpanIndexType spanIdx) :
+CSpanReportSpecification::CSpanReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker>pBroker,SpanIndexType spanIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetSpan(spanIdx);
@@ -257,7 +257,7 @@ bool CSpanReportSpecification::IsValid() const
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CGirderReportSpecification::CGirderReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker>pBroker,const CGirderKey& girderKey) :
+CGirderReportSpecification::CGirderReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker>pBroker,const CGirderKey& girderKey) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_GirderKey = girderKey;
@@ -387,7 +387,7 @@ bool CGirderReportSpecification::IsValid() const
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CSegmentReportSpecification::CSegmentReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey) :
+CSegmentReportSpecification::CSegmentReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey) :
    CBrokerReportSpecification(strReportName, pBroker)
 {
    m_SegmentKey = segmentKey;
@@ -494,7 +494,7 @@ bool CSegmentReportSpecification::IsValid() const
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CGirderLineReportSpecification::CGirderLineReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker,GirderIndexType gdrIdx) :
+CGirderLineReportSpecification::CGirderLineReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker,GirderIndexType gdrIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_GirderIdx = gdrIdx;
@@ -559,7 +559,7 @@ bool CGirderLineReportSpecification::IsValid() const
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-CMultiGirderReportSpecification::CMultiGirderReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys) :
+CMultiGirderReportSpecification::CMultiGirderReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys) :
 CBrokerReportSpecification(strReportName,pBroker),
 m_GirderKeys(girderKeys)
 {
@@ -687,7 +687,7 @@ bool CMultiGirderReportSpecification::IsValid() const
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-CMultiViewSpanGirderReportSpecification::CMultiViewSpanGirderReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys) :
+CMultiViewSpanGirderReportSpecification::CMultiViewSpanGirderReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetGirderKeys(girderKeys);
@@ -761,7 +761,7 @@ bool CMultiViewSpanGirderReportSpecification::IsValid() const
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CPointOfInterestReportSpecification::CPointOfInterestReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi) :
+CPointOfInterestReportSpecification::CPointOfInterestReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_POI = poi;

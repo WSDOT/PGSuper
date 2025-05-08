@@ -36,8 +36,6 @@ CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CInternalForceChapterBuilder::GetName() const
 {
    return TEXT("Internal Time-Dependent Forces");
@@ -178,9 +176,4 @@ rptChapter* CInternalForceChapterBuilder::Build(const std::shared_ptr<const WBFL
    } // next interval
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CInternalForceChapterBuilder::Clone() const
-{
-   return std::make_unique<CInternalForceChapterBuilder>();
 }

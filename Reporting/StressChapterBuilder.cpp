@@ -386,8 +386,3 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CStressChapterBuilder::Clone() const
-{
-   return std::make_unique<CStressChapterBuilder>(m_bDesign,m_bRating);
-}

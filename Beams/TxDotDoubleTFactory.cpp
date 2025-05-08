@@ -226,9 +226,9 @@ void TxDotDoubleTFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WB
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 }
 
-std::shared_ptr<DistFactorEngineerBase> TxDotDoubleTFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::unique_ptr<DistFactorEngineer> TxDotDoubleTFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<MultiWebDistFactorEngineer>(MultiWebDistFactorEngineer::BeamType::MultiWebTee,pBroker,statusGroupID);
+   return std::make_unique<MultiWebDistFactorEngineer>(MultiWebDistFactorEngineer::BeamType::MultiWebTee,pBroker,statusGroupID);
 }
 
 std::unique_ptr<PsLossEngineerBase> TxDotDoubleTFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
@@ -690,25 +690,9 @@ CLSID TxDotDoubleTFactory::GetCLSID() const
    return CLSID_TxDotDoubleTFactory;
 }
 
-std::_tstring TxDotDoubleTFactory::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID TxDotDoubleTFactory::GetFamilyCLSID() const
 {
    return CLSID_DoubleTeeBeamFamily;
-}
-
-std::_tstring TxDotDoubleTFactory::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
 }
 
 std::_tstring TxDotDoubleTFactory::GetPublisher() const

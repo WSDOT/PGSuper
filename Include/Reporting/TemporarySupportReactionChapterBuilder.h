@@ -27,32 +27,11 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 
-/*****************************************************************************
-CLASS 
-   CTemporarySupportReactionChapterBuilder
-
-
-DESCRIPTION
-   Reports reactions at the base of piers
-*****************************************************************************/
-
 class REPORTINGCLASS CTemporarySupportReactionChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CTemporarySupportReactionChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-private:
-   // Prevent accidental copying and assignment
-   CTemporarySupportReactionChapterBuilder(const CTemporarySupportReactionChapterBuilder&) = delete;
-   CTemporarySupportReactionChapterBuilder& operator=(const CTemporarySupportReactionChapterBuilder&) = delete;
 };

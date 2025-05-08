@@ -59,7 +59,6 @@ public:
    ~CBearingSeatElevationsChapterBuilder2(void);
 
    virtual LPCTSTR GetName() const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 };
 
 // Specialized class for bearing deduct chapter
@@ -72,5 +71,4 @@ public:
    ~CBearingDeductChapterBuilder(void);
 
    virtual LPCTSTR GetName() const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 };

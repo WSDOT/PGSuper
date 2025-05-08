@@ -6,7 +6,7 @@ class CPoiReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CPoiReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi);
+   CPoiReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi);
    ~CPoiReportSpecification(void);
 
    virtual bool IsValid() const override;

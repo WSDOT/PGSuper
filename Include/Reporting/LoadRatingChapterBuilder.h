@@ -21,41 +21,16 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
-
-
-/*****************************************************************************
-CLASS 
-   CLoadRatingChapterBuilder
-
-   Reports load rating outcome.
-
-
-DESCRIPTION
-   Reports load rating outcome.
-
-LOG
-   rab : 12.07.2009 : Created file
-*****************************************************************************/
 
 class REPORTINGCLASS CLoadRatingChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CLoadRatingChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-private:
-   // Prevent accidental copying and assignment
-   CLoadRatingChapterBuilder(const CLoadRatingChapterBuilder&) = delete;
-   CLoadRatingChapterBuilder& operator=(const CLoadRatingChapterBuilder&) = delete;
 };

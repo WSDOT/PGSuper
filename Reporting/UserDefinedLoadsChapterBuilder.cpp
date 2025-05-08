@@ -34,27 +34,12 @@
 #include <PsgLib\MomentLoadData.h>
 
 
-
-
-/****************************************************************************
-CLASS
-   CUserDefinedLoadsChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-
 CUserDefinedLoadsChapterBuilder::CUserDefinedLoadsChapterBuilder(bool bSelect, bool SimplifiedVersion) :
 CPGSuperChapterBuilder(bSelect),
 m_bSimplifiedVersion(SimplifiedVersion)
 {
 }
 
-
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CUserDefinedLoadsChapterBuilder::GetName() const
 {
    return TEXT("User Defined Loads");
@@ -135,30 +120,6 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(const std::shared_ptr<const W
    return pChapter;
 }
 
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CUserDefinedLoadsChapterBuilder::Clone() const
-{
-   return std::make_unique<CUserDefinedLoadsChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            const CSpanKey& spanKey,

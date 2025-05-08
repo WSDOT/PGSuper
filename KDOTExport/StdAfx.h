@@ -19,4 +19,4 @@
 
 #include "Documentation\KDOT.hh"
 
-#include <EAF\EAFHelp.h>
+#include <EAF\Help.h>

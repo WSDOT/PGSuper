@@ -28,7 +28,7 @@
 #include <IFace/Tools.h>
 #include <IFace\PointOfInterest.h>
 
-CCrackedSectionReportSpecification::CCrackedSectionReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi, bool bPositiveMoment) :
+CCrackedSectionReportSpecification::CCrackedSectionReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi, bool bPositiveMoment) :
    CPoiReportSpecification(strReportName,pBroker,poi)
 {
    m_bPositiveMoment = bPositiveMoment;

@@ -31,7 +31,7 @@ class REPORTINGCLASS CBridgeAnalysisReportSpecificationBuilder :
    public CGirderLineReportSpecificationBuilder
 {
 public:
-   CBridgeAnalysisReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   CBridgeAnalysisReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CBridgeAnalysisReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;

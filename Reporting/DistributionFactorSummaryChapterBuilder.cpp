@@ -29,11 +29,6 @@
 #include <IFace\Bridge.h>
 
 
-/****************************************************************************
-CLASS
-   CDistributionFactorSummaryChapterBuilder
-****************************************************************************/
-
 // free functions
 GirderIndexType GetPierGirderCount(PierIndexType pierIdx, std::shared_ptr<IBridge> pBridge)
 {
@@ -62,16 +57,12 @@ GirderIndexType GetPierGirderCount(PierIndexType pierIdx, std::shared_ptr<IBridg
 void WriteSpanTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,SpanIndexType span,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 void WritePierTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,PierIndexType pier,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
 
-//======================== LIFECYCLE  =======================================
 CDistributionFactorSummaryChapterBuilder::CDistributionFactorSummaryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CDistributionFactorSummaryChapterBuilder::GetName() const
 {
    return TEXT("Live Load Distribution Factor Summary");
@@ -105,11 +96,6 @@ rptChapter* CDistributionFactorSummaryChapterBuilder::Build(const std::shared_pt
 
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDistributionFactorSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CDistributionFactorSummaryChapterBuilder>();
 }
 
 void WriteSpanTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,SpanIndexType spanIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)

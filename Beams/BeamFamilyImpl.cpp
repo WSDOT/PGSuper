@@ -26,14 +26,14 @@
 #include "Beams.h"
 #include <Beams\Helper.h>
 #include <IFace\BeamFactory.h>
-#include <EAF/ComponentCategoryManager.h>
+#include <EAF/ComponentManager.h>
 
 using namespace PGS::Beams;
 
 void BeamFamilyImpl::Init()
 {
    m_Names.clear();
-   auto components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(GetCATID());
+   auto components = WBFL::EAF::ComponentManager::GetInstance().GetComponents(GetCATID());
    for (auto& component : components)
    {
       m_Factories.insert(std::make_pair(CString(component.name.c_str()), component.clsid));
@@ -44,7 +44,7 @@ void BeamFamilyImpl::Init()
 CString BeamFamilyImpl::GetName() const
 {
    const CLSID& clsid = GetCLSID();
-   auto component = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponent(clsid);
+   auto component = WBFL::EAF::ComponentManager::GetInstance().GetComponent(clsid);
    return CString(component.name.c_str());
 }
 
@@ -75,6 +75,6 @@ std::shared_ptr<BeamFactory> BeamFamilyImpl::CreateFactory(LPCTSTR strName) cons
       return nullptr;
 
    CLSID clsid = found->second;
-   auto factory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<BeamFactory>(clsid);
+   auto factory = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<BeamFactory>(clsid);
    return factory;
 }

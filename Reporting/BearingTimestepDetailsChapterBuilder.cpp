@@ -63,23 +63,11 @@
 #define CREEP_tb_to  CREEP(Sub2(_T("t"),_T("b")),Sub2(_T("t"),_T("o")))
 #define CREEP_te_to  CREEP(Sub2(_T("t"),_T("e")),Sub2(_T("t"),_T("o")))
 
-/****************************************************************************
-CLASS
-   CBearingTimeStepDetailsChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CBearingTimeStepDetailsChapterBuilder::CBearingTimeStepDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
-
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-
 
 LPCTSTR CBearingTimeStepDetailsChapterBuilder::GetName() const
 {
@@ -168,9 +156,3 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingTimeStepDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CBearingTimeStepDetailsChapterBuilder>();
-}
-

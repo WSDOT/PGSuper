@@ -28,29 +28,14 @@
 #include <IFace\ExtendUI.h>
 
 
-/*****************************************************************************
-CLASS 
-   CCopyPierPropertiesChapterBuilder
-
-   Chapter builder for reporting construction event CopyPierProperties
-*****************************************************************************/
-
 class REPORTINGCLASS CCopyPierPropertiesChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CCopyPierPropertiesChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   //================================
    // special function to work with control in copy per dialog
    void SetCopyPierProperties(std::vector<ICopyPierPropertiesCallback*>& rCallBacks, PierIndexType fromPierIdx, const std::vector<PierIndexType>& toPiers);
 
@@ -58,9 +43,4 @@ protected:
    std::vector<ICopyPierPropertiesCallback*> m_CallBacks;
    PierIndexType m_FromPierIdx;
    std::vector<PierIndexType> m_ToPiers;
-
-private:
-   // Prevent accidental copying and assignment
-   CCopyPierPropertiesChapterBuilder(const CCopyPierPropertiesChapterBuilder&) = delete;
-   CCopyPierPropertiesChapterBuilder& operator=(const CCopyPierPropertiesChapterBuilder&) = delete;
 };

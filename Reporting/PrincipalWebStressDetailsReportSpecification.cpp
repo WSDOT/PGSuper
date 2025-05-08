@@ -28,7 +28,7 @@
 #include <IFace\PointOfInterest.h>
 
 
-CPrincipalWebStressDetailsReportSpecification::CPrincipalWebStressDetailsReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bReportAxial, bool bReportShear) :
+CPrincipalWebStressDetailsReportSpecification::CPrincipalWebStressDetailsReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bReportAxial, bool bReportShear) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetOptions(bReportAtAllLocations,poi,intervalIdx, bReportAxial, bReportShear);

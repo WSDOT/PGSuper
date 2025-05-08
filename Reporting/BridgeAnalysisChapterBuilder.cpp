@@ -60,16 +60,6 @@
 #include <IFace/Limits.h>
 
 
-
-/****************************************************************************
-CLASS
-   CBridgeAnalysisChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CBridgeAnalysisChapterBuilder::CBridgeAnalysisChapterBuilder(LPCTSTR strTitle,pgsTypes::AnalysisType analysisType,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -77,8 +67,6 @@ CPGSuperChapterBuilder(bSelect)
    m_AnalysisType = analysisType;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CBridgeAnalysisChapterBuilder::GetName() const
 {
    return m_strTitle.c_str();
@@ -470,9 +458,4 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBF
       }
    } // next interval
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBridgeAnalysisChapterBuilder::Clone() const
-{
-   return std::make_unique<CBridgeAnalysisChapterBuilder>(m_strTitle.c_str(),m_AnalysisType);
 }

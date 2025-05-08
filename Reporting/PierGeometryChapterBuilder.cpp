@@ -35,24 +35,13 @@
 #include <WBFLCogo.h>
 
 
-/****************************************************************************
-CLASS
-   CPierGeometryChapterBuilder
-****************************************************************************/
-
-
 void pier_geometry(std::shared_ptr<WBFL::EAF::Broker>pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CPierGeometryChapterBuilder::CPierGeometryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CPierGeometryChapterBuilder::GetName() const
 {
    return TEXT("Pier Geometry");
@@ -72,29 +61,6 @@ rptChapter* CPierGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL:
 }
 
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPierGeometryChapterBuilder::Clone() const
-{
-   return std::make_unique<CPierGeometryChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 void pier_geometry(std::shared_ptr<WBFL::EAF::Broker>pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    USES_CONVERSION;

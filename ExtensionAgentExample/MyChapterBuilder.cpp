@@ -49,8 +49,3 @@ rptChapter* CMyChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMyChapterBuilder::Clone() const
-{
-   return std::make_unique<CMyChapterBuilder>();
-}

@@ -48,12 +48,6 @@
 #include <psglib/GirderLibraryEntry.h>
 
 
-
-/****************************************************************************
-CLASS
-   CMomentCapacityDetailsChapterBuilder
-****************************************************************************/
-
 void write_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
@@ -90,17 +84,13 @@ void write_over_reinforced_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> 
                                  const CString& strStageName,
                                  bool bPositiveMoment);
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
 
-//======================== LIFECYCLE  =======================================
 CMomentCapacityDetailsChapterBuilder::CMomentCapacityDetailsChapterBuilder(bool bReportCapacityOnly,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
    m_bCapacityOnly = bReportCapacityOnly;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CMomentCapacityDetailsChapterBuilder::GetName() const
 {
    return TEXT("Moment Capacity Details");
@@ -214,30 +204,6 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(const std::shared_ptr<co
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMomentCapacityDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CMomentCapacityDetailsChapterBuilder>(m_bCapacityOnly);
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 void write_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,

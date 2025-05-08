@@ -40,8 +40,6 @@ CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTimelineChapterBuilder::GetName() const
 {
    return TEXT("Construction Timeline");
@@ -433,9 +431,4 @@ rptChapter* CTimelineChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimelineChapterBuilder::Clone() const
-{
-   return std::make_unique<CTimelineChapterBuilder>();
 }

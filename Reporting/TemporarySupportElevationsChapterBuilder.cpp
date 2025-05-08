@@ -42,11 +42,6 @@ LPCTSTR CTemporarySupportElevationsChapterBuilder::GetName() const
    return _T("Temporary Support Elevations");
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTemporarySupportElevationsChapterBuilder::Clone() const
-{
-   return std::make_unique<CTemporarySupportElevationsChapterBuilder>();
-}
-
 rptChapter* CTemporarySupportElevationsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);

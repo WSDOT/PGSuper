@@ -26,35 +26,15 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CADimChapterBuilder
-
-   "A" Dimension Chapter Builder.
-
-
-DESCRIPTION
-   "A" Dimension Chapter builder.  Reports the details of the "A" Dimension
-   calculation.
-
-LOG
-   rab : 11.03.1998 : Created file
-*****************************************************************************/
-
 class SpecLibraryEntry;
 
 class REPORTINGCLASS CADimChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   CADimChapterBuilder(const CADimChapterBuilder&) = delete;
    CADimChapterBuilder(bool bSelect = true);
-
-   CADimChapterBuilder& operator=(const CADimChapterBuilder&) = delete;
    
    LPCTSTR GetName() const override;
    rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 protected:
    void BuildAdimContent(rptChapter* pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,const SpecLibraryEntry* pSpecEntry) const;

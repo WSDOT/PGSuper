@@ -26,7 +26,7 @@
 #include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 
-#pragma Reminder("WORKING HERE - Removing COM - move some implementation from header to source file")
+#pragma Reminder("UPDATE - move some implementation from header to source file")
 // There is a lot of implementation in the DebondUtil.h header file. This should be moved into this C++ file.
 // The header file also has several static methods (which should be exported methods) and multiple classes.
 // The classes should be broken out into multiple header/source files

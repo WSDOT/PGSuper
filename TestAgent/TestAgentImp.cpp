@@ -353,13 +353,10 @@ bool CTestAgentImp::RunTest(long type,
 			      return S_OK;
 		      }
 
-            GET_IFACE(ITestFileExport,pTxDOTExport);
-            if ( pTxDOTExport )
-            {
-               pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, extSegmentKey, true);
-               pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, intSegmentKey, true);
-            }
-		      fclose (fp);
+            WriteCADDataToFile(fp, extSegmentKey, true);
+            WriteCADDataToFile(fp, intSegmentKey, true);
+
+		    fclose (fp);
 
             return true;
             break;
@@ -609,15 +606,14 @@ BOOL CTestAgentImp::ProcessCommandLineOptions(CEAFCommandLineInfo & cmdInfo)
 
 /////////////////////////////////////////////////////////////////////////////
 // ITestFileExport
-int CTestAgentImp::WriteCADDataToFile(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, bool designSucceeded)
+int CTestAgentImp::WriteCADDataToFile(FILE *fp, const CSegmentKey& segmentKey, bool designSucceeded)
 {
-#pragma Reminder("WORKING HERE - Removing COM - this is implemented on the agent so why pass a broker pointer?")
-   return Test_WriteCADDataToFile(fp,pBroker,segmentKey, designSucceeded);
+   return Test_WriteCADDataToFile(fp,m_pBroker,segmentKey, designSucceeded);
 }
 
-int CTestAgentImp::WriteDistributionFactorsToFile(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey)
+int CTestAgentImp::WriteDistributionFactorsToFile(FILE *fp, const CSegmentKey& segmentKey)
 {
-   return Test_WriteDistributionFactorsToFile(fp,pBroker,segmentKey);
+   return Test_WriteDistributionFactorsToFile(fp,m_pBroker,segmentKey);
 }
 
 
@@ -3360,21 +3356,14 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
             }
          }
 
-         GET_IFACE(ITestFileExport, pTxDOTCadExport);
-         if (!pTxDOTCadExport)
-         {
-            AfxMessageBox(_T("The Test File Exporter is not currently installed"));
-            return false;
-         }
-
          if (txInfo.m_TxRunType == CTestCommandLineInfo::TxrDistributionFactors)
          {
             // Write distribution factor data to file
             try
             {
-               if (CAD_SUCCESS != pTxDOTCadExport->WriteDistributionFactorsToFile(fp, this->m_pBroker, segmentKey))
+               if (CAD_SUCCESS != WriteDistributionFactorsToFile(fp, segmentKey))
                {
-                  err_file << _T("Warning: An error occured while writing to File") << std::endl;
+                  err_file << _T("Warning: An error occurred while writing to File") << std::endl;
                   return false;
                }
             }
@@ -3391,9 +3380,9 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
          else
          {
             /* Write CAD data to text file */
-            if (CAD_SUCCESS != pTxDOTCadExport->WriteCADDataToFile(fp, this->m_pBroker, segmentKey, designSucceeded))
+            if (CAD_SUCCESS != WriteCADDataToFile(fp, segmentKey, designSucceeded))
             {
-               err_file << _T("Warning: An error occured while writing to File") << std::endl;
+               err_file << _T("Warning: An error occurred while writing to File") << std::endl;
                return false;
             }
          }

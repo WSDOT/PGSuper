@@ -60,14 +60,6 @@
 #include <psgLib/ShearCapacityCriteria.h>
 
 
-/****************************************************************************
-CLASS
-   CMVRChapterBuilder
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CMVRChapterBuilder::CMVRChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -75,8 +67,6 @@ CPGSuperChapterBuilder(bSelect)
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CMVRChapterBuilder::GetName() const
 {
    return TEXT("Moments, Shears, and Reactions");
@@ -453,9 +443,4 @@ rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reportin
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMVRChapterBuilder::Clone() const
-{
-   return std::make_unique<CMVRChapterBuilder>(m_bDesign,m_bRating);
 }

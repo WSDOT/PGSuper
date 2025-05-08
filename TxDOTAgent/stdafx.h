@@ -32,9 +32,6 @@
 
 #include <PGSuperAll.h>
 
-#define _ATL_APARTMENT_THREADED
-#define _ATL_NO_AUTOMATIC_NAMESPACE
-
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
 
 #include <afxwin.h>
@@ -43,9 +40,6 @@
 #endif // _AFX_NO_OLE_SUPPORT
 
 #include "resource.h"
-#include <atlbase.h>
-#include <atlcom.h>
-#include <atlctl.h>
 #include <afxadv.h>
 
 #if defined _NOGRID
@@ -58,7 +52,7 @@
 #include <WBFLTools.h>
 
 #include <EAF\EAFUtilities.h>
-#include <EAF\EAFHelp.h>
+#include <EAF\Help.h>
 
 #include "Documentation\TOGA\Toga.hh"
 #include "Documentation\TxCADExport\TxCADExport.hh"
@@ -71,5 +65,3 @@
 
 
 static COLORREF TXDOT_BACK_COLOR = ::GetSysColor(COLOR_WINDOW);
-
-using namespace ATL;

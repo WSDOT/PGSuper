@@ -26,34 +26,14 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CPrestressForceChapterBuilder
-
-   Prestress Force Chapter Builder
-
-
-DESCRIPTION
-   Prestress Force Chapter Builder.  Generates a chapter in for a report.  
-   Reports the details used to determine the prestress force and the associated
-   stress in the prestressing strands at various stages of prestress losses.
-
-LOG
-   rab : 10.28.1998 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CPrestressForceChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   CPrestressForceChapterBuilder(const CPrestressForceChapterBuilder&) = delete;
-   CPrestressForceChapterBuilder& operator=(const CPrestressForceChapterBuilder&) = delete;
    CPrestressForceChapterBuilder(bool bRating = false,bool bSelect = true);
 
    virtual LPCTSTR GetName() const override;
    
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 private:
    bool m_bRating;

@@ -63,22 +63,12 @@ static void optional_results_summary(rptChapter* pChapter,std::shared_ptr<WBFL::
 static void camber_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignData* pProjectData,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 static void shear_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-/****************************************************************************
-CLASS
-   CTxDOTOptionalDesignSummaryChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTxDOTOptionalDesignSummaryChapterBuilder::CTxDOTOptionalDesignSummaryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTxDOTOptionalDesignSummaryChapterBuilder::GetName() const
 {
    return TEXT("Optional Design Summary");
@@ -124,23 +114,7 @@ rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(const std::shared_p
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTxDOTOptionalDesignSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CTxDOTOptionalDesignSummaryChapterBuilder>();
-}
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
 void design_information(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignData* pProjectData, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);

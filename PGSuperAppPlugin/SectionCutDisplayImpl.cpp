@@ -57,8 +57,7 @@ CSectionCutDisplayImpl::~CSectionCutDisplayImpl()
 {
 }
 
-#pragma Reminder("WORKING HERE - Removing COM - should be weak reference to broker to avoid circular references")
-void CSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, iCutLocation* pCutLoc)
+void CSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::weak_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, iCutLocation* pCutLoc)
 {
    m_pBroker = pBroker;
 
@@ -81,7 +80,7 @@ void CSectionCutDisplayImpl::SetColor(COLORREF color)
 
 pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 Xgl) const
 {
-   GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
    if (m_GirderKey.groupIndex == ALL_GROUPS)
    {
       return pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex, Xgl);
@@ -158,11 +157,11 @@ void CSectionCutDisplayImpl::GetBoundingBox(std::shared_ptr<const WBFL::DManip::
 
    pgsPointOfInterest poi = GetCutPOI(Xgl);
 
-   GET_IFACE(IGirder, pGirder);
+   GET_IFACE2(GetBroker(), IGirder, pGirder);
    Float64 Hg = pGirder->GetHeight(poi);
    Float64 top_flange_thickening = pGirder->GetTopFlangeThickening(poi);
    
-   GET_IFACE(ICamber, pCamber);
+   GET_IFACE2(GetBroker(), ICamber, pCamber);
    Float64 precamber = pCamber->GetPrecamber(poi,pgsTypes::pddErected);
 
    *top = dy + top_flange_thickening + precamber;

@@ -40,6 +40,9 @@
 #include <PGSuperTypes.h>
 
 
+#include <EAF\Broker.h>
+#include <EAF/ComponentManager.h>
+
 class IEffFlangeEngineer;
 class pgsPoiMgr;
 
@@ -52,13 +55,11 @@ class CBridgeDescription2;
 class GirderLibraryEntry;
 class CPrecastSegmentData;
 
-#include <EAF\Broker.h>
-
 namespace PGS
 {
    namespace Beams
    {
-      class DistFactorEngineerBase;
+      class DistFactorEngineer;
       class PsLossEngineerBase;
 
       // Between PGSuper version 2.x and 3.x, all Class IDs of the beam factories where changed.
@@ -138,7 +139,7 @@ namespace PGS
          virtual void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const = 0;
 
          // Creates an object that implements the DistFactorEngineerBase interface.
-         virtual std::shared_ptr<DistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const = 0;
+         virtual std::unique_ptr<DistFactorEngineer> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const = 0;
 
          // Creates an object that implements the IPsLossEngineer interface. The returned
          // object is a COM object an must be managed through its reference count.
@@ -210,14 +211,22 @@ namespace PGS
 
          // Returns a name string that identifies this beam factory
          // this is not guaranteed to be unique
-         virtual std::_tstring GetName() const = 0;
+         virtual std::_tstring GetName() const
+         {
+            auto& component_info = WBFL::EAF::ComponentManager::GetInstance().GetComponent(GetCLSID());
+            return component_info.name;
+         }
 
          // Returns the class identifier for the beam family
          virtual CLSID GetFamilyCLSID() const = 0;
 
          // Returns a name string that identifies the general type of beam
          // this is not guaranteed to be unique
-         virtual std::_tstring GetGirderFamilyName() const = 0;
+         virtual std::_tstring GetGirderFamilyName() const
+         {
+            auto& component_info = WBFL::EAF::ComponentManager::GetInstance().GetComponent(GetFamilyCLSID());
+            return component_info.name;
+         }
 
          // Returns the name of the company, organization, and/or person that published the
          // beam factory

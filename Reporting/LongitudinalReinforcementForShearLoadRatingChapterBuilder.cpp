@@ -36,12 +36,6 @@
 #include <PgsExt\CapacityToDemand.h>
 
 
-
-/****************************************************************************
-CLASS
-   CLongitudinalReinforcementForShearLoadRatingChapterBuilder
-****************************************************************************/
-
 CLongitudinalReinforcementForShearLoadRatingChapterBuilder::CLongitudinalReinforcementForShearLoadRatingChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -193,9 +187,4 @@ rptChapter* CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Build(co
       }
    }
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Clone() const
-{
-   return std::make_unique<CLongitudinalReinforcementForShearLoadRatingChapterBuilder>();
 }

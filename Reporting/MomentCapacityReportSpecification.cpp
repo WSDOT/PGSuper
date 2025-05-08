@@ -29,7 +29,7 @@
 #include <IFace\PointOfInterest.h>
 
 
-CMomentCapacityReportSpecification::CMomentCapacityReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment) :
+CMomentCapacityReportSpecification::CMomentCapacityReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment) :
    CPoiReportSpecification(strReportName,pBroker,poi)
 {
    m_bPositiveMoment = bPositiveMoment;

@@ -26,31 +26,11 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS
-   CBearingDesignParametersChapterBuilder
-
-   Chapter builder for throwing stuff into during testing.
-
-
-DESCRIPTION
-   Chapter builder for throwing stuff into during testing.
-
-LOG
-   rab : 12.12.2008 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CBearingDesignSummaryChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CBearingDesignSummaryChapterBuilder(bool bSelect = true);
-   CBearingDesignSummaryChapterBuilder(const CBearingDesignSummaryChapterBuilder&) = delete;
-
-   CBearingDesignSummaryChapterBuilder& operator=(const CBearingDesignSummaryChapterBuilder&) = delete;
 
 	virtual LPCTSTR GetName() const override;
 	virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const override;
-
-	virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 };

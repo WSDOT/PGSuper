@@ -27,35 +27,16 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 class IEAFDisplayUnits;
-class pgsSegmentArtifact;
 struct StressCheckTask;
-
-/*****************************************************************************
-CLASS 
-   CTogaStressChecksChapterBuilder
-
-   Chapter builder TxDOT stress cheks
-
-
-DESCRIPTION
-   Chapter builder TxDOT stress checks
-
-LOG
-   rdp : 06.15.2006 : Created file
-*****************************************************************************/
 
 class CTogaStressChecksChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CTogaStressChecksChapterBuilder();
-   CTogaStressChecksChapterBuilder(const CTogaStressChecksChapterBuilder&) = delete;
-   CTogaStressChecksChapterBuilder& operator=(const CTogaStressChecksChapterBuilder&) = delete;
 
    virtual LPCTSTR GetName() const override;
 
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 protected:
    void BuildTableAndNotes(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,

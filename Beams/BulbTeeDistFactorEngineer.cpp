@@ -32,7 +32,7 @@
 using namespace PGS::Beams;
 
 BulbTeeDistFactorEngineer::BulbTeeDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
-   DistFactorEngineerBase(pBroker, statusGroupID)
+   DistFactorEngineer(pBroker, statusGroupID)
 {
    m_pImpl = std::make_unique<MultiWebDistFactorEngineer>(MultiWebDistFactorEngineer::BeamType::DeckBulbTee, pBroker, statusGroupID);
 }

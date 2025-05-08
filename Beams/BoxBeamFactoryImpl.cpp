@@ -53,7 +53,6 @@
 #include <psgLib/SpecificationCriteria.h>
 #include <psgLib/GirderLibraryEntry.h>
 
-
 using namespace PGS::Beams;
 
 
@@ -200,7 +199,7 @@ void BoxBeamFactoryImpl::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBF
    }
 }
 
-std::shared_ptr<DistFactorEngineerBase> BoxBeamFactoryImpl::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,
+std::unique_ptr<DistFactorEngineer> BoxBeamFactoryImpl::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,
                                                const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
@@ -212,13 +211,13 @@ std::shared_ptr<DistFactorEngineerBase> BoxBeamFactoryImpl::CreateDistFactorEngi
 
    if ( deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNone )
    {
-      return std::make_shared<BoxBeamDistFactorEngineer>(pBroker, statusGroupID);
+      return std::make_unique<BoxBeamDistFactorEngineer>(pBroker, statusGroupID);
    }
    else
    {
       // this is a type b section... type b's are the same as type c's which are U-beams
       ATLASSERT( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP );
-      return std::make_shared<UBeamDistFactorEngineer>(pBroker, statusGroupID);
+      return std::make_unique<UBeamDistFactorEngineer>(pBroker, statusGroupID);
    }
    return nullptr;
 }
@@ -275,25 +274,9 @@ bool BoxBeamFactoryImpl::IsSymmetric(const CSegmentKey& segmentKey) const
    return true;
 }
 
-std::_tstring BoxBeamFactoryImpl::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID BoxBeamFactoryImpl::GetFamilyCLSID() const
 {
    return CLSID_BoxBeamFamily;
-}
-
-std::_tstring BoxBeamFactoryImpl::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
 }
 
 std::_tstring BoxBeamFactoryImpl::GetPublisher() const

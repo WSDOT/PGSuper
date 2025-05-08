@@ -37,7 +37,7 @@
 #include "PsForceEng.h"
 #include "StrandDesignTool.h"
 
-#pragma Reminder("WORKING HERE - Removing COM - move some implementation out of the header file into the CPP file")
+#pragma Reminder("UPDATE - move some implementation out of the header file into the CPP file")
 // There is too much implementation in the header file.
 // Move into this CPP file and/or breaking up into other files
 

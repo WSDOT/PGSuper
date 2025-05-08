@@ -30,24 +30,11 @@
 
 #include <Reporting\ProductMomentsTable.h>
 
-
-
-/****************************************************************************
-CLASS
-   CTemporarySupportReactionChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTemporarySupportReactionChapterBuilder::CTemporarySupportReactionChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTemporarySupportReactionChapterBuilder::GetName() const
 {
    return TEXT("Temporary Support Reactions");
@@ -445,9 +432,4 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTemporarySupportReactionChapterBuilder::Clone() const
-{
-   return std::make_unique<CTemporarySupportReactionChapterBuilder>();
 }

@@ -1202,7 +1202,7 @@ bool CPGSDocBase::EditEffectiveFlangeWidth()
    strQuestion += _T("\r\n\r\nSelect a method for addressing cases when the limits are exeeded:");
    CString strResponses(_T("Stop analysis if structure violates these limits\nIgnore these limits"));
 
-   CEAFHelpHandler helpHandler(GetDocumentationSetName(), IDH_EFFECTIVE_FLANGE_WIDTH);
+   WBFL::EAF::HelpHandler helpHandler(GetDocumentationSetName(), IDH_EFFECTIVE_FLANGE_WIDTH);
    int choice = pEFW->IgnoreEffectiveFlangeWidthLimits() ? 1 : 0;
    int new_choice = AfxChoose(_T("Effective Flange Width"), strQuestion, strResponses, choice, TRUE, &helpHandler);
    if (choice != new_choice && 0 <= new_choice)
@@ -2546,20 +2546,23 @@ BOOL CPGSDocBase::Init()
    return TRUE;
 }
 
-BOOL CPGSDocBase::LoadSpecialAgents()
+std::pair<bool, WBFL::EAF::AgentErrors> CPGSDocBase::LoadSpecialAgents()
 {
-   if ( !CEAFBrokerDocument::LoadSpecialAgents() )
+   auto errors = CEAFBrokerDocument::LoadSpecialAgents();
+   
+   m_pPGSuperDocProxyAgent = std::make_shared<CPGSuperDocProxyAgent>(this);
+   auto result = m_pBroker->AddAgent(m_pPGSuperDocProxyAgent);
+   if (result.first == false)
    {
-      return FALSE;
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      result.second.component.dll = AfxGetApp()->m_pszExeName;
+      result.second.reason += _T(" - could not add PGSuperDocProxyAgent to broker");
+      errors.second.push_back(result.second);
    }
 
-   m_pPGSuperDocProxyAgent = std::make_shared<CPGSuperDocProxyAgent>();
-   m_pPGSuperDocProxyAgent->SetDocument( this );
-   
-   if (!m_pBroker->AddAgent(m_pPGSuperDocProxyAgent))
-      return FALSE;
+   errors.first = errors.second.empty();
 
-   return TRUE;
+   return errors;
 }
 
 void CPGSDocBase::OnFileProjectProperties() 
@@ -3114,7 +3117,7 @@ void CPGSDocBase::OnLoadsLoadModifiers()
    loadModifiers.RedundancyLevel   = pLoadModifiers->GetRedundancyLevel();
    loadModifiers.RedundancyFactor  = pLoadModifiers->GetRedundancyFactor();
 
-   CEAFHelpHandler helpHandler(GetDocumentationSetName(),IDH_DIALOG_LOADMODIFIERS);
+   WBFL::EAF::HelpHandler helpHandler(GetDocumentationSetName(),IDH_DIALOG_LOADMODIFIERS);
    CLoadModifiersDlg dlg;
    dlg.SetHelpData( &helpHandler, &helpHandler, &helpHandler );
 
@@ -5237,11 +5240,6 @@ BOOL CPGSDocBase::LoadAgents()
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    auto pluginApp = pTemplate->GetPluginApp();
    auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
-
-#pragma Reminder("WORKING HERE - Removing COM - consider removing the AutoRegistery object from LoadAgnets")
-   // Registery stuff isn't going to be needed with agent information in manifest files
-   CEAFApp* pApp = EAFGetApp();
-   CAutoRegistry autoReg(pPGSBase->GetAppName(),pApp);
 
    return __super::LoadAgents();
 }

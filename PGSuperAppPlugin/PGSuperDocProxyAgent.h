@@ -96,10 +96,9 @@ class CPGSuperDocProxyAgent : public WBFL::EAF::Agent,
    public IDocumentUnitSystem
 {
 public:
-   CPGSuperDocProxyAgent();
+   CPGSuperDocProxyAgent(CPGSDocBase* pDoc);
    ~CPGSuperDocProxyAgent();
 
-   void SetDocument(CPGSDocBase* pDoc);
    void OnStatusChanged();
 
    void OnUIHintsReset();

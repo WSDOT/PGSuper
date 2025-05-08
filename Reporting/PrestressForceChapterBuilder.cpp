@@ -199,8 +199,3 @@ rptChapter* CPrestressForceChapterBuilder::Build(const std::shared_ptr<const WBF
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPrestressForceChapterBuilder::Clone() const
-{
-   return std::make_unique<CPrestressForceChapterBuilder>(m_bRating,m_bSelect);
-}

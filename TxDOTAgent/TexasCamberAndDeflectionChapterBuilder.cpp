@@ -51,25 +51,15 @@
 #include <WBFLCogo.h>
 
 
-/****************************************************************************
-CLASS
-   CTexasCamberAndDeflectionChapterBuilder
-****************************************************************************/
-
 
 static void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList,
                                   ColumnIndexType startIdx, ColumnIndexType endIdx, bool isSingleGirder, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTexasCamberAndDeflectionChapterBuilder::CTexasCamberAndDeflectionChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTexasCamberAndDeflectionChapterBuilder::GetName() const
 {
    return TEXT("Camber and Deflections");
@@ -131,23 +121,6 @@ rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasCamberAndDeflectionChapterBuilder::Clone() const
-{
-   return std::make_unique<CTexasCamberAndDeflectionChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
 void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList,
                            ColumnIndexType startIdx, ColumnIndexType endIdx, bool isSingleGirder, 
                            std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)

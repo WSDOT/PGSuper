@@ -65,10 +65,6 @@ EAF_BEGIN_OBJECT_MAP(ObjectMap)
 	EAF_OBJECT_ENTRY(CLSID_EngAgent, CEngAgentImp)
 EAF_END_OBJECT_MAP()
 
-#pragma Reminder("WORKING HERE - Removing COM - move this into a DllMain.cpp file - at least be consistent will all agents")
-/////////////////////////////////////////////////////////////////////////////
-// DLL Entry Point
-
 extern "C"
 BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 {

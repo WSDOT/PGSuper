@@ -33,22 +33,11 @@
 #include <IFace\SplittingChecks.h>
 
 
-/****************************************************************************
-CLASS
-   CSplittingCheckDetailsChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CSplittingCheckDetailsChapterBuilder::CSplittingCheckDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CSplittingCheckDetailsChapterBuilder::GetKey() const
 {
    return TEXT("Splitting Resistance Details");
@@ -82,9 +71,4 @@ rptChapter* CSplittingCheckDetailsChapterBuilder::Build(const std::shared_ptr<co
    pSplittingChecks->ReportSplittingCheckDetails(pGirderArtifact, pChapter);
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSplittingCheckDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CSplittingCheckDetailsChapterBuilder>();
 }

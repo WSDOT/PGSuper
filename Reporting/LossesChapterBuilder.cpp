@@ -29,21 +29,11 @@
 #include <IFace\Bridge.h>
 
 
-/****************************************************************************
-CLASS
-   CLossesChapterBuilder
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CLossesChapterBuilder::CLossesChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CLossesChapterBuilder::GetName() const
 {
    return TEXT("Prestress Loss Details");
@@ -69,9 +59,4 @@ rptChapter* CLossesChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLossesChapterBuilder::Clone() const
-{
-   return std::make_unique<CLossesChapterBuilder>();
 }

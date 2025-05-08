@@ -288,7 +288,7 @@ void VoidedSlab2Factory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBF
    }
 }
 
-std::shared_ptr<DistFactorEngineerBase> VoidedSlab2Factory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::unique_ptr<DistFactorEngineer> VoidedSlab2Factory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -300,14 +300,14 @@ std::shared_ptr<DistFactorEngineerBase> VoidedSlab2Factory::CreateDistFactorEngi
    
    if (spacingType==pgsTypes::sbsUniformAdjacent || spacingType==pgsTypes::sbsGeneralAdjacent || spacingType==pgsTypes::sbsConstantAdjacent)
    {
-      return std::make_shared<VoidedSlab2DistFactorEngineer>(pBroker,statusGroupID);
+      return std::make_unique<VoidedSlab2DistFactorEngineer>(pBroker,statusGroupID);
    }
    else
    {
       // this is a type b section... type b's are the same as type c's which are U-beams
       ATLASSERT( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP );
 
-      return std::make_shared<UBeamDistFactorEngineer>(pBroker,statusGroupID, true, true);
+      return std::make_unique<UBeamDistFactorEngineer>(pBroker,statusGroupID, true, true);
    }
    ATLASSERT(false);
    return nullptr;
@@ -910,25 +910,9 @@ CLSID VoidedSlab2Factory::GetCLSID() const
    return CLSID_VoidedSlab2Factory;
 }
 
-std::_tstring VoidedSlab2Factory::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID VoidedSlab2Factory::GetFamilyCLSID() const
 {
    return CLSID_SlabBeamFamily;
-}
-
-std::_tstring VoidedSlab2Factory::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
 }
 
 std::_tstring VoidedSlab2Factory::GetPublisher() const

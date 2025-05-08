@@ -24,7 +24,7 @@
 #include <Reporting\TimelineManagerReportSpecification.h>
 
 
-CTimelineManagerReportSpecification::CTimelineManagerReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker) :
+CTimelineManagerReportSpecification::CTimelineManagerReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker) :
    CBrokerReportSpecification(strReportName,pBroker)
 {
    m_pTimelineMgr = nullptr;

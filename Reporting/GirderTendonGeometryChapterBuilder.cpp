@@ -31,23 +31,11 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-
-/****************************************************************************
-CLASS
-   CGirderTendonGeometryChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CGirderTendonGeometryChapterBuilder::CGirderTendonGeometryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CGirderTendonGeometryChapterBuilder::GetName() const
 {
    return TEXT("Girder Tendon Geometry");
@@ -200,9 +188,4 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(const std::shared_ptr<con
 
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CGirderTendonGeometryChapterBuilder::Clone() const
-{
-   return std::make_unique<CGirderTendonGeometryChapterBuilder>();
 }

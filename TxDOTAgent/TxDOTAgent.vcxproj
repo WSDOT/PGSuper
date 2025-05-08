@@ -353,6 +353,9 @@ xcopy /y /d .\TogaTemplates\*.* $(ARPDIR)\BridgeLink\TogaTemplates\*.*</Command>
     <ResourceCompile Include="TxDOTAgent.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Beams\Beams.vcxproj">
+      <Project>{3dbe87d2-ceed-457b-b345-7748084d947d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Reporting\Reporting.vcxproj">
       <Project>{4a38b3b0-7c87-40e8-bf6a-9d1b4051ff71}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

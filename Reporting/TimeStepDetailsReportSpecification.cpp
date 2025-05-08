@@ -30,7 +30,7 @@
 #include <PsgLib\GirderLabel.h>
 
 
-CTimeStepDetailsReportSpecification::CTimeStepDetailsReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
+CTimeStepDetailsReportSpecification::CTimeStepDetailsReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetOptions(bReportAtAllLocations,poi,intervalIdx);
@@ -66,7 +66,7 @@ std::_tstring CTimeStepDetailsReportSpecification::GetReportContextString() cons
    }
    else if ( girderKey.groupIndex != ALL_GROUPS && girderKey.girderIndex != ALL_GIRDERS )
    {
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
       rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
       rptPoi.SetValue(POI_SPAN,m_Poi);
       rptPoi.PrefixAttributes(false); // put the attributes after the location

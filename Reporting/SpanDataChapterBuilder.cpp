@@ -27,24 +27,11 @@
 #include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 
-
-
-/****************************************************************************
-CLASS
-   CSpanDataChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CSpanDataChapterBuilder::CSpanDataChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CSpanDataChapterBuilder::GetName() const
 {
    return TEXT("Span Lengths");
@@ -194,9 +181,4 @@ rptChapter* CSpanDataChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    } // next group
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSpanDataChapterBuilder::Clone() const
-{
-   return std::make_unique<CSpanDataChapterBuilder>();
 }

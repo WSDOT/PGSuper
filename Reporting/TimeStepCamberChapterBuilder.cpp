@@ -98,11 +98,6 @@ rptChapter* CTimeStepCamberChapterBuilder::Build(const std::shared_ptr<const WBF
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimeStepCamberChapterBuilder::Clone() const
-{
-   return std::make_unique<CTimeStepCamberChapterBuilder>();
-}
-
 rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);

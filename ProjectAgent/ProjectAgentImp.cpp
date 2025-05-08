@@ -10196,12 +10196,10 @@ void CProjectAgentImp::EnumGirderNames( LPCTSTR strGirderFamily, std::vector<std
    WBFL::Library::KeyListType keys;
    prj_lib.KeyList(keys);
 
-   WBFL::Library::KeyListType::iterator iter(keys.begin());
-   WBFL::Library::KeyListType::iterator iterEnd(keys.end());
-   for ( ; iter != iterEnd; iter++ )
+   for(const auto& key : keys)
    {
-      const WBFL::Library::LibraryEntry* pEntry = prj_lib.GetEntry( (*iter).c_str() );
-      const GirderLibraryEntry* pGirderEntry = (GirderLibraryEntry*)pEntry;
+      const WBFL::Library::LibraryEntry* pEntry = prj_lib.GetEntry( key.c_str() );
+      auto pGirderEntry = (GirderLibraryEntry*)pEntry;
 
       std::_tstring strFamilyName = pGirderEntry->GetGirderFamilyName();
 

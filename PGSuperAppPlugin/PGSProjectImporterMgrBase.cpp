@@ -40,7 +40,7 @@ bool CPGSProjectImporterMgrBase::LoadImporters()
    CEAFApp* pApp = EAFGetApp();
    CString strAppName = GetAppName();
 
-   auto components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(GetProjectImporterCATID());
+   auto components = WBFL::EAF::ComponentManager::GetInstance().GetComponents(GetProjectImporterCATID());
    for (const auto& component : components)
    {
       LPOLESTR pszCLSID;
@@ -49,7 +49,7 @@ bool CPGSProjectImporterMgrBase::LoadImporters()
 
       if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         auto importer = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::IProjectImporter>(component);
+         auto importer = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::IProjectImporter>(component);
          if (importer)
          {
             Record record;

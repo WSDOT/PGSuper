@@ -34,24 +34,11 @@
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 
-
-
-/****************************************************************************
-CLASS
-   CHaulingCheckDetailsChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CHaulingCheckDetailsChapterBuilder::CHaulingCheckDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CHaulingCheckDetailsChapterBuilder::GetName() const
 {
    return TEXT("Hauling Check Details");
@@ -144,29 +131,3 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(const std::shared_ptr<cons
 
    return pChapter;
 }
-
-
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CHaulingCheckDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CHaulingCheckDetailsChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

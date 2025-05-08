@@ -351,7 +351,7 @@ void CEngAgentImp::ValidateLiveLoadDistributionFactors(const CGirderKey& girderK
 void CEngAgentImp::InvalidateLiveLoadDistributionFactors()
 {
    LOG("Invalidating live load distribution factors");
-   m_pDistFactorEngineer = 0;
+   m_pDistFactorEngineer = nullptr;
    m_bAreDistFactorEngineersValidated = false;
 }
 

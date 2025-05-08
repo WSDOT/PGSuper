@@ -133,7 +133,7 @@ protected: // create from serialization only
 // CBrokerDocument over-rides
 protected:
    BOOL Init() override;
-   BOOL LoadSpecialAgents() override; 
+   std::pair<bool,WBFL::EAF::AgentErrors> LoadSpecialAgents() override; 
    void OnChangedFavoriteReports(BOOL bIsFavorites, BOOL bFromMenu) override;
    void ShowCustomReportHelp(WBFL::EAF::CustomReportHelp helpType) override;
    void ShowCustomReportDefinitionHelp() override;

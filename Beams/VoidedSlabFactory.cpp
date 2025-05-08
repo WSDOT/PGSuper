@@ -198,7 +198,7 @@ void VoidedSlabFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 }
 
-std::shared_ptr<DistFactorEngineerBase> VoidedSlabFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::unique_ptr<DistFactorEngineer> VoidedSlabFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -210,7 +210,7 @@ std::shared_ptr<DistFactorEngineerBase> VoidedSlabFactory::CreateDistFactorEngin
 
    if (spacingType==pgsTypes::sbsUniformAdjacent || spacingType==pgsTypes::sbsGeneralAdjacent || spacingType==pgsTypes::sbsConstantAdjacent)
    {
-      return std::make_shared<VoidedSlabDistFactorEngineer>(pBroker,statusGroupID);
+      return std::make_unique<VoidedSlabDistFactorEngineer>(pBroker,statusGroupID);
    }
    else
    {
@@ -222,14 +222,14 @@ std::shared_ptr<DistFactorEngineerBase> VoidedSlabFactory::CreateDistFactorEngin
       auto lldf_method = live_load_distribution_criteria.LldfMethod;
       if (lldf_method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
       {
-         return std::make_shared<TxDOTSpreadSlabBeamDistFactorEngineer>(pBroker, statusGroupID);
+         return std::make_unique<TxDOTSpreadSlabBeamDistFactorEngineer>(pBroker, statusGroupID);
       }
       else
       {
          // this is a type b section... type b's are the same as type c's which are U-beams
          ATLASSERT(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
 
-         return std::make_shared<UBeamDistFactorEngineer>(pBroker, statusGroupID, true, true);
+         return std::make_unique<UBeamDistFactorEngineer>(pBroker, statusGroupID, true, true);
       }
    }
 
@@ -757,25 +757,9 @@ CLSID VoidedSlabFactory::GetCLSID() const
    return CLSID_VoidedSlabFactory;
 }
 
-std::_tstring VoidedSlabFactory::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID VoidedSlabFactory::GetFamilyCLSID() const
 {
    return CLSID_SlabBeamFamily;
-}
-
-std::_tstring VoidedSlabFactory::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
 }
 
 std::_tstring VoidedSlabFactory::GetPublisher() const

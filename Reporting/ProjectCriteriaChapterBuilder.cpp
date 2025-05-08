@@ -22,11 +22,6 @@
 
 #include "StdAfx.h"
 
-/****************************************************************************
-CLASS
-   CProjectCriteriaChapterBuilder
-****************************************************************************/
-
 #include <Reporting\ProjectCriteriaChapterBuilder.h>
 
 #include <IFace/Tools.h>
@@ -116,11 +111,6 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(const std::shared_ptr<const WB
    return pChapter;
 }
 
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CProjectCriteriaChapterBuilder::Clone() const
-{
-   return std::make_unique<CProjectCriteriaChapterBuilder>(m_bRating);
-}
 
 void write_load_modifiers(rptParagraph* pPara,std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {

@@ -31,23 +31,11 @@
 #include <IFace\Bridge.h>
 
 
-/****************************************************************************
-CLASS
-   CEffFlangeWidthDetailsChapterBuilder
-****************************************************************************/
-
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CEffFlangeWidthDetailsChapterBuilder::CEffFlangeWidthDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CEffFlangeWidthDetailsChapterBuilder::GetName() const
 {
    return TEXT("Effective Flange Width Details");
@@ -95,28 +83,3 @@ rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(const std::shared_ptr<co
 
    return pChapter;
 }
-
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CEffFlangeWidthDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CEffFlangeWidthDetailsChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

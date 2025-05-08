@@ -86,8 +86,3 @@ rptChapter* CFinalLossesChapterBuilder::Build(const std::shared_ptr<const WBFL::
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CFinalLossesChapterBuilder::Clone() const
-{
-   return std::make_unique<CFinalLossesChapterBuilder>();
-}

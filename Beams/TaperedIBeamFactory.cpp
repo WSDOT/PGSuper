@@ -378,9 +378,9 @@ void TaperedIBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WB
    }
 }
 
-std::shared_ptr<DistFactorEngineerBase> TaperedIBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::unique_ptr<DistFactorEngineer> TaperedIBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<IBeamDistFactorEngineer>(pBroker,statusGroupID);
+   return std::make_unique<IBeamDistFactorEngineer>(pBroker,statusGroupID);
 }
 
 std::unique_ptr<PsLossEngineerBase> TaperedIBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
@@ -865,25 +865,9 @@ CLSID TaperedIBeamFactory::GetCLSID() const
    return CLSID_TaperedIBeamFactory;
 }
 
-std::_tstring TaperedIBeamFactory::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID TaperedIBeamFactory::GetFamilyCLSID() const
 {
    return CLSID_WFBeamFamily;
-}
-
-std::_tstring TaperedIBeamFactory::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
 }
 
 std::_tstring TaperedIBeamFactory::GetPublisher() const

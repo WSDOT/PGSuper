@@ -36,12 +36,6 @@
 #include <PgsExt\CapacityToDemand.h>
 
 
-
-/****************************************************************************
-CLASS
-   CTexasLoadRatingSummaryChapterBuilder
-****************************************************************************/
-
 CTexasLoadRatingSummaryChapterBuilder::CTexasLoadRatingSummaryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -90,9 +84,4 @@ rptChapter* CTexasLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<c
       }
    }
 
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasLoadRatingSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CTexasLoadRatingSummaryChapterBuilder>();
 }

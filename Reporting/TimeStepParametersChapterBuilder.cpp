@@ -46,22 +46,12 @@
 
 //#define REPORT_PRODUCT_LOAD_DETAILS
 
-/****************************************************************************
-CLASS
-   CTimeStepParametersChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTimeStepParametersChapterBuilder::CTimeStepParametersChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTimeStepParametersChapterBuilder::GetName() const
 {
    return TEXT("Time Step Parameters");
@@ -1322,9 +1312,4 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimeStepParametersChapterBuilder::Clone() const
-{
-   return std::make_unique<CTimeStepParametersChapterBuilder>();
 }

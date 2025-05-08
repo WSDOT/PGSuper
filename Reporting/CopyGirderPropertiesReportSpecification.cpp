@@ -24,7 +24,7 @@
 #include <Reporting\CopyGirderPropertiesReportSpecification.h>
 
 
-CCopyGirderPropertiesReportSpecification::CCopyGirderPropertiesReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker) :
+CCopyGirderPropertiesReportSpecification::CCopyGirderPropertiesReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker) :
    CBrokerReportSpecification(strReportName, pBroker)
 {
 }

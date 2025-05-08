@@ -24,21 +24,16 @@
 
 #include <PsgLib\Keys.h>
 
-class IEAFDisplayUnits;
 namespace WBFL { namespace EAF { class Broker; }; };
 
 class CGirderScheduleChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CGirderScheduleChapterBuilder(bool bSelect = true);
-   CGirderScheduleChapterBuilder(const CGirderScheduleChapterBuilder&) = delete;
-   CGirderScheduleChapterBuilder& operator=(const CGirderScheduleChapterBuilder&) = delete;
 
    virtual LPCTSTR GetName() const override;
 
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 private:
    int GetReinforcementDetails(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,CLSID& familyCLSID,Float64* pz1Spacing,Float64 *pz1Length,Float64 *pz2Spacing,Float64* pz2Length,Float64 *pz3Spacing,Float64* pz3Length) const;

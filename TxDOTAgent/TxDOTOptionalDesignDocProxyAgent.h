@@ -71,10 +71,8 @@ class CTxDOTOptionalDesignDocProxyAgent : public WBFL::EAF::Agent,
    public ITxDataObserver
 {
 public:
-   CTxDOTOptionalDesignDocProxyAgent();
+   CTxDOTOptionalDesignDocProxyAgent(CTxDOTOptionalDesignDoc* pDoc);
    ~CTxDOTOptionalDesignDocProxyAgent();
-
-   void SetDocument(CTxDOTOptionalDesignDoc* pDoc);
 
 // Agent
 public:

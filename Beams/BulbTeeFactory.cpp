@@ -412,9 +412,9 @@ void BulbTeeFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::E
    }
 }
 
-std::shared_ptr<DistFactorEngineerBase> BulbTeeFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::unique_ptr<DistFactorEngineer> BulbTeeFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<BulbTeeDistFactorEngineer>(pBroker, statusGroupID);
+   return std::make_unique<BulbTeeDistFactorEngineer>(pBroker, statusGroupID);
 }
 
 std::unique_ptr<PsLossEngineerBase> BulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
@@ -934,25 +934,9 @@ CLSID BulbTeeFactory::GetCLSID() const
    return CLSID_BulbTeeFactory;
 }
 
-std::_tstring BulbTeeFactory::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID BulbTeeFactory::GetFamilyCLSID() const
 {
    return CLSID_DeckBulbTeeBeamFamily;
-}
-
-std::_tstring BulbTeeFactory::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
 }
 
 std::_tstring BulbTeeFactory::GetPublisher() const

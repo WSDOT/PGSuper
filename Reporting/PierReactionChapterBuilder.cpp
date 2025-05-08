@@ -46,22 +46,11 @@ inline bool IsDifferentNumberOfGirdersPerSpan(std::shared_ptr<IBridge> pBridge)
    return false;
 }
 
-/****************************************************************************
-CLASS
-   CPierReactionChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CPierReactionChapterBuilder::CPierReactionChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CPierReactionChapterBuilder::GetName() const
 {
    return TEXT("Pier Reactions");
@@ -1630,9 +1619,4 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPierReactionChapterBuilder::Clone() const
-{
-   return std::make_unique<CPierReactionChapterBuilder>();
 }

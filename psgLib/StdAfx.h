@@ -67,7 +67,7 @@
 #include <afxwin.h>
 
 #include <EAF\EAFUtilities.h>
-#include <EAF\EAFHelp.h>
+#include <EAF\Help.h>
 
 #include "..\Documentation\PGSuper.hh"
 

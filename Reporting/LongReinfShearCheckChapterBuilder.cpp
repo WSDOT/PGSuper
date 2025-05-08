@@ -43,62 +43,54 @@
 #include <IFace\ReportOptions.h>
 
 
+void  create_table1_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                           IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState ls,
+                           bool bUHPC,
+                           const pgsGirderArtifact* pGirderArtifact,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+                           Uint16 level);
 
-/****************************************************************************
-CLASS
-   CLongReinfShearCheckChapterBuilder
-****************************************************************************/
+void create_table2_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                           IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState ls,
+                           bool bUHPC,
+                           const pgsGirderArtifact* pGirderArtifact,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+                           Uint16 level);
 
-   void  create_table1_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
-                              IntervalIndexType intervalIdx,
-                              pgsTypes::LimitState ls,
-                              bool bUHPC,
-                              const pgsGirderArtifact* pGirderArtifact,
-                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
-                              Uint16 level);
+void create_table3_design(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                           IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState ls,
+                           bool bUHPC,
+                           const pgsGirderArtifact* pGirderArtifact,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+                           Uint16 level);
 
-   void create_table2_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
-                              IntervalIndexType intervalIdx,
-                              pgsTypes::LimitState ls,
-                              bool bUHPC,
-                              const pgsGirderArtifact* pGirderArtifact,
-                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
-                              Uint16 level);
+void create_table1_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                           IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState ls,
+                           bool bUHPC,
+                           const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+                           Uint16 level);
 
-   void create_table3_design(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,
-                              IntervalIndexType intervalIdx,
-                              pgsTypes::LimitState ls,
-                              bool bUHPC,
-                              const pgsGirderArtifact* pGirderArtifact,
-                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
-                              Uint16 level);
+void create_table2_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                           IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState ls,
+                           bool bUHPC,
+                           const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+                           Uint16 level);
 
-   void create_table1_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
-                              IntervalIndexType intervalIdx,
-                              pgsTypes::LimitState ls,
-                              bool bUHPC,
-                              const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
-                              Uint16 level);
+void create_table3_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                           IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState ls,
+                           bool bUHPC,
+                           const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+                           Uint16 level);
 
-   void create_table2_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
-                              IntervalIndexType intervalIdx,
-                              pgsTypes::LimitState ls,
-                              bool bUHPC,
-                              const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
-                              Uint16 level);
-
-   void create_table3_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
-                              IntervalIndexType intervalIdx,
-                              pgsTypes::LimitState ls,
-                              bool bUHPC,
-                              const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
-                              Uint16 level);
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CLongReinfShearCheckChapterBuilder::CLongReinfShearCheckChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -106,8 +98,6 @@ CPGSuperChapterBuilder(bSelect)
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CLongReinfShearCheckChapterBuilder::GetName() const
 {
    return TEXT("Longitudinal Reinforcement for Shear Details");
@@ -407,30 +397,6 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter, co
       }
    } // next group
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLongReinfShearCheckChapterBuilder::Clone() const
-{
-   return std::make_unique<CLongReinfShearCheckChapterBuilder>(m_bDesign,m_bRating);
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 void create_table1_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,

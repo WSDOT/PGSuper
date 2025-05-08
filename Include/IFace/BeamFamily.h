@@ -36,6 +36,8 @@
 
 #pragma once
 
+#include <EAF/ComponentObject.h>
+
 namespace PGS
 {
    namespace Beams
@@ -52,7 +54,7 @@ namespace PGS
          A beam family is a general classification of a type of precast beam.
          Examples of beam families are I-Beam, U-Beam, and Slab
       *****************************************************************************/
-      class BeamFamily
+      class BeamFamily : public WBFL::EAF::ComponentObject
       {
       public:
 

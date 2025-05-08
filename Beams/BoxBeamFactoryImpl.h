@@ -45,7 +45,7 @@ namespace PGS
          void CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const override;
          Float64 GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const override;
          void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, pgsPoiMgr* pPoiMgr) const override;
-         std::shared_ptr<DistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
+         std::unique_ptr<DistFactorEngineer> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
          std::unique_ptr<PsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
          const std::vector<std::_tstring>& GetDimensionNames() const override;
          const std::vector<const WBFL::Units::Length*>& GetDimensionUnits(bool bSIUnits) const override;
@@ -53,9 +53,7 @@ namespace PGS
          bool IsPrismatic(const BeamFactory::Dimensions& dimensions) const override;
          bool IsPrismatic(const CSegmentKey& segmentKey) const override;
          bool IsSymmetric(const CSegmentKey& segmentKey) const override;
-         std::_tstring GetName() const override;
          CLSID GetFamilyCLSID() const override;
-         std::_tstring GetGirderFamilyName() const override;
          std::_tstring GetPublisher() const override;
          std::_tstring GetPublisherContactInformation() const override;
          HINSTANCE GetResourceInstance() const override;

@@ -27,7 +27,7 @@
 //
 #include <PgsExt\PgsExtExp.h>
 #include <PsgLIb\Keys.h>
-#include <EAF\EAFStatusItem.h>
+#include <EAF\StatusItem.h>
 
 // Special WBFL::EAF::StatusItem that is directly related to a given span(s)/girders(s)
 // This class allows reporting and messaging routines to filter WBFL::EAF::StatusItem's

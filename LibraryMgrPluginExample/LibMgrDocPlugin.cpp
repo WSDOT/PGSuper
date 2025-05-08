@@ -33,7 +33,7 @@
 #include "MyView.h"
 
 #include <MFCTools\Prompts.h>
-#include <EAF\EAFHelp.h>
+#include <EAF\Help.h>
 
 #define ID_MYCOMMAND EAF_FIRST_USER_COMMAND
 
@@ -233,8 +233,7 @@ bool ExampleDocPlugin::Load(IStructuredLoad* pStrLoad)
 
 void ExampleDocPlugin::OnMyCommand()
 {
-   //AfxMessageBox(_T("This is a command implemented by a document plug in"));
-   CEAFHelpHandler helpHandler(GetName(), 5000);
+   WBFL::EAF::HelpHandler helpHandler(GetName(), 5000);
    int result = AfxChoose(_T("Question"), _T("What up?"), _T("Nothing\nSomething"), 0, FALSE, &helpHandler);
 }
 

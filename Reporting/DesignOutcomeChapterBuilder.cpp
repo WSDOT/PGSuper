@@ -44,11 +44,6 @@
 #include <PsgLib\Helpers.h>
 
 
-/****************************************************************************
-CLASS
-   CDesignOutcomeChapterBuilder
-****************************************************************************/
-
 void write_artifact_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
 void failed_design(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
 void successful_design(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
@@ -264,11 +259,6 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(const std::shared_ptr<const WBFL
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDesignOutcomeChapterBuilder::Clone() const
-{
-   return std::make_unique<CDesignOutcomeChapterBuilder>();
 }
 
 void write_artifact_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)

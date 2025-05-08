@@ -31,7 +31,7 @@
 
 
 
-CInitialStrainAnalysisReportSpecificationBuilder::CInitialStrainAnalysisReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
+CInitialStrainAnalysisReportSpecificationBuilder::CInitialStrainAnalysisReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -46,7 +46,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CInitialStrainAnalysisRepo
 
    // Prompt for span, girder, and chapter list
    // initialize dialog for the current cut location
-   GET_IFACE(ISelection,pSelection);
+   GET_IFACE2(GetBroker(),ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
    CGirderKey girderKey;
    if ( selection.Type == CSelection::Girder )
@@ -66,9 +66,9 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CInitialStrainAnalysisRepo
    }
 
    // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
-   std::shared_ptr<CInitialStrainAnalysisReportSpecification> pOldGRptSpec( std::dynamic_pointer_cast<CInitialStrainAnalysisReportSpecification>(pOldRptSpec) );
+   auto pOldGRptSpec( std::dynamic_pointer_cast<CInitialStrainAnalysisReportSpecification>(pOldRptSpec) );
 
-   CInitialStrainAnalysisDlg dlg(m_pBroker,pOldGRptSpec,girderKey,0);
+   CInitialStrainAnalysisDlg dlg(GetBroker(), pOldGRptSpec, girderKey, 0);
 
    if ( dlg.DoModal() == IDOK )
    {

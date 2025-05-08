@@ -27,36 +27,11 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 
-/*****************************************************************************
-CLASS 
-   CIntervalChapterBuilder
-
-   Chapter builder for reporting time-step intervals
-
-
-DESCRIPTION
-   Chapter builder for reporting time-step intervals
-*****************************************************************************/
-
 class REPORTINGCLASS CIntervalChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CIntervalChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-protected:
-
-private:
-   // Prevent accidental copying and assignment
-   CIntervalChapterBuilder(const CIntervalChapterBuilder&) = delete;
-   CIntervalChapterBuilder& operator=(const CIntervalChapterBuilder&) = delete;
 };

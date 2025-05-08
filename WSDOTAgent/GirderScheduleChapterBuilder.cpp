@@ -861,11 +861,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CGirderScheduleChapterBuilder::Clone() const
-{
-   return std::make_unique<CGirderScheduleChapterBuilder>();
-}
-
 int CGirderScheduleChapterBuilder::GetReinforcementDetails(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,CLSID& familyCLSID,Float64* pz1Spacing,Float64 *pz1Length,Float64 *pz2Spacing,Float64* pz2Length,Float64 *pz3Spacing,Float64* pz3Length) const
 {
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);

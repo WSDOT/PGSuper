@@ -93,51 +93,51 @@ protected: // create from serialization only
 
 // CEAFBrokerDocument overrides
 public:
-   virtual CATID GetAgentCategoryID() override;
-   virtual CATID GetExtensionAgentCategoryID() override;
-   virtual BOOL Init() override;
-   virtual BOOL LoadSpecialAgents() override; 
-   virtual CString GetToolbarSectionName() override;
+   CATID GetAgentCategoryID() override;
+   CATID GetExtensionAgentCategoryID() override;
+   BOOL Init() override;
+   std::pair<bool,WBFL::EAF::AgentErrors> LoadSpecialAgents() override;
+   CString GetToolbarSectionName() override;
 
-   virtual void LoadToolbarState() override;
-   virtual void SaveToolbarState() override;
+   void LoadToolbarState() override;
+   void SaveToolbarState() override;
 
-   virtual void DoIntegrateWithUI(BOOL bIntegrate) override;
+   void DoIntegrateWithUI(BOOL bIntegrate) override;
 
-   virtual void LoadDocumentSettings() override;
-   virtual void SaveDocumentSettings() override;
+   void LoadDocumentSettings() override;
+   void SaveDocumentSettings() override;
 
-	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName) override;
-   virtual BOOL OpenTheDocument(LPCTSTR lpszPathName) override;
-   virtual BOOL SaveTheDocument(LPCTSTR lpszPathName) override;
-   virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave) override;
-   virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad) override;
+   BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName) override;
+   BOOL OpenTheDocument(LPCTSTR lpszPathName) override;
+   BOOL SaveTheDocument(LPCTSTR lpszPathName) override;
+   HRESULT WriteTheDocument(IStructuredSave* pStrSave) override;
+   HRESULT LoadTheDocument(IStructuredLoad* pStrLoad) override;
 
-   virtual CString GetDocumentationSetName() override;
-   virtual CString GetDocumentationRootLocation() override;
+   CString GetDocumentationSetName() override;
+   CString GetDocumentationRootLocation() override;
 
-   virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const override;
-   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const override;
+   BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const override;
+   BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const override;
 
 protected:
-   virtual void OnCreateInitialize() override;
-   virtual void OnCreateFinalize() override;
+   void OnCreateInitialize() override;
+   void OnCreateFinalize() override;
 
-   virtual CString GetRootNodeName() override;
-   virtual Float64 GetRootNodeVersion() override;
-   virtual HRESULT OpenDocumentRootNode(IStructuredSave* pStrSave) override;
+   CString GetRootNodeName() override;
+   Float64 GetRootNodeVersion() override;
+   HRESULT OpenDocumentRootNode(IStructuredSave* pStrSave) override;
 
 public:
    // ITxDOTBrokerRetriever
-   virtual std::shared_ptr<WBFL::EAF::Broker> GetUpdatedBroker() override;
-   virtual std::shared_ptr<WBFL::EAF::Broker> GetClassicBroker() override;
-   virtual GirderLibrary* GetGirderLibrary() override;
-   virtual ConnectionLibrary* GetConnectionLibrary() override;
-   virtual SpecLibrary* GetSpecLibrary() override;
+   std::shared_ptr<WBFL::EAF::Broker> GetUpdatedBroker() override;
+   std::shared_ptr<WBFL::EAF::Broker> GetClassicBroker() override;
+   GirderLibrary* GetGirderLibrary() override;
+   ConnectionLibrary* GetConnectionLibrary() override;
+   SpecLibrary* GetSpecLibrary() override;
 
 // Operations
    // listen to data events
-   virtual void OnTxDotDataChanged(int change) override;
+   void OnTxDotDataChanged(int change) override;
 
 
 // Overrides
@@ -152,8 +152,8 @@ public:
 	virtual ~CTxDOTOptionalDesignDoc();
 
 #ifdef _DEBUG
-	virtual void AssertValid() const override;
-	virtual void Dump(CDumpContext& dc) const override;
+	void AssertValid() const override;
+	void Dump(CDumpContext& dc) const override;
 #endif
 
 // Generated message map functions

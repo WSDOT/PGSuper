@@ -221,11 +221,6 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMomentCapacityChapterBuilder::Clone() const
-{
-   return std::make_unique<CMomentCapacityChapterBuilder>();
-}
-
 rptRcImage* CMomentCapacityChapterBuilder::CreateImage(IndexType girderShapeIndex, IndexType deckShapeIndex, CComPtr<IGeneralSection> section, CComPtr<IMomentCapacitySolution> solution,bool bPositiveMoment, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    CImage image;

@@ -41,11 +41,6 @@
 inline pgsTypes::LimitState GetLimitState(pgsTypes::LoadRatingType ratingType) { return (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI); }
 
 
-/****************************************************************************
-CLASS
-   CLoadRatingDetailsChapterBuilder
-****************************************************************************/
-
 CLoadRatingDetailsChapterBuilder::CLoadRatingDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -87,11 +82,6 @@ rptChapter* CLoadRatingDetailsChapterBuilder::Build(const std::shared_ptr<const 
    ReportRatingDetails(pChapter, pBroker, girderKeys, pgsTypes::lrPermit_Special, bSplicedGirder);
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CLoadRatingDetailsChapterBuilder>();
 }
 
 void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool bSplicedGirder) const

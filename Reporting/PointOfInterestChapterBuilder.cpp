@@ -35,8 +35,6 @@ CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CPointOfInterestChapterBuilder::GetName() const
 {
    return TEXT("Points of Interest");
@@ -61,11 +59,6 @@ rptChapter* CPointOfInterestChapterBuilder::Build(const std::shared_ptr<const WB
    ReportPoi(_T("Span"),    POI_SPAN,             pChapter, pGdrRptSpec->GetGirderKey(), pBroker, pPoi, pDisplayUnits, level);
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPointOfInterestChapterBuilder::Clone() const
-{
-   return std::make_unique<CPointOfInterestChapterBuilder>();
 }
 
 void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IPointOfInterest> pPoi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const

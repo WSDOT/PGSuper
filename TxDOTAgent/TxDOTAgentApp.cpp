@@ -37,13 +37,15 @@
 #include "TOGAPluginApp.h"
 #include "TxDOTAgentImp.h"
 #include <EAF\ComponentModule.h>
+
 WBFL::EAF::ComponentModule Module_;
+
 EAF_BEGIN_OBJECT_MAP(ObjectMap)
-EAF_OBJECT_ENTRY(CLSID_TxDOTCadExporter, CTxDOTCadExporter)
-EAF_OBJECT_ENTRY(CLSID_TxDOTPGSuperComponentInfo, CTxDOTComponentInfo)
-EAF_OBJECT_ENTRY(CLSID_TOGAPluginAppComponentInfo, CTxDOTAppPluginComponentInfo)
-EAF_OBJECT_ENTRY(CLSID_TOGAPluginApp, CTOGAPluginApp)
-EAF_OBJECT_ENTRY(CLSID_TxDOTAgent, CTxDOTAgentImp)
+   EAF_OBJECT_ENTRY(CLSID_TxDOTCadExporter, CTxDOTCadExporter)
+   EAF_OBJECT_ENTRY(CLSID_TxDOTPGSuperComponentInfo, CTxDOTComponentInfo)
+   EAF_OBJECT_ENTRY(CLSID_TOGAPluginAppComponentInfo, CTxDOTAppPluginComponentInfo)
+   EAF_OBJECT_ENTRY(CLSID_TOGAPluginApp, CTOGAPluginApp)
+   //EAF_OBJECT_ENTRY(CLSID_TxDOTAgent, CTxDOTAgentImp)
 EAF_END_OBJECT_MAP()
 
 

@@ -22,11 +22,6 @@
 
 #include "StdAfx.h"
 
-/****************************************************************************
-CLASS
-   CTogaSpecCheckSummaryChapterBuilder
-****************************************************************************/
-
 #include "TogaSpecCheckSummaryChapterBuilder.h"
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
@@ -48,18 +43,12 @@ CLASS
 #include <Lrfd/BDSManager.h>
 
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTogaSpecCheckSummaryChapterBuilder::CTogaSpecCheckSummaryChapterBuilder(bool referToDetailsReport):
 CPGSuperChapterBuilder(true),
 m_ReferToDetailsReport(referToDetailsReport)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTogaSpecCheckSummaryChapterBuilder::GetName() const
 {
    return TEXT("Specification Check Summary");
@@ -86,27 +75,3 @@ rptChapter* CTogaSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<con
 
    return pChap;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaSpecCheckSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CTogaSpecCheckSummaryChapterBuilder>(m_ReferToDetailsReport);
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

@@ -27,22 +27,11 @@
 #include <IFace\Project.h>
 
 
-/****************************************************************************
-CLASS
-   CShrinkageStrainChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CShrinkageStrainChapterBuilder::CShrinkageStrainChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CShrinkageStrainChapterBuilder::GetName() const
 {
    return TEXT("Shrinkage Strain Details");
@@ -66,7 +55,3 @@ rptChapter* CShrinkageStrainChapterBuilder::Build(const std::shared_ptr<const WB
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CShrinkageStrainChapterBuilder::Clone() const
-{
-   return std::make_unique<CShrinkageStrainChapterBuilder>();
-}

@@ -98,11 +98,6 @@ rptChapter* CBasicCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBasicCamberChapterBuilder::Clone() const
-{
-   return std::make_unique<CBasicCamberChapterBuilder>();
-}
-
 void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey, bool bTempStrands, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const
 {
    GET_IFACE2(pBroker,ICamber,pCamber);

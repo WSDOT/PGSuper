@@ -35,7 +35,7 @@
 #include <MFCTools\CustomDDX.h>
 #include <EAF/AutoProgress.h>
 #include <EAF\EAFDocument.h>
-#include <EAF\EAFHelp.h>
+#include <EAF\Help.h>
 
 #include <PsgLib/BridgeDescription2.h>
 #include "..\Documentation\PGSuper.hh"

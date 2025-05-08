@@ -20,82 +20,24 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_SHEARCAPACITYDETAILSCHAPTERBUILDER_H_
-#define INCLUDED_SHEARCAPACITYDETAILSCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CShearCapacityDetailsChapterBuilder
-
-   Builds the Shear Capacity Details chapter
-
-
-DESCRIPTION
-   Builds the Shear Capacity Details chapter
-
-LOG
-   rdp : 12.20.1998 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CShearCapacityDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   //------------------------------------------------------------------------
    // Use static to determine how POI's are to be printed. This will save many, many duplicate calls for this information
    static bool m_IncludeSpanAndGirderForPois;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
    bool m_bDesign;
    bool m_bRating;
-
-   // Prevent accidental copying and assignment
-   CShearCapacityDetailsChapterBuilder(const CShearCapacityDetailsChapterBuilder&) = delete;
-   CShearCapacityDetailsChapterBuilder& operator=(const CShearCapacityDetailsChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_SHEARCAPACITYDETAILSCHAPTERBUILDER_H_

@@ -65,23 +65,13 @@ void write_linear_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, s
 void write_parabolic_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 
-/****************************************************************************
-CLASS
-   CBridgeDescDetailsChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CBridgeDescDetailsChapterBuilder::CBridgeDescDetailsChapterBuilder(bool bOmitStrandLocations,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
    m_bOmitStrandLocations = bOmitStrandLocations;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CBridgeDescDetailsChapterBuilder::GetName() const
 {
    return TEXT("Bridge Description Details");
@@ -219,30 +209,6 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(const std::shared_ptr<const 
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBridgeDescDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CBridgeDescDetailsChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 void write_segment_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
 {

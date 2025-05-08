@@ -739,8 +739,3 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildGirderEdgesTables(std::s
       }
    }
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingSeatElevationsDetailsChapterBuilder2::Clone() const
-{
-   return std::make_unique<CBearingSeatElevationsDetailsChapterBuilder2>();
-}

@@ -46,15 +46,7 @@ static bool IsShearKeyLoadUniform(const std::vector<ShearKeyLoad>& loads);
 static bool IsLongitudinalJointLoadUniform(const std::vector<LongitudinalJointLoad>& loads);
 static bool IsConstructionLoadUniform(const std::vector<ConstructionLoad>& loads);
 
-/****************************************************************************
-CLASS
-   CLoadingDetailsChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CLoadingDetailsChapterBuilder::CLoadingDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect):
 CPGSuperChapterBuilder(bSelect),
 m_bDesign(bDesign),
@@ -75,8 +67,6 @@ m_bSimplifiedVersion(SimplifiedVersion)
    // to use the levels feature.
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CLoadingDetailsChapterBuilder::GetName() const
 {
    return TEXT("Loading Details");
@@ -325,11 +315,6 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(const std::shared_ptr<const WBF
    ReportLimitStates(pChapter,bDesign,bRating,bPermit,one_girder_has_shear_key,pRatingSpec);
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadingDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CLoadingDetailsChapterBuilder>(m_bSimplifiedVersion,m_bDesign,m_bRating,m_bSelect);
 }
 
 

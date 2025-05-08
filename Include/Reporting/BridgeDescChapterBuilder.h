@@ -28,21 +28,6 @@
 
 class IEAFDisplayUnits;
 
-/*****************************************************************************
-CLASS 
-   CBridgeDescChapterBuilder
-
-   Bridge Description Chapter Builder.
-
-
-DESCRIPTION
-   Bridge Description Chapter Builder.  Generates a chapter that echos the bridge
-   description input.
-
-LOG
-   rab : 11.03.1998 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CBridgeDescChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
@@ -53,7 +38,6 @@ public:
 
    LPCTSTR GetName() const override;
    rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
    static void WriteAlignmentData(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, rptChapter* pChapter,Uint16 level);
    static void WriteProfileData(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, rptChapter* pChapter,Uint16 level);

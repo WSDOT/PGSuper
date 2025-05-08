@@ -40,7 +40,7 @@ DEFINE_GUID(IID_ITestFileExport,
 class ITestFileExport
 {
 public:
-   virtual int WriteCADDataToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, bool designSucceeded) = 0;
-   virtual int WriteDistributionFactorsToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey) = 0;
+   virtual int WriteCADDataToFile (FILE *fp, const CSegmentKey& segmentKey, bool designSucceeded) = 0;
+   virtual int WriteDistributionFactorsToFile (FILE *fp, const CSegmentKey& segmentKey) = 0;
 };
 

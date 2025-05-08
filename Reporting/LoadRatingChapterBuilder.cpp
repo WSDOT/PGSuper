@@ -37,13 +37,6 @@
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
-
-
-/****************************************************************************
-CLASS
-   CLoadRatingChapterBuilder
-****************************************************************************/
-
 CLoadRatingChapterBuilder::CLoadRatingChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -202,9 +195,4 @@ rptChapter* CLoadRatingChapterBuilder::Build(const std::shared_ptr<const WBFL::R
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingChapterBuilder::Clone() const
-{
-   return std::make_unique<CLoadRatingChapterBuilder>();
 }

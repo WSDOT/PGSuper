@@ -34,8 +34,6 @@ CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CProductForcesChapterBuilder::GetName() const
 {
 #pragma Reminder("UPDATE")
@@ -188,9 +186,4 @@ rptChapter* CProductForcesChapterBuilder::Build(const std::shared_ptr<const WBFL
 
    return pChapter;
 */
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CProductForcesChapterBuilder::Clone() const
-{
-   return std::make_unique<CProductForcesChapterBuilder>();
 }

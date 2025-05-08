@@ -40,8 +40,6 @@ CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CEquilibriumCheckChapterBuilder::GetName() const
 {
    return TEXT("Equilibrium Check");
@@ -467,9 +465,4 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const W
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CEquilibriumCheckChapterBuilder::Clone() const
-{
-   return std::make_unique<CEquilibriumCheckChapterBuilder>();
 }

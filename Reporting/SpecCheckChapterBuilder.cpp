@@ -540,11 +540,6 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSpecCheckChapterBuilder::Clone() const
-{
-   return std::make_unique<CSpecCheckChapterBuilder>();
-}
-
 void write_splitting_zone_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                const pgsGirderArtifact* pGirderArtifact,
                                rptChapter* pChapter)

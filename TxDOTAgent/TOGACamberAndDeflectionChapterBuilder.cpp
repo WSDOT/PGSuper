@@ -49,24 +49,13 @@
 #include <WBFLCogo.h>
 
 
-/****************************************************************************
-CLASS
-   CTogaCamberAndDeflectionChapterBuilder
-****************************************************************************/
-
-
 static void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTogaCamberAndDeflectionChapterBuilder::CTogaCamberAndDeflectionChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTogaCamberAndDeflectionChapterBuilder::GetName() const
 {
    return TEXT("Camber and Deflections");
@@ -86,23 +75,7 @@ rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr<
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaCamberAndDeflectionChapterBuilder::Clone() const
-{
-   return std::make_unique<CTogaCamberAndDeflectionChapterBuilder>();
-}
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
 void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;

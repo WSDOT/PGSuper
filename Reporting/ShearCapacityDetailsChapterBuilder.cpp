@@ -50,11 +50,6 @@
 #include <algorithm>
 
 
-/****************************************************************************
-CLASS
-   CShearCapacityDetailsChapterBuilder
-****************************************************************************/
-
 void write_shear_dimensions_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                 const PoiList& vPoi,
@@ -196,11 +191,9 @@ void write_bar_spacing_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
 
 bool CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois = false;
 
-//======================== LIFECYCLE  =======================================
 CShearCapacityDetailsChapterBuilder::CShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -208,8 +201,6 @@ CPGSuperChapterBuilder(bSelect)
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CShearCapacityDetailsChapterBuilder::GetName() const
 {
    return TEXT("Shear Capacity Details");
@@ -409,29 +400,6 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CShearCapacityDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CShearCapacityDetailsChapterBuilder>(m_bDesign,m_bRating);
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 void write_shear_dimensions_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,

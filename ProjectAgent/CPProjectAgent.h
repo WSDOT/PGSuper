@@ -63,9 +63,10 @@ public:
 
 		//pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnProjectPropertiesChanged();
+		   auto callback = sink.lock();
+           callback->OnProjectPropertiesChanged();
 		}
 		//pT->Unlock();
 		return ret;
@@ -93,10 +94,11 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for(auto& [id,callback] : this->m_EventSinks)
+		for(auto& [id,sink] : this->m_EventSinks)
 		{
-			ret = callback->OnExposureConditionChanged();
-      }
+		   auto callback = sink.lock();
+		   ret = callback->OnExposureConditionChanged();
+        }
 		//pT->Unlock();
 		return ret;
 	}
@@ -113,8 +115,9 @@ public:
 
 		//pT->Lock();
 		HRESULT ret = S_OK;
-		for(auto& [id,callback] : this->m_EventSinks)
+		for(auto& [id,sink] : this->m_EventSinks)
 		{
+		   auto callback = sink.lock();
 		   callback->OnClimateConditionChanged();
 		}
 		//pT->Unlock();
@@ -133,9 +136,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for(auto& [id,callback] : this->m_EventSinks)
+		for(auto& [id,sink] : this->m_EventSinks)
 		{
-			callback->OnRelHumidityChanged();
+		   auto callback = sink.lock();
+		   callback->OnRelHumidityChanged();
 		}
 		//pT->Unlock();
 		return ret;
@@ -171,9 +175,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for(auto& [id,callback] : this->m_EventSinks)
+		for(auto& [id,sink] : this->m_EventSinks)
 		{
-			callback->OnBridgeChanged(pHint);
+		   auto callback = sink.lock();
+		   callback->OnBridgeChanged(pHint);
 		}
       if ( pHint )
       {
@@ -197,9 +202,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnGirderFamilyChanged();
+		   auto callback = sink.lock();
+		   callback->OnGirderFamilyChanged();
 		}
 		//pT->Unlock();
 		return ret;
@@ -229,9 +235,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnGirderChanged(girderKey,lHint);
+		   auto callback = sink.lock();
+		   callback->OnGirderChanged(girderKey,lHint);
 		}
 		//pT->Unlock();
 		return ret;
@@ -249,9 +256,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnConstructionLoadChanged();
+		   auto callback = sink.lock();
+		   callback->OnConstructionLoadChanged();
 		}
 		//pT->Unlock();
 		return ret;
@@ -269,9 +277,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnLiveLoadChanged();
+		   auto callback = sink.lock();
+		   callback->OnLiveLoadChanged();
 		}
 		//pT->Unlock();
 		return ret;
@@ -290,9 +299,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnLiveLoadNameChanged(strOldName,strNewName);
+		   auto callback = sink.lock();
+		   callback->OnLiveLoadNameChanged(strOldName,strNewName);
 		}
 		//pT->Unlock();
 		return ret;
@@ -321,9 +331,10 @@ public:
 
 		//pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnSpecificationChanged();
+		   auto callback = sink.lock();
+		   callback->OnSpecificationChanged();
 		}
 		//pT->Unlock();
 		return ret;
@@ -341,9 +352,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnAnalysisTypeChanged();
+		   auto callback = sink.lock();
+		   callback->OnAnalysisTypeChanged();
 		}
 		//pT->Unlock();
 		return ret;
@@ -373,9 +385,10 @@ public:
 
 		//pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnRatingSpecificationChanged();
+		   auto callback = sink.lock();
+		   callback->OnRatingSpecificationChanged();
 		}
 		//pT->Unlock();
 		return ret;
@@ -403,9 +416,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnLibraryConflictResolved();
+		   auto callback = sink.lock();
+		   callback->OnLibraryConflictResolved();
 		}
 		//pT->Unlock();
 		return ret;
@@ -433,9 +447,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnLoadModifiersChanged();
+		   auto callback = sink.lock();
+		   callback->OnLoadModifiersChanged();
 		}
 		//pT->Unlock();
 		return ret;
@@ -457,9 +472,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnHoldEvents();
+		   auto callback = sink.lock();
+		   callback->OnHoldEvents();
 		}
 		//pT->Unlock();
 		return ret;
@@ -471,9 +487,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnFirePendingEvents();
+		   auto callback = sink.lock();
+		   callback->OnFirePendingEvents();
 		}
 		//pT->Unlock();
 		return ret;
@@ -485,9 +502,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnCancelPendingEvents();
+		   auto callback = sink.lock();
+		   callback->OnCancelPendingEvents();
 		}
 		//pT->Unlock();
 		return ret;
@@ -516,9 +534,10 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_EventSinks)
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			callback->OnLossParametersChanged();
+		   auto callback = sink.lock();
+		   callback->OnLossParametersChanged();
 		}
 		//pT->Unlock();
 		return ret;

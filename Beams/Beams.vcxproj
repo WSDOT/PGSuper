@@ -273,28 +273,6 @@
   <ItemGroup>
     <None Include="AgeAdjustedMaterial.rgs" />
     <None Include="Beams.def" />
-    <None Include="BoxBeamDistFactorEngineer.rgs" />
-    <None Include="BoxBeamFactory.rgs" />
-    <None Include="BoxBeamFactory2.rgs" />
-    <None Include="BoxBeamFamily.rgs" />
-    <None Include="BulbTeeDistFactorEngineer.rgs" />
-    <None Include="BulbTeeFactory.rgs" />
-    <None Include="BulbTeeFamily.rgs" />
-    <None Include="DeckedSlabBeamFactory.rgs" />
-    <None Include="DeckedSlabBeamFamily.rgs" />
-    <None Include="DoubleTeeFactory.rgs" />
-    <None Include="DoubleTeeFamily.rgs" />
-    <None Include="IBeamDistFactorEngineer.rgs" />
-    <None Include="IBeamFactory.rgs" />
-    <None Include="IBeamFamily.rgs" />
-    <None Include="MultiWeb2Factory.rgs" />
-    <None Include="MultiWebDistFactorEngineer.rgs" />
-    <None Include="MultiWebfactory.rgs" />
-    <None Include="MultiWebFamily.rgs" />
-    <None Include="NUBeamFactory.rgs" />
-    <None Include="NUDeckedBulbTeeFactory.rgs" />
-    <None Include="PCIDeckedBulbTeeFactory.rgs" />
-    <None Include="PsBeamLossEngineer.rgs" />
     <None Include="Res\BoxBeam.emf" />
     <None Include="Res\BoxBeam2.emf" />
     <None Include="Res\BulbTee.emf" />
@@ -314,25 +292,7 @@
     <None Include="Res\UBeam2.emf" />
     <None Include="Res\VoidedSlab.emf" />
     <None Include="Res\VoidedSlab2.emf" />
-    <None Include="SplicedIBeamFactory.rgs" />
-    <None Include="SplicedIBeamFamily.rgs" />
-    <None Include="SplicedNUBeamFactory.rgs" />
-    <None Include="SplicedUBeamFactory.rgs" />
-    <None Include="SplicedUBeamFamily.rgs" />
     <None Include="StrandMoverImpl.rgs" />
-    <None Include="TaperedIBeamFactory.rgs" />
-    <None Include="TimeStepLossEngineer.rgs" />
-    <None Include="TxDotDoubleTFactory.rgs" />
-    <None Include="TxDOTSpreadSlabBeamDistFactorEngineer.rgs" />
-    <None Include="UBeam2Factory.rgs" />
-    <None Include="UBeamDistFactorEngineer.rgs" />
-    <None Include="UBeamFactory.rgs" />
-    <None Include="UBeamFamily.rgs" />
-    <None Include="VoidedSlab2DistFactorEngineer.rgs" />
-    <None Include="VoidedSlabDistFactorEngineer.rgs" />
-    <None Include="VoidedSlabFactory.rgs" />
-    <None Include="VoidedSlabFactory2.rgs" />
-    <None Include="VoidedSlabFamily.rgs" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Res\boxbeam.ico" />

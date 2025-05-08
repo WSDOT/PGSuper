@@ -36,9 +36,10 @@ public:
 
 		//pT->Lock();
 		HRESULT ret = S_OK;
-		for(auto& [id,callback] : this->m_EventSinks)
+		for(auto& [id,sink] : this->m_EventSinks)
 		{
-			callback->OnReportsChanged();
+		   auto callback = sink.lock();
+		   callback->OnReportsChanged();
 		}
 		//pT->Unlock();
 		return ret;

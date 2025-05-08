@@ -27,7 +27,7 @@
 #include <PsgLib\BeamFamilyManager.h>
 
 #include <EAF\EAFUtilities.h>
-#include <EAF\ComponentCategoryManager.h>
+#include <EAF\ComponentManager.h>
 
 using namespace PGS::Beams;
 
@@ -35,49 +35,19 @@ BeamFamilyManager::FamilyContainer BeamFamilyManager::m_Families;
 
 HRESULT BeamFamilyManager::Init(CATID catid)
 {
-#pragma Reminder("WORKING HERE - Removing COM - need to eliminate use of component category manager")
-   CComPtr<ICatRegister> pICatReg = 0;
-   HRESULT hr;
-   hr = ::CoCreateInstance( CLSID_StdComponentCategoriesMgr,
-                            nullptr,
-                            CLSCTX_INPROC_SERVER,
-                            IID_ICatRegister,
-                            (void**)&pICatReg );
-   if ( FAILED(hr) )
-   {
-      CString msg;
-      msg.Format(_T("Failed to create Component Category Manager. hr = %d\nIs the correct version of Internet Explorer installed"), hr);
-      AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
-      return hr;
-   }
-
-   CComPtr<ICatInformation> pICatInfo;
-   pICatReg->QueryInterface(IID_ICatInformation,(void**)&pICatInfo);
-   CComPtr<IEnumCLSID> pIEnumCLSID;
-
-   const CATID ID[1]{ catid };
-   
-   pICatInfo->EnumClassesOfCategories(1,ID,0,nullptr,&pIEnumCLSID);
-
-   FamilyContainer::iterator found(m_Families.find(catid));
-   if ( found == m_Families.end() )
+   auto found = m_Families.find(catid);
+   if (found == m_Families.end())
    {
       BeamContainer beams;
-      m_Families.insert(std::make_pair(catid,beams));
-      found = m_Families.find(catid);
+      auto result = m_Families.insert(std::make_pair(catid, beams));
+      found = result.first;
    }
+   auto& beams = found->second;
 
-   BeamContainer& beams = found->second;
-
-   CLSID clsid;
-   ULONG nFetched;
-   while ( pIEnumCLSID->Next(1,&clsid,&nFetched) != S_FALSE )
+   auto components = WBFL::EAF::ComponentManager::GetInstance().GetComponents(catid);
+   for (auto& component : components)
    {
-      LPOLESTR pszUserType;
-      OleRegGetUserType(clsid,USERCLASSTYPE_SHORT,&pszUserType);
-      CString str(pszUserType);
-
-      beams.insert( std::make_pair(str,clsid) );
+      beams.insert(std::make_pair(component.name.c_str(), component.clsid));
    }
 
    return S_OK;
@@ -86,17 +56,11 @@ HRESULT BeamFamilyManager::Init(CATID catid)
 std::vector<CString> BeamFamilyManager::GetBeamFamilyNames()
 {
    std::vector<CString> vNames;
-   FamilyContainer::iterator familyIter(m_Families.begin());
-   FamilyContainer::iterator familyIterEnd(m_Families.end());
-   for ( ; familyIter != familyIterEnd; familyIter++ )
+   for( auto& [catid,beams] : m_Families)
    {
-      BeamContainer& beams = familyIter->second;
-      BeamContainer::iterator beamIter(beams.begin());
-      BeamContainer::iterator beamIterEnd(beams.end());
-      for ( ; beamIter != beamIterEnd; beamIter++ )
+      for( auto& [name,clsid] : beams)
       {
-         const CString& strName = beamIter->first;
-         vNames.push_back(strName);
+         vNames.push_back(name);
       }
    }
 
@@ -107,17 +71,14 @@ std::vector<CString> BeamFamilyManager::GetBeamFamilyNames()
 std::vector<CString> BeamFamilyManager::GetBeamFamilyNames(CATID catid)
 {
    std::vector<CString> vNames;
-   FamilyContainer::iterator found(m_Families.find(catid));
+   auto found(m_Families.find(catid));
    if ( found == m_Families.end() )
       return vNames;
 
    BeamContainer& beams = found->second;
-   BeamContainer::iterator beamIter(beams.begin());
-   BeamContainer::iterator beamIterEnd(beams.end());
-   for ( ; beamIter != beamIterEnd; beamIter++ )
+   for( auto& [name,clsid] : beams)
    {
-      const CString& strName = beamIter->first;
-      vNames.push_back(strName);
+      vNames.push_back(name);
    }
 
    std::sort(vNames.begin(),vNames.end());
@@ -126,17 +87,13 @@ std::vector<CString> BeamFamilyManager::GetBeamFamilyNames(CATID catid)
 
 std::shared_ptr<BeamFamily> BeamFamilyManager::GetBeamFamily(LPCTSTR strName)
 {
-   FamilyContainer::iterator familyIter(m_Families.begin());
-   FamilyContainer::iterator familyIterEnd(m_Families.end());
-   for ( ; familyIter != familyIterEnd; familyIter++ )
+   for(auto& [catid,beams] : m_Families)
    {
-      BeamContainer& beams = familyIter->second;
-
-      BeamContainer::iterator found = beams.find(CString(strName));
+      auto found = beams.find(CString(strName));
       if ( found != beams.end() )
       {
          CLSID clsid = found->second;
-         auto family = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<BeamFamily>(clsid);
+         auto family = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<BeamFamily>(clsid);
          return family;
       }
    }
@@ -147,13 +104,9 @@ std::shared_ptr<BeamFamily> BeamFamilyManager::GetBeamFamily(LPCTSTR strName)
 
 CLSID BeamFamilyManager::GetBeamFamilyCLSID(LPCTSTR strName)
 {
-   FamilyContainer::iterator familyIter(m_Families.begin());
-   FamilyContainer::iterator familyIterEnd(m_Families.end());
-   for ( ; familyIter != familyIterEnd; familyIter++ )
+   for (auto& [catid, beams] : m_Families)
    {
-      BeamContainer& beams = familyIter->second;
-
-      BeamContainer::iterator found = beams.find(CString(strName));
+      auto found = beams.find(CString(strName));
       if ( found != beams.end() )
       {
          return found->second;

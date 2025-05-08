@@ -20,77 +20,20 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_SECTPROPCHAPTERBUILDER_H_
-#define INCLUDED_SECTPROPCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-/*****************************************************************************
-CLASS 
-   CSectPropChapterBuilder
-
-   Section Property chapter.
-
-
-DESCRIPTION
-   Section Property chapter.  Generates a chapter in a report for section 
-   properties.
-
-LOG
-   rab : 10.18.1998 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CSectPropChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CSectPropChapterBuilder(bool bSelect = true,bool simplifiedVersion=false);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
    bool m_SimplifiedVersion;
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CSectPropChapterBuilder(const CSectPropChapterBuilder&) = delete;
-   CSectPropChapterBuilder& operator=(const CSectPropChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_SECTPROPCHAPTERBUILDER_H_

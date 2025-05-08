@@ -27,7 +27,8 @@
 #include <sstream>
 
 
-#pragma Reminder("WORKING HERE - Removing COM - a lot of this is independent of report, and is used in EngAgent, so it needs to be moved to a more generic location such as PsgExt")
+#pragma Reminder("UPDATE - a lot of this is independent of the report, and is used in EngAgent, so it needs to be moved to a more generic location such as PgsExt")
+// This is causing EngAgent to unnecessarily depend on Reporting
 
 // MISCELLANEOUS
 //
@@ -181,10 +182,9 @@ CLASS
    ProductForcesReactionAdapter
 ****************************************************************************/
 
-ProductForcesReactionAdapter::ProductForcesReactionAdapter(std::shared_ptr<IReactions> pReactions,const CGirderKey& girderKey):
+ProductForcesReactionAdapter::ProductForcesReactionAdapter(std::weak_ptr<IReactions> pReactions,const CGirderKey& girderKey):
 m_pReactions(pReactions), m_GirderKey(girderKey)
 {
-#pragma Reminder("WORKING HERE - Removing COM - holding an interface creates cirucular references")
 }
 
 ProductForcesReactionAdapter::~ProductForcesReactionAdapter()
@@ -209,7 +209,7 @@ bool ProductForcesReactionAdapter::DoReportAtPier(PierIndexType pierIdx,const CG
 
 Float64 ProductForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat)
 {
-   return m_pReactions->GetReaction(rLocation.GirderKey,rLocation.PierIdx,pgsTypes::stPier,intervalIdx,pfType,bat,rtCumulative).Fy;
+   return m_pReactions.lock()->GetReaction(rLocation.GirderKey, rLocation.PierIdx, pgsTypes::stPier, intervalIdx, pfType, bat, rtCumulative).Fy;
 }
 
 void ProductForcesReactionAdapter::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
@@ -217,7 +217,7 @@ void ProductForcesReactionAdapter::GetLiveLoadReaction(IntervalIndexType interva
                                                        VehicleIndexType* pMinConfig, VehicleIndexType* pMaxConfig)
 {
    REACTION Rmin, Rmax;
-   m_pReactions->GetLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pgsTypes::fetFy, &Rmin, &Rmax, pMinConfig, pMaxConfig);
+   m_pReactions.lock()->GetLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pgsTypes::fetFy, &Rmin, &Rmax, pMinConfig, pMaxConfig);
    *pRmin = Rmin.Fy;
    *pRmax = Rmax.Fy;
 }
@@ -226,12 +226,11 @@ void ProductForcesReactionAdapter::GetLiveLoadReaction(IntervalIndexType interva
 CLASS
    BearingDesignProductReactionAdapter
 ****************************************************************************/
-BearingDesignProductReactionAdapter::BearingDesignProductReactionAdapter(std::shared_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey):
+BearingDesignProductReactionAdapter::BearingDesignProductReactionAdapter(std::weak_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey):
    m_pBearingDesign(pForces),
    m_GirderKey(girderKey),
    m_IntervalIdx(intervalIdx)
 {
-#pragma Reminder("WORKING HERE - Removing COM - caching interface pointer leads to circular references")
 }
 
 BearingDesignProductReactionAdapter::~BearingDesignProductReactionAdapter()
@@ -241,19 +240,19 @@ BearingDesignProductReactionAdapter::~BearingDesignProductReactionAdapter()
 
 ReactionLocationIter BearingDesignProductReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge)
 {
-   m_Locations = CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(m_IntervalIdx, m_GirderKey, pBridge, m_pBearingDesign);
+   m_Locations = CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(m_IntervalIdx, m_GirderKey, pBridge, m_pBearingDesign.lock());
 
    return ReactionLocationIter(m_Locations);
 }
 
 bool BearingDesignProductReactionAdapter::DoReportAtPier(PierIndexType pierIdx,const CGirderKey& girderKey)
 {
-   return DoDoReportAtPier(m_IntervalIdx, pierIdx, girderKey, m_pBearingDesign);
+   return DoDoReportAtPier(m_IntervalIdx, pierIdx, girderKey, m_pBearingDesign.lock());
 }
 
 Float64 BearingDesignProductReactionAdapter::GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat)
 {
-   return m_pBearingDesign->GetBearingProductReaction(intervalIdx,rLocation,pfType,bat,rtCumulative);
+   return m_pBearingDesign.lock()->GetBearingProductReaction(intervalIdx, rLocation, pfType, bat, rtCumulative);
 }
 
 void BearingDesignProductReactionAdapter::GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
@@ -261,15 +260,14 @@ void BearingDesignProductReactionAdapter::GetLiveLoadReaction(IntervalIndexType 
                                                        VehicleIndexType* pMinConfig, VehicleIndexType* pMaxConfig)
 {
    Float64 Tmin, Tmax;
-   m_pBearingDesign->GetBearingLiveLoadReaction(intervalIdx, rLocation, llType, bat, bIncludeImpact, bIncludeLLDF, pRmin, pRmax, &Tmin, &Tmax, pMinConfig, pMaxConfig);
+   m_pBearingDesign.lock()->GetBearingLiveLoadReaction(intervalIdx, rLocation, llType, bat, bIncludeImpact, bIncludeLLDF, pRmin, pRmax, &Tmin, &Tmax, pMinConfig, pMaxConfig);
 }
 
 /////////////////////////////////////////////
 // class CmbLsBearingDesignReactionAdapter
 /////////////////////////////////////////////
 
-#pragma Reminder("WORKING HERE - Removing COM - caching interface pointer creates circular references")
-CombinedLsForcesReactionAdapter::CombinedLsForcesReactionAdapter(std::shared_ptr<IReactions> pReactions, std::shared_ptr<ILimitStateForces> pForces, const CGirderKey& girderKey):
+CombinedLsForcesReactionAdapter::CombinedLsForcesReactionAdapter(std::weak_ptr<IReactions> pReactions, std::weak_ptr<ILimitStateForces> pForces, const CGirderKey& girderKey):
    m_pReactions(pReactions), m_LsPointer(pForces), m_GirderKey(girderKey)
 {;}
 
@@ -295,23 +293,22 @@ bool CombinedLsForcesReactionAdapter::DoReportAtPier(PierIndexType pier,const CG
 
 Float64 CombinedLsForcesReactionAdapter::GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   return m_pReactions->GetReaction(rLocation.GirderKey,rLocation.PierIdx,pgsTypes::stPier,intervalIdx,combo,bat,resultsType).Fy;
+   return m_pReactions.lock()->GetReaction(rLocation.GirderKey, rLocation.PierIdx, pgsTypes::stPier, intervalIdx, combo, bat, resultsType).Fy;
 }
 
 void CombinedLsForcesReactionAdapter::GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
 {
-   m_pReactions->GetCombinedLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pRmin, pRmax);
+   m_pReactions.lock()->GetCombinedLiveLoadReaction(intervalIdx, llType, rLocation.PierIdx, rLocation.GirderKey, bat, bIncludeImpact, pRmin, pRmax);
 }
 
 /////////////////////////////////////////////
 // class CmbLsBearingDesignReactionAdapter
 /////////////////////////////////////////////
-CmbLsBearingDesignReactionAdapter::CmbLsBearingDesignReactionAdapter(std::shared_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey):
+CmbLsBearingDesignReactionAdapter::CmbLsBearingDesignReactionAdapter(std::weak_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey):
    m_pBearingDesign(pForces),
    m_IntervalIdx(intervalIdx),
    m_GirderKey(girderKey)
 {
-#pragma Reminder("WORKING HERE - Removing COM - caching interface pointer leads to circular references")
 }
 
 CmbLsBearingDesignReactionAdapter::~CmbLsBearingDesignReactionAdapter()
@@ -321,30 +318,30 @@ CmbLsBearingDesignReactionAdapter::~CmbLsBearingDesignReactionAdapter()
 
 ReactionLocationIter CmbLsBearingDesignReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge)
 {
-   m_Locations = GetBearingReactionLocations(m_IntervalIdx, m_GirderKey, pBridge, m_pBearingDesign);
+   m_Locations = GetBearingReactionLocations(m_IntervalIdx, m_GirderKey, pBridge, m_pBearingDesign.lock());
 
    return ReactionLocationIter(m_Locations);
 }
 
 bool CmbLsBearingDesignReactionAdapter::DoReportAtPier(PierIndexType pierIdx,const CGirderKey& girderKey)
 {
-   return DoDoReportAtPier(m_IntervalIdx, pierIdx, girderKey, m_pBearingDesign);
+   return DoDoReportAtPier(m_IntervalIdx, pierIdx, girderKey, m_pBearingDesign.lock());
 }
 
 Float64 CmbLsBearingDesignReactionAdapter::GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType)
 {
-   return m_pBearingDesign->GetBearingCombinedReaction(intervalIdx, rLocation, combo, bat, resultsType);
+   return m_pBearingDesign.lock()->GetBearingCombinedReaction(intervalIdx, rLocation, combo, bat, resultsType);
 }
 
 void CmbLsBearingDesignReactionAdapter::GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax)
 {
-   m_pBearingDesign->GetBearingCombinedLiveLoadReaction(intervalIdx, rLocation, llType, bat, bIncludeImpact, pRmin, pRmax);
+   m_pBearingDesign.lock()->GetBearingCombinedLiveLoadReaction(intervalIdx, rLocation, llType, bat, bIncludeImpact, pRmin, pRmax);
 }
 
 /////////////////////////////////////////////
 // class ReactionDecider
 /////////////////////////////////////////////
-ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLocation& location,const CGirderKey& girderKey,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IIntervals> pIntervals)
+ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLocation& location,const CGirderKey& girderKey,std::weak_ptr<IBridge> pBridge,std::weak_ptr<IIntervals> pIntervals)
 {
    // full pier reactions are always reported
    if (tableType == PierReactionsTable)
@@ -353,12 +350,14 @@ ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLoca
    }
    else
    {
+      auto bridge = pBridge.lock();
+
       // Always report bearing data if simple supports always
       bool bIntegralOnLeft, bIntegralOnRight;
-      pBridge->IsIntegralAtPier(location.PierIdx, &bIntegralOnLeft, &bIntegralOnRight);
+      bridge->IsIntegralAtPier(location.PierIdx, &bIntegralOnLeft, &bIntegralOnRight);
 
       bool bContinuousOnLeft, bContinuousOnRight;
-      pBridge->IsContinuousAtPier(location.PierIdx,&bContinuousOnLeft,&bContinuousOnRight);
+      bridge->IsContinuousAtPier(location.PierIdx,&bContinuousOnLeft,&bContinuousOnRight);
 
       bool bIsSimple(true);
       if(location.Face == rftBack)
@@ -384,7 +383,7 @@ ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLoca
          m_bAlwaysReport = false; // when we report is based on stage when BC becomes continuous
 
          IntervalIndexType back_continuity_interval, ahead_continuity_interval;
-         pIntervals->GetContinuityInterval(location.PierIdx,&back_continuity_interval,&ahead_continuity_interval);
+         pIntervals.lock()->GetContinuityInterval(location.PierIdx, &back_continuity_interval, &ahead_continuity_interval);
 
          m_ThresholdInterval = (location.Face == rftBack ? back_continuity_interval : ahead_continuity_interval);
       }

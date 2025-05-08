@@ -24,7 +24,7 @@
 #include <Reporting\InitialStrainAnalysisReportSpecification.h>
 
 
-CInitialStrainAnalysisReportSpecification::CInitialStrainAnalysisReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx) :
+CInitialStrainAnalysisReportSpecification::CInitialStrainAnalysisReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_GirderKey = girderKey;

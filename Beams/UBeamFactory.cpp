@@ -220,9 +220,9 @@ void UBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 }
 
-std::shared_ptr<DistFactorEngineerBase> UBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::unique_ptr<DistFactorEngineer> UBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<UBeamDistFactorEngineer>(pBroker,statusGroupID);
+   return std::make_unique<UBeamDistFactorEngineer>(pBroker,statusGroupID);
 }
 
 std::unique_ptr<PsLossEngineerBase> UBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
@@ -720,25 +720,9 @@ CLSID UBeamFactory::GetCLSID() const
    return CLSID_UBeamFactory;
 }
 
-std::_tstring UBeamFactory::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
 CLSID UBeamFactory::GetFamilyCLSID() const
 {
    return CLSID_UBeamFamily;
-}
-
-std::_tstring UBeamFactory::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
 }
 
 std::_tstring UBeamFactory::GetPublisher() const

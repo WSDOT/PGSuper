@@ -189,11 +189,11 @@ m_bWarnLongReinfLibraryEquality(true)
    std::shared_ptr<PGS::Beams::BeamFactory> beam_factory;
    if ( createType == DEFAULT || createType == PRECAST )
    {
-      beam_factory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(CLSID_WFBeamFactory);
+      beam_factory = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(CLSID_WFBeamFactory);
    }
    else if ( createType == SPLICED )
    {
-      beam_factory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(CLSID_SplicedIBeamFactory);
+      beam_factory = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(CLSID_SplicedIBeamFactory);
    }
    else
    {
@@ -310,10 +310,10 @@ void GirderLibraryEntry::InitCLSIDMap()
       m_CLSIDMap.emplace_hint(m_CLSIDMap.end(),_T("{9C219793-A1F1-402A-B865-0AA6BD22B0A6}"), _T("{DEFA27AD-3D22-481B-9006-627C65D2648F}"));
 
       // Create external beam factory publisher CLSID translators
-      auto components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(CATID_BeamFactoryCLSIDTranslator);
+      auto components = WBFL::EAF::ComponentManager::GetInstance().GetComponents(CATID_BeamFactoryCLSIDTranslator);
       for (auto& component : components)
       {
-         auto translator = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::Beams::BeamFactoryCLSIDTranslator>(component);
+         auto translator = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactoryCLSIDTranslator>(component);
          if(translator)
             ms_ExternalCLSIDTranslators.push_back(translator);
       }
@@ -349,9 +349,8 @@ bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("Publisher"),m_pBeamFactory->GetPublisher().c_str());
    pSave->Property(_T("ContactInfo"),m_pBeamFactory->GetPublisherContactInformation().c_str()); // added in version 25
 
-   LPOLESTR pszUserType;
-   OleRegGetUserType(m_pBeamFactory->GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   pSave->Property(_T("SectionName"),CString(pszUserType));
+   const auto& component = WBFL::EAF::ComponentManager::GetInstance().GetComponent(m_pBeamFactory->GetCLSID());
+   pSave->Property(_T("SectionName"),CString(component.name.c_str()));
 
    // added in version 24
    pSave->BeginUnit(_T("SectionDimensions"),1.0);
@@ -429,7 +428,7 @@ bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("MaxDebondLengthBySpanFraction"),  m_MaxDebondLengthBySpanFraction);
    pSave->Property(_T("MaxDebondLengthByHardDistance"),  m_MaxDebondLengthByHardDistance);
 
-   pSave->EndUnit(); // DebondingCritia
+   pSave->EndUnit(); // DebondingCriteria
 
    // Added start and end strand grids in version 15 of parent unit
    pSave->BeginUnit(_T("StraightStrands"),1.0);
@@ -2911,7 +2910,7 @@ bool GirderLibraryEntry::CreateBeamFactory(const std::_tstring& strCLSID)
    CLSID clsid;
    ::CLSIDFromString(CT2OLE(strCLSID.c_str()), &clsid);
 
-   m_pBeamFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(clsid);
+   m_pBeamFactory = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(clsid);
 
    return m_pBeamFactory != nullptr;
 }
@@ -2921,7 +2920,7 @@ void GirderLibraryEntry::LoadIBeamDimensions(WBFL::System::IStructuredLoad* pLoa
    CLSID clsid;
    ::CLSIDFromString(_T("{EF144A97-4C75-4234-AF3C-71DC89B1C8F8}"),&clsid);
    m_pBeamFactory = nullptr;
-   m_pBeamFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(clsid);
+   m_pBeamFactory = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(clsid);
 
    m_Dimensions.clear();
 
@@ -5186,9 +5185,8 @@ std::_tstring GirderLibraryEntry::GetSectionName() const
    std::_tstring name;
    if (m_pBeamFactory)
    {
-      LPOLESTR pszUserType;
-      OleRegGetUserType(m_pBeamFactory->GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-      return std::_tstring( CString(pszUserType) );
+      auto& component = WBFL::EAF::ComponentManager::GetInstance().GetComponent(m_pBeamFactory->GetCLSID());
+      return component.name;
    }
    else
    {

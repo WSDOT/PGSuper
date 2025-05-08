@@ -37,22 +37,11 @@
 #include <IFace\ReportOptions.h>
 #include <IFace/PointOfInterest.h>
 
-/****************************************************************************
-CLASS
-   CCastingYardRebarRequirementChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CCastingYardRebarRequirementChapterBuilder::CCastingYardRebarRequirementChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CCastingYardRebarRequirementChapterBuilder::GetName() const
 {
    return TEXT("Reinforcement Requirements for Tension Limits");
@@ -205,12 +194,6 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_
    }
 
    return pChapter;
-}
-
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder>CCastingYardRebarRequirementChapterBuilder::Clone() const
-{
-   return std::make_unique<CCastingYardRebarRequirementChapterBuilder>();
 }
 
 void CCastingYardRebarRequirementChapterBuilder::BuildTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, bool bSimpleTable) const

@@ -26,7 +26,7 @@
 #include "MyReportSpecification.h"
 
 
-CMyReportSpecification::CMyReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker) :
+CMyReportSpecification::CMyReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_Message = "Message not set";

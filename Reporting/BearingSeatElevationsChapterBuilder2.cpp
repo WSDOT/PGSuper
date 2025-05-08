@@ -391,11 +391,6 @@ LPCTSTR CBearingSeatElevationsChapterBuilder2::GetName() const
    return TEXT("Bearing Seat Elevations");
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingSeatElevationsChapterBuilder2::Clone() const
-{
-   return std::make_unique<CBearingSeatElevationsChapterBuilder2>(*this);
-}
-
 ////////////////////////////////////////////////////////////////////
 CBearingDeductChapterBuilder::CBearingDeductChapterBuilder(bool bSelect) :
 CBearingSeatElevationsChapterBuilderBase(CBearingSeatElevationsChapterBuilderBase::ttBearingDeduct, bSelect)
@@ -409,9 +404,4 @@ CBearingDeductChapterBuilder::~CBearingDeductChapterBuilder(void)
 LPCTSTR CBearingDeductChapterBuilder::GetName() const
 {
    return TEXT("Bearing Seat Deduct");
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingDeductChapterBuilder::Clone() const
-{
-   return std::make_unique<CBearingDeductChapterBuilder>(*this);
 }

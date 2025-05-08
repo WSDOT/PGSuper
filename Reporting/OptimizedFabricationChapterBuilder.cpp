@@ -33,22 +33,11 @@
 #include <PsgLib\SplicedGirderData.h>
 
 
-/****************************************************************************
-CLASS
-   COptimizedFabricationChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 COptimizedFabricationChapterBuilder::COptimizedFabricationChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR COptimizedFabricationChapterBuilder::GetName() const
 {
    return TEXT("Fabrication Options");
@@ -347,27 +336,3 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(const std::shared_ptr<con
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> COptimizedFabricationChapterBuilder::Clone() const
-{
-   return std::make_unique<COptimizedFabricationChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

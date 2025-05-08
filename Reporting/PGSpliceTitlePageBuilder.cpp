@@ -34,8 +34,7 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFUIIntegration.h>
 
-#pragma Reminder("WORKING HERE - Removing COM - caching the broker can lead to circular references")
-CPGSpliceTitlePageBuilder::CPGSpliceTitlePageBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion) :
+CPGSpliceTitlePageBuilder::CPGSpliceTitlePageBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion) :
 WBFL::Reporting::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion)
@@ -112,7 +111,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
    pPara = new rptParagraph;
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
-   GET_IFACE(IVersionInfo,pVerInfo);
+   GET_IFACE2(GetBroker(),IVersionInfo,pVerInfo);
    *pPara << pVerInfo->GetVersionString() << rptNewLine;
 
    const std::_tstring& strImage = rptStyleManager::GetReportCoverImage();
@@ -129,8 +128,8 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
       *pPara << rptNewLine << rptNewLine;
    }
 
-   GET_IFACE(IProjectProperties,pProps);
-   GET_IFACE(IEAFDocument,pDocument);
+   GET_IFACE2(GetBroker(),IProjectProperties,pProps);
+   GET_IFACE2(GetBroker(),IEAFDocument,pDocument);
 
    rptParagraph* pPara3 = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pTitlePage << pPara3;
@@ -183,7 +182,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
    }
 
    *p << _T("Configuration") << rptNewLine;
-   p = CLibraryUsageParagraph().Build(m_pBroker);
+   p = CLibraryUsageParagraph().Build(GetBroker());
    *pTitlePage << p;
 
    // There isn't any seed data for spliced girders
@@ -198,7 +197,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
    //   }
    //   else
    //   {
-   //      GET_IFACE(IBridge,pBridge);
+   //      GET_IFACE2(GetBroker(),IBridge,pBridge);
    //      girderKey.groupIndex = pBridge->GetGirderGroupIndex(pSpanRptSpec->GetSpan());
    //      girderKey.girderIndex = ALL_GIRDERS;
    //   }
@@ -220,7 +219,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
    p = new rptParagraph();
    *pTitlePage << p;
 
-   GET_IFACE(ILossParameters, pLossParams);
+   GET_IFACE2(GetBroker(),ILossParameters, pLossParams);
    *p << _T("Losses: ") << pLossParams->GetLossMethodDescription() << rptNewLine;
 
    rptRcTable* pTable;
@@ -344,7 +343,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
    }
 
    // Status Center Items
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   GET_IFACE2(GetBroker(),IEAFStatusCenter,pStatusCenter);
    IndexType nItems = pStatusCenter->Count();
 
    if ( nItems != 0 )

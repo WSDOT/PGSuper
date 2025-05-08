@@ -32,7 +32,7 @@ class REPORTINGCLASS CSpanReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CSpanReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   CSpanReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CSpanReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
@@ -43,7 +43,7 @@ class REPORTINGCLASS CGirderReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CGirderReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& defaultGirderKey);
+   CGirderReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& defaultGirderKey);
    ~CGirderReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
@@ -57,7 +57,7 @@ class REPORTINGCLASS CSegmentReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CSegmentReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& defaultSegmentKey);
+   CSegmentReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& defaultSegmentKey);
    ~CSegmentReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
@@ -71,7 +71,7 @@ class REPORTINGCLASS CGirderLineReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CGirderLineReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   CGirderLineReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CGirderLineReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
@@ -82,7 +82,7 @@ class REPORTINGCLASS CMultiGirderReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CMultiGirderReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   CMultiGirderReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CMultiGirderReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
@@ -94,7 +94,7 @@ class REPORTINGCLASS CMultiViewSpanGirderReportSpecificationBuilder :
    public CSpanReportSpecificationBuilder
 {
 public:
-   CMultiViewSpanGirderReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   CMultiViewSpanGirderReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CMultiViewSpanGirderReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
@@ -105,7 +105,7 @@ class REPORTINGCLASS CPointOfInterestReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CPointOfInterestReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   CPointOfInterestReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CPointOfInterestReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;

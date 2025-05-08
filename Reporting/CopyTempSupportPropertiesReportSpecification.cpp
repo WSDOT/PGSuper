@@ -24,7 +24,7 @@
 #include <Reporting\CopyTempSupportPropertiesReportSpecification.h>
 
 
-CCopyTempSupportPropertiesReportSpecification::CCopyTempSupportPropertiesReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker) :
+CCopyTempSupportPropertiesReportSpecification::CCopyTempSupportPropertiesReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker) :
    CBrokerReportSpecification(strReportName, pBroker)
 {
 }

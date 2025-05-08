@@ -51,11 +51,6 @@
 #include <WBFLCogo.h>
 
 
-/****************************************************************************
-CLASS
-   CTexasHaunchChapterBuilder
-****************************************************************************/
-
 
 static void haunch_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList,
                                   ColumnIndexType startIdx, ColumnIndexType endIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
@@ -63,16 +58,11 @@ static void haunch_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broke
 static void haunch_minimum_note(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTexasHaunchChapterBuilder::CTexasHaunchChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTexasHaunchChapterBuilder::GetName() const
 {
    return TEXT("TxDOT Haunch Summary");
@@ -165,23 +155,8 @@ rptChapter* CTexasHaunchChapterBuilder::Build(const std::shared_ptr<const WBFL::
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasHaunchChapterBuilder::Clone() const
-{
-   return std::make_unique<CTexasHaunchChapterBuilder>();
-}
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
 
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
 void haunch_minimum_note(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);

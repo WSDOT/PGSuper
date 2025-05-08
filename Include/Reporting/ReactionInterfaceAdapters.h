@@ -89,7 +89,7 @@ public:
 class REPORTINGCLASS ProductForcesReactionAdapter: public IProductReactionAdapter
 {
 public:
-   ProductForcesReactionAdapter(std::shared_ptr<IReactions> pReactions,const CGirderKey& girderKey);
+   ProductForcesReactionAdapter(std::weak_ptr<IReactions> pReactions,const CGirderKey& girderKey);
    virtual ~ProductForcesReactionAdapter();
 
    virtual ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge);
@@ -100,7 +100,7 @@ public:
                                     VehicleIndexType* pMinConfig=nullptr, VehicleIndexType* pMaxConfig=nullptr);
 
 private:
-   std::shared_ptr<IReactions> m_pReactions;
+   std::weak_ptr<IReactions> m_pReactions;
    CGirderKey m_GirderKey;
    ReactionLocationContainer m_Locations;
 };
@@ -113,7 +113,7 @@ private:
 class REPORTINGCLASS BearingDesignProductReactionAdapter: public IProductReactionAdapter
 {
 public:
-   BearingDesignProductReactionAdapter(std::shared_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey);
+   BearingDesignProductReactionAdapter(std::weak_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey);
    virtual ~BearingDesignProductReactionAdapter();
 
    ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge) override;
@@ -123,7 +123,7 @@ public:
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                     VehicleIndexType* pMinConfig=nullptr, VehicleIndexType* pMaxConfig=nullptr);
 private:
-   std::shared_ptr<IBearingDesign> m_pBearingDesign;
+   std::weak_ptr<IBearingDesign> m_pBearingDesign;
    CGirderKey m_GirderKey;
    ReactionLocationContainer m_Locations;
    IntervalIndexType m_IntervalIdx;
@@ -157,7 +157,7 @@ public:
 class REPORTINGCLASS CombinedLsForcesReactionAdapter: public ICmbLsReactionAdapter
 {
 public:
-   CombinedLsForcesReactionAdapter(std::shared_ptr<IReactions> pReactions, std::shared_ptr<ILimitStateForces> pForces, const CGirderKey& girderKey);
+   CombinedLsForcesReactionAdapter(std::weak_ptr<IReactions> pReactions, std::weak_ptr<ILimitStateForces> pForces, const CGirderKey& girderKey);
    virtual ~CombinedLsForcesReactionAdapter();
 
    virtual ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge);
@@ -166,8 +166,8 @@ public:
    virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
 
 private:
-   std::shared_ptr<IReactions> m_pReactions;
-   std::shared_ptr<ILimitStateForces> m_LsPointer;
+   std::weak_ptr<IReactions> m_pReactions;
+   std::weak_ptr<ILimitStateForces> m_LsPointer;
    CGirderKey m_GirderKey;
    ReactionLocationContainer m_Locations;
 };
@@ -178,7 +178,7 @@ private:
 class REPORTINGCLASS CmbLsBearingDesignReactionAdapter: public ICmbLsReactionAdapter
 {
 public:
-   CmbLsBearingDesignReactionAdapter(std::shared_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey);
+   CmbLsBearingDesignReactionAdapter(std::weak_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey);
    virtual ~CmbLsBearingDesignReactionAdapter();
 
    ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge) override;
@@ -190,7 +190,7 @@ public:
    static ReactionLocationContainer GetBearingReactionLocations(IntervalIndexType intervalIdx, const CGirderKey& girderKey, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IBearingDesign> pBearing);
 
 private:
-   std::shared_ptr<IBearingDesign> m_pBearingDesign;
+   std::weak_ptr<IBearingDesign> m_pBearingDesign;
    CGirderKey m_GirderKey;
    ReactionLocationContainer m_Locations;
    IntervalIndexType m_IntervalIdx;
@@ -202,7 +202,7 @@ private:
 class ReactionDecider
 {
 public:
-   ReactionDecider(ReactionTableType tableType, const ReactionLocation& location, const CGirderKey& girderKey,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IIntervals> pIntervals);
+   ReactionDecider(ReactionTableType tableType, const ReactionLocation& location, const CGirderKey& girderKey,std::weak_ptr<IBridge> pBridge,std::weak_ptr<IIntervals> pIntervals);
 
    // If true, report results
    bool DoReport(IntervalIndexType intervalIdx);

@@ -95,22 +95,12 @@ void WriteRowToDevelopmentTable(rptRcTable* pTable, RowIndexType row, CComBSTR b
 }
 
 
-/****************************************************************************
-CLASS
-   CDevLengthDetailsChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CDevLengthDetailsChapterBuilder::CDevLengthDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CDevLengthDetailsChapterBuilder::GetName() const
 {
    return TEXT("Transfer and Development Length Details");
@@ -402,9 +392,3 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDevLengthDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CDevLengthDetailsChapterBuilder>();
-}
-

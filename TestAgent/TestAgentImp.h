@@ -69,8 +69,8 @@ public:
    bool IsTesting() const override;
 
 // ITestFileExport
-   int WriteCADDataToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, bool designSucceeded) override;
-   int WriteDistributionFactorsToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey) override;
+   int WriteCADDataToFile(FILE *fp, const CSegmentKey& segmentKey, bool designSucceeded) override;
+   int WriteDistributionFactorsToFile (FILE *fp, const CSegmentKey& segmentKey) override;
 
 // IEAFProcessCommandLine
    BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo) override;

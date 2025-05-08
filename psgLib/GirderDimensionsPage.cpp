@@ -191,7 +191,7 @@ BOOL CGirderDimensionsPage::OnInitDialog()
          CLSID* pCLSID = new CLSID;
          *pCLSID = beamFamily->GetFactoryCLSID(factoryName);
 
-         auto pFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(*pCLSID);
+         auto pFactory = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(*pCLSID);
          if ( pFactory )
          {
             int idx = pComboBox->AddString(factoryName);
@@ -250,7 +250,7 @@ void CGirderDimensionsPage::OnBeamTypeChanged()
    CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_BEAMTYPES);
    int selIdx = pComboBox->GetCurSel();
    CLSID* pCLSID = (CLSID*)pComboBox->GetItemDataPtr(selIdx);
-   auto pFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(*pCLSID);
+   auto pFactory = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(*pCLSID);
    if ( pFactory == nullptr )
    {
       CString strGirderName;
@@ -329,7 +329,7 @@ void CGirderDimensionsPage::OnDestroy()
 
 void CGirderDimensionsPage::UpdateGirderImage(const CLSID& factoryCLSID)
 {
-   auto pFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(factoryCLSID);
+   auto pFactory = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(factoryCLSID);
    if ( pFactory == nullptr )
    {
       return;

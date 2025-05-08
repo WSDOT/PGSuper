@@ -117,7 +117,7 @@ void CPGSProjectImporterPluginAppBase::ConfigureProjectImporters()
          else
          {
             // importer was not initially enabled, but now it is
-            auto importer = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::IProjectImporter>(state.GetCLSID());
+            auto importer = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::IProjectImporter>(state.GetCLSID());
             if (importer)
             {
                pImporterMgr->AddImporter(state.GetCLSID(), importer);

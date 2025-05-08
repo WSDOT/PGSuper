@@ -30,20 +30,11 @@
 #include <EAF\EAFDisplayUnits.h>
 
 
-/****************************************************************************
-CLASS
-   CMultiGirderHaunchGeometryChapterBuilder
-****************************************************************************/
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CMultiGirderHaunchGeometryChapterBuilder::CMultiGirderHaunchGeometryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CMultiGirderHaunchGeometryChapterBuilder::GetName() const
 {
    return TEXT("Haunch Geometry");
@@ -89,27 +80,3 @@ rptChapter* CMultiGirderHaunchGeometryChapterBuilder::Build(const std::shared_pt
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMultiGirderHaunchGeometryChapterBuilder::Clone() const
-{
-   return std::make_unique<CMultiGirderHaunchGeometryChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

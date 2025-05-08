@@ -46,15 +46,6 @@
 
 #include <algorithm>
 
-
-/****************************************************************************
-CLASS
-   CHorizontalInterfaceShearCapacityDetailsChapterBuilder
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CHorizontalInterfaceShearCapacityDetailsChapterBuilder::CHorizontalInterfaceShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -62,8 +53,6 @@ CPGSuperChapterBuilder(bSelect)
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CHorizontalInterfaceShearCapacityDetailsChapterBuilder::GetName() const
 {
    return TEXT("Horizontal Interface Shear Capacity Details");
@@ -194,9 +183,4 @@ rptChapter* CHorizontalInterfaceShearCapacityDetailsChapterBuilder::Build(const 
    } // next group
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CHorizontalInterfaceShearCapacityDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CHorizontalInterfaceShearCapacityDetailsChapterBuilder>(m_bDesign,m_bRating);
 }

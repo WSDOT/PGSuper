@@ -32,19 +32,19 @@ namespace PGS
 {
    namespace Beams
    {
-
-      class BEAMSCLASS DistFactorEngineerBase
+      /// @brief Base class for live load distribution factor engineer objects
+      class BEAMSCLASS DistFactorEngineer
       {
       public:
-         DistFactorEngineerBase() = delete;
-         DistFactorEngineerBase(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+         DistFactorEngineer() = delete;
+         DistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
             m_pBroker(pBroker), m_StatusGroupID(statusGroupID)
          {
          }
-         DistFactorEngineerBase(const DistFactorEngineerBase&) = delete;
-         virtual ~DistFactorEngineerBase() = default;
+         DistFactorEngineer(const DistFactorEngineer&) = delete;
+         virtual ~DistFactorEngineer() = default;
    
-         DistFactorEngineerBase& operator=(const DistFactorEngineerBase&) = delete;
+         DistFactorEngineer& operator=(const DistFactorEngineer&) = delete;
 
          // Returns the distribution factor for moment
          virtual Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) = 0;
@@ -75,7 +75,7 @@ namespace PGS
 
       protected:
          StatusGroupIDType m_StatusGroupID;
-         std::shared_ptr<WBFL::EAF::Broker> GetBroker() { return m_pBroker.lock(); }
+         inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() { return m_pBroker.lock(); }
 
       private:
          std::weak_ptr<WBFL::EAF::Broker> m_pBroker;

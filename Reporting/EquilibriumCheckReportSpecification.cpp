@@ -27,7 +27,7 @@
 #include <EAF/EAFDisplayUnits.h>
 
 
-CEquilibriumCheckReportSpecification::CEquilibriumCheckReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
+CEquilibriumCheckReportSpecification::CEquilibriumCheckReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_Poi = poi;

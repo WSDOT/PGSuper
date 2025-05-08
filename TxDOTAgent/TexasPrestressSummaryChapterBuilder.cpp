@@ -30,23 +30,11 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
-
-/****************************************************************************
-CLASS
-   CTexasPrestressSummaryChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTexasPrestressSummaryChapterBuilder::CTexasPrestressSummaryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTexasPrestressSummaryChapterBuilder::GetName() const
 {
    return TEXT("Prestress Force and Strand Stresses");
@@ -74,27 +62,3 @@ rptChapter* CTexasPrestressSummaryChapterBuilder::Build(const std::shared_ptr<co
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasPrestressSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CTexasPrestressSummaryChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

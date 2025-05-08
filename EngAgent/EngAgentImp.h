@@ -463,8 +463,7 @@ private:
    std::unique_ptr<pgsBearingDesignEngineer> m_BearingEngineer;
    
    mutable bool m_bAreDistFactorEngineersValidated;
-#pragma Reminder("WORKING HERE - Removing COM - should this be a unique_ptr?")
-   mutable std::shared_ptr<PGS::Beams::DistFactorEngineerBase> m_pDistFactorEngineer; // assigned a polymorphic object during validation (must be mutable for delayed assignment)
+   mutable std::unique_ptr<PGS::Beams::DistFactorEngineer> m_pDistFactorEngineer; // assigned a polymorphic object during validation (must be mutable for delayed assignment)
 
    static UINT DeleteMomentCapacityEngineer(LPVOID pParam);
    std::unique_ptr<pgsMomentCapacityEngineer> m_pMomentCapacityEngineer;

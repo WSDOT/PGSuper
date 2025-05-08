@@ -36,7 +36,7 @@
 
 #include <EAF\EAFApp.h>
 
-#pragma Reminder("WORKING HERE - Removing COM - ConnectionLibraryEntry enums")
+#pragma Reminder("UPDATE - ConnectionLibraryEntry enums")
 // The Enum and static functions on the ConnectionLibraryEntry class are more general and should not be bound
 // to the library entry. They are used throughout the API. For example IFace\Project.h must include the
 // entire connection library entry just to use the enums. In other places, we must include the entire connection library entry

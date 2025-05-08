@@ -22,11 +22,6 @@
 
 #include "StdAfx.h"
 
-/****************************************************************************
-CLASS
-   CSpecCheckSummaryChapterBuilder
-****************************************************************************/
-
 #include <Reporting\SpecCheckSummaryChapterBuilder.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
@@ -57,8 +52,6 @@ m_ReferToDetailsReport(referToDetailsReport)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CSpecCheckSummaryChapterBuilder::GetName() const
 {
    return TEXT("Specification Check Summary");
@@ -309,9 +302,4 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, std::s
          }
       }
    }
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSpecCheckSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CSpecCheckSummaryChapterBuilder>(m_ReferToDetailsReport);
 }

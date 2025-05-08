@@ -26,39 +26,11 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CFinalLossesChapterBuilder
-
-   Prestress losses chapter.
-
-
-DESCRIPTION
-   Prestress losses chapter.  Reports detailed information about the calculation
-   of prestress losses.
-
-LOG
-   rab : 10.27.1998 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CFinalLossesChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CFinalLossesChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-private:
-   // Prevent accidental copying and assignment
-   CFinalLossesChapterBuilder(const CFinalLossesChapterBuilder&) = delete;
-   CFinalLossesChapterBuilder& operator=(const CFinalLossesChapterBuilder&) = delete;
 };

@@ -32,14 +32,10 @@ class IEAFDisplayUnits;
 class REPORTINGCLASS CBasicCamberChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   CBasicCamberChapterBuilder(const CBasicCamberChapterBuilder&) = delete;
    CBasicCamberChapterBuilder(bool bSelect = true);
-
-   CBasicCamberChapterBuilder& operator=(const CBasicCamberChapterBuilder&) = delete;
 
    LPCTSTR GetName() const override;
    rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 private:
    void Build_Deck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bTempStrands,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const;

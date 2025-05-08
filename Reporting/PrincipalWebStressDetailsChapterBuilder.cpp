@@ -43,22 +43,11 @@
 
 #define IFNFIRSTNEWLINE(bFirst, pTable, RowIdx, ColIdx) if (!bFirst) { (*pTable)(RowIdx, ColIdx) << rptNewLine; }
 
-/****************************************************************************
-CLASS
-   CPrincipalWebStressDetailsChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CPrincipalWebStressDetailsChapterBuilder::CPrincipalWebStressDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CPrincipalWebStressDetailsChapterBuilder::GetName() const
 {
    return TEXT("Principal Web Stress Details");
@@ -207,11 +196,6 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_pt
 
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPrincipalWebStressDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CPrincipalWebStressDetailsChapterBuilder>();
 }
 
 void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IntervalIndexType intervalIdx, PoiList vPoi, const std::vector<pgsTypes::ProductForceType>& vLoads, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
@@ -589,7 +573,7 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildCombinedStressTables(rptChap
    // Create different paragraphs for shear stress and axial stress tables
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    (*pChapter) << pPara;
-   (*pPara) << _T("Cummulative Combined Principal Web Stresses ") << strInterval << rptNewLine;
+   (*pPara) << _T("Cumulative Combined Principal Web Stresses ") << strInterval << rptNewLine;
    pPara = new rptParagraph;
    (*pChapter) << pPara;
    (*pPara) << rptRcImage(strImagePath + _T("PrincipalTensionStress.png")) << rptNewLine;

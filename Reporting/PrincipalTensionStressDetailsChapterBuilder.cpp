@@ -117,7 +117,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
       const auto* pArtifact = pSegmentArtifact->GetPrincipalTensionStressArtifact();
       if (pArtifact->IsApplicable())
       {
-         // only has to be applicable for one segment to cause reportin
+         // only has to be applicable for one segment to cause reporting
          bApplicable = true;
       }
       else
@@ -142,7 +142,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
          }
          else
          {
-            ATLASSERT(false); // is there a new applicabilty reason?
+            ATLASSERT(false); // is there a new applicability reason?
          }
       }
    }
@@ -312,9 +312,4 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
       *pPara << _T("* indicates web width has been reduced because an internal tendon crosses near the depth at which the maximum principal tension is being checked [LRFD 5.7.2.1, 5.9.2.3.3]");
    }
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPrincipalTensionStressDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CPrincipalTensionStressDetailsChapterBuilder>();
 }

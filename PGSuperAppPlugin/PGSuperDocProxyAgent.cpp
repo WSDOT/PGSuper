@@ -34,7 +34,7 @@
 #include <EAF/EAFStatusCenter.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFUIIntegration.h>
-#include <EAF\EAFStatusItem.h>
+#include <EAF\StatusItem.h>
 
 #include <PsgLib\BridgeDescription2.h>
 #include "PGSuperApp.h"
@@ -73,9 +73,9 @@ CLASS
    CPGSuperDocProxyAgent
 ****************************************************************************/
 
-CPGSuperDocProxyAgent::CPGSuperDocProxyAgent()
+CPGSuperDocProxyAgent::CPGSuperDocProxyAgent(CPGSDocBase* pDoc) :
+   m_pMyDocument(pDoc)
 {
-   m_pMyDocument = nullptr;
    m_EventHoldCount = 0;
    m_bFiringEvents = false;
    m_StdToolBarID = -1;
@@ -92,11 +92,6 @@ CPGSuperDocProxyAgent::CPGSuperDocProxyAgent()
 
 CPGSuperDocProxyAgent::~CPGSuperDocProxyAgent()
 {
-}
-
-void CPGSuperDocProxyAgent::SetDocument(CPGSDocBase* pDoc)
-{
-   m_pMyDocument = pDoc;
 }
 
 void CPGSuperDocProxyAgent::CreateStatusBar()

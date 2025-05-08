@@ -24,7 +24,7 @@
 #include <Reporting\CopyPierPropertiesReportSpecification.h>
 
 
-CCopyPierPropertiesReportSpecification::CCopyPierPropertiesReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker) :
+CCopyPierPropertiesReportSpecification::CCopyPierPropertiesReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker) :
    CBrokerReportSpecification(strReportName, pBroker)
 {
 }

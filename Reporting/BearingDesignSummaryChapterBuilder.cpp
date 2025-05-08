@@ -137,8 +137,3 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder>CBearingDesignSummaryChapterBuilder::Clone() const
-{
-    return std::make_unique<CBearingDesignSummaryChapterBuilder>();
-}

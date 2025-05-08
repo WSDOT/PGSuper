@@ -36,8 +36,6 @@ m_FromTempSupportIdx(INVALID_INDEX)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CCopyTempSupportPropertiesChapterBuilder::GetName() const
 {
    return TEXT("Temporary Support Properties Comparison");
@@ -71,11 +69,6 @@ rptChapter* CCopyTempSupportPropertiesChapterBuilder::Build(const std::shared_pt
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCopyTempSupportPropertiesChapterBuilder::Clone() const
-{
-   return std::make_unique<CCopyTempSupportPropertiesChapterBuilder>();
 }
 
 void CCopyTempSupportPropertiesChapterBuilder::SetCopyTempSupportProperties(std::vector<ICopyTemporarySupportPropertiesCallback*>& rCallBacks, PierIndexType fromTempSupportIdx, const std::vector<PierIndexType>& toTempSupports)

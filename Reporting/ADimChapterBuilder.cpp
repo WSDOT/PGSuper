@@ -650,8 +650,3 @@ void CADimChapterBuilder::BuildDirectHaunchElevationContent(rptChapter* pChapter
       } // next group
    } // next interval
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CADimChapterBuilder::Clone() const
-{
-   return std::make_unique<CADimChapterBuilder>();
-}

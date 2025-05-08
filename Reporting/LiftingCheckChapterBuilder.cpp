@@ -29,14 +29,6 @@
 #include <IFace\Artifact.h>
 
 
-
-
-
-/****************************************************************************
-CLASS
-   CLiftingCheckChapterBuilder
-****************************************************************************/
-
 CLiftingCheckChapterBuilder::CLiftingCheckChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -72,10 +64,4 @@ rptChapter* CLiftingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL:
    }
 
    return pChapter;
-}
-
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLiftingCheckChapterBuilder::Clone() const
-{
-   return std::make_unique<CLiftingCheckChapterBuilder>();
 }

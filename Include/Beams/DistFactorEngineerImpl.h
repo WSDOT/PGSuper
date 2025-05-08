@@ -76,10 +76,10 @@ namespace PGS
       };
 
       template <class T>
-      class DistFactorEngineerImpl : public DistFactorEngineerBase 
+      class DistFactorEngineerImpl : public DistFactorEngineer 
       {
       public:
-         using DistFactorEngineerBase::DistFactorEngineerBase;
+         using DistFactorEngineer::DistFactorEngineer;
 
          Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,const GDRCONFIG* pConfig = nullptr) override;
          Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace, const GDRCONFIG* pConfig = nullptr) override;

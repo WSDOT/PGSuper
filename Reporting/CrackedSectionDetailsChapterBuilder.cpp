@@ -38,11 +38,6 @@
 #include <IFace/PointOfInterest.h>
 
 
-/****************************************************************************
-CLASS
-   CCrackedSectionDetailsChapterBuilder
-****************************************************************************/
-
 void write_cracked_section_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
@@ -135,11 +130,6 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(const std::shared_ptr<co
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCrackedSectionDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CCrackedSectionDetailsChapterBuilder>();
 }
 
 void write_cracked_section_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,

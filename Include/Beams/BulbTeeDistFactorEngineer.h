@@ -30,7 +30,7 @@ namespace PGS
 {
    namespace Beams
    {
-      class BEAMSCLASS BulbTeeDistFactorEngineer : public DistFactorEngineerBase
+      class BEAMSCLASS BulbTeeDistFactorEngineer : public DistFactorEngineer
       {
       public:
          BulbTeeDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
@@ -52,7 +52,7 @@ namespace PGS
 
       private:
          // Farm most of the hard work out to other classes
-         std::unique_ptr<DistFactorEngineerBase> m_pImpl;
+         std::unique_ptr<DistFactorEngineer> m_pImpl;
       };
    };
 };

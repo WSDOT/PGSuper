@@ -60,8 +60,6 @@ EAF_BEGIN_OBJECT_MAP(ObjectMap)
 	EAF_OBJECT_ENTRY(CLSID_PGSpliceReportAgent, CPGSpliceReporterImp)
 EAF_END_OBJECT_MAP()
 
-#pragma Reminder("WORKING HERE - Removing COM - does this need to be an MFC DLL?")
-// Could this be a regular DLL with DllMain?
 class CReportAgentApp : public CWinApp
 {
 public:
