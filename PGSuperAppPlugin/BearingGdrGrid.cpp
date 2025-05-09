@@ -26,6 +26,10 @@
 #include "stdafx.h"
 #include "BearingGdrGrid.h"
 
+
+#include "resource.h"
+#include "BearingGdrByGdrDlg.h"
+
 #include <System\Tokenizer.h>
 #include "PGSuperUnits.h"
 #include <Units\Measure.h>
@@ -571,7 +575,7 @@ void CBearingGdrGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
       if (strShp == _T("Round"))
       {
          // round bearing - don't need to display width
-         SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingWidthCol), CGXStyle()
+       SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingWidthCol), CGXStyle()
             .SetValue(_T("")) // erase the current value
             .SetEnabled(FALSE)
             .SetReadOnly(TRUE)
@@ -581,13 +585,13 @@ void CBearingGdrGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
       }
       else
       {
-         SetStyleRange(CGXRange(nRow,m_DGetter.m_BearingWidthCol),CGXStyle()
-            .SetEnabled(TRUE)
-            .SetReadOnly(FALSE)
-            .SetInterior(::GetSysColor(COLOR_WINDOW))
-            .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
-            );
-      }
+        SetStyleRange(CGXRange(nRow,m_DGetter.m_BearingWidthCol),CGXStyle()
+             .SetEnabled(TRUE)
+             .SetReadOnly(FALSE)
+             .SetInterior(::GetSysColor(COLOR_WINDOW))
+             .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+           );
+       }
    }
 
    GetParam()->SetLockReadOnly(TRUE);
@@ -739,3 +743,126 @@ LRESULT CBearingGdrGrid::ChangeTabName( WPARAM wParam, LPARAM lParam )
    // don't allow userss to change tab names
    return FALSE;
 }
+
+
+BOOL CBearingGdrGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
+{
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+    CDataExchange dx(this, TRUE);
+    DoDataExchange(&dx);
+
+    //CBearingData2 bd = m_DGetter.GetBrgData(this, nRow, m_pCompUnit, &dx);
+
+    // make a local copy of data and only overwrite if we are successful
+    BearingInputData localBearingData(*m_pBearingInputData);
+
+    //// Find back index for this grid's span
+    PierIndexType backBlIdx = this->GetBackBearingIdx();
+    if (backBlIdx == INVALID_INDEX)
+    {
+        return TRUE;
+    }
+
+    BearingPierData& rBack = localBearingData.m_Bearings[backBlIdx];
+    BearingPierData& rAhead = localBearingData.m_Bearings[backBlIdx + 1];
+
+    if (rBack.m_BPDType == BearingPierData::bpdCL)
+    {
+        ROWCOL nRows = this->GetRowCount();
+
+        ROWCOL BackRow = 1;
+
+        while (BackRow <= nRows)
+        {
+
+                if (nRow == BackRow)
+                {
+                    CWnd* pWnd;
+                    pWnd = GetParent();
+                    CBearingGdrByGdrDlg* dlg;
+
+                    while (pWnd)
+                    {
+                        dlg = dynamic_cast<CBearingGdrByGdrDlg*>(pWnd);
+                        if (dlg)
+                            break;
+                        pWnd = pWnd->GetParent();
+                    }
+
+                    for (size_t i = 0; i < dlg->m_GirderGrids.size(); ++i)
+                    {
+                        if (dlg->m_GirderGrids[i].get() == this)
+                        {
+                            if (i - 1 >= 0)
+                            {
+                                auto prevGrid = dlg->m_GirderGrids[i - 1];
+
+                                prevGrid->SetStyleRange(CGXRange(nRow + 1, nCol), CGXStyle()
+                                    .SetValue(GetCellValue(nRow, nCol))
+                                );
+
+                            }
+                            break;
+                        }
+                    }
+
+                }
+
+                BackRow += 2;
+        }
+
+    }
+
+
+    if (rAhead.m_BPDType == BearingPierData::bpdCL)
+    {
+        ROWCOL nRows = this->GetRowCount();
+
+        ROWCOL AheadRow = 2;
+
+        while (AheadRow <= nRows)
+        {
+            if (nRow == AheadRow)
+            {
+                CWnd* pWnd;
+                pWnd = GetParent();
+                CBearingGdrByGdrDlg* dlg;
+
+                while (pWnd)
+                {
+                    dlg = dynamic_cast<CBearingGdrByGdrDlg*>(pWnd);
+                    if (dlg)
+                        break;
+                    pWnd = pWnd->GetParent();
+                }
+
+                for (size_t i = 0; i < dlg->m_GirderGrids.size(); ++i)
+                {
+                    if (dlg->m_GirderGrids[i].get() == this)
+                    {
+                        if (i + 1 < dlg->m_GirderGrids.size())
+                        {
+                            auto nextGrid = dlg->m_GirderGrids[i + 1];
+                     
+                            nextGrid->SetStyleRange(CGXRange(nRow-1, nCol), CGXStyle()
+                                .SetValue(GetCellValue(nRow, nCol))
+                            );
+
+                        }
+                        break;
+                    }
+                }
+
+            }
+
+            AheadRow += 2;
+        }
+    }
+
+    return TRUE;
+
+}
+
+
+
