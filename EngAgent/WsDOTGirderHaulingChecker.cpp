@@ -164,7 +164,7 @@ void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,
 #if defined _DEBUG
    AnalyzeHauling(segmentKey,bUseConfig,haulConfig,pPOId,artifact,&(pArtifact.m_pStabilityProblem));
 #else
-   AnalyzeHauling(segmentKey,bUseConfig,haulConfig,pPOId,&artifact);
+   AnalyzeHauling(segmentKey,bUseConfig,haulConfig,pPOId,artifact);
 #endif
    pArtifact.SetHaulingCheckArtifact(artifact);
 }
