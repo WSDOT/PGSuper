@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <guiddef.h>
+
 // {785F2ACE-127B-4647-8062-ED49537E962C}
 DEFINE_GUID(CLSID_TxDOTPGSuperComponentInfo, 
    0x785F2ACE, 0x127B, 0x4647, 0x80, 0x62, 0xED, 0x49, 0x53, 0x7E, 0x96, 0x2C);

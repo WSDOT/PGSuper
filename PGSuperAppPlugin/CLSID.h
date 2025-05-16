@@ -22,7 +22,8 @@
 
 #pragma once
 
-#include <initguid.h>
+#include <guiddef.h>
+
 
 // {339425CE-5469-41c2-B8A2-511A79B7483F}
 DEFINE_GUID(CLSID_PGSuperComponentInfo,

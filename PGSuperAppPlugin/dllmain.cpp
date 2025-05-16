@@ -73,6 +73,12 @@ BOOL CPGSuperPluginAppApp::InitInstance()
 {
    Module_.Init(ObjectMap);
 
+#pragma Reminder("WORKING HERE - Removing COM")
+   // assume manifest files are in the same folder as the EXE
+   // NEED TO HAVE A MANIFEST SEARCH PATH
+   EAFGetApp()->LoadManifest(_T("Manifest.PGSuper"));
+
+
    GXInit();
 	GXSetNewGridLineMode(TRUE);	// use smarter grid lines (and dotted) 
 
