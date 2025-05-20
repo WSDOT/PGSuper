@@ -93,6 +93,7 @@ namespace PGS
       private:
          static std::shared_ptr<T> instance;
       };
+#define INIT_BEAM_FACTORY_SINGLETON(class) std::shared_ptr<class> PGS::Beams::BeamFactorySingleton<class>::instance = nullptr;
       
       /// @brief Factory object that creates beam instances and related entities.
       /// BeamFactory objects are singletons and access through the GetInstance method.

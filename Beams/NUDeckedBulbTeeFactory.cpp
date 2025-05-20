@@ -60,7 +60,7 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<NUDeckedBulbTeeFactory> BeamFactorySingleton<NUDeckedBulbTeeFactory>::instance = nullptr;
+INIT_BEAM_FACTORY_SINGLETON(NUDeckedBulbTeeFactory)
 
 NUDeckedBulbTeeFactory::NUDeckedBulbTeeFactory() : BeamFactory()
 {

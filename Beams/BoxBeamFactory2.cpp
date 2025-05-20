@@ -45,7 +45,7 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<BoxBeamFactory2> BeamFactorySingleton<BoxBeamFactory2>::instance = nullptr;
+INIT_BEAM_FACTORY_SINGLETON(BoxBeamFactory2)
 
 BoxBeamFactory2::BoxBeamFactory2() : BoxBeamFactoryImpl()
 {

@@ -48,7 +48,7 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<UBeam2Factory> BeamFactorySingleton<UBeam2Factory>::instance = nullptr;
+INIT_BEAM_FACTORY_SINGLETON(UBeam2Factory)
 
 UBeam2Factory::UBeam2Factory() : BeamFactory()
 {

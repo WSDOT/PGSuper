@@ -51,7 +51,7 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<SplicedNUBeamFactory> BeamFactorySingleton<SplicedNUBeamFactory>::instance = nullptr;
+INIT_BEAM_FACTORY_SINGLETON(SplicedNUBeamFactory)
 
 SplicedNUBeamFactory::SplicedNUBeamFactory() : SplicedBeamFactory()
 {

@@ -73,7 +73,7 @@ using namespace PGS::Beams;
 #define EBL 16
 #define EBT 17
 
-std::shared_ptr<IBeamFactory> BeamFactorySingleton<IBeamFactory>::instance = nullptr;
+INIT_BEAM_FACTORY_SINGLETON(IBeamFactory)
 
 IBeamFactory::IBeamFactory() : BeamFactory()
 {

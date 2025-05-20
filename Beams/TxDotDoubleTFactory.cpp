@@ -53,7 +53,7 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<TxDotDoubleTFactory> BeamFactorySingleton<TxDotDoubleTFactory>::instance = nullptr;
+INIT_BEAM_FACTORY_SINGLETON(TxDotDoubleTFactory)
 
 TxDotDoubleTFactory::TxDotDoubleTFactory() : BeamFactory()
 {

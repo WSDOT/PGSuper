@@ -55,7 +55,7 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<BulbTeeFactory> BeamFactorySingleton<BulbTeeFactory>::instance = nullptr;
+INIT_BEAM_FACTORY_SINGLETON(BulbTeeFactory)
 
 /////////////////////////////////////////////////////////////////////////////
 // CBulbTeeFactory

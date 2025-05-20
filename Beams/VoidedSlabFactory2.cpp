@@ -55,7 +55,7 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<VoidedSlab2Factory> BeamFactorySingleton<VoidedSlab2Factory>::instance = nullptr;
+INIT_BEAM_FACTORY_SINGLETON(VoidedSlab2Factory)
 
 VoidedSlab2Factory::VoidedSlab2Factory() : BeamFactory()
 {

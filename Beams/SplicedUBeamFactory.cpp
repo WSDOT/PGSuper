@@ -49,7 +49,7 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<SplicedUBeamFactory> BeamFactorySingleton<SplicedUBeamFactory>::instance = nullptr;
+INIT_BEAM_FACTORY_SINGLETON(SplicedUBeamFactory)
 
 SplicedUBeamFactory::SplicedUBeamFactory() : SplicedBeamFactory()
 {

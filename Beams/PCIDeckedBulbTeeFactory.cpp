@@ -61,7 +61,7 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<PCIDeckedBulbTeeFactory> BeamFactorySingleton<PCIDeckedBulbTeeFactory>::instance = nullptr;
+INIT_BEAM_FACTORY_SINGLETON(PCIDeckedBulbTeeFactory)
 
 PCIDeckedBulbTeeFactory::PCIDeckedBulbTeeFactory() : BeamFactory()
 {

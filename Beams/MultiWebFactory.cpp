@@ -54,7 +54,7 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<MultiWebFactory> BeamFactorySingleton<MultiWebFactory>::instance = nullptr;
+INIT_BEAM_FACTORY_SINGLETON(MultiWebFactory)
 
 MultiWebFactory::MultiWebFactory() : BeamFactory()
 {

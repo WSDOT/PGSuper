@@ -54,7 +54,7 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<DeckedSlabBeamFactory> BeamFactorySingleton<DeckedSlabBeamFactory>::instance = nullptr;
+INIT_BEAM_FACTORY_SINGLETON(DeckedSlabBeamFactory)
 
 DeckedSlabBeamFactory::DeckedSlabBeamFactory() :
    BeamFactory()
