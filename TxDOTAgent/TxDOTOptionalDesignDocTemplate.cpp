@@ -189,7 +189,7 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemp
 
       HICON fileIcon = origIcon;
 
-      CString strIconFile = CString(strPath) + _T("\\") + rfolder.Title.c_str() + _T(".ico");
+      CString strIconFile = CString(strPath) + rfolder.Title.c_str() + _T(".ico");
       HICON hIcon = (HICON)::LoadImage(nullptr,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
       if (hIcon)
       {
