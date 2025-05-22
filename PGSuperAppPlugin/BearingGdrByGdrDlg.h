@@ -24,11 +24,14 @@
 #include "BearingGdrGrid.h"
 
 
+
 // CBearingGdrByGdrDlg dialog
 
 class CBearingGdrByGdrDlg : public CDialog
 {
 	DECLARE_DYNAMIC(CBearingGdrByGdrDlg)
+
+	friend CBearingGdrGrid;
 
 public:
 	CBearingGdrByGdrDlg(CWnd* pParent = nullptr);   // standard constructor
@@ -56,6 +59,7 @@ private:
    BearingInputData m_BearingInputData;
 
 public:
+
    virtual BOOL OnInitDialog();
 
 };
