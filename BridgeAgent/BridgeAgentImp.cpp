@@ -31408,8 +31408,8 @@ HRESULT CBridgeAgentImp::OnGirderChanged(const CGirderKey& girderKey,Uint32 lHin
 
 HRESULT CBridgeAgentImp::OnLiveLoadChanged()
 {
-   // No changes necessary to bridge model
-   LOG(_T("OnLiveLoadChanged Event Received"));
+ //  LOG(_T("OnLiveLoadChanged Event Received"));
+   INVALIDATE(CLEAR_ALL);
    return S_OK;
 }
 
