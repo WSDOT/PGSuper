@@ -77,7 +77,7 @@
 
 // FORWARD DECLARATIONS
 //
-class DifferenceItem;
+namespace PGS {namespace Library{class DifferenceItem;};};
 class CSpecMainSheet;
 
 
@@ -121,7 +121,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const SpecLibraryEntryImpl* pOther, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+   bool Compare(const SpecLibraryEntryImpl* pOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
 
    //////////////////////////////////////
    //

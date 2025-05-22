@@ -24,13 +24,13 @@
 #include <PsgLib/DifferenceItem.h>
 //#include <EAF/EAFDisplayUnits.h>
 
-bool SectionPropertiesCriteria::Compare(const SectionPropertiesCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool SectionPropertiesCriteria::Compare(const SectionPropertiesCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (SectionPropertyMode != other.SectionPropertyMode || EffectiveFlangeWidthMethod != other.EffectiveFlangeWidthMethod)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Section Properties are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Section Properties are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

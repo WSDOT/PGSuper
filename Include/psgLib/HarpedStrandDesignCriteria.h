@@ -28,13 +28,13 @@
 class rptChapter;
 class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
-class DifferenceItem;
+namespace PGS {namespace Library{class DifferenceItem;};};
 
 struct PSGLIBCLASS HarpedStrandDesignCriteria
 {
    arDesignStrandFillType StrandFillType = ftMinimizeHarping;
 
-   bool Compare(const HarpedStrandDesignCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const HarpedStrandDesignCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

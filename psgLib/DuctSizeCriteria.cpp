@@ -36,13 +36,13 @@ bool DuctSizeCriteria::operator!=(const DuctSizeCriteria& other) const
           !::IsEqual(DuctDiameterRatio, other.DuctDiameterRatio);
 }
 
-bool DuctSizeCriteria::Compare(const DuctSizeCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool DuctSizeCriteria::Compare(const DuctSizeCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if(operator!=(other))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Size of Ducts parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Size of Ducts parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

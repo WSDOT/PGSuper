@@ -392,12 +392,12 @@ CString TrafficBarrierEntry::GetWeightMethodType(TrafficBarrierEntry::WeightMeth
 
 bool TrafficBarrierEntry::IsEqual(const TrafficBarrierEntry& rOther,bool bConsiderName) const
 {
-   std::vector<std::unique_ptr<DifferenceItem>> vDifferences;
+   std::vector<std::unique_ptr<PGS::Library::DifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool TrafficBarrierEntry::Compare(const TrafficBarrierEntry& rOther, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool &bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool TrafficBarrierEntry::Compare(const TrafficBarrierEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool &bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -407,7 +407,7 @@ bool TrafficBarrierEntry::Compare(const TrafficBarrierEntry& rOther, std::vector
    if ( m_WeightMethod != rOther.m_WeightMethod )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Properties"),GetWeightMethodType(m_WeightMethod),GetWeightMethodType(rOther.m_WeightMethod)));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Properties"),GetWeightMethodType(m_WeightMethod),GetWeightMethodType(rOther.m_WeightMethod)));
    }
 
    if ( m_WeightMethod == TrafficBarrierEntry::Input )
@@ -415,38 +415,38 @@ bool TrafficBarrierEntry::Compare(const TrafficBarrierEntry& rOther, std::vector
       if ( !::IsEqual(m_Weight,rOther.m_Weight) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<DifferenceForcePerLengthItem>(_T("Weight"),m_Weight,rOther.m_Weight,pDisplayUnits->ForcePerLength));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceForcePerLengthItem>(_T("Weight"),m_Weight,rOther.m_Weight,pDisplayUnits->ForcePerLength));
       }
 
       if ( !::IsEqual(m_Ec,rOther.m_Ec) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<DifferenceStressItem>(_T("Ec"),m_Ec,rOther.m_Ec,pDisplayUnits->ModE));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStressItem>(_T("Ec"),m_Ec,rOther.m_Ec,pDisplayUnits->ModE));
       }
    }
 
    if ( m_bStructurallyContinuous != rOther.m_bStructurallyContinuous )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceBooleanItem>(_T("Barrier is Structurally Continuous"),m_bStructurallyContinuous,rOther.m_bStructurallyContinuous,_T("Checked"),_T("Unchecked")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceBooleanItem>(_T("Barrier is Structurally Continuous"),m_bStructurallyContinuous,rOther.m_bStructurallyContinuous,_T("Checked"),_T("Unchecked")));
    }
 
    if ( !::IsEqual(m_CurbOffset,rOther.m_CurbOffset) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceLengthItem>(_T("Curb Offset"),m_CurbOffset,rOther.m_CurbOffset,pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthItem>(_T("Curb Offset"),m_CurbOffset,rOther.m_CurbOffset,pDisplayUnits->ComponentDim));
    }
 
    if ( !ComparePoints(m_BarrierPoints,rOther.m_BarrierPoints) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Barrier Shapes are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Barrier Shapes are different"),_T(""),_T("")));
    }
    
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;

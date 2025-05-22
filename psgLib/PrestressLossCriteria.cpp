@@ -27,14 +27,14 @@
 
 inline constexpr auto operator+(WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod a) noexcept { return std::underlying_type<WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod>::type(a); }
 
-bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
    if (LossMethod != other.LossMethod)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Prestress Loss Methods are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Methods are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
    else
@@ -47,7 +47,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                RelaxationLossMethod != other.RelaxationLossMethod)
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
 
@@ -64,7 +64,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                !::IsEqual(LiveLoadElasticGain, other.LiveLoadElasticGain))
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Elastic Gains are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Elastic Gains are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
          }
@@ -74,7 +74,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                RelaxationLossMethod != other.RelaxationLossMethod)
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
          }
@@ -87,7 +87,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                RelaxationLossMethod != other.RelaxationLossMethod)
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
          }
@@ -97,7 +97,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                RelaxationLossMethod != other.RelaxationLossMethod)
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
          }
@@ -109,7 +109,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
             FcgpComputationMethod != other.FcgpComputationMethod)
          {
             bSame = false;
-            vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
+            vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
             if (bReturnOnFirstDifference) return false;
          }
       }
@@ -129,7 +129,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                !::IsEqual(LiveLoadElasticGain, other.LiveLoadElasticGain))
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Elastic Gains are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Elastic Gains are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
          }
@@ -139,7 +139,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                RelaxationLossMethod != other.RelaxationLossMethod)
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
          }
@@ -147,7 +147,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
       else if (LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM)
       {
          bSame = false;
-         vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Prestress Loss Methods are different"), _T(""), _T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Methods are different"), _T(""), _T("")));
          if (bReturnOnFirstDifference) return false;
       }
       else
@@ -156,7 +156,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
          if (TimeDependentConcreteModel != other.TimeDependentConcreteModel)
          {
             bSame = false;
-            vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Time-Dependent Models are different"), _T(""), _T("")));
+            vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Time-Dependent Models are different"), _T(""), _T("")));
             if (bReturnOnFirstDifference) return false;
          }
       }

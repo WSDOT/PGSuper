@@ -24,14 +24,14 @@
 #include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
-bool HarpedStrandDesignCriteria::Compare(const HarpedStrandDesignCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool HarpedStrandDesignCriteria::Compare(const HarpedStrandDesignCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
    if (StrandFillType != other.StrandFillType)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Harped Strand Design Strategies are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Harped Strand Design Strategies are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

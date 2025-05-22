@@ -44,13 +44,13 @@ bool PrincipalTensionStressCriteria::operator!=(const PrincipalTensionStressCrit
       !IsEqual(GroutedMultiplier, other.GroutedMultiplier);
 }
 
-bool PrincipalTensionStressCriteria::Compare(const PrincipalTensionStressCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool PrincipalTensionStressCriteria::Compare(const PrincipalTensionStressCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (operator!=(other))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Principal Tensile Stress in Web parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Principal Tensile Stress in Web parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

@@ -73,7 +73,7 @@ LimitsCriteria::LimitsCriteria()
    //MaxConcreteAggSize[pgsTypes::UHPC] = WBFL::Units::ConvertToSysUnits(1.5, WBFL::Units::Measure::Inch);
 }
 
-bool LimitsCriteria::Compare(const LimitsCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool LimitsCriteria::Compare(const LimitsCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -81,7 +81,7 @@ bool LimitsCriteria::Compare(const LimitsCriteria& other, const SpecLibraryEntry
       (bCheckSag != other.bCheckSag || (bCheckSag == true && SagCamber != other.SagCamber)))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("General Warnings are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("General Warnings are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -111,7 +111,7 @@ bool LimitsCriteria::Compare(const LimitsCriteria& other, const SpecLibraryEntry
    if (!bConcreteLimits)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Concrete Limits are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Concrete Limits are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

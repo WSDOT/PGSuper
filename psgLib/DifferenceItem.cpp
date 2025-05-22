@@ -24,6 +24,8 @@
 #include <PsgLib/DifferenceItem.h>
 #include <PsgLib/GirderLabel.h>
 
+using namespace PGS::Library;
+
 DifferenceItem::DifferenceItem(LPCTSTR lpszItem) :
 m_Item(lpszItem)
 {

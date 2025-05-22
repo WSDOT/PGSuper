@@ -24,21 +24,21 @@
 #include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
-bool HaunchCriteria::Compare(const HaunchCriteria& other, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool HaunchCriteria::Compare(const HaunchCriteria& other, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (HaunchLoadComputationType != other.HaunchLoadComputationType ||
       (HaunchLoadComputationType == pgsTypes::hlcDetailedAnalysis && !::IsEqual(HaunchLoadCamberTolerance, other.HaunchLoadCamberTolerance)))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Haunch Loads are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Haunch Loads are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (HaunchLoadComputationType == pgsTypes::hlcDetailedAnalysis && !::IsEqual(HaunchLoadCamberFactor, other.HaunchLoadCamberFactor))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Haunch Loads Camber Factors are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Haunch Loads Camber Factors are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -46,7 +46,7 @@ bool HaunchCriteria::Compare(const HaunchCriteria& other, std::vector<std::uniqu
       (HaunchAnalysisSectionPropertiesType == pgsTypes::hspDetailedDescription && !::IsEqual(HaunchLoadCamberTolerance, other.HaunchLoadCamberTolerance)))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Method using haunch geometry to compute composite section properties is different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Method using haunch geometry to compute composite section properties is different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

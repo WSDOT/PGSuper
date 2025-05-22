@@ -59,7 +59,7 @@ ShearCapacityCriteria::ShearCapacityCriteria()
    PhiClosureJoint[pgsTypes::UHPC] = 0.90;
 }
 
-bool ShearCapacityCriteria::Compare(const ShearCapacityCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool ShearCapacityCriteria::Compare(const ShearCapacityCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (CapacityMethod != other.CapacityMethod ||
@@ -67,7 +67,7 @@ bool ShearCapacityCriteria::Compare(const ShearCapacityCriteria& other, const Sp
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Shear Capacity parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Shear Capacity parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -77,7 +77,7 @@ bool ShearCapacityCriteria::Compare(const ShearCapacityCriteria& other, const Sp
       !::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::AllLightweight], other.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight]))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Shear modulus of rupture parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Shear modulus of rupture parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
       
@@ -110,7 +110,7 @@ bool ShearCapacityCriteria::Compare(const ShearCapacityCriteria& other, const Sp
    if (!bPhiFactors)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Shear Resistance Factors are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Shear Resistance Factors are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -120,7 +120,7 @@ bool ShearCapacityCriteria::Compare(const ShearCapacityCriteria& other, const Sp
       !::IsEqual(MaxStirrupSpacing[1], other.MaxStirrupSpacing[1]))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Minimum Spacing of Transverse Reinforcement requirements are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Minimum Spacing of Transverse Reinforcement requirements are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -128,7 +128,7 @@ bool ShearCapacityCriteria::Compare(const ShearCapacityCriteria& other, const Sp
       bIncludeRebar != other.bIncludeRebar)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Longitudinal Reinforcement for Shear requirements are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Longitudinal Reinforcement for Shear requirements are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

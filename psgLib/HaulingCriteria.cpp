@@ -25,7 +25,7 @@
 #include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
-bool KDOTHaulingCriteria::Compare(const KDOTHaulingCriteria& other, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool KDOTHaulingCriteria::Compare(const KDOTHaulingCriteria& other, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -33,7 +33,7 @@ bool KDOTHaulingCriteria::Compare(const KDOTHaulingCriteria& other, std::vector<
       !::IsEqual(InteriorGFactor, other.InteriorGFactor))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Hauling Dynamic Load Factors are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling Dynamic Load Factors are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -44,7 +44,7 @@ bool KDOTHaulingCriteria::Compare(const KDOTHaulingCriteria& other, std::vector<
       TensionStressLimitWithReinforcement != other.TensionStressLimitWithReinforcement)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Hauling concrete stress limits are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling concrete stress limits are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -284,7 +284,7 @@ void WSDOTHaulingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisp
    *pPara << _T("- Tensile Stress (w/  mild rebar) = "); TensionStressLimitWithReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
 }
 
-bool WSDOTHaulingCriteria::Compare(const WSDOTHaulingCriteria& other, WBFL::LRFD::BDSManager::Edition specEdition, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool WSDOTHaulingCriteria::Compare(const WSDOTHaulingCriteria& other, WBFL::LRFD::BDSManager::Edition specEdition, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -292,7 +292,7 @@ bool WSDOTHaulingCriteria::Compare(const WSDOTHaulingCriteria& other, WBFL::LRFD
       !::IsEqual(FsFailure, other.FsFailure))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Hauling Factors of Safety are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling Factors of Safety are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -302,7 +302,7 @@ bool WSDOTHaulingCriteria::Compare(const WSDOTHaulingCriteria& other, WBFL::LRFD
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Modulus of Rupture for Cracking Moment During Hauling are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Modulus of Rupture for Cracking Moment During Hauling are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -323,14 +323,14 @@ bool WSDOTHaulingCriteria::Compare(const WSDOTHaulingCriteria& other, WBFL::LRFD
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Hauling Analysis Parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling Analysis Parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-bool HaulingCriteria::Compare(const HaulingCriteria& other, WBFL::LRFD::BDSManager::Edition specEdition, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool HaulingCriteria::Compare(const HaulingCriteria& other, WBFL::LRFD::BDSManager::Edition specEdition, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -341,14 +341,14 @@ bool HaulingCriteria::Compare(const HaulingCriteria& other, WBFL::LRFD::BDSManag
       (bUseMinBunkPointLimit != other.bUseMinBunkPointLimit || (bUseMinBunkPointLimit == true && !::IsEqual(MinBunkPointLimitFactor, other.MinBunkPointLimitFactor))))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Hauling Check/Design Options are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling Check/Design Options are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if(AnalysisMethod != other.AnalysisMethod)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Hauling Analysis Methods are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling Analysis Methods are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

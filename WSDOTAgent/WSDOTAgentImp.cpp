@@ -46,7 +46,7 @@ bool CWSDOTAgentImp::Init()
    CREATE_LOGFILE("WSDOTAgent");
 
    // Maps old agent CLSID to new CLSID since version 3.0
-   m_pBroker->AddCLSID(_T("{338AD645-BAF2-41DC-964E-A9DFC8123253}"), _T("{B1A19633-8880-40BC-A3C9-DDF47F7F1844}"));
+   m_pBroker->AddMappedCLSID(_T("{338AD645-BAF2-41DC-964E-A9DFC8123253}"), _T("{B1A19633-8880-40BC-A3C9-DDF47F7F1844}"));
 
 
    // Register our reports

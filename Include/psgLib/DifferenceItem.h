@@ -26,6 +26,10 @@
 #include <MFCTools\Format.h>
 #include <Units\Units.h>
 
+namespace PGS
+{
+   namespace Library
+   {
    class PSGLIBCLASS DifferenceItem
    {
    public:
@@ -120,22 +124,22 @@
       virtual void GetConflict(CString* pItem,CString* pOldValue,CString* pNewValue) const override
       {
          *pItem = this->m_Item;
-         if ( this->m_OldValue < 0 )
+         if (this->m_OldValue < 0 )
          {
             pOldValue->Format(_T("%s"),m_strKeyword);
          }
          else
          {
-            pOldValue->Format(_T("%s"),::FormatDimension(this->m_OldValue,this->m_Unit));
+            pOldValue->Format(_T("%s"),::FormatDimension(this->m_OldValue, this->m_Unit));
          }
 
-         if ( this->m_NewValue < 0 )
+         if (this->m_NewValue < 0 )
          {
             pNewValue->Format(_T("%s"),m_strKeyword);
          }
          else
          {
-            pNewValue->Format(_T("%s"),::FormatDimension(this->m_NewValue,this->m_Unit));
+            pNewValue->Format(_T("%s"),::FormatDimension(this->m_NewValue, this->m_Unit));
          }
       }
 
@@ -159,5 +163,7 @@
       using t = DifferenceUnitValueKeywordItemT<u>;
 
    DECLARE_UNIT_VALUE_KEYWORD_DIFFERENCE_ITEM(WBFL::Units::LengthData,DifferenceLengthKeywordItem);
+   };
+};
 
-   #define RETURN_ON_DIFFERENCE if ( bReturnOnFirstDifference ) { ATLASSERT(vDifferences.size() == 0); return false; }
+#define RETURN_ON_DIFFERENCE if ( bReturnOnFirstDifference ) { ATLASSERT(vDifferences.size() == 1); return false; }

@@ -187,7 +187,7 @@ bool SpecLibraryEntryImpl::LoadMe(WBFL::Library::LibraryEntry* pParent,WBFL::Sys
    return true;
 }
 
-bool SpecLibraryEntryImpl::Compare(const SpecLibraryEntryImpl* pOther, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool SpecLibraryEntryImpl::Compare(const SpecLibraryEntryImpl* pOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();

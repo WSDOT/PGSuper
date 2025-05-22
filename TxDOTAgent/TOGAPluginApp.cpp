@@ -47,6 +47,13 @@ BOOL CTOGAPluginApp::Init(CEAFApp* pParent)
 {
    InitCatalogServer();
 
+
+#pragma Reminder("WORKING HERE - Removing COM")
+   // assume manifest files are in the same folder as the EXE
+   // NEED TO HAVE A MANIFEST SEARCH PATH
+   EAFGetApp()->LoadManifest(_T("Manifest.TOGA"));
+
+
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

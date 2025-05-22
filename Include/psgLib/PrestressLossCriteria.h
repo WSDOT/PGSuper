@@ -31,7 +31,7 @@
 class rptChapter;
 class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
-class DifferenceItem;
+namespace PGS {namespace Library{class DifferenceItem;};};
 
 
 struct PSGLIBCLASS PrestressLossCriteria
@@ -90,7 +90,7 @@ struct PSGLIBCLASS PrestressLossCriteria
    Float64 LiveLoadElasticGain = 0.0;
 
 
-   bool Compare(const PrestressLossCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const PrestressLossCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

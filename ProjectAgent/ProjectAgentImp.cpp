@@ -10269,7 +10269,7 @@ void CProjectAgentImp::EnumGirderFamilyNames( std::vector<std::_tstring>* pNames
    USES_CONVERSION;
    if ( m_GirderFamilyNames.size() == 0 )
    {
-      std::vector<CString> names = PGS::Beams::BeamFamilyManager::GetBeamFamilyNames();
+      std::vector<CString> names = PGS::Library::BeamFamilyManager::GetBeamFamilyNames();
       std::vector<CString>::iterator iter(names.begin());
       std::vector<CString>::iterator iterEnd(names.end());
       for ( ; iter != iterEnd; iter++ )

@@ -39,7 +39,7 @@ LiftingCriteria::LiftingCriteria()
    ModulusOfRuptureCoefficient[pgsTypes::AllLightweight] = WBFL::Units::ConvertToSysUnits(0.18, WBFL::Units::Measure::SqrtKSI);
 }
 
-bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -53,7 +53,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Lifting Check/Design Options are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Lifting Check/Design Options are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -63,7 +63,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Lifting Factors of Safety are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Lifting Factors of Safety are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -76,7 +76,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Modulus of Rupture for Cracking Moment During Lifting are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Modulus of Rupture for Cracking Moment During Lifting are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -92,7 +92,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Lifting Analysis Parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Lifting Analysis Parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -103,7 +103,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Lifting Concrete Stresses Limits are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Lifting Concrete Stresses Limits are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

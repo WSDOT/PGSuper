@@ -29,7 +29,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\ComponentManager.h>
 
-using namespace PGS::Beams;
+using namespace PGS::Library;
 
 BeamFamilyManager::FamilyContainer BeamFamilyManager::m_Families;
 
@@ -85,7 +85,7 @@ std::vector<CString> BeamFamilyManager::GetBeamFamilyNames(CATID catid)
    return vNames;
 }
 
-std::shared_ptr<BeamFamily> BeamFamilyManager::GetBeamFamily(LPCTSTR strName)
+std::shared_ptr<PGS::Beams::BeamFamily> BeamFamilyManager::GetBeamFamily(LPCTSTR strName)
 {
    for(auto& [catid,beams] : m_Families)
    {
@@ -93,7 +93,7 @@ std::shared_ptr<BeamFamily> BeamFamilyManager::GetBeamFamily(LPCTSTR strName)
       if ( found != beams.end() )
       {
          CLSID clsid = found->second;
-         auto family = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<BeamFamily>(clsid);
+         auto family = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFamily>(clsid);
          return family;
       }
    }

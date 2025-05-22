@@ -2000,7 +2000,7 @@ void CPGSDocBase::OnCloseDocument()
 {
    CEAFBrokerDocument::OnCloseDocument();
 
-   PGS::Beams::BeamFamilyManager::Reset();
+   PGS::Library::BeamFamilyManager::Reset();
 }
 
 BOOL CPGSDocBase::DoSave(LPCTSTR lpszPathName, BOOL bReplace)
@@ -2136,14 +2136,14 @@ BOOL CPGSDocBase::CreateBroker()
 
    // map old PGSuper (pre version 3.0) CLSID to current CLSID
    // CLSID's were changed so that pre version 3.0 installations could co-exist with 3.0 and later installations
-   m_pBroker->AddCLSID(CComBSTR("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),CComBSTR("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
-   m_pBroker->AddCLSID(CComBSTR("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),CComBSTR("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
-   m_pBroker->AddCLSID(CComBSTR("{B455A760-6DAF-11D2-8EE9-006097DF3C68}"),CComBSTR("{73922319-9243-4974-BA54-CF22593EC9C4}")); // Eng Agent
-   m_pBroker->AddCLSID(CComBSTR("{3DA9045D-7C49-4591-AD14-D560E7D95581}"),CComBSTR("{B4639189-ED38-4A68-8A18-38026202E9DE}")); // Graph Agent
-   m_pBroker->AddCLSID(CComBSTR("{59D50426-265C-11D2-8EB0-006097DF3C68}"),CComBSTR("{256B5B5B-762C-4693-8802-6B0351290FEA}")); // Project Agent
-   m_pBroker->AddCLSID(CComBSTR("{3D5066F2-27BE-11D2-8EB2-006097DF3C68}"),CComBSTR("{1FFED5EC-7A32-4837-A1F1-99481AFF2825}")); // PGSuper Report Agent
-   m_pBroker->AddCLSID(CComBSTR("{EC915470-6E76-11D2-8EEB-006097DF3C68}"),CComBSTR("{F510647E-1F4F-4FEF-8257-6914DE7B07C8}")); // Spec Agent
-   m_pBroker->AddCLSID(CComBSTR("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),CComBSTR("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
+   m_pBroker->AddMappedCLSID(_T("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),_T("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
+   m_pBroker->AddMappedCLSID(_T("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),_T("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
+   m_pBroker->AddMappedCLSID(_T("{B455A760-6DAF-11D2-8EE9-006097DF3C68}"),_T("{73922319-9243-4974-BA54-CF22593EC9C4}")); // Eng Agent
+   m_pBroker->AddMappedCLSID(_T("{3DA9045D-7C49-4591-AD14-D560E7D95581}"),_T("{B4639189-ED38-4A68-8A18-38026202E9DE}")); // Graph Agent
+   m_pBroker->AddMappedCLSID(_T("{59D50426-265C-11D2-8EB0-006097DF3C68}"),_T("{256B5B5B-762C-4693-8802-6B0351290FEA}")); // Project Agent
+   m_pBroker->AddMappedCLSID(_T("{3D5066F2-27BE-11D2-8EB2-006097DF3C68}"),_T("{1FFED5EC-7A32-4837-A1F1-99481AFF2825}")); // PGSuper Report Agent
+   m_pBroker->AddMappedCLSID(_T("{EC915470-6E76-11D2-8EEB-006097DF3C68}"),_T("{F510647E-1F4F-4FEF-8257-6914DE7B07C8}")); // Spec Agent
+   m_pBroker->AddMappedCLSID(_T("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),_T("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
 
    return TRUE;
 }
@@ -2502,7 +2502,7 @@ BOOL CPGSDocBase::Init()
    // is executed in its own thread... Need to add some
    // code that indicates if the call fails.. then throw
    // a shut down exception
-   if ( FAILED(PGS::Beams::BeamFamilyManager::Init(GetBeamFamilyCategoryID())) )
+   if ( FAILED(PGS::Library::BeamFamilyManager::Init(GetBeamFamilyCategoryID())) )
    {
       return FALSE;
    }

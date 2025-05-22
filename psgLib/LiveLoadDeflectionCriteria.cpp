@@ -33,13 +33,13 @@ bool LiveLoadDeflectionCriteria::operator!=(const LiveLoadDeflectionCriteria& ot
    return bCheck != other.bCheck or !::IsEqual(DeflectionLimit, other.DeflectionLimit);
 }
 
-bool LiveLoadDeflectionCriteria::Compare(const LiveLoadDeflectionCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool LiveLoadDeflectionCriteria::Compare(const LiveLoadDeflectionCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (operator!=(other))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Live Load Deflection Check Options are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Live Load Deflection Check Options are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

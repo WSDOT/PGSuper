@@ -51,7 +51,7 @@ class pgsCompatibilityData;
 class CGirderMainSheet;
 class GirderLibraryEntry;
 class GirderLibraryEntryObserver;
-class DifferenceItem;
+namespace PGS {namespace Library{class DifferenceItem;};};
 
 PSGLIBTPL WBFL::System::SubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>;
 
@@ -590,7 +590,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const GirderLibraryEntry& rOther, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool& bMustRename,bool bReturnOnFirstDifference=false,bool considerName=false,bool bCompareSeedValues=false) const;
+   bool Compare(const GirderLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename,bool bReturnOnFirstDifference=false,bool considerName=false,bool bCompareSeedValues=false) const;
 
    bool IsEqual(const GirderLibraryEntry& rOther,bool bConsiderName=false) const;
 

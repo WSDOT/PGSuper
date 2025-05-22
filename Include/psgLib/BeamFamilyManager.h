@@ -27,7 +27,7 @@
 
 namespace PGS
 {
-   namespace Beams
+   namespace Library
    {
       // This class encapsulates the discovery and creation of Beam Family objects
       class PSGLIBCLASS BeamFamilyManager
@@ -37,7 +37,7 @@ namespace PGS
 
          static std::vector<CString> GetBeamFamilyNames();
          static std::vector<CString> GetBeamFamilyNames(CATID catid);
-         static std::shared_ptr<BeamFamily> GetBeamFamily(LPCTSTR strName);
+         static std::shared_ptr<PGS::Beams::BeamFamily> GetBeamFamily(LPCTSTR strName);
          static CLSID GetBeamFamilyCLSID(LPCTSTR strName);
          static void Reset();
          static void UpdateFactories();

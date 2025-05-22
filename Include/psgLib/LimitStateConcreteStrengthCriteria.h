@@ -28,7 +28,7 @@
 class rptChapter;
 class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
-class DifferenceItem;
+namespace PGS {namespace Library{class DifferenceItem;};};
 
 
 struct PSGLIBCLASS LimitStateConcreteStrengthCriteria
@@ -37,7 +37,7 @@ struct PSGLIBCLASS LimitStateConcreteStrengthCriteria
    bool bUse90DayConcreteStrength = false;
    Float64 SlowCuringConcreteStrengthFactor = 1.15;
 
-   bool Compare(const LimitStateConcreteStrengthCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const LimitStateConcreteStrengthCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

@@ -38,28 +38,28 @@ bool BearingCriteria::operator!=(const BearingCriteria& other) const
       bUseImpactForBearingReactions != bUseImpactForBearingReactions;
 }
 
-bool BearingCriteria::Compare(const BearingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool BearingCriteria::Compare(const BearingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
    if (bAlertTaperedSolePlateRequirement != other.bAlertTaperedSolePlateRequirement)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Alert tapered sole plate requirement are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Alert tapered sole plate requirement are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (bAlertTaperedSolePlateRequirement && !::IsEqual(TaperedSolePlateInclinationThreshold, other.TaperedSolePlateInclinationThreshold))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Tapered Sole Plate inclination thresholds are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Tapered Sole Plate inclination thresholds are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (bUseImpactForBearingReactions != other.bUseImpactForBearingReactions)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Bearing reactions dynamic load allowances are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Bearing reactions dynamic load allowances are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

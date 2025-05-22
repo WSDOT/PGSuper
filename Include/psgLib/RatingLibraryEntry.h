@@ -35,7 +35,7 @@ class RatingLibraryEntry;
 class RatingLibraryEntryObserver;
 class rptChapter;
 class IEAFDisplayUnits;
-class DifferenceItem;
+namespace PGS {namespace Library{class DifferenceItem;};};
 
 
 PSGLIBTPL WBFL::System::SubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>;
@@ -242,7 +242,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const RatingLibraryEntry& rOther, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const RatingLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
 
    bool IsEqual(const RatingLibraryEntry& rOther,bool bConsiderName=false) const;
 

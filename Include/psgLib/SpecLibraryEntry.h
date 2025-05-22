@@ -79,7 +79,7 @@ struct BearingCriteria;
 class CSpecMainSheet;
 class SpecLibraryEntry;
 class SpecLibraryEntryObserver;
-class DifferenceItem;
+namespace PGS {namespace Library{class DifferenceItem;};};
 struct SlabOffsetCriteria;
 struct HaulingCriteria;
 
@@ -179,7 +179,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const SpecLibraryEntry& rOther, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const SpecLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
 
    bool IsEqual(const SpecLibraryEntry& rOther,bool bConsiderName=false) const;
 

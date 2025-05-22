@@ -30,7 +30,7 @@
 
 class ConnectionLibraryEntry;
 class ConnectionLibraryEntryObserver;
-class DifferenceItem;
+namespace PGS {namespace Library{class DifferenceItem;};};
 
 #pragma warning(disable:4231)
 PSGLIBTPL WBFL::System::SubjectT<ConnectionLibraryEntryObserver, ConnectionLibraryEntry>;
@@ -177,7 +177,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const ConnectionLibraryEntry& rOther, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false, bool considerName=false) const;
+   bool Compare(const ConnectionLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false, bool considerName=false) const;
 
    bool IsEqual(const ConnectionLibraryEntry& rOther,bool bConsiderName=false) const;
 

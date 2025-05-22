@@ -27,7 +27,7 @@
 
 class rptChapter;
 class IEAFDisplayUnits;
-class DifferenceItem;
+namespace PGS {namespace Library{class DifferenceItem;};};
 
 
 struct PSGLIBCLASS HaunchCriteria
@@ -41,7 +41,7 @@ struct PSGLIBCLASS HaunchCriteria
 
    pgsTypes::HaunchAnalysisSectionPropertiesType HaunchAnalysisSectionPropertiesType = pgsTypes::hspZeroHaunch;
 
-   bool Compare(const HaunchCriteria& other, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const HaunchCriteria& other, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

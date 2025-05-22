@@ -164,11 +164,11 @@ BOOL CGirderDimensionsPage::OnInitDialog()
    std::vector<CString> familyNames;
    if ( splicedBeamFactory )
    {
-      familyNames = PGS::Beams::BeamFamilyManager::GetBeamFamilyNames(CATID_PGSpliceBeamFamily);
+      familyNames = PGS::Library::BeamFamilyManager::GetBeamFamilyNames(CATID_PGSpliceBeamFamily);
    }
    else
    {
-      familyNames = PGS::Beams::BeamFamilyManager::GetBeamFamilyNames(CATID_PGSuperBeamFamily);
+      familyNames = PGS::Library::BeamFamilyManager::GetBeamFamilyNames(CATID_PGSuperBeamFamily);
    }
 
    std::vector<CString>::iterator familyIter(familyNames.begin());
@@ -176,7 +176,7 @@ BOOL CGirderDimensionsPage::OnInitDialog()
    for ( ; familyIter != familyIterEnd; familyIter++ )
    {
       CString familyName = *familyIter;
-      auto beamFamily = PGS::Beams::BeamFamilyManager::GetBeamFamily(familyName);
+      auto beamFamily = PGS::Library::BeamFamilyManager::GetBeamFamily(familyName);
       ATLASSERT(beamFamily);
       if ( beamFamily == nullptr )
          continue;

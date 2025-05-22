@@ -24,7 +24,7 @@
 #include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
-bool ClosureJointCriteria::Compare(const ClosureJointCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool ClosureJointCriteria::Compare(const ClosureJointCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -47,7 +47,7 @@ bool ClosureJointCriteria::Compare(const ClosureJointCriteria& other, const Spec
       TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses != other.TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Closure Joint Stress Limits for Temporary Stresses are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Closure Joint Stress Limits for Temporary Stresses are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -64,14 +64,14 @@ bool ClosureJointCriteria::Compare(const ClosureJointCriteria& other, const Spec
       TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses != other.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Closure Joint Stress Limits at Service Limit State are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Closure Joint Stress Limits at Service Limit State are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (!::IsEqual(CompressionStressCoefficient_Fatigue, other.CompressionStressCoefficient_Fatigue))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Closure Joint Allowable Concrete Stress at Fatigue Limit State are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Closure Joint Allowable Concrete Stress at Fatigue Limit State are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

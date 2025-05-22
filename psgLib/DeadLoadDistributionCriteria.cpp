@@ -24,20 +24,20 @@
 #include <PsgLib/DifferenceItem.h>
 //#include <EAF/EAFDisplayUnits.h>
 
-bool DeadLoadDistributionCriteria::Compare(const DeadLoadDistributionCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool DeadLoadDistributionCriteria::Compare(const DeadLoadDistributionCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (TrafficBarrierDistribution != other.TrafficBarrierDistribution || MaxGirdersTrafficBarrier != other.MaxGirdersTrafficBarrier)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Distribution of Railing System Loads are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Distribution of Railing System Loads are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (OverlayDistribution != other.OverlayDistribution)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Distribution of Overlay Dead Load is different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Distribution of Overlay Dead Load is different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

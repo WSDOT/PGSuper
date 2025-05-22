@@ -401,12 +401,12 @@ bool ConnectionLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
 bool ConnectionLibraryEntry::IsEqual(const ConnectionLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<std::unique_ptr<DifferenceItem>> vDifferences;
+   std::vector<std::unique_ptr<PGS::Library::DifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool ConnectionLibraryEntry::Compare(const ConnectionLibraryEntry& rOther, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool ConnectionLibraryEntry::Compare(const ConnectionLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -416,57 +416,57 @@ bool ConnectionLibraryEntry::Compare(const ConnectionLibraryEntry& rOther, std::
    if ( !::IsEqual(m_GirderEndDistance,rOther.m_GirderEndDistance) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceLengthItem>(_T("End Distance"),m_GirderEndDistance,rOther.m_GirderEndDistance,pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthItem>(_T("End Distance"),m_GirderEndDistance,rOther.m_GirderEndDistance,pDisplayUnits->ComponentDim));
    }
 
    if ( m_EndDistanceMeasure != rOther.m_EndDistanceMeasure )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("End Distance Measure"),GetEndDistanceMeasurementType(m_EndDistanceMeasure),GetEndDistanceMeasurementType(rOther.m_EndDistanceMeasure)));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("End Distance Measure"),GetEndDistanceMeasurementType(m_EndDistanceMeasure),GetEndDistanceMeasurementType(rOther.m_EndDistanceMeasure)));
    }
 
    if ( !::IsEqual(m_GirderBearingOffset,rOther.m_GirderBearingOffset) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceLengthItem>(_T("Bearing Offset"),m_GirderBearingOffset,rOther.m_GirderBearingOffset,pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthItem>(_T("Bearing Offset"),m_GirderBearingOffset,rOther.m_GirderBearingOffset,pDisplayUnits->ComponentDim));
    }
 
    if ( m_BearingOffsetMeasure != rOther.m_BearingOffsetMeasure )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Bearing Offset Measure"),GetBearingOffsetMeasurementType(m_BearingOffsetMeasure),GetBearingOffsetMeasurementType(rOther.m_BearingOffsetMeasure)));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Bearing Offset Measure"),GetBearingOffsetMeasurementType(m_BearingOffsetMeasure),GetBearingOffsetMeasurementType(rOther.m_BearingOffsetMeasure)));
    }
 
    if ( !::IsEqual(m_DiaphragmHeight,rOther.m_DiaphragmHeight) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceLengthKeywordItem>(_T("Diaphragm Height"),m_DiaphragmHeight,rOther.m_DiaphragmHeight,pDisplayUnits->ComponentDim,_T("Compute")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthKeywordItem>(_T("Diaphragm Height"),m_DiaphragmHeight,rOther.m_DiaphragmHeight,pDisplayUnits->ComponentDim,_T("Compute")));
    }
 
    if ( !::IsEqual(m_DiaphragmWidth,rOther.m_DiaphragmWidth) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceLengthKeywordItem>(_T("Diaphragm Width"),m_DiaphragmWidth,rOther.m_DiaphragmWidth,pDisplayUnits->ComponentDim,_T("Compute")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthKeywordItem>(_T("Diaphragm Width"),m_DiaphragmWidth,rOther.m_DiaphragmWidth,pDisplayUnits->ComponentDim,_T("Compute")));
    }
 
    if ( m_DiaphragmLoadType != rOther.m_DiaphragmLoadType )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Application of Diaphragm Load is different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Application of Diaphragm Load is different"),_T(""),_T("")));
    }
    else
    {
       if ( !::IsEqual(m_DiaphragmLoadLocation, rOther.m_DiaphragmLoadLocation) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<DifferenceLengthItem>(_T("Load Distance from CL Pier to CG of Diaphragm"),m_DiaphragmLoadLocation,rOther.m_DiaphragmLoadLocation,pDisplayUnits->ComponentDim));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthItem>(_T("Load Distance from CL Pier to CG of Diaphragm"),m_DiaphragmLoadLocation,rOther.m_DiaphragmLoadLocation,pDisplayUnits->ComponentDim));
       }
    }
 
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;
