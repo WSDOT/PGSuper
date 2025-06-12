@@ -24,9 +24,9 @@
 
 #include <WbflTypes.h>
 #include <LRFD\LiveLoadDistributionFactorBase.h>
-#include <PgsExt\PointLoadData.h>
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\MomentLoadData.h>
+#include <PsgLib\PointLoadData.h>
+#include <PsgLib\DistributedLoadData.h>
+#include <PsgLib\MomentLoadData.h>
 
 #define EAD_ROADWAY        0
 #define EAD_PROFILE        1
@@ -102,8 +102,9 @@ DEFINE_GUID(IID_IEditByUI,
 /// Future versions of PGSuper will permit Agents to supply their own user interface
 /// and this will likely eliminate the need for this interface. This interface
 /// may be removed in the future.
-interface __declspec(uuid("{E1CF3EAA-3E85-450a-9A67-D68FF321DC16}")) IEditByUI : IUnknown
+class __declspec(uuid("{E1CF3EAA-3E85-450a-9A67-D68FF321DC16}")) IEditByUI
 {
+public:
    /// @brief Opens the Bridge Description dialog to the specified page number
    virtual void EditBridgeDescription(int nPage) = 0;
 

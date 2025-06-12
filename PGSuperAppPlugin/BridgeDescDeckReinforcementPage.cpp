@@ -29,17 +29,13 @@
 #include "BridgeDescDlg.h"
 #include "PGSuperDoc.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
 #include <LRFD\RebarPool.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDeckReinforcementPage property page
@@ -68,8 +64,7 @@ void CBridgeDescDeckReinforcementPage::DoDataExchange(CDataExchange* pDX)
    DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,m_RebarData.TopRebarType,m_RebarData.TopRebarGrade);
    DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,m_RebarData.BottomRebarType,m_RebarData.BottomRebarGrade);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag(pDX, IDC_TOP_COVER,    IDC_TOP_COVER_UNIT,    m_RebarData.TopCover,    pDisplayUnits->GetComponentDimUnit() );

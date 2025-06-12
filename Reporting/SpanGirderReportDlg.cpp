@@ -26,26 +26,20 @@
 #include "stdafx.h"
 #include <Reporting\SpanGirderReportDlg.h>
 
-#include <initguid.h>
 #include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <EAF\EAFDocument.h>
 #include "..\Documentation\PGSuper.hh"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CSpanGirderReportDlg dialog
 
 IMPLEMENT_DYNAMIC(CSpanGirderReportDlg, CDialog)
 
-CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CSpanGirderReportDlg::CSpanGirderReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec), m_Mode(mode)
 {
    m_pBroker = pBroker;

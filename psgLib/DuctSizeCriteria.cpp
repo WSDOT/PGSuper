@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib\DuctSizeCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib\DuctSizeCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 //#include <EAF/EAFDisplayUnits.h>
 
 bool DuctSizeCriteria::operator==(const DuctSizeCriteria& other) const
@@ -36,20 +36,20 @@ bool DuctSizeCriteria::operator!=(const DuctSizeCriteria& other) const
           !::IsEqual(DuctDiameterRatio, other.DuctDiameterRatio);
 }
 
-bool DuctSizeCriteria::Compare(const DuctSizeCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool DuctSizeCriteria::Compare(const DuctSizeCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if(operator!=(other))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Size of Ducts parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Size of Ducts parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void DuctSizeCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void DuctSizeCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

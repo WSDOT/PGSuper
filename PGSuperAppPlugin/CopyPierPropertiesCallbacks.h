@@ -23,16 +23,16 @@
 #pragma once
 
 #include <IFace\ExtendUI.h>
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 #include <PgsExt\MacroTxn.h>
-#include <PsgLib\ShearData.h>
-#include <PgsExt\LongitudinalRebarData.h>
-#include <PgsExt\StrandData.h>
-#include <PgsExt\HandlingData.h>
-#include <PgsExt\GirderMaterial.h>
-#include <PgsExt\PTData.h>
-#include <PgsExt\SegmentPTData.h>
-#include <PgsExt\ColumnData.h>
+#include <PsgLib/ShearData.h>
+#include <PsgLib/LongitudinalRebarData.h>
+#include <PsgLib/StrandData.h>
+#include <PsgLib/HandlingData.h>
+#include <PsgLib/GirderMaterial.h>
+#include <PsgLib/PTData.h>
+#include <PsgLib/SegmentPTData.h>
+#include <PsgLib/ColumnData.h>
 
 class rptParagraph;
 
@@ -171,12 +171,12 @@ public:
 //////////////////////   Transactions //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////
 
-class txnCopyPierAllProperties :  public CEAFTransaction
+class txnCopyPierAllProperties :  public WBFL::EAF::Transaction
 {
 public:
    txnCopyPierAllProperties(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);
    virtual ~txnCopyPierAllProperties();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const { return true; }
    virtual bool IsRepeatable() const { return false; }
@@ -187,14 +187,14 @@ private:
 };
 
 
-class txnCopyPierConnectionProperties :  public CEAFTransaction
+class txnCopyPierConnectionProperties :  public WBFL::EAF::Transaction
 {
 public:
    txnCopyPierConnectionProperties(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);
    virtual ~txnCopyPierConnectionProperties();
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const { return true; }
    virtual bool IsRepeatable() const { return false; }
@@ -206,14 +206,14 @@ private:
    bool m_DidDoCopy;
 };
 
-class txnCopyPierDiaphragmProperties :  public CEAFTransaction
+class txnCopyPierDiaphragmProperties :  public WBFL::EAF::Transaction
 {
 public:
    txnCopyPierDiaphragmProperties(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);
    virtual ~txnCopyPierDiaphragmProperties();
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const { return true; }
    virtual bool IsRepeatable() const { return false; }
@@ -224,14 +224,14 @@ private:
    std::vector<PierDiaphragmData> m_PierDiaphragmData;
 };
 
-class txnCopyPierModelProperties :  public CEAFTransaction
+class txnCopyPierModelProperties :  public WBFL::EAF::Transaction
 {
 public:
    txnCopyPierModelProperties(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);
    virtual ~txnCopyPierModelProperties();
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const { return true; }
    virtual bool IsRepeatable() const { return false; }
@@ -250,7 +250,7 @@ public:
    CCopyPierAllProperties();
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
    virtual UINT GetPierEditorTabIndex() override;
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
 };
@@ -261,7 +261,7 @@ public:
    CCopyPierConnectionProperties();
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
    virtual UINT GetPierEditorTabIndex() override;
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
 };
@@ -272,7 +272,7 @@ public:
    CCopyPierDiaphragmProperties();
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
    virtual UINT GetPierEditorTabIndex() override;
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
 };
@@ -283,7 +283,7 @@ public:
    CCopyPierModelProperties();
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
    virtual UINT GetPierEditorTabIndex() override;
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
 };

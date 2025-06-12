@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include <EAF\EAFTransaction.h>
-#include <PgsExt\LoadFactors.h>
+#include <EAF\Transaction.h>
+#include <PsgLib\LoadFactors.h>
 
 struct txnEditLossParametersData
 {
@@ -51,7 +51,7 @@ struct txnEditLossParametersData
    Float64 FrictionCoefficient_TTS;
 };
 
-class txnEditLossParameters : public CEAFTransaction
+class txnEditLossParameters : public WBFL::EAF::Transaction
 {
 public:
    txnEditLossParameters(const txnEditLossParametersData& oldData,const txnEditLossParametersData& newData);
@@ -60,7 +60,7 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction>CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const;
    virtual bool IsRepeatable() const;

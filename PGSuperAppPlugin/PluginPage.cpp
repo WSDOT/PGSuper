@@ -32,11 +32,6 @@
 
 // CPluginPage dialog
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNAMIC(CPluginPage, CPropertyPage)
@@ -90,65 +85,29 @@ BOOL CPluginPage::OnInitDialog()
 bool CPluginPage::InitList()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CWinApp* pApp = AfxGetApp();
-
-   USES_CONVERSION;
-
    CWaitCursor cursor;
 
-   CComPtr<ICatRegister> pICatReg;
-   HRESULT hr = pICatReg.CoCreateInstance(CLSID_StdComponentCategoriesMgr);
-   if ( FAILED(hr) )
+   auto components = WBFL::EAF::ComponentManager::GetInstance().GetComponents(m_CATID);
+   for (auto& component : components)
    {
-      AfxMessageBox(_T("Failed to create the component category manager"));
-      return false;
-   }
+      int idx = m_ctlPluginList.AddString(CString(component.name.c_str()));
+      
+      LPOLESTR pszCLSID;
+      ::StringFromCLSID(component.clsid, &pszCLSID);
+      CString strCLSID(pszCLSID);
 
-   CComQIPtr<ICatInformation> pICatInfo(pICatReg);
-   CComPtr<IEnumCLSID> pIEnumCLSID;
+      CString strState = pApp->GetProfileString(m_Section, strCLSID, _T("Enabled"));
+      m_CLSIDs.push_back(strCLSID);
+      CHECK(0 < m_CLSIDs.size());
+      int clsidIdx = (int)(m_CLSIDs.size() - 1);
+      m_ctlPluginList.SetItemData(idx, (DWORD_PTR)clsidIdx);
 
-   const int nID = 1;
-   CATID ID[nID];
+      ::CoTaskMemFree((void*)pszCLSID);
 
-   ID[0] = m_CATID;
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
-
-   const int nPlugins = 5;
-   CLSID clsid[nPlugins]; 
-   ULONG nFetched = 0;
-
-   // Load Importers
-   while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
-   {
-      for ( ULONG i = 0; i < nFetched; i++ )
-      {
-         LPOLESTR pszUserType;
-         OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
-         int idx = m_ctlPluginList.AddString(OLE2T(pszUserType));
-
-         LPOLESTR pszCLSID;
-         ::StringFromCLSID(clsid[i],&pszCLSID);
-         
-         // The checkbox list is sorted so the position of the various entries can shift around
-         // We need to know the index into the m_CLSIDs vector for each entry. Get the index
-         // here and save it in the entries item data
-         CString strState = pApp->GetProfileString(m_Section,OLE2T(pszCLSID),_T("Enabled"));
-         m_CLSIDs.push_back(CString(pszCLSID));
-         ATLASSERT(0 < m_CLSIDs.size());
-         int clsidIdx = (int)(m_CLSIDs.size()-1);
-         m_ctlPluginList.SetItemData(idx,(DWORD_PTR)clsidIdx);
-
-         ::CoTaskMemFree((void*)pszCLSID);
-
-         if ( strState.CompareNoCase(_T("Enabled")) == 0 )
-         {
-            m_ctlPluginList.SetCheck(idx,TRUE);
-         }
-         else
-         {
-            m_ctlPluginList.SetCheck(idx,FALSE);
-         }
-      }
+      bool bInitiallyEnabled = (strState.CompareNoCase(_T("Enabled")) == 0 ? true : false);
+      m_ctlPluginList.SetCheck(idx, bInitiallyEnabled);
    }
 
    return true;

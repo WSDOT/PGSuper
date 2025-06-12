@@ -30,18 +30,14 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
+#include <IFace\Tools.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+
+#include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFUIIntegration.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CTOGATitlePageBuilder::CTOGATitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
+CTOGATitlePageBuilder::CTOGATitlePageBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion) :
 WBFL::Reporting::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion)
@@ -78,7 +74,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
 
    // A bit tricky here, but status center and other results won't be rebuilt until the toga model is built.
    // Let's ask for some results to get the ball rolling
-   GET_IFACE(IGetTogaResults,pGetTogaResults);
+   GET_IFACE2(GetBroker(),IGetTogaResults,pGetTogaResults);
    pGetTogaResults->GetRequiredFc();
 
    rptParagraph* pPara = new rptParagraph;
@@ -97,7 +93,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
    pPara = new rptParagraph;
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
-   GET_IFACE(IVersionInfo,pVerInfo);
+   GET_IFACE2(GetBroker(),IVersionInfo,pVerInfo);
    *pPara << pVerInfo->GetVersionString() << rptNewLine;
 
    const std::_tstring& strImage = std::_tstring(rptStyleManager::GetImagePath()) + std::_tstring(_T("TxDOT_Logo.gif"));
@@ -109,8 +105,8 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
       *pPara << rptRcImage(strImage) << rptNewLine;
    }
 
-   GET_IFACE(IProjectProperties,pProps);
-   GET_IFACE(IEAFDocument,pDocument);
+   GET_IFACE2(GetBroker(),IProjectProperties,pProps);
+   GET_IFACE2(GetBroker(),IEAFDocument,pDocument);
 
    rptParagraph* pPara3 = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pTitlePage << pPara3;
@@ -146,13 +142,13 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
    *pTitlePage << p;
 
    *p << _T("Configuration") << rptNewLine;
-   p = CLibraryUsageParagraph().Build(m_pBroker, false);
+   p = CLibraryUsageParagraph().Build(GetBroker(), false);
    *pTitlePage << p;
 
 
    // girder seed data comparison
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
-   p = CGirderSeedDataComparisonParagraph().Build(m_pBroker, fabrSegmentKey);
+   p = CGirderSeedDataComparisonParagraph().Build(GetBroker(), fabrSegmentKey);
    if (p != nullptr)
    {
       // only report if we have data
@@ -163,7 +159,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
    int row = 0;
 
    // Status Center Items
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   GET_IFACE2(GetBroker(),IEAFStatusCenter,pStatusCenter);
    IndexType nItems = pStatusCenter->Count();
 
    if ( nItems != 0 )
@@ -190,7 +186,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
       CString strSeverityType[] = { _T("Information"), _T("Warning"), _T("Error") };
       for ( IndexType i = 0; i < nItems; i++ )
       {
-         CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
+         auto pItem = pStatusCenter->GetByIndex(i);
 
          // Trim span/girder information. TOGA doesn't want this
          // Blasts anything left of the first ":"
@@ -202,15 +198,15 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
          std::pair< std::set<std::_tstring>::iterator, bool > it = messages.insert(msg);
          if (it.second) // no dup's
          {
-            eafTypes::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
+            WBFL::EAF::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
 
             // Set text and cell background
             rptRiStyle::FontColor colors[] = {rptRiStyle::LightGreen, rptRiStyle::Yellow, rptRiStyle::Red };
-            rptRiStyle::FontColor color = colors[severity];
+            rptRiStyle::FontColor color = colors[+severity];
             (*pTable)(row, 0) << new rptRcBgColor(color);
             (*pTable)(row, 0).SetFillBackGroundColor(color);
 
-            (*pTable)(row,0) << strSeverityType[severity];
+            (*pTable)(row,0) << strSeverityType[+severity];
             (*pTable)(row++,1) << msg;
          }
       }

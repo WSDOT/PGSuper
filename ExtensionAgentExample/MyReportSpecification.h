@@ -27,7 +27,7 @@ class CMyReportSpecification :
    public CBrokerReportSpecification // want the broker to be available when the report is generated
 {
 public:
-	CMyReportSpecification(const std::_tstring& strReportName,IBroker* pBroker);
+	CMyReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CMyReportSpecification(void);
 
    void SetMessage(const CString& msg);

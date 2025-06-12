@@ -34,18 +34,14 @@
 
 #include <GenericBridge\Helpers.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#include <PgsExt\SplicedGirderData.h>
+#include <PsgLib\SplicedGirderData.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define ERROR_SUCCESS                                 0
 #define ERROR_Y_MUST_BE_POSITIVE                      1
@@ -89,8 +85,8 @@ int CSegmentTendonGrid::GetColWidth(ROWCOL nCol)
 
 void CSegmentTendonGrid::CustomInit(const CPrecastSegmentData* pSegment)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // we need the segment length for validating debond lengths (can't debond more
@@ -283,8 +279,8 @@ void CSegmentTendonGrid::CustomInit(const CPrecastSegmentData* pSegment)
 
 void CSegmentTendonGrid::SetRowStyle(ROWCOL nRow)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    // Row number
    SetStyleRange(CGXRange(nRow,0),CGXStyle()
@@ -484,8 +480,8 @@ void CSegmentTendonGrid::AppendRow(const CSegmentDuctData& duct)
    // DOES NOT APPEND A DUCT ROW TO THE DUCT DATA OBJECT
    ROWCOL nRow = AppendRow();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker, ILibraryNames, pLibNames);
@@ -747,8 +743,8 @@ void CSegmentTendonGrid::UpdateMaxPjack(ROWCOL nRow)
 
    Float64 Pjack = WBFL::LRFD::PsStrand::GetPjackPT(*pStrand, nStrands);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    GetParam()->SetLockReadOnly(FALSE);
    SetValueRange(CGXRange(nRow, nPjackCol), FormatDimension(Pjack, pDisplayUnits->GetGeneralForceUnit(), false));
@@ -819,8 +815,8 @@ CString CSegmentTendonGrid::GetDuctName(ROWCOL nRow)
 {
    CString ductName = GetCellValue(nRow, nDuctTypeCol);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, ILibrary, pLib);
    const DuctLibraryEntry* pDuctEntry = pLib->GetDuctEntry(ductName);
    if (pDuctEntry == nullptr)
@@ -852,8 +848,8 @@ StrandIndexType CSegmentTendonGrid::GetStrandCount(ROWCOL nRow)
 
 void CSegmentTendonGrid::GetPjack(ROWCOL nRow, CSegmentDuctData* pDuct)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    pDuct->bPjCalc = ComputePjackMax(nRow);
@@ -879,8 +875,8 @@ pgsTypes::JackingEndType CSegmentTendonGrid::GetJackingEnd(ROWCOL nRow)
 
 void CSegmentTendonGrid::GetDuctPoints(ROWCOL nRow, CSegmentDuctData* pDuct)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    Float64 value = _tstof(GetCellValue(nRow,nLeftEndYCol));
    pDuct->DuctPoint[CSegmentDuctData::Left].first = WBFL::Units::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
@@ -900,8 +896,8 @@ void CSegmentTendonGrid::UpdateNumStrandsList(ROWCOL nRow)
    StrandIndexType nStrands = GetStrandCount(nRow);
    CString ductName = GetDuctName(nRow);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, ILibrary, pLib);
    const DuctLibraryEntry* pDuctEntry = pLib->GetDuctEntry(ductName);
    ATLASSERT(pDuctEntry);
@@ -941,13 +937,13 @@ void CSegmentTendonGrid::RefreshRowHeading(ROWCOL rFrom, ROWCOL rTo)
    ASSERT(pParent->IsKindOf(RUNTIME_CLASS(CGirderSegmentTendonsPage)));
    std::_tstring strGirderName = pParent->GetSegment()->GetGirder()->GetGirderName();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker, ILibrary, pLibrary);
    const GirderLibraryEntry* pGirderEntry = pLibrary->GetGirderEntry(strGirderName.c_str());
-   CComPtr<IBeamFactory> factory;
-   pGirderEntry->GetBeamFactory(&factory);
+   auto factory = pGirderEntry->GetBeamFactory();
+
    WebIndexType nWebs = factory->GetWebCount(pGirderEntry->GetDimensions());
 
    for (ROWCOL row = rFrom; row <= rTo; row++)

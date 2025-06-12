@@ -24,6 +24,9 @@
 #include <Reporting\ADimChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 #include <Reporting\DeckElevationChapterBuilder.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Constructability.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -32,35 +35,18 @@
 #include <IFace\Intervals.h>
 #include <IFace\Alignment.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\BridgeDescription2.h>
-
+#include <PsgLib\BridgeDescription2.h>
+#include <psgLib/SpecLibraryEntry.h>
 #include <psgLib/SlabOffsetCriteria.h>
 #include <psgLib/CreepCriteria.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CADimChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CADimChapterBuilder::CADimChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CADimChapterBuilder::GetName() const
 {
    return TEXT("Finished Roadway and Haunch Details");
@@ -69,8 +55,7 @@ LPCTSTR CADimChapterBuilder::GetName() const
 rptChapter* CADimChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -112,7 +97,7 @@ rptChapter* CADimChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporti
       return pChapter;
 }
 
-void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level,IBroker* pBroker,const CGirderKey& girderKey,const SpecLibraryEntry* pSpecEntry) const
+void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,const SpecLibraryEntry* pSpecEntry) const
 {
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
@@ -428,20 +413,19 @@ void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shar
 class MatchPoiOffSegment
 {
 public:
-   MatchPoiOffSegment(IPointOfInterest* pIPointOfInterest) : m_pIPointOfInterest(pIPointOfInterest) {}
+   MatchPoiOffSegment(std::shared_ptr<IPointOfInterest> pIPointOfInterest) : m_pIPointOfInterest(pIPointOfInterest) {}
    bool operator()(const pgsPointOfInterest& poi) const
    {
       return m_pIPointOfInterest->IsOffSegment(poi);
    }
 
-   IPointOfInterest* m_pIPointOfInterest;
+   std::shared_ptr<IPointOfInterest> m_pIPointOfInterest;
 };
 
 void CADimChapterBuilder::BuildDirectHaunchElevationContent(rptChapter* pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    const CBrokerReportSpecification* pSpec = dynamic_cast<const CBrokerReportSpecification*>(pRptSpec.get());
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
@@ -666,27 +650,3 @@ void CADimChapterBuilder::BuildDirectHaunchElevationContent(rptChapter* pChapter
       } // next group
    } // next interval
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CADimChapterBuilder::Clone() const
-{
-   return std::make_unique<CADimChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

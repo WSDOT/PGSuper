@@ -42,23 +42,22 @@
 
 #include "PGSuperCatCom.h"
 #include "TogaCatCom.h"
-#include <WBFLReportManagerAgent_i.c>
-#include <WBFLGraphManagerAgent_i.c>
 
 #include <EAF\EAFMainFrame.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFProjectLog.h>
 
 #include <System\StructuredLoadXml.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <IFace\BeamFactory.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderGroupData.h>
-#include <PgsExt\DistributedLoadData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderGroupData.h>
+#include <PsgLib\DistributedLoadData.h>
 #include <LRFD\StrandPool.h>
 
 #include <PsgLib\BeamFamilyManager.h>
@@ -69,11 +68,6 @@
 
 #include <limits>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define TOGA_PLUGIN_COMMAND_COUNT 256
 
@@ -223,7 +217,7 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
    GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
-   log_msg_header.Format(_T("The following error occured while opening %s"),lpszPathName );
+   log_msg_header.Format(_T("The following error occurred while opening %s"),lpszPathName );
    pLog->LogMessage( log_msg_header );
 
    CString msg1;
@@ -271,7 +265,7 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
    // things here are very dire - show message box AND throw
    CString msg;
    CString msg2;
-   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)EAFGetApp()->GetLogFileName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -328,29 +322,23 @@ void CTxDOTOptionalDesignDoc::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // CTxDOTOptionalDesignDoc commands
 
-BOOL CTxDOTOptionalDesignDoc::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
+std::pair<bool, WBFL::EAF::AgentErrors> CTxDOTOptionalDesignDoc::LoadSpecialAgents()
 {
-   if ( !CEAFBrokerDocument::LoadSpecialAgents(pBrokerInit) )
-      return FALSE;
+   auto errors = CEAFBrokerDocument::LoadSpecialAgents();
 
-   // NOTE: This could be a problem... the PGSuper doc proxy agent is local to the PGSuper.exe project
-   // If it is needed in this document, I recommend that we create a CPGSDocBase base class for
-   // CPGSuperDoc and CTxDOTOptionDesignDoc. This class would go into a new DLL (on that will ultimately
-   // have the PGSuper app plugin and all the associated files) and be exported. This class would implement
-   // this method so all PGSuper-doc objects have the proper agents loaded.
+   m_pTxDOTOptionalDesignDocProxyAgent = std::make_shared<CTxDOTOptionalDesignDocProxyAgent>(this);
+   auto result = m_pBroker->AddAgent(m_pTxDOTOptionalDesignDocProxyAgent);
+   if (result.first == false)
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      result.second.component.dll = AfxGetApp()->m_pszExeName;
+      result.second.reason += _T(" - could not add TxDOTOptionalDesignDocProxyAgent to broker");
+      errors.second.push_back(result.second);
+   }
 
-   CComObject<CTxDOTOptionalDesignDocProxyAgent>* pDocProxyAgent;
-   CComObject<CTxDOTOptionalDesignDocProxyAgent>::CreateInstance(&pDocProxyAgent);
-   m_pTxDOTOptionalDesignDocProxyAgent = dynamic_cast<CTxDOTOptionalDesignDocProxyAgent*>(pDocProxyAgent);
-   m_pTxDOTOptionalDesignDocProxyAgent->SetDocument( this );
+   errors.first = errors.second.empty();
 
-   CComPtr<IAgentEx> pAgent(m_pTxDOTOptionalDesignDocProxyAgent);
-   
-   HRESULT hr = pBrokerInit->AddAgent( pAgent );
-   if ( FAILED(hr) )
-      return hr;
-
-   return TRUE;
+   return errors;
 }
 
 BOOL CTxDOTOptionalDesignDoc::Init()
@@ -358,7 +346,7 @@ BOOL CTxDOTOptionalDesignDoc::Init()
    if ( !CEAFBrokerDocument::Init() )
       return FALSE;
 
-   if ( FAILED(CBeamFamilyManager::Init(CATID_PGSuperBeamFamily)) )
+   if ( FAILED(PGS::Library::BeamFamilyManager::Init(CATID_PGSuperBeamFamily)) )
       return FALSE;
 
    m_ProjectData.ResetData();
@@ -424,9 +412,9 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
 
          // set up the toolbar here
          UINT tbID = pFrame->CreateToolBar(_T("TxDOT Optional Girder Analysis"),GetPluginCommandManager());
-         m_pMyToolBar = pFrame->GetToolBar(tbID);
-         m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,nullptr);
-         m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,   nullptr,BTNS_DROPDOWN);
+         m_MyToolBar = pFrame->GetToolBar(tbID);
+         m_MyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,nullptr);
+         m_MyToolBar->CreateDropDownButton(ID_FILE_OPEN,   nullptr,BTNS_DROPDOWN);
       }
 
       // use our status bar
@@ -437,8 +425,8 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
    else
    {
       // remove toolbar here
-      pFrame->DestroyToolBar(m_pMyToolBar);
-      m_pMyToolBar = nullptr;
+      pFrame->DestroyToolBar(m_MyToolBar->GetToolBarID());
+      m_MyToolBar = nullptr;
 
       // put the status bar back the way it was
       pFrame->SetStatusBar(nullptr);
@@ -708,7 +696,7 @@ void CTxDOTOptionalDesignDoc::OnFileExportPgsuperModel()
       return;
 
    // Need an updated broker with all input data set in it
-   IBroker* pBroker(nullptr);
+   std::shared_ptr<WBFL::EAF::Broker> pBroker(nullptr);
    try
    {
       pBroker = GetUpdatedBroker();
@@ -776,11 +764,10 @@ BOOL CTxDOTOptionalDesignDoc::UpdateCurrentViewInputData()
 
 // ITxDOTBrokerRetriever
 //
-IBroker* CTxDOTOptionalDesignDoc::GetUpdatedBroker()
+std::shared_ptr<WBFL::EAF::Broker> CTxDOTOptionalDesignDoc::GetUpdatedBroker()
 {
    // Get broker from parent class
-   CComPtr<IBroker> pBroker;
-   this->GetBroker(&pBroker);
+   auto pBroker = this->GetBroker();
 
    if (m_ChangeStatus != ITxDataObserver::ctNone)
    {
@@ -805,7 +792,6 @@ IBroker* CTxDOTOptionalDesignDoc::GetUpdatedBroker()
          // We must delete broker and build a new one, then load pgsuper file
          if(!m_VirginBroker && new_pgsuper_file != old_pgsuper_file)
          {
-#pragma Reminder("Test code to blast and rebuild broker")
             ASSERT(0); // not tested yet
 
             RecreateBroker();
@@ -855,6 +841,12 @@ IBroker* CTxDOTOptionalDesignDoc::GetUpdatedBroker()
    return pBroker;
 }
 
+void CTxDOTOptionalDesignDoc::BrokerShutDown()
+{
+   m_pTxDOTOptionalDesignDocProxyAgent = nullptr;
+   CEAFBrokerDocument::BrokerShutDown();
+}
+
 void CTxDOTOptionalDesignDoc::RecreateBroker()
 {
    m_VirginBroker = true;
@@ -877,15 +869,14 @@ BOOL CTxDOTOptionalDesignDoc::CreateBroker()
 
    // map old PGSuper (pre version 3.0) CLSID to current CLSID
    // CLSID's were changed so that pre version 3.0 installations could co-exist with 3.0 and later installations
-   CComQIPtr<ICLSIDMap> clsidMap(m_pBroker);
-   clsidMap->AddCLSID(CComBSTR("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),CComBSTR("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
-   clsidMap->AddCLSID(CComBSTR("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),CComBSTR("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
-   clsidMap->AddCLSID(CComBSTR("{B455A760-6DAF-11D2-8EE9-006097DF3C68}"),CComBSTR("{73922319-9243-4974-BA54-CF22593EC9C4}")); // Eng Agent
-   clsidMap->AddCLSID(CComBSTR("{3DA9045D-7C49-4591-AD14-D560E7D95581}"),CComBSTR("{B4639189-ED38-4A68-8A18-38026202E9DE}")); // Graph Agent
-   clsidMap->AddCLSID(CComBSTR("{59D50426-265C-11D2-8EB0-006097DF3C68}"),CComBSTR("{256B5B5B-762C-4693-8802-6B0351290FEA}")); // Project Agent
-   clsidMap->AddCLSID(CComBSTR("{3D5066F2-27BE-11D2-8EB2-006097DF3C68}"),CComBSTR("{1FFED5EC-7A32-4837-A1F1-99481AFF2825}")); // PGSuper Report Agent
-   clsidMap->AddCLSID(CComBSTR("{EC915470-6E76-11D2-8EEB-006097DF3C68}"),CComBSTR("{F510647E-1F4F-4FEF-8257-6914DE7B07C8}")); // Spec Agent
-   clsidMap->AddCLSID(CComBSTR("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),CComBSTR("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
+   m_pBroker->AddMappedCLSID(_T("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),_T("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
+   m_pBroker->AddMappedCLSID(_T("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),_T("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
+   m_pBroker->AddMappedCLSID(_T("{B455A760-6DAF-11D2-8EE9-006097DF3C68}"),_T("{73922319-9243-4974-BA54-CF22593EC9C4}")); // Eng Agent
+   m_pBroker->AddMappedCLSID(_T("{3DA9045D-7C49-4591-AD14-D560E7D95581}"),_T("{B4639189-ED38-4A68-8A18-38026202E9DE}")); // Graph Agent
+   m_pBroker->AddMappedCLSID(_T("{59D50426-265C-11D2-8EB0-006097DF3C68}"),_T("{256B5B5B-762C-4693-8802-6B0351290FEA}")); // Project Agent
+   m_pBroker->AddMappedCLSID(_T("{3D5066F2-27BE-11D2-8EB2-006097DF3C68}"),_T("{1FFED5EC-7A32-4837-A1F1-99481AFF2825}")); // PGSuper Report Agent
+   m_pBroker->AddMappedCLSID(_T("{EC915470-6E76-11D2-8EEB-006097DF3C68}"),_T("{F510647E-1F4F-4FEF-8257-6914DE7B07C8}")); // Spec Agent
+   m_pBroker->AddMappedCLSID(_T("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),_T("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
 
    return TRUE;
 }
@@ -896,12 +887,11 @@ HINSTANCE CTxDOTOptionalDesignDoc::GetResourceInstance()
    return AfxGetInstanceHandle();
 }
 
-IBroker* CTxDOTOptionalDesignDoc::GetClassicBroker()
+std::shared_ptr<WBFL::EAF::Broker> CTxDOTOptionalDesignDoc::GetClassicBroker()
 {
    // Get broker from parent class
    // Do not update with input data
-   CComPtr<IBroker> pBroker;
-   this->GetBroker(&pBroker);
+   auto pBroker = this->GetBroker();
 
    return pBroker;
 }
@@ -1135,8 +1125,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       throw exc;
    }
 
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   auto factory = pGdrEntry->GetBeamFactory();
    bridgeDesc.SetGirderFamilyName( factory->GetGirderFamilyName().c_str() );
 
    bridgeDesc.SetGirderName(gdr_name);
@@ -1759,7 +1748,7 @@ void CTxDOTOptionalDesignDoc::OnStatuscenterView()
    CEAFBrokerDocument::OnViewStatusCenter();
 }
 
-void CTxDOTOptionalDesignDoc::ShowCustomReportHelp(eafTypes::CustomReportHelp helpType)
+void CTxDOTOptionalDesignDoc::ShowCustomReportHelp(WBFL::EAF::CustomReportHelp helpType)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFBrokerDocument::ShowCustomReportHelp(helpType);

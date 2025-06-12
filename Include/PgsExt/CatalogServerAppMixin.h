@@ -50,11 +50,8 @@ public:
    virtual void OnOK(CPropertyPage* pPage) override;
 
 public:
-   CCatalogServerAppMixin(void);
-   ~CCatalogServerAppMixin(void);
-
-   virtual HRESULT OnFinalConstruct();
-   virtual void OnFinalRelease();
+   CCatalogServerAppMixin();
+   ~CCatalogServerAppMixin();
 
    CString GetMasterLibraryFile() const;
    const CString& GetCachedMasterLibraryFile() const;
@@ -94,9 +91,9 @@ protected:
    virtual CString GetDefaultMasterLibraryFile() const;
    virtual CString GetDefaultWorkgroupTemplateFolder() const;
 
-   // call these from Init and Terminate
-   virtual void DefaultInit(IEAFAppPlugin* pAppPlugin);
-   virtual void DefaultTerminate();
+   // call these from IPluginApp::Init and IPluginApp::Terminate
+   virtual void InitCatalogServer();
+   virtual void TerminateCatalogServer();
 
    virtual void LoadRegistryValues();
    virtual void SaveRegistryValues();

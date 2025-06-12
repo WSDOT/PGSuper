@@ -22,11 +22,11 @@
 
 #pragma once
 
-#include <PgsExt\Keys.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\Keys.h>
+#include <PsgLib\PointOfInterest.h>
 
-interface IRoadway;
-interface IBridge;
+class IRoadway;
+class IBridge;
 class CBridgeModelViewChildFrame;
 
 namespace WBFL
@@ -54,7 +54,7 @@ class iSectionCutDrawStrategy
 {
 public:
    virtual void SetColor(COLORREF color) = 0;
-	virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker,const CGirderKey& girderKey, iCutLocation* pCutLoc) = 0;
+	virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::weak_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, iCutLocation* pCutLoc) = 0;
 
    // Xgl is in the Girderline Coordinate System
    virtual pgsPointOfInterest GetCutPOI(Float64 Xgl) const = 0;
@@ -64,5 +64,5 @@ class iBridgeSectionCutDrawStrategy
 {
 public:
    virtual void SetColor(COLORREF color) = 0;
-	virtual void Init(CBridgeModelViewChildFrame* pFrame,std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IRoadway* pRoadway, IBridge* pBridge, iCutLocation* pCutLoc) = 0;
+	virtual void Init(CBridgeModelViewChildFrame* pFrame,std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::weak_ptr<IRoadway> pRoadway, std::weak_ptr<IBridge> pBridge, iCutLocation* pCutLoc) = 0;
 };

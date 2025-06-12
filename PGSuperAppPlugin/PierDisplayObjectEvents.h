@@ -31,7 +31,7 @@
 
 #include <DManip/DisplayObjectEvents.h>
 #include "BridgeModelViewChildFrame.h"
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierDisplayObjectEvents command target

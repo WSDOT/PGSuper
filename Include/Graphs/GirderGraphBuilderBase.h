@@ -25,8 +25,8 @@
 #include <Graphs/GraphsExp.h>
 #include <EAF\EAFAutoCalcGraphBuilder.h>
 #include <Graphing/GraphXY.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\PointOfInterest.h>
 
 class CGirderGraphControllerBase;
 class CEAFGraphControlWindow;
@@ -68,7 +68,7 @@ protected:
 
    DECLARE_MESSAGE_MAP()
 
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    WBFL::Graphing::GraphXY m_Graph;
    WBFL::Units::PhysicalConverter* m_pXFormat;
    WBFL::Units::PhysicalConverter* m_pYFormat;
@@ -84,7 +84,7 @@ protected:
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
    void DrawGraphNow(CWnd* pGraphWnd,CDC* pDC);
 
-   // returns the range of intervals overwhich the beam must be represented
+   // returns the range of intervals over which the beam must be represented
    virtual void GetBeamDrawIntervals(IntervalIndexType* pFirstIntervalIdx,IntervalIndexType* pLastIntervalIdx) = 0;
 
    // returns the style parameters for beam drawing

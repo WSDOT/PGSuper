@@ -1,0 +1,170 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2025  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+// PointLoadData.h: interface for the CPointLoadData class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include "PsgLibLib.h"
+#include <PsgLib\Keys.h>
+
+struct IStructuredSave;
+struct IStructuredLoad;
+
+// namespace to contain user load enums
+struct PSGLIBCLASS UserLoads
+{
+   enum LoadCase{DC, DW, LL_IM};
+   enum DistributedLoadType {Uniform, Trapezoidal};
+   enum UserLoadType { Distributed, Point, Moment };
+
+   static IDType ms_NextDistributedLoadID;
+   static IDType ms_NextPointLoadID;
+   static IDType ms_NextMomentLoadID;
+
+   static UserLoadType GetUserLoadTypeFromID(IDType id)
+   {
+      if ( id < 9999 )
+      {
+         return Distributed;
+      }
+      else if ( id < 19999 )
+      {
+         return Point;
+      }
+      else
+      {
+         return Moment;
+      }
+   }
+
+   static Int32 GetNumLoadCases()
+   {
+      return 3;
+   }
+
+   static LoadCase GetLoadCase(Int32 load_casenum)
+   {
+      switch(load_casenum)
+      {
+      case DC:
+         return DC;
+         break;
+      case DW:
+         return DW;
+         break;
+      case LL_IM:
+         return LL_IM;
+         break;
+      default:
+         ATLASSERT(false);
+         return DC;
+      }
+   }
+
+   static std::_tstring GetLoadCaseName(Int32 load_casenum)
+   {
+      switch(load_casenum)
+      {
+      case DC:
+         return std::_tstring(_T("DC"));
+         break;
+      case DW:
+         return std::_tstring(_T("DW"));
+         break;
+      case LL_IM:
+         return std::_tstring(_T("LL + IM"));
+         break;
+      default:
+         ATLASSERT(false);
+         return std::_tstring(_T("Error"));
+      }
+   }
+
+   static int GetNumDistributedLoadTypes()
+   {
+      return 2;
+   }
+
+   static DistributedLoadType GetDistributedLoadType(Int32 num)
+   {
+      switch(num)
+      {
+         case Uniform:
+            return Uniform;
+            break;
+         case Trapezoidal:
+            return Trapezoidal;
+            break;
+         default:
+            ATLASSERT(false);
+            return Trapezoidal;
+      }
+   }
+
+   static std::_tstring GetDistributedLoadTypeName(Int32 num)
+   {
+      switch(num)
+      {
+         case Uniform:
+            return std::_tstring(_T("Uniform over entire span"));
+            break;
+         case Trapezoidal:
+            return std::_tstring(_T("Trapezoidal"));
+            break;
+         default:
+            ATLASSERT(false);
+            return std::_tstring(_T("Error"));
+      }
+   }
+
+};
+
+class PSGLIBCLASS CPointLoadData  
+{
+public:
+	CPointLoadData();
+    CPointLoadData(const CPointLoadData& other) = default;
+	~CPointLoadData() = default;
+
+   CPointLoadData& operator=(const CPointLoadData& other) = default;
+
+   HRESULT Save(IStructuredSave* pSave);
+   HRESULT Load(IStructuredLoad* pSave);
+
+   bool operator == (const CPointLoadData& rOther) const;
+   bool operator != (const CPointLoadData& rOther) const;
+
+   // properties
+   IDType                m_ID; // this is the load's ID
+   UserLoads::LoadCase   m_LoadCase;
+
+   CSpanKey m_SpanKey;
+   std::array<bool, 2> m_bLoadOnCantilever; // if true, the load is on the cantilever and not the span itself, use pgsTypes::MemberEndType to access array
+   Float64  m_Location;   // measured from CL bearing at start of span
+   bool     m_Fractional;
+   Float64  m_Magnitude;
+   std::_tstring m_Description;
+
+   EventIndexType m_StageIndex; // this is the event index corresponding to the old stage model (BrideSite1,2,3)
+};

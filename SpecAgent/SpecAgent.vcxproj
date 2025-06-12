@@ -184,8 +184,10 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="LRFDSplittingCheckEngineer.cpp" />
     <ClCompile Include="SpecAgent.cpp" />
     <ClCompile Include="SpecAgentImp.cpp" />
+    <ClCompile Include="SplittingCheckEngineer.cpp" />
     <ClCompile Include="StatusItems.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -194,7 +196,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="SpecAgent.def" />
-    <None Include="SpecAgent.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SpecAgent.rc" />
@@ -208,9 +209,11 @@
     <ClInclude Include="..\Include\IFace\SplittingChecks.h" />
     <ClInclude Include="..\Include\IFace\TransverseReinforcementSpec.h" />
     <ClInclude Include="CLSID.h" />
+    <ClInclude Include="LRFDSplittingCheckEngineer.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="SpecAgent.h" />
     <ClInclude Include="SpecAgentImp.h" />
+    <ClInclude Include="SplittingCheckEngineer.h" />
     <ClInclude Include="StatusItems.h" />
     <ClInclude Include="StdAfx.h" />
   </ItemGroup>

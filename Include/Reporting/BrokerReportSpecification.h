@@ -23,20 +23,20 @@
 #pragma once
 #include <Reporting\ReportingExp.h>
 #include <ReportManager\ReportManager.h>
-#include <WBFLCore.h>
+#include <EAF/Broker.h>
 
 class REPORTINGCLASS CBrokerReportSpecification :
    public WBFL::Reporting::ReportSpecification
 {
 public:
-   CBrokerReportSpecification(const std::_tstring& strReportName,IBroker* pBroker);
+   CBrokerReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CBrokerReportSpecification(void);
 
-   void SetBroker(IBroker* pBroker);
-   HRESULT GetBroker(IBroker** ppBroker) const;
+   void SetBroker(std::weak_ptr<WBFL::EAF::Broker> pBroker);
+   std::shared_ptr<WBFL::EAF::Broker> GetBroker() const;
 
    virtual bool IsValid() const override;
 
 protected:
-   CComPtr<IBroker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
 };

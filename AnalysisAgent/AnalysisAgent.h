@@ -20,8 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_ANALYSISAGENT_H_
-#define INCLUDED_ANALYSISAGENT_H_
+#pragma once
+
+#include <IFace\Tools.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
@@ -30,5 +31,3 @@
 #include <IFace\DistributionFactors.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\RatingSpecification.h>
-
-#endif // INCLUDED_ANALYSISAGENT_H_

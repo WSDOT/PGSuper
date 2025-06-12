@@ -24,15 +24,31 @@
 #include <Reporting\LibraryUsageTable.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
+
 #include <psgLib/SpecificationCriteria.h>
 
+#include <Lrfd/BDSManager.h>
+#include <LRFD/MBEManager.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <psgLib/PrestressLossCriteria.h>
+#include <psgLib/RatingLibraryEntry.h>
+
+void GetSpecificationCompleteInfo(rptParagraph* pPara)
+{
+   auto pBroker = EAFGetBroker();
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
+   bool bTenthEdition = (WBFL::LRFD::BDSManager::GetEdition() > WBFL::LRFD::BDSManager::Edition::NinthEdition2020);
+   *pPara << WBFL::LRFD::BDSManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::BDSManager::GetEditionAsString();
+   if (bTimeStep && bTenthEdition)
+   {
+      *pPara << rptNewLine;
+      *pPara << PT_SPEC_REQUIRED;
+   }
+}
+
 
 /****************************************************************************
 CLASS
@@ -48,7 +64,7 @@ CLibraryUsageTable::~CLibraryUsageTable()
 {
 }
 
-rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
+rptRcTable* CLibraryUsageTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker) const
 {
    rptRcTable* table = rptStyleManager::CreateDefaultTable(3,_T(""));
    table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
@@ -78,7 +94,7 @@ rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
       if (record.LibName == _T("Project Criteria"))
       {       
          (*table)(row, 1) << _T(" based on") << rptNewLine;
-         ReportNotes::GetSpecificationCompleteInfo(&(*table)(row, 1));
+         GetSpecificationCompleteInfo(&(*table)(row, 1));
       }
       else if (record.LibName == _T("Load Rating Criteria"))
       {

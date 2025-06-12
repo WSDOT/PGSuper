@@ -29,17 +29,15 @@
 #include <PgsExt\ConcreteDetailsDlg.h>
 
 #include "CopyConcreteEntry.h"
+#include <psgLib/ConcreteLibraryEntry.h>
+
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
 #include <PGSuperColors.h>
 #include "..\Documentation\PGSuper.hh"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CConcreteGeneralPage dialog
@@ -79,9 +77,8 @@ void CConcreteGeneralPage::DoDataExchange(CDataExchange* pDX)
 	   DDX_Control(pDX, IDC_FC,      m_ctrlFc);
 	   DDX_Control(pDX, IDC_DS,      m_ctrlStrengthDensity);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      auto broker = EAFGetBroker();
+      GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
       CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
       if ( pParent->m_bFinalProperties )
@@ -422,9 +419,8 @@ HBRUSH CConcreteGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
          {
             CDataExchange dx(this,TRUE);
 
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
-            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+            auto broker = EAFGetBroker();
+            GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
             Float64 value;
             DDX_UnitValue(&dx, IDC_DS, value, pDisplayUnits->GetDensityUnit() );
 

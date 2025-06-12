@@ -29,11 +29,6 @@
 #include <IFace\DocumentType.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CCopyTempSupportPropertiesChapterBuilder::CCopyTempSupportPropertiesChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect),
@@ -41,8 +36,6 @@ m_FromTempSupportIdx(INVALID_INDEX)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CCopyTempSupportPropertiesChapterBuilder::GetName() const
 {
    return TEXT("Temporary Support Properties Comparison");
@@ -53,8 +46,7 @@ rptChapter* CCopyTempSupportPropertiesChapterBuilder::Build(const std::shared_pt
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pCopyTempSupportPropertiesMgrRptSpec = std::dynamic_pointer_cast<const CCopyTempSupportPropertiesReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    rptChapter* pChapter = new rptChapter(GetName());
    if (!m_CallBacks.empty())
@@ -77,11 +69,6 @@ rptChapter* CCopyTempSupportPropertiesChapterBuilder::Build(const std::shared_pt
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCopyTempSupportPropertiesChapterBuilder::Clone() const
-{
-   return std::make_unique<CCopyTempSupportPropertiesChapterBuilder>();
 }
 
 void CCopyTempSupportPropertiesChapterBuilder::SetCopyTempSupportProperties(std::vector<ICopyTemporarySupportPropertiesCallback*>& rCallBacks, PierIndexType fromTempSupportIdx, const std::vector<PierIndexType>& toTempSupports)

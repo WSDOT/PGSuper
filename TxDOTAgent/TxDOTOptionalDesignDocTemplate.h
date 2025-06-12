@@ -28,17 +28,17 @@ class CTxDOTOptionalDesignDocTemplate : public CEAFDocTemplate
 {
 public:
    CTxDOTOptionalDesignDocTemplate(UINT nIDResource,
-                                   IEAFCommandCallback* pCallback,
+                                   std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
                                    CRuntimeClass* pDocClass,
                                    CRuntimeClass* pFrameClass,
                                    CRuntimeClass* pViewClass,
                                    HMENU hSharedMenu = nullptr,
                                    int maxViewCount = -1);
 
-   virtual void SetPlugin(IEAFAppPlugin* pPlugin) override;
+   void SetPluginApp(std::weak_ptr<WBFL::EAF::IPluginApp> pPlugin) override;
 
    // returns the string that goes at teh bottom of the New dialog
-   virtual CString GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const override;
+   CString GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const override;
 
    DECLARE_DYNAMIC(CTxDOTOptionalDesignDocTemplate)
 

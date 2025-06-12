@@ -25,23 +25,23 @@
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"
 
-#include "PGSuperAppPlugin.h"
-#include "PGSpliceAppPlugin.h"
+#include "PGSuperPluginApp.h"
+#include "PGSplicePluginApp.h"
 
 #include "resource.h"
 
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFUIIntegration.h>
-#include <EAF\EAFStatusItem.h>
+#include <EAF\StatusItem.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "Hints.h"
 
-#include <EAF\EAFTxnManager.h>
+#include <EAF\TxnManager.h>
 
 #include <psgLib\psgLib.h>
 
@@ -67,20 +67,15 @@
 #include <GirderModelViewController.h>
 #include <LoadsViewController.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
    CPGSuperDocProxyAgent
 ****************************************************************************/
 
-CPGSuperDocProxyAgent::CPGSuperDocProxyAgent()
+CPGSuperDocProxyAgent::CPGSuperDocProxyAgent(CPGSDocBase* pDoc) :
+   m_pMyDocument(pDoc)
 {
-   m_pMyDocument = nullptr;
    m_EventHoldCount = 0;
    m_bFiringEvents = false;
    m_StdToolBarID = -1;
@@ -97,11 +92,6 @@ CPGSuperDocProxyAgent::CPGSuperDocProxyAgent()
 
 CPGSuperDocProxyAgent::~CPGSuperDocProxyAgent()
 {
-}
-
-void CPGSuperDocProxyAgent::SetDocument(CPGSDocBase* pDoc)
-{
-   m_pMyDocument = pDoc;
 }
 
 void CPGSuperDocProxyAgent::CreateStatusBar()
@@ -140,7 +130,7 @@ void CPGSuperDocProxyAgent::CreateToolBars()
    GET_IFACE(IEAFToolbars,pToolBars);
 
    m_StdToolBarID = pToolBars->CreateToolBar(_T("Standard"));
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar(m_StdToolBarID);
+   auto pToolBar = pToolBars->GetToolBar(m_StdToolBarID);
    pToolBar->LoadToolBar(m_pMyDocument->GetStandardToolbarResourceID(),nullptr); // don't use a command callback because these commands are handled by 
                                                // the standard MFC message routing
 
@@ -177,15 +167,14 @@ void CPGSuperDocProxyAgent::RegisterViews()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pMyDocument->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
+   auto pluginApp = pTemplate->GetPluginApp();
 
-   HMENU hMenu = pAppPlugin->GetSharedMenuHandle();
+   HMENU hMenu = pluginApp->GetSharedMenuHandle();
 
    // Register all secondary views that are associated with our document type
-   // TODO: After the menu and command extensions can be made, the agents that are responsble
+   // TODO: After the menu and command extensions can be made, the agents that are responsible
    // for the views below will register them. For example, the analysis results view is the
-   // responsiblity of the analysis results agent, so that view's implementation will move
+   // responsibility of the analysis results agent, so that view's implementation will move
    GET_IFACE(IEAFViewRegistrar,pViewReg);
    m_BridgeModelEditorViewKey = pViewReg->RegisterView(IDR_BRIDGEMODELEDITOR, nullptr, RUNTIME_CLASS(CBridgeModelViewChildFrame), RUNTIME_CLASS(CBridgePlanView),           hMenu, 1);
    m_GirderModelEditorViewKey = pViewReg->RegisterView(IDR_GIRDERMODELEDITOR, nullptr, RUNTIME_CLASS(CGirderModelChildFrame),     RUNTIME_CLASS(CGirderModelElevationView), hMenu, -1); // unlimited number of reports
@@ -208,142 +197,30 @@ void CPGSuperDocProxyAgent::UnregisterViews()
 
 void CPGSuperDocProxyAgent::AdviseEventSinks()
 {
-   //
-   // Attach to connection points
-   //
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
-
-   hr = pBrokerInit->FindConnectionPoint( IID_IBridgeDescriptionEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwBridgeDescCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_IEnvironmentEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwEnvironmentCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_IProjectPropertiesEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwProjectPropertiesCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_IEAFDisplayUnitsEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwDisplayUnitsCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_ISpecificationEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwSpecificationCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_IRatingSpecificationEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwRatingSpecificationCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_ILibraryConflictEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwLibraryConflictGuiCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_ILoadModifiersEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwLoadModiferCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_ILossParametersEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwLossParametersCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint(IID_IReporterEventSink, &pCP);
-   ATLASSERT(SUCCEEDED(hr));
-   hr = pCP->Advise(GetUnknown(), &m_dwReportCookie);
-   ATLASSERT(SUCCEEDED(hr));
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
+   m_BridgeDescCookie = REGISTER_EVENT_SINK(IBridgeDescriptionEventSink);
+   m_EnvironmentCookie = REGISTER_EVENT_SINK(IEnvironmentEventSink);
+   m_ProjectPropertiesCookie = REGISTER_EVENT_SINK(IProjectPropertiesEventSink);
+   m_DisplayUnitsCookie = REGISTER_EVENT_SINK(IEAFDisplayUnitsEventSink);
+   m_SpecificationCookie = REGISTER_EVENT_SINK(ISpecificationEventSink);
+   m_RatingSpecificationCookie = REGISTER_EVENT_SINK(IRatingSpecificationEventSink);
+   m_LibraryConflictGuiCookie = REGISTER_EVENT_SINK(ILibraryConflictEventSink);
+   m_LoadModiferCookie = REGISTER_EVENT_SINK(ILoadModifiersEventSink);
+   m_LossParametersCookie = REGISTER_EVENT_SINK(ILossParametersEventSink);
+   m_ReportCookie = REGISTER_EVENT_SINK(IReporterEventSink);
 }
 
 void CPGSuperDocProxyAgent::UnadviseEventSinks()
 {
-   //
-   // Detach to connection points
-   //
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
-
-   hr = pBrokerInit->FindConnectionPoint( IID_IBridgeDescriptionEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwBridgeDescCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_IEnvironmentEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwEnvironmentCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_IProjectPropertiesEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwProjectPropertiesCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_IEAFDisplayUnitsEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwDisplayUnitsCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_ISpecificationEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwSpecificationCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_IRatingSpecificationEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwRatingSpecificationCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_ILibraryConflictEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwLibraryConflictGuiCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_ILoadModifiersEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwLoadModiferCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint( IID_ILossParametersEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwLossParametersCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   hr = pBrokerInit->FindConnectionPoint(IID_IReporterEventSink, &pCP);
-   ATLASSERT(SUCCEEDED(hr));
-   hr = pCP->Unadvise(m_dwReportCookie);
-   ATLASSERT(SUCCEEDED(hr));
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
+    UNREGISTER_EVENT_SINK(IBridgeDescriptionEventSink, m_BridgeDescCookie);
+    UNREGISTER_EVENT_SINK(IEnvironmentEventSink, m_EnvironmentCookie);
+    UNREGISTER_EVENT_SINK(IProjectPropertiesEventSink, m_ProjectPropertiesCookie);
+    UNREGISTER_EVENT_SINK(IEAFDisplayUnitsEventSink, m_DisplayUnitsCookie);
+    UNREGISTER_EVENT_SINK(ISpecificationEventSink, m_SpecificationCookie);
+    UNREGISTER_EVENT_SINK(IRatingSpecificationEventSink, m_RatingSpecificationCookie);
+    UNREGISTER_EVENT_SINK(ILibraryConflictEventSink, m_LibraryConflictGuiCookie);
+    UNREGISTER_EVENT_SINK(ILoadModifiersEventSink, m_LoadModiferCookie);
+    UNREGISTER_EVENT_SINK(ILossParametersEventSink, m_LossParametersCookie);
+    UNREGISTER_EVENT_SINK(IReporterEventSink, m_ReportCookie);
 }
 
 void CPGSuperDocProxyAgent::CreateBridgeModelView(IBridgeModelViewController** ppViewController)
@@ -427,14 +304,14 @@ void CPGSuperDocProxyAgent::CreateReportView(IndexType rptIdx,BOOL bPromptForSpe
    data.m_RptIdx = rptIdx;
    data.m_bPromptForSpec = bPromptForSpec;
 
-   GET_IFACE(IReportManager,pRptMgr);
+   GET_IFACE(IEAFReportManager,pRptMgr);
    data.m_pRptMgr = pRptMgr;
 
    GET_IFACE(IEAFViewRegistrar,pViewReg);
    pViewReg->CreateView(m_ReportViewKey,(LPVOID)&data);
 }
 
-void CPGSuperDocProxyAgent::BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport)
+void CPGSuperDocProxyAgent::BuildReportMenu(std::shared_ptr<WBFL::EAF::Menu> pMenu,bool bQuickReport)
 {
    m_pMyDocument->BuildReportMenu(pMenu,bQuickReport);
 }
@@ -442,7 +319,7 @@ void CPGSuperDocProxyAgent::BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport)
 void CPGSuperDocProxyAgent::CreateGraphView(IndexType graphIdx, IEAFViewController** ppViewController)
 {
    CEAFGraphViewCreationData data;
-   GET_IFACE(IGraphManager,pGraphMgr);
+   GET_IFACE(IEAFGraphManager,pGraphMgr);
    data.m_pIGraphMgr = pGraphMgr;
    data.m_GraphIndex = graphIdx;
 
@@ -469,7 +346,7 @@ void CPGSuperDocProxyAgent::CreateGraphView(IndexType graphIdx, IEAFViewControll
 
 void CPGSuperDocProxyAgent::CreateGraphView(LPCTSTR lpszGraph, IEAFViewController** ppViewController)
 {
-   GET_IFACE(IGraphManager, pGraphMgr);
+   GET_IFACE(IEAFGraphManager, pGraphMgr);
    IndexType nGraphs = pGraphMgr->GetGraphBuilderCount();
    for (IndexType graphIdx = 0; graphIdx < nGraphs; graphIdx++)
    {
@@ -484,7 +361,7 @@ void CPGSuperDocProxyAgent::CreateGraphView(LPCTSTR lpszGraph, IEAFViewControlle
    ATLASSERT(false); // graph name not found
 }
 
-void CPGSuperDocProxyAgent::BuildGraphMenu(CEAFMenu* pMenu)
+void CPGSuperDocProxyAgent::BuildGraphMenu(std::shared_ptr<WBFL::EAF::Menu> pMenu)
 {
    m_pMyDocument->BuildGraphMenu(pMenu);
 }
@@ -526,7 +403,7 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
    if ( m_pBroker )
    {
       GET_IFACE(IEAFToolbars,pToolBars);
-      CEAFToolBar* pToolBar = pToolBars->GetToolBar(GetStdToolBarID());
+      auto pToolBar = pToolBars->GetToolBar(GetStdToolBarID());
 
       if ( pToolBar == nullptr )
          return;
@@ -534,19 +411,19 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       switch(pStatusCenter->GetSeverity())
       {
-      case eafTypes::statusInformation:
+      case WBFL::EAF::StatusSeverityType::Information:
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, nullptr, FALSE);
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,nullptr, TRUE);
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,nullptr, TRUE);
          break;
 
-      case eafTypes::statusWarning:
+      case WBFL::EAF::StatusSeverityType::Warning:
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, nullptr, TRUE);
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,nullptr, FALSE);
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,nullptr, TRUE);
          break;
 
-      case eafTypes::statusError:
+      case WBFL::EAF::StatusSeverityType::Error:
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, nullptr, TRUE);
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,nullptr, TRUE);
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,nullptr, FALSE);
@@ -561,70 +438,62 @@ void CPGSuperDocProxyAgent::OnUIHintsReset()
 }
 
 //////////////////////////////////////////////////////////
-// IAgentEx
-STDMETHODIMP CPGSuperDocProxyAgent::SetBroker(IBroker* pBroker)
+// Agent
+bool CPGSuperDocProxyAgent::RegisterInterfaces()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
-   return S_OK;
+   EAF_AGENT_REGISTER_INTERFACES;
+
+   REGISTER_INTERFACE(IEditByUI);
+   REGISTER_INTERFACE(IDesign);
+   REGISTER_INTERFACE(IViews);
+   REGISTER_INTERFACE(ISelection);
+   REGISTER_INTERFACE(IUIEvents);
+   REGISTER_INTERFACE(IUpdateTemplates);
+   REGISTER_INTERFACE(IVersionInfo);
+   REGISTER_INTERFACE(IRegisterViewEvents);
+   REGISTER_INTERFACE(IExtendPGSuperUI);
+   REGISTER_INTERFACE(IExtendPGSpliceUI);
+   REGISTER_INTERFACE(IDocumentType);
+   REGISTER_INTERFACE(IDocumentUnitSystem);
+
+   return true;
 }
 
-STDMETHODIMP CPGSuperDocProxyAgent::RegInterfaces()
-{
-   CComQIPtr<IBrokerInitEx2> pBrokerInit(m_pBroker);
-   pBrokerInit->RegInterface( IID_IEditByUI,           this );
-   pBrokerInit->RegInterface( IID_IDesign,             this );
-   pBrokerInit->RegInterface( IID_IViews,              this );
-   pBrokerInit->RegInterface( IID_ISelection,          this );
-   pBrokerInit->RegInterface( IID_IUIEvents,           this );
-   pBrokerInit->RegInterface( IID_IUpdateTemplates,    this );
-   pBrokerInit->RegInterface( IID_IVersionInfo,        this );
-   pBrokerInit->RegInterface( IID_IRegisterViewEvents, this );
-   pBrokerInit->RegInterface( IID_IExtendPGSuperUI,    this );
-   pBrokerInit->RegInterface( IID_IExtendPGSpliceUI,   this );
-   pBrokerInit->RegInterface( IID_IDocumentType,       this );
-   pBrokerInit->RegInterface( IID_IDocumentUnitSystem, this );
-   return S_OK;
-}
-
-STDMETHODIMP CPGSuperDocProxyAgent::Init()
+bool CPGSuperDocProxyAgent::Init()
 {
    EAF_AGENT_INIT;
-
-   return AGENT_S_SECONDPASSINIT;
-}
-
-STDMETHODIMP CPGSuperDocProxyAgent::Init2()
-{
    AdviseEventSinks();
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CPGSuperDocProxyAgent::Reset()
+bool CPGSuperDocProxyAgent::Reset()
 {
-   CEAFTxnManager::GetInstance().Clear();
-   return S_OK;
+   EAF_AGENT_RESET;
+
+   WBFL::EAF::TxnManager::GetInstance().Clear();
+   return true;
 }
 
-STDMETHODIMP CPGSuperDocProxyAgent::ShutDown()
+bool CPGSuperDocProxyAgent::ShutDown()
 {
+   EAF_AGENT_SHUTDOWN;
+
    UnadviseEventSinks();
 
-   EAF_AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;
 
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CPGSuperDocProxyAgent::GetClassID(CLSID* pCLSID)
+CLSID CPGSuperDocProxyAgent::GetCLSID() const
 {
-   *pCLSID = CLSID_PGSuperDocProxyAgent;
-   return S_OK;
+   return CLSID_PGSuperDocProxyAgent;
 }
 
 ////////////////////////////////////////////////////////////////////
 // IAgentUIIntegration
 
-STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
+bool CPGSuperDocProxyAgent::IntegrateWithUI(bool bIntegrate)
 {
    if ( bIntegrate )
    {
@@ -815,7 +684,7 @@ HRESULT CPGSuperDocProxyAgent::OnUnitsChanging()
    return S_OK;
 }
 
-HRESULT CPGSuperDocProxyAgent::OnUnitsChanged(eafTypes::UnitMode newUnitMode)
+HRESULT CPGSuperDocProxyAgent::OnUnitsChanged(WBFL::EAF::UnitMode newUnitMode)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
@@ -870,7 +739,7 @@ HRESULT CPGSuperDocProxyAgent::OnRatingSpecificationChanged()
    return S_OK;
 }
 
-// ILoadModiferEventSink
+// ILoadModifierEventSink
 HRESULT CPGSuperDocProxyAgent::OnLoadModifiersChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
@@ -1059,14 +928,12 @@ Float64 CPGSuperDocProxyAgent::GetSectionCutStation()
 bool CPGSuperDocProxyAgent::UpdatingTemplates()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pMyDocument->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-
-   CPGSuperAppPlugin* pPGSuperPlugin = dynamic_cast<CPGSuperAppPlugin*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSuperPlugin = std::dynamic_pointer_cast<CPGSuperPluginApp>(pluginApp);
    if ( pPGSuperPlugin )
       return pPGSuperPlugin->UpdatingTemplates();
 
-   CPGSpliceAppPlugin* pPGSplicePlugin = dynamic_cast<CPGSpliceAppPlugin*>(pAppPlugin.p);
+   auto pPGSplicePlugin = std::dynamic_pointer_cast<CPGSplicePluginApp>(pluginApp);
    if ( pPGSplicePlugin )
       return pPGSplicePlugin->UpdatingTemplates();
 
@@ -1152,7 +1019,7 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,std::shared_pt
       event.pHint = pHint;
 
       // skip all but one result hint - firing multiple result hints 
-      // causes the UI to unnecessarilly update multiple times
+      // causes the UI to unnecessarily update multiple times
       bool skip = false;
       if ( MIN_RESULTS_HINT <= lHint && lHint <= MAX_RESULTS_HINT )
       {
@@ -1596,9 +1463,8 @@ bool CPGSuperDocProxyAgent::IsPGSpliceDocument() const
 void CPGSuperDocProxyAgent::GetUnitServer(IUnitServer** ppUnitServer)
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pMyDocument->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSuper = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CComPtr<IAppUnitSystem> appUnitSystem;
    pPGSuper->GetAppUnitSystem(&appUnitSystem);

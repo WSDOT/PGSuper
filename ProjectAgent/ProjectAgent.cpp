@@ -29,12 +29,12 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "initguid.h"
+#include <initguid.h>
 #include "ProjectAgent.h"
 
 #include "CLSID.h"
 
-#include <WBFLCore_i.c>
+
 #include <WBFLGenericBridge_i.c>
 
 #include <WBFLCogo_i.c>
@@ -43,10 +43,11 @@
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
-#include <System\ComCatMgr.h>
 
+#include <IFace/PointOfInterest.h>
+#include <IFace/Alignment.h>
 #include <IFace\PrestressForce.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\UpdateTemplates.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
@@ -55,18 +56,15 @@
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFUIIntegration.h>
+#include <EAF/EAFProgress.h>
+#include <EAF\EAFStatusCenter.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <EAF\ComponentModule.h>
+WBFL::EAF::ComponentModule Module_;
 
-CComModule _Module;
-
-BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_ProjectAgent, CProjectAgentImp)
-END_OBJECT_MAP()
+EAF_BEGIN_OBJECT_MAP(ObjectMap)
+	EAF_OBJECT_ENTRY(CLSID_ProjectAgent, CProjectAgentImp)
+EAF_END_OBJECT_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // DLL Entry Point
@@ -76,65 +74,9 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 {
 	if (dwReason == DLL_PROCESS_ATTACH)
 	{
-		_Module.Init(ObjectMap, hInstance);
-		DisableThreadLibraryCalls(hInstance);
+		Module_.Init(ObjectMap);
 	}
 	else if (dwReason == DLL_PROCESS_DETACH)
-		_Module.Term();
+		Module_.Term();
 	return TRUE;    // ok
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Used to determine whether the DLL can be unloaded by OLE
-
-STDAPI DllCanUnloadNow(void)
-{
-   LONG cLock = _Module.GetLockCount();
-   bool bCanUnload = ( cLock == 0 );
-	return ( bCanUnload ) ? S_OK : S_FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Returns a class factory to create an object of the requested type
-
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-	return _Module.GetClassObject(rclsid, riid, ppv);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllRegisterServer - Adds entries to the system registry
-
-HRESULT RegisterAgent(bool bRegister)
-{
-   HRESULT hr = S_OK;
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_ProjectAgent,CATID_PGSuperAgent,bRegister);
-   if ( FAILED(hr) )
-      return hr;
-
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_ProjectAgent,CATID_PGSpliceAgent,bRegister);
-   if ( FAILED(hr) )
-      return hr;
-
-   return S_OK;
-}
-
-STDAPI DllRegisterServer(void)
-{
-	// registers object, typelib and all interfaces in typelib
-	HRESULT hr = _Module.RegisterServer(FALSE);
-   if ( FAILED(hr) )
-      return hr;
-
-   return RegisterAgent(true);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllUnregisterServer - Removes entries from the system registry
-
-STDAPI DllUnregisterServer(void)
-{
-   RegisterAgent(false);
-	_Module.UnregisterServer();
-	return S_OK;
 }

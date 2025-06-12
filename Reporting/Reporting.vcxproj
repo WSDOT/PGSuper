@@ -430,6 +430,7 @@
     <ClInclude Include="..\Include\Reporting\CopyTempSupportPropertiesReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CrackedSectionChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CrackedSectionDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CrackedSectionReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\CrackedSectionReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CreepCoefficientChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CritSectionChapterBuilder.h" />
@@ -573,7 +574,6 @@
     <ClInclude Include="..\Include\Reporting\VehicularLoadResultsTable.h" />
     <ClInclude Include="..\Include\SharedCtrls\MultiGirderSelectGrid.h" />
     <ClInclude Include="BearingTimeStepDetailsDlg.h" />
-    <ClInclude Include="CrackedSectionReportSpecification.h" />
     <ClInclude Include="EquilibriumCheckDlg.h" />
     <ClInclude Include="InitialStrainAnalysisDlg.h" />
     <ClInclude Include="MultiViewReportDlg.h" />
@@ -597,7 +597,9 @@
   <ItemGroup>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\psgLib\psgLib.vcxproj">
+      <Project>{3d4395a4-6da8-40b5-bd41-c21104290b15}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

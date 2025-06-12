@@ -33,11 +33,6 @@
 
 // CBridgeDescRatingPage dialog
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 BEGIN_MESSAGE_MAP(CShearSteelPage2, CShearSteelPage)
@@ -59,8 +54,8 @@ UINT CShearSteelPage2::GetHelpID()
 
 void CShearSteelPage2::DoRestoreDefaults() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    // get shear information from library
    GET_IFACE2( pBroker, ILibrary, pLib );

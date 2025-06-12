@@ -1,25 +1,25 @@
-/////////////////////////////////////////////////////////////////////////
-//// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-//// Copyright © 1999-2025  Washington State Department of Transportation
-////                        Bridge and Structures Office
-////
-//// This program is free software; you can redistribute it and/or modify
-//// it under the terms of the Alternate Route Open Source License as 
-//// published by the Washington State Department of Transportation, 
-//// Bridge and Structures Office.
-////
-//// This program is distributed in the hope that it will be useful, but 
-//// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-//// the Alternate Route Open Source License for more details.
-////
-//// You should have received a copy of the Alternate Route Open Source 
-//// License along with this program; if not, write to the Washington 
-//// State Department of Transportation, Bridge and Structures Office, 
-//// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-//// Bridge_Support@wsdot.wa.gov
-/////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2025  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
 #include "StdAfx.h"
 #include <Reporting\BearingReactionTable.h>
 #include <Reporting\ProductMomentsTable.h>
@@ -32,54 +32,14 @@
 #include <IFace\Project.h>
 
 
-#include <PgsExt\PierData2.h>
+#include <PsgLib\PierData2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-///****************************************************************************
-//CLASS
-//   CBearingReactiontionTable
-//****************************************************************************/
-//
-//
-//////////////////////////// PUBLIC     ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
 CBearingReactionTable::CBearingReactionTable()
 {
 }
 
-CBearingReactionTable::CBearingReactionTable(const CBearingReactionTable& rOther)
-{
-    MakeCopy(rOther);
-}
-
-CBearingReactionTable::~CBearingReactionTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CBearingReactionTable& CBearingReactionTable::operator= (const CBearingReactionTable& rOther)
-{
-    if (this != &rOther)
-    {
-        MakeAssignment(rOther);
-    }
-
-    return *this;
-}
-
-
-
-
-
-
-
-ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey,
+ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,
     pgsTypes::AnalysisType analysisType, bool bDesign, bool bUserLoads, REACTIONDETAILS* details, bool bDetail) const
 {
 
@@ -242,11 +202,9 @@ ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBrok
 }
 
 
-
-
 template <class M, class T>
-RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* p_table,
-    bool bDesign, bool bUserLoads, pgsTypes::AnalysisType analysisType, IEAFDisplayUnits* pDisplayUnits, const T& unitT, bool bDetail, REACTIONDETAILS* pDetails)
+RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptRcTable* p_table,
+    bool bDesign, bool bUserLoads, pgsTypes::AnalysisType analysisType, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const T& unitT, bool bDetail, REACTIONDETAILS* pDetails)
 {
    
 
@@ -637,15 +595,9 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 }
 
 
-
-
-
-//======================== OPERATIONS =======================================
-rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
-    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, IEAFDisplayUnits* pDisplayUnits, bool bDetail) const
+rptRcTable* CBearingReactionTable::BuildBearingReactionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
+    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bDetail) const
 {
-
-
     // Build table
     INIT_UV_PROTOTYPE(rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false);
     INIT_UV_PROTOTYPE(rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false);
@@ -1156,37 +1108,3 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
     return p_table;
 
 }
-
-
-
-
-
-
-////======================== ACCESS     =======================================
-////======================== INQUIRY    =======================================
-//
-//////////////////////////// PROTECTED  ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-////======================== OPERATORS  =======================================
-////======================== OPERATIONS =======================================
-void CBearingReactionTable::MakeCopy(const CBearingReactionTable& rOther)
-{
-    // Add copy code here...
-}
-
-void CBearingReactionTable::MakeAssignment(const CBearingReactionTable& rOther)
-{
-    MakeCopy(rOther);
-}
-//
-////======================== ACCESS     =======================================
-////======================== INQUIRY    =======================================
-//
-//////////////////////////// PRIVATE    ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-////======================== OPERATORS  =======================================
-////======================== OPERATIONS =======================================
-////======================== ACCESS     =======================================
-////======================== INQUERY    =======================================

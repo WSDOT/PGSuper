@@ -27,15 +27,11 @@
 #include "HaunchByBridgeDlg.h"
 #include "EditHaunchACamberDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include "PGSuperUnits.h"
-#include <PgsExt\HaunchDepthInputConversionTool.h>
+#include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CHaunchByBridgeDlg dialog
@@ -56,25 +52,24 @@ void CHaunchByBridgeDlg::DoDataExchange(CDataExchange* pDX)
 {
    CDialog::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)GetParent();
    CBridgeDescription2* pBridgeOrig = pParent->GetBridgeDesc();
 
    // Convert current haunch data if needed
-   HaunchDepthInputConversionTool conversionTool(pBridgeOrig,pBroker,false);
-   auto convPair = conversionTool.ConvertToSlabOffsetInput(pgsTypes::sotBridge);
-   const CBridgeDescription2* pBridge = &convPair.second;
+   GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+   auto bridge = pBridgeDesc->ConvertHaunchToSlabOffsetInput(*pBridgeOrig, pgsTypes::sotBridge).second;
 
-   Float64 slabOffset = pBridge->GetSlabOffset();
+   Float64 slabOffset = bridge.GetSlabOffset();
    DDX_UnitValueAndTag( pDX, IDC_SLAB_OFFSET, IDC_SLAB_OFFSET_UNITS, slabOffset, pDisplayUnits->GetComponentDimUnit() );
 
    if (pDX->m_bSaveAndValidate && pParent->GetSlabOffsetType() == pgsTypes::sotBridge)
    {
       // Get min slab offset value and build error message for too small of A
-      Float64 minSlabOffset = pBridge->GetMinSlabOffset();
+      Float64 minSlabOffset = bridge.GetMinSlabOffset();
       if (::IsLT(slabOffset, minSlabOffset))
       {
          CString strMinValError;

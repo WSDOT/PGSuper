@@ -37,7 +37,6 @@
 
 // FORWARD DECLARATIONS
 //
-struct IBroker;
 
 // MISCELLANEOUS
 //
@@ -62,7 +61,7 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   PGSuperCalculationSheet(IBroker* pBroker);
+   PGSuperCalculationSheet(std::shared_ptr<WBFL::EAF::Broker> pBroker);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -97,7 +96,7 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

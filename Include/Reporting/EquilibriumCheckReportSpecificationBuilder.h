@@ -29,7 +29,7 @@ class REPORTINGCLASS CEquilibriumCheckReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CEquilibriumCheckReportSpecificationBuilder(IBroker* pBroker);
+   CEquilibriumCheckReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CEquilibriumCheckReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;

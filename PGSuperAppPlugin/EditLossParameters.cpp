@@ -22,13 +22,10 @@
 
 #include "stdafx.h"
 #include "EditLossParameters.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 txnEditLossParameters::txnEditLossParameters(const txnEditLossParametersData& oldData,const txnEditLossParametersData& newData)
@@ -52,7 +49,7 @@ void txnEditLossParameters::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditLossParameters::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditLossParameters::CreateClone() const
 {
    return std::make_unique<txnEditLossParameters>(m_LossParameters[0],m_LossParameters[1]);
 }
@@ -76,8 +73,8 @@ bool txnEditLossParameters::IsRepeatable() const
 
 void txnEditLossParameters::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done

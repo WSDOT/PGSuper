@@ -27,18 +27,14 @@
 #include "resource.h"
 #include "ApplyLoadsDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\DeckDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\DeckDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CApplyLoadsDlg dialog
@@ -243,9 +239,7 @@ void CApplyLoadsDlg::OnMoveToSourceList()
 
 void CApplyLoadsDlg::FillLists()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IUserDefinedLoadData, pUserDefinedLoads);
    IndexType nLoads = pUserDefinedLoads->GetPointLoadCount();
    for ( IndexType loadIdx = 0; loadIdx < nLoads; loadIdx++ )

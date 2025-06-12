@@ -22,22 +22,18 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderArtifactTool.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\SplittingCheckEngineer.h>
+#include <PsgLib\GirderLabel.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 #include <IFace/Limits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\DocumentType.h>
+#include <IFace/SplittingChecks.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-bool FlexureStressFailures(IBroker* pBroker,const CSegmentKey& segmentKey,const StressCheckTask& task,const pgsSegmentArtifact* pArtifact,bool bBeamStresses)
+bool FlexureStressFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const StressCheckTask& task,const pgsSegmentArtifact* pArtifact,bool bBeamStresses)
 {
    IndexType nArtifacts = pArtifact->GetFlexuralStressArtifactCount(task);
    for ( IndexType idx = 0; idx < nArtifacts; idx++ )
@@ -63,7 +59,7 @@ bool FlexureStressFailures(IBroker* pBroker,const CSegmentKey& segmentKey,const 
 }
 
 
-void ListStressFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact,bool referToDetailsReport)
+void ListStressFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact,bool referToDetailsReport)
 {
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bPrestressedGirder = pDocType->IsPGSuperDocument();
@@ -221,7 +217,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirde
    } // next segment
 }
 
-bool MomentCapacityFailures(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bPositiveMoment)
+bool MomentCapacityFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bPositiveMoment)
 {
    IndexType nArtifacts = (bPositiveMoment ? pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifactCount(intervalIdx,ls) : pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifactCount(intervalIdx, ls));
    for ( IndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
@@ -239,7 +235,7 @@ bool MomentCapacityFailures(IBroker* pBroker,const pgsGirderArtifact* pGirderArt
    return false;
 }
 
-void ListMomentCapacityFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
+void ListMomentCapacityFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there is a failure
@@ -264,7 +260,7 @@ void ListMomentCapacityFailures(IBroker* pBroker,FailureList& rFailures,const pg
    }
 }
 
-void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
+void ListVerticalShearFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -321,7 +317,7 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
    } // next segment
 }
 
-void ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
+void ListHorizontalShearFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -358,7 +354,7 @@ void ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const p
    } // next segment
 }
 
-void ListStirrupDetailingFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
+void ListStirrupDetailingFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -393,7 +389,7 @@ void ListStirrupDetailingFailures(IBroker* pBroker,FailureList& rFailures,const 
    } // next segment
 }
 
-void ListDebondingFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
+void ListDebondingFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -421,7 +417,7 @@ void ListDebondingFailures(IBroker* pBroker,FailureList& rFailures,const pgsGird
    } // next segment
 }
 
-void PGSEXTFUNC ListMinimumDeckReinforcementFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact)
+void PGSEXTFUNC ListMinimumDeckReinforcementFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact)
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -445,9 +441,10 @@ void PGSEXTFUNC ListMinimumDeckReinforcementFailures(IBroker* pBroker, FailureLi
    } // next segment
 }
 
-void ListSplittingZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
+void ListSplittingZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
+
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -457,7 +454,8 @@ void ListSplittingZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgs
       const std::shared_ptr<pgsSplittingCheckArtifact> pSplittingCheckArtifact = pArtifact->GetStirrupCheckArtifact()->GetSplittingCheckArtifact();
       if (pSplittingCheckArtifact && !pSplittingCheckArtifact->Passed() )
       {
-         std::_tstring strZone(pgsSplittingCheckEngineer::GetCheckName());
+         GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
+         std::_tstring strZone(pSplittingChecks->GetSplittingCheckName());
          std::_tostringstream os;
          if ( 1 < nSegments )
          {
@@ -473,7 +471,7 @@ void ListSplittingZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgs
    } // next segment
 }
 
-void ListConfinementZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
+void ListConfinementZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -501,7 +499,7 @@ void ListConfinementZoneFailures(IBroker* pBroker,FailureList& rFailures,const p
    } // next segment
 }
 
-void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,bool referToDetails)
+void ListVariousFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,bool referToDetails)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -543,7 +541,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       }
 
       // Lifting
-      const WBFL::Stability::LiftingCheckArtifact* pLifting = pArtifact->GetLiftingCheckArtifact();
+      auto pLifting = pArtifact->GetLiftingCheckArtifact();
       if (pLifting!=nullptr && !pLifting->Passed() )
       {
          std::_tostringstream os;
@@ -562,7 +560,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       // not doing a full check... see pgsSegmentArtifact::Passed()
       // don't want to hard ding users for not passing overhangs or haul weight
       // fails will show up in the details.
-      const pgsHaulingAnalysisArtifact* pHauling = pArtifact->GetHaulingAnalysisArtifact();
+      auto pHauling = pArtifact->GetHaulingAnalysisArtifact();
       if (pHauling != nullptr)
       {
          if (!pHauling->Passed(WBFL::Stability::HaulingSlope::CrownSlope) || !pHauling->Passed(WBFL::Stability::HaulingSlope::Superelevation))

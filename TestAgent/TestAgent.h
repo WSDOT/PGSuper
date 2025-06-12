@@ -20,10 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_TESTAGENT_H_
-#define INCLUDED_TESTAGENT_H_
+#pragma once
 
-#include <WBFLCore.h>
+#include <IFace\Tools.h>
 
 #include <IFace\VersionInfo.h>
 #include <IFace\Test1250.h>
@@ -36,5 +35,3 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\Constructability.h>
     
-
-#endif // INCLUDED_TESTAGENT_H_

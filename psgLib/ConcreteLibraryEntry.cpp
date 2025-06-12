@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <psgLib\ConcreteLibraryEntry.h>
+#include <PsgLib\ConcreteLibraryEntry.h>
 
 #include <System\IStructuredSave.h>
 #include <System\IStructuredLoad.h>
@@ -37,13 +37,8 @@
 #include <Materials/CEBFIPConcrete.h>
 
 #include <EAF\EAFApp.h>
-#include <psgLib\LibraryEntryDifferenceItem.h>
+#include <PsgLib\DifferenceItem.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /****************************************************************************
@@ -618,12 +613,12 @@ bool ConcreteLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
 bool ConcreteLibraryEntry::IsEqual(const ConcreteLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
+   std::vector<std::unique_ptr<PGS::Library::DifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -633,80 +628,80 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
    if ( m_Type != rOther.m_Type )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Type"),GetConcreteType(m_Type),GetConcreteType(rOther.m_Type)));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Type"),GetConcreteType(m_Type),GetConcreteType(rOther.m_Type)));
    }
 
    if ( !::IsEqual(m_Fc,rOther.m_Fc) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("f'c"),m_Fc,rOther.m_Fc,pDisplayUnits->Stress));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStressItem>(_T("f'c"),m_Fc,rOther.m_Fc,pDisplayUnits->Stress));
    }
 
    if ( !::IsEqual(m_Ds,rOther.m_Ds) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDensityItem>(_T("Unit Weight"),m_Ds,rOther.m_Ds,pDisplayUnits->Density));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDensityItem>(_T("Unit Weight"),m_Ds,rOther.m_Ds,pDisplayUnits->Density));
    }
 
    if ( !::IsEqual(m_Dw,rOther.m_Dw) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDensityItem>(_T("Unit Weight with Reinforcement"),m_Dw,rOther.m_Dw,pDisplayUnits->Density));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDensityItem>(_T("Unit Weight with Reinforcement"),m_Dw,rOther.m_Dw,pDisplayUnits->Density));
    }
 
    if ( m_bUserEc != rOther.m_bUserEc )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Mod. Elasticity, Ec"),m_bUserEc,rOther.m_bUserEc,_T("Checked"),_T("Unchecked")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceBooleanItem>(_T("Mod. Elasticity, Ec"),m_bUserEc,rOther.m_bUserEc,_T("Checked"),_T("Unchecked")));
    }
 
    if ( m_bUserEc && !::IsEqual(m_Ec,rOther.m_Ec) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Ec"),m_Ec,rOther.m_Ec,pDisplayUnits->ModE));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStressItem>(_T("Ec"),m_Ec,rOther.m_Ec,pDisplayUnits->ModE));
    }
 
    if ( !IsUHPC(m_Type) && !::IsEqual(m_AggSize,rOther.m_AggSize) )
    {
       // Agg Size not applicable to UHPC - the UI elements in the dialog are hidden
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Max. Aggregate Size"), m_AggSize, rOther.m_AggSize, pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthItem>(_T("Max. Aggregate Size"), m_AggSize, rOther.m_AggSize, pDisplayUnits->ComponentDim));
    }
 
    if ( !::IsEqual(m_EccK1,rOther.m_EccK1) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Mod. E, K1"),m_EccK1,rOther.m_EccK1));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDoubleItem>(_T("Mod. E, K1"),m_EccK1,rOther.m_EccK1));
    }
 
    if ( !::IsEqual(m_EccK2,rOther.m_EccK2) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Mod. E, K2"),m_EccK2,rOther.m_EccK2));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDoubleItem>(_T("Mod. E, K2"),m_EccK2,rOther.m_EccK2));
    }
 
    if ( !::IsEqual(m_CreepK1,rOther.m_CreepK1) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Creep, K1"),m_CreepK1,rOther.m_CreepK1));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDoubleItem>(_T("Creep, K1"),m_CreepK1,rOther.m_CreepK1));
    }
 
    if ( !::IsEqual(m_CreepK2,rOther.m_CreepK2) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Creep, K2"),m_CreepK2,rOther.m_CreepK2));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDoubleItem>(_T("Creep, K2"),m_CreepK2,rOther.m_CreepK2));
    }
 
    if ( !::IsEqual(m_ShrinkageK1,rOther.m_ShrinkageK1) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Shrinkage, K1"),m_ShrinkageK1,rOther.m_ShrinkageK1));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDoubleItem>(_T("Shrinkage, K1"),m_ShrinkageK1,rOther.m_ShrinkageK1));
    }
 
    if ( !::IsEqual(m_ShrinkageK2,rOther.m_ShrinkageK2) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Shrinkage, K2"),m_ShrinkageK2,rOther.m_ShrinkageK2));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDoubleItem>(_T("Shrinkage, K2"),m_ShrinkageK2,rOther.m_ShrinkageK2));
    }
 
    if ( IsLWC(m_Type) )
@@ -714,13 +709,13 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       if ( m_bHasFct != rOther.m_bHasFct )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Agg. Splitting Strength, fct"),m_bHasFct,rOther.m_bHasFct,_T("Checked"),_T("Unchecked")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceBooleanItem>(_T("Agg. Splitting Strength, fct"),m_bHasFct,rOther.m_bHasFct,_T("Checked"),_T("Unchecked")));
       }
 
       if ( m_bHasFct && !::IsEqual(m_Fct,rOther.m_Fct) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Fct"),m_Fct,rOther.m_Fct,pDisplayUnits->Stress));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStressItem>(_T("Fct"),m_Fct,rOther.m_Fct,pDisplayUnits->Stress));
       }
    }
 
@@ -729,31 +724,31 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       if (!::IsEqual(m_Ffc, rOther.m_Ffc))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Ffc"), m_Ffc, rOther.m_Ffc, pDisplayUnits->Stress));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStressItem>(_T("Ffc"), m_Ffc, rOther.m_Ffc, pDisplayUnits->Stress));
       }
 
       if (!::IsEqual(m_Frr, rOther.m_Frr))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Frr"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStressItem>(_T("Frr"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
       }
 
       if (!::IsEqual(m_FiberLength, rOther.m_FiberLength))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Fiber Length"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStressItem>(_T("Fiber Length"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
       }
 
       if (m_bPCTT != rOther.m_bPCTT)
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("PCTT"), m_bPCTT, rOther.m_bPCTT, _T("Checked"), _T("Unchecked")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceBooleanItem>(_T("PCTT"), m_bPCTT, rOther.m_bPCTT, _T("Checked"), _T("Unchecked")));
       }
 
       if (!::IsEqual(m_AutogenousShrinkage, rOther.m_AutogenousShrinkage))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Autogenous Shrinkage"),m_AutogenousShrinkage, rOther.m_AutogenousShrinkage));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDoubleItem>(_T("Autogenous Shrinkage"),m_AutogenousShrinkage, rOther.m_AutogenousShrinkage));
       }
    }
 
@@ -762,56 +757,56 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       if (!::IsEqual(m_ftcri, rOther.m_ftcri))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Initial effective cracking strength (ft,cri)"), m_ftcri, rOther.m_ftcri, pDisplayUnits->Stress));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStressItem>(_T("Initial effective cracking strength (ft,cri)"), m_ftcri, rOther.m_ftcri, pDisplayUnits->Stress));
       }
 
       if (!::IsEqual(m_ftcr, rOther.m_ftcr))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Design effective cracking strength (ft,cr)"), m_ftcr, rOther.m_ftcr, pDisplayUnits->Stress));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStressItem>(_T("Design effective cracking strength (ft,cr)"), m_ftcr, rOther.m_ftcr, pDisplayUnits->Stress));
       }
 
       if (!::IsEqual(m_ftloc, rOther.m_ftloc))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Crack localization strength (ft,loc)"), m_ftloc, rOther.m_ftloc, pDisplayUnits->Stress));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStressItem>(_T("Crack localization strength (ft,loc)"), m_ftloc, rOther.m_ftloc, pDisplayUnits->Stress));
       }
 
       if (!::IsEqual(m_etloc, rOther.m_etloc))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Crack localization strain (et,loc)"), _T(""), _T("")));// m_etloc, rOther.m_etloc));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Crack localization strain (et,loc)"), _T(""), _T("")));// m_etloc, rOther.m_etloc));
       }
 
       if (!::IsEqual(m_FiberLength, rOther.m_FiberLength))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Fiber Length"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStressItem>(_T("Fiber Length"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
       }
 
       if (!::IsEqual(m_alpha_u, rOther.m_alpha_u))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Compression response reduction factor (alpha,u)"), _T(""), _T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Compression response reduction factor (alpha,u)"), _T(""), _T("")));
       }
 
       if (!::IsEqual(m_gamma_u, rOther.m_gamma_u))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Fiber orientation reduction factor (gamma,u)"), _T(""), _T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Fiber orientation reduction factor (gamma,u)"), _T(""), _T("")));
       }
 
       if (!::IsEqual(m_ecu, rOther.m_ecu))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Ultimate compression strain (e,cu)"), _T(""), _T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Ultimate compression strain (e,cu)"), _T(""), _T("")));
       }
    }
 
    if ( m_bUserACIParameters != rOther.m_bUserACIParameters )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Use time parameters from ACI 209R-92"),m_bUserACIParameters,rOther.m_bUserACIParameters,_T("Checked"),_T("Unchecked")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceBooleanItem>(_T("Use time parameters from ACI 209R-92"),m_bUserACIParameters,rOther.m_bUserACIParameters,_T("Checked"),_T("Unchecked")));
    }
 
    if ( m_bUserACIParameters )
@@ -819,13 +814,13 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       if ( !::IsEqual(m_A,rOther.m_A) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("a"),m_A,rOther.m_A));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDoubleItem>(_T("a"),m_A,rOther.m_A));
       }
 
       if ( !::IsEqual(m_B,rOther.m_B) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Beta"),m_B,rOther.m_B));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDoubleItem>(_T("Beta"),m_B,rOther.m_B));
       }
    }
    else
@@ -833,20 +828,20 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       if ( m_CureMethod != rOther.m_CureMethod )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Cure Method"),GetConcreteCureMethod(m_CureMethod),GetConcreteCureMethod(rOther.m_CureMethod)));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Cure Method"),GetConcreteCureMethod(m_CureMethod),GetConcreteCureMethod(rOther.m_CureMethod)));
       }
 
       if ( m_ACI209CementType != rOther.m_ACI209CementType )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Cement Type"),GetACI209CementType(m_ACI209CementType),GetACI209CementType(rOther.m_ACI209CementType)));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Cement Type"),GetACI209CementType(m_ACI209CementType),GetACI209CementType(rOther.m_ACI209CementType)));
       }
    }
 
    if ( m_bUserCEBFIPParameters != rOther.m_bUserCEBFIPParameters )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Use time parameters from CEB-FIP Model Code"),m_bUserCEBFIPParameters,rOther.m_bUserCEBFIPParameters,_T("Checked"),_T("Unchecked")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceBooleanItem>(_T("Use time parameters from CEB-FIP Model Code"),m_bUserCEBFIPParameters,rOther.m_bUserCEBFIPParameters,_T("Checked"),_T("Unchecked")));
    }
 
    if ( m_bUserCEBFIPParameters )
@@ -854,13 +849,13 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       if ( !::IsEqual(m_S,rOther.m_S) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("S"),m_S,rOther.m_S));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDoubleItem>(_T("S"),m_S,rOther.m_S));
       }
 
       if ( !::IsEqual(m_BetaSc,rOther.m_BetaSc) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Beta SC"),m_BetaSc,rOther.m_BetaSc));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceDoubleItem>(_T("Beta SC"),m_BetaSc,rOther.m_BetaSc));
       }
    }
    else
@@ -868,14 +863,14 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       if ( m_CEBFIPCementType != rOther.m_CEBFIPCementType )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Cement Type"),GetCEBFIPCementType(m_CEBFIPCementType),GetCEBFIPCementType(rOther.m_CEBFIPCementType)));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Cement Type"),GetCEBFIPCementType(m_CEBFIPCementType),GetCEBFIPCementType(rOther.m_CEBFIPCementType)));
       }
    }
 
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;

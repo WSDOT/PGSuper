@@ -19,10 +19,11 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
 #include "StdAfx.h"
-#include <psgLib\BottomFlangeClearanceCriteria.h>
+#include <PsgLib\BottomFlangeClearanceCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
 
 bool BottomFlangeClearanceCriteria::operator==(const BottomFlangeClearanceCriteria& other) const
 {
@@ -34,20 +35,20 @@ bool BottomFlangeClearanceCriteria::operator!=(const BottomFlangeClearanceCriter
    return bCheck != other.bCheck or !::IsEqual(MinClearance, other.MinClearance);
 }
 
-bool BottomFlangeClearanceCriteria::Compare(const BottomFlangeClearanceCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool BottomFlangeClearanceCriteria::Compare(const BottomFlangeClearanceCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (operator!=(other))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Bottom Flange Clearance Check Options are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Bottom Flange Clearance Check Options are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void BottomFlangeClearanceCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void BottomFlangeClearanceCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
 

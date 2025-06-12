@@ -29,15 +29,11 @@
 #include "PierDetailsDlg.h"
 #include "PGSuperColors.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 void CAbutmentBearingOffsetMeasureComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
@@ -153,8 +149,8 @@ void CAbutmentConnectionsPage::Init(CPierData2* pPier)
 
 void CAbutmentConnectionsPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    CPropertyPage::DoDataExchange(pDX);
@@ -189,8 +185,8 @@ void CAbutmentConnectionsPage::DoDataExchange(CDataExchange* pDX)
 
       // if end distance is measured from the datum line end distance cannot be greater than
       // the bearing offset
-      if ( (m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierAlongGirder ||
-            m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierNormalToPier)
+      if ( (m_EndDistanceMeasurementType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder ||
+            m_EndDistanceMeasurementType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier)
             &&
             (m_BearingOffset < m_EndDistance)
          )
@@ -206,7 +202,7 @@ void CAbutmentConnectionsPage::DoDataExchange(CDataExchange* pDX)
    DDX_KeywordUnitValueAndTag(pDX,IDC_DIAPHRAGM_WIDTH, IDC_DIAPHRAGM_WIDTH_T, _T("Compute"),m_DiaphragmWidth, pDisplayUnits->GetComponentDimUnit());
    DDX_CBItemData(pDX,IDC_DIAPHRAGM_LOAD,m_DiaphragmLoadType);
    DDX_Tag( pDX, IDC_DIAPHRAGM_OFFSET_UNITS, pDisplayUnits->GetComponentDimUnit() );
-   if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && m_DiaphragmLoadType == ConnectionLibraryEntry::ApplyAtSpecifiedLocation) )
+   if ( !pDX->m_bSaveAndValidate || (pDX->m_bSaveAndValidate && m_DiaphragmLoadType == ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation) )
    {
       // data always goes into the control and only comes out if the load type is at a specified location
       DDX_UnitValue( pDX, IDC_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation, pDisplayUnits->GetComponentDimUnit() );
@@ -304,9 +300,9 @@ void CAbutmentConnectionsPage::FillBoundaryConditionComboBox()
 void CAbutmentConnectionsPage::FillDiaphragmLoadComboBox()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DIAPHRAGM_LOAD);
-   pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm over CL Bearing")), DWORD_PTR(ConnectionLibraryEntry::ApplyAtBearingCenterline));
-   pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm to girder")), DWORD_PTR(ConnectionLibraryEntry::ApplyAtSpecifiedLocation));
-   pCB->SetItemData( pCB->AddString(_T("Ignore diaphragm weight")), DWORD_PTR(ConnectionLibraryEntry::DontApply));
+   pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm over CL Bearing")), DWORD_PTR(ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline));
+   pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm to girder")), DWORD_PTR(ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation));
+   pCB->SetItemData( pCB->AddString(_T("Ignore diaphragm weight")), DWORD_PTR(ConnectionLibraryEntry::DiaphragmLoadType::DontApply));
 }
 
 void CAbutmentConnectionsPage::OnHelp() 
@@ -386,10 +382,10 @@ void CAbutmentConnectionsPage::FillBearingOffsetComboBox()
    pCB->ResetContent();
 
    int idx = pCB->AddString(_T("Normal to Abutment Line"));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::NormalToPier));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier));
 
    idx = pCB->AddString(_T("Along Girder"));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::AlongGirder));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder));
 }
 
 void CAbutmentConnectionsPage::FillEndDistanceComboBox()
@@ -398,16 +394,16 @@ void CAbutmentConnectionsPage::FillEndDistanceComboBox()
    pCB->ResetContent();
 
    int idx = pCB->AddString(_T("Measured from CL Bearing, Along Girder"));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingAlongGirder));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder));
 
    idx = pCB->AddString(_T("Measured from and Normal to CL Bearing"));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingNormalToPier));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier));
 
    idx = pCB->AddString(_T("Measured from Abutment Line, Along Girder"));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierAlongGirder));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder));
 
    idx = pCB->AddString(_T("Measured from and Normal to Abutment Line"));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierNormalToPier));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier));
 }
 
 CString CAbutmentConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
@@ -420,11 +416,11 @@ CString CAbutmentConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType c
    int pierType = (pPrevSpan != nullptr && pNextSpan != nullptr ? IntPier : (pPrevSpan == nullptr ? StartPier : EndPier));
 
    CString strName;
-   if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )
+   if ( brgOffsetType == ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder )
    {
       switch( endType )
       {
-      case ConnectionLibraryEntry::FromBearingAlongGirder:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGGDR_ENDALONGGDRFROMBRG");
@@ -439,7 +435,7 @@ CString CAbutmentConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType c
          }
          break;
 
-      case ConnectionLibraryEntry::FromBearingNormalToPier:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGGDR_ENDALONGNORMALFROMBRG");
@@ -454,7 +450,7 @@ CString CAbutmentConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType c
          }
          break;
 
-      case ConnectionLibraryEntry::FromPierAlongGirder:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGGDR_ENDALONGGDRFROMPIER");
@@ -469,7 +465,7 @@ CString CAbutmentConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType c
          }
          break;
 
-      case ConnectionLibraryEntry::FromPierNormalToPier:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGGDR_ENDALONGNORMALFROMPIER");
@@ -485,11 +481,11 @@ CString CAbutmentConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType c
          break;
       }
    }
-   else if ( brgOffsetType == ConnectionLibraryEntry::NormalToPier )
+   else if ( brgOffsetType == ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier )
    {
       switch( endType )
       {
-      case ConnectionLibraryEntry::FromBearingAlongGirder:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
@@ -504,7 +500,7 @@ CString CAbutmentConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType c
          }
          break;
 
-      case ConnectionLibraryEntry::FromBearingNormalToPier:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
@@ -519,7 +515,7 @@ CString CAbutmentConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType c
          }
          break;
 
-      case ConnectionLibraryEntry::FromPierAlongGirder:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
@@ -534,7 +530,7 @@ CString CAbutmentConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType c
          }
          break;
 
-      case ConnectionLibraryEntry::FromPierNormalToPier:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
@@ -560,7 +556,7 @@ void CAbutmentConnectionsPage::OnDiaphragmLoadTypeChanged()
    int cursel = pCB->GetCurSel();
    ConnectionLibraryEntry::DiaphragmLoadType loadType = (ConnectionLibraryEntry::DiaphragmLoadType)pCB->GetItemData(cursel);
 
-   BOOL bEnable = (loadType == ConnectionLibraryEntry::ApplyAtSpecifiedLocation) ? TRUE : FALSE;
+   BOOL bEnable = (loadType == ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation) ? TRUE : FALSE;
 
    GetDlgItem(IDC_DIAPHRAGM_OFFSET_LABEL)->EnableWindow(bEnable);
    m_DiaphragmLoadLocationEdit.EnableWindow(bEnable);
@@ -569,8 +565,8 @@ void CAbutmentConnectionsPage::OnDiaphragmLoadTypeChanged()
 
 void CAbutmentConnectionsPage::OnCopyFromLibrary()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames);
    std::vector<std::_tstring> names;

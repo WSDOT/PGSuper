@@ -25,8 +25,10 @@
 #include <PGSuperTypes.h>
 
 #include <Reporting\SpanGirderReportSpecification.h>
-#include <PgsExt\PointOfInterest.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\PointOfInterest.h>
+#include <PsgLib\BridgeDescription2.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
@@ -35,10 +37,14 @@
 #include <IFace\Project.h>
 #include <IFace\BeamFactory.h>
 #include <IFace\GirderHandling.h>
+#include <IFace/PointOfInterest.h>
+
 #include <PgsExt\GirderArtifact.h>
+
 #include <psgLib\SpecLibraryEntry.h>
 #include <psgLib/CreepCriteria.h>
 #include <psgLib/LimitsCriteria.h>
+#include <psgLib/GirderLibraryEntry.h>
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
@@ -76,8 +82,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
     const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrRptSpec->GetBroker();
    const CGirderKey& girderKey( pGdrRptSpec->GetGirderKey() );
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -106,8 +111,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    IntervalIndexType finalIntervalIdx   = pIntervals->GetIntervalCount()-1;
 
    const GirderLibraryEntry* pGdrLibEntry = pGirder->GetGirderLibraryEntry();
-   CComPtr<IBeamFactory> factory;
-   pGdrLibEntry->GetBeamFactory(&factory);
+   auto factory = pGdrLibEntry->GetBeamFactory();
    CLSID familyCLSID = factory->GetFamilyCLSID();
    if ( CLSID_WFBeamFamily != familyCLSID && CLSID_UBeamFamily != familyCLSID && CLSID_DeckBulbTeeBeamFamily != familyCLSID && CLSID_SlabBeamFamily != familyCLSID )
    {
@@ -621,7 +625,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
       }
    }
 
-   const pgsHaulingAnalysisArtifact* pHaulingArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
+   auto pHaulingArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
    if ( pHaulingArtifact != nullptr )
    {
       const WBFL::Stability::HaulingStabilityProblem* pHaulProblem = pIGirder->GetSegmentHaulingStabilityProblem(segmentKey);
@@ -635,7 +639,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
       (*pTable)(row,  1) << gdim.SetValue(camber + precamber);
    }
 
-   const WBFL::Stability::LiftingCheckArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
+   auto pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
    if (pLiftArtifact!=nullptr)
    {
       GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
@@ -857,12 +861,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CGirderScheduleChapterBuilder::Clone() const
-{
-   return std::make_unique<CGirderScheduleChapterBuilder>();
-}
-
-int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,const CSegmentKey& segmentKey,CLSID& familyCLSID,Float64* pz1Spacing,Float64 *pz1Length,Float64 *pz2Spacing,Float64* pz2Length,Float64 *pz3Spacing,Float64* pz3Length) const
+int CGirderScheduleChapterBuilder::GetReinforcementDetails(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,CLSID& familyCLSID,Float64* pz1Spacing,Float64 *pz1Length,Float64 *pz2Spacing,Float64* pz2Length,Float64 *pz3Spacing,Float64* pz3Length) const
 {
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
    if ( !pStirrupGeometry->AreStirrupZonesSymmetrical(segmentKey) )
@@ -1058,7 +1057,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    return STIRRUP_ERROR_NONE;
 }
 
-int CGirderScheduleChapterBuilder::GetDebondDetails(IBroker* pBroker,const CSegmentKey& segmentKey,std::vector<DebondInformation>& debondInfo) const
+int CGirderScheduleChapterBuilder::GetDebondDetails(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::vector<DebondInformation>& debondInfo) const
 {
    GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
    if ( !pStrandGeometry->IsDebondingSymmetric(segmentKey) )

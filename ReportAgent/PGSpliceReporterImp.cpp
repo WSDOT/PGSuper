@@ -44,20 +44,16 @@
 #include <Reporting\TemporarySupportElevationDetailsChapterBuilder.h>
 
 // Interfaces
+#include <IFace\Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 //CPGSpliceReporterImp::InitReportBuilders
 //
@@ -72,13 +68,13 @@ static char THIS_FILE[] = __FILE__;
 
 HRESULT CPGSpliceReporterImp::InitReportBuilders()
 {
-   HRESULT hr = CReporterBase::InitCommonReportBuilders();
+   HRESULT hr = CReporterBase::InitCommonReportBuilders(m_pBroker);
    if ( FAILED(hr) )
    {
       return hr;
    }
 
-   GET_IFACE(IReportManager,pRptMgr);
+   GET_IFACE(IEAFReportManager,pRptMgr);
 
    // Update details report to contain a couple of extra chapters
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
@@ -88,7 +84,7 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationsChapterBuilder>()), TEXT("Bearing Seat Elevations")));
    VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationDetailsChapterBuilder>()), TEXT("Bearing Seat Elevation Details")));
 
-   // A full timestep analysis for all girders is requred for temp support elevations. Disable these chapters by default
+   // A full timestep analysis for all girders is required for temp support elevations. Disable these chapters by default
    pRptBuilder = pRptMgr->GetReportBuilder(_T("Bridge Geometry Report"));
    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationsChapterBuilder>(false)));
    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationDetailsChapterBuilder>(false)));
@@ -125,88 +121,52 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    return S_OK;
 }
 
-STDMETHODIMP CPGSpliceReporterImp::SetBroker(IBroker* pBroker)
+bool CPGSpliceReporterImp::RegisterInterfaces()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
-   CReporterBase::SetBroker(pBroker);
-   return S_OK;
+   EAF_AGENT_REGISTER_INTERFACES;
+   REGISTER_INTERFACE(IReportOptions);
+   return true;
 }
 
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSpliceReporterImp::RegInterfaces()
+bool CPGSpliceReporterImp::Init()
 {
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-
-   pBrokerInit->RegInterface(IID_IReportOptions,this);
-
-   return S_OK;
-}
-
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSpliceReporterImp::Init()
-{
-   /* Gets done at project load time */
    EAF_AGENT_INIT;
 
    HRESULT hr = InitReportBuilders();
    ATLASSERT(SUCCEEDED(hr));
    if ( FAILED(hr) )
    {
-      return hr;
+      return false;
    }
 
-   return AGENT_S_SECONDPASSINIT;
-}
-
-STDMETHODIMP CPGSpliceReporterImp::Init2()
-{
    //
    // Attach to connection points
    //
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
+   m_dwSpecCookie = REGISTER_INTERFACE(ISpecificationEventSink);
 
-   // Connection point for the specification
-   hr = pBrokerInit->FindConnectionPoint( IID_ISpecificationEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwSpecCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CPGSpliceReporterImp::GetClassID(CLSID* pCLSID)
+CLSID CPGSpliceReporterImp::GetCLSID() const
 {
-   *pCLSID = CLSID_PGSpliceReportAgent;
-   return S_OK;
+   return CLSID_PGSpliceReportAgent;
 }
 
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSpliceReporterImp::Reset()
+bool CPGSpliceReporterImp::Reset()
 {
-   return S_OK;
+   EAF_AGENT_RESET;
+   return true;
 }
 
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSpliceReporterImp::ShutDown()
+bool CPGSpliceReporterImp::ShutDown()
 {
+   EAF_AGENT_SHUTDOWN;
    //
    // Detach to connection points
    //
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
+   UNREGISTER_EVENT_SINK(ISpecificationEventSink,m_dwSpecCookie);
 
-   hr = pBrokerInit->FindConnectionPoint(IID_ISpecificationEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwSpecCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the connection point
-
-   EAF_AGENT_CLEAR_INTERFACE_CACHE;
-   return S_OK;
+   return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -214,12 +174,12 @@ STDMETHODIMP CPGSpliceReporterImp::ShutDown()
 //
 HRESULT CPGSpliceReporterImp::OnSpecificationChanged()
 {
-   HRESULT hr = CReporterBase::OnSpecificationChanged();
+   HRESULT hr = CReporterBase::OnSpecificationChanged(m_pBroker);
    if ( FAILED(hr) )
       return hr;
 
    // Available reports and chapters for principal web stresses are dependent on settings
-   GET_IFACE(IReportManager,pRptMgr);
+   GET_IFACE(IEAFReportManager,pRptMgr);
    GET_IFACE(ISpecification, pSpec);
 
    CSegmentKey key(0, 0, 0); // any key should work for splice

@@ -24,7 +24,7 @@
 
 #include <DManip/DisplayObjectEvents.h>
 #include "BridgeModelViewChildFrame.h"
-#include <PgsExt\TemporarySupportData.h>
+#include <PsgLib\TemporarySupportData.h>
 
 class CTemporarySupportDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents
 {

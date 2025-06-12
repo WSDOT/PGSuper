@@ -23,21 +23,6 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\ConstructabilityArtifact.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   pgsSegmentConstructabilityArtifact
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 pgsSegmentConstructabilityArtifact::pgsSegmentConstructabilityArtifact(const CSegmentKey& segmentKey):
 m_bIsSlabOffsetApplicable(false)
 {
@@ -82,27 +67,6 @@ m_bIsSlabOffsetApplicable(false)
    m_MinimumHaunchDepth = 0;
 }
 
-pgsSegmentConstructabilityArtifact::pgsSegmentConstructabilityArtifact(const pgsSegmentConstructabilityArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsSegmentConstructabilityArtifact::~pgsSegmentConstructabilityArtifact()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsSegmentConstructabilityArtifact& pgsSegmentConstructabilityArtifact::operator=(const pgsSegmentConstructabilityArtifact& rOther)
-{
-   if ( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
 void pgsSegmentConstructabilityArtifact::SetProvidedSlabOffset(Float64 startA, Float64 endA)
 {
    m_ProvidedStart = startA;
@@ -474,8 +438,6 @@ bool pgsSegmentConstructabilityArtifact::Passed() const
    return true;
 }
 
- //======================== ACCESS     =======================================
-
 void pgsSegmentConstructabilityArtifact::SetFinishedElevationApplicability(bool bSet)
 {
    m_bIsFinishedElevationApplicable = bSet;
@@ -589,110 +551,17 @@ bool pgsSegmentConstructabilityArtifact::MinimumHaunchDepthPassed() const
    }
 }
 
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void pgsSegmentConstructabilityArtifact::MakeCopy(const pgsSegmentConstructabilityArtifact& rOther)
-{
-   m_SegmentKey = rOther.m_SegmentKey;
-
-   m_ProvidedStart = rOther.m_ProvidedStart;
-   m_ProvidedEnd = rOther.m_ProvidedEnd;
-   m_Required = rOther.m_Required;
-   m_SlabOffsetWarningTolerance = rOther.m_SlabOffsetWarningTolerance;
-   m_bCheckStirrupLength = rOther.m_bCheckStirrupLength;
-   m_bIsSlabOffsetApplicable = rOther.m_bIsSlabOffsetApplicable;
-   m_LeastHaunchLocation = rOther.m_LeastHaunchLocation;
-   m_LeastHaunch = rOther.m_LeastHaunch;
-
-   m_MinimumRequiredFillet = rOther.m_MinimumRequiredFillet;
-   m_ProvidedFillet = rOther.m_ProvidedFillet;
-
-   m_bIsPrecamberApplicable = rOther.m_bIsPrecamberApplicable;
-   m_Precamber = rOther.m_Precamber;
-
-   m_bIsBottomFlangeClearanceApplicable = rOther.m_bIsBottomFlangeClearanceApplicable;
-   m_C = rOther.m_C;
-   m_Cmin = rOther.m_Cmin;
-
-   m_ComputedExcessCamber = rOther.m_ComputedExcessCamber;
-   m_AssumedExcessCamber = rOther.m_AssumedExcessCamber;
-   m_HaunchGeometryTolerance = rOther.m_HaunchGeometryTolerance;
-   m_bIsHaunchGeometryCheckApplicable = rOther.m_bIsHaunchGeometryCheckApplicable;
-   m_AssumedMinimumHaunchDepth = rOther.m_AssumedMinimumHaunchDepth;
-
-   m_bIsFinishedElevationApplicable = rOther.m_bIsFinishedElevationApplicable;
-   m_FinishedElevationControllingInterval = rOther.m_FinishedElevationControllingInterval;
-   m_FinishedElevationTolerance = rOther.m_FinishedElevationTolerance;
-   m_FinishedElevationStation = rOther.m_FinishedElevationStation;
-   m_FinishedElevationOffset = rOther.m_FinishedElevationOffset;
-   m_FinishedElevationPoi = rOther.m_FinishedElevationPoi;
-   m_DesignElevation = rOther.m_DesignElevation;
-   m_FinishedElevation = rOther.m_FinishedElevation;
-
-   m_bIsMinimumHaunchCheckApplicable = rOther.m_bIsMinimumHaunchCheckApplicable;
-   m_MinimumHaunchCheckControllingInterval = rOther.m_MinimumHaunchCheckControllingInterval;
-   m_MinimumHaunchStation = rOther.m_MinimumHaunchStation;
-   m_MinimumHaunchOffset = rOther.m_MinimumHaunchOffset;
-   m_MinimumHaunchPoi = rOther.m_MinimumHaunchPoi;
-   m_MinimumAllowableHaunchDepth = rOther.m_MinimumAllowableHaunchDepth;
-   m_MinimumHaunchDepth = rOther.m_MinimumHaunchDepth;
-}
-
-void pgsSegmentConstructabilityArtifact::MakeAssignment(const pgsSegmentConstructabilityArtifact& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
 /****************************************************************************
 CLASS
    pgsConstructabilityArtifact
 ****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 pgsConstructabilityArtifact::pgsConstructabilityArtifact()
 {
    m_RequiredAtBearingCLs = 0;
    m_HaunchBearingCLApplicability = hbcAppNA;
 }
 
-pgsConstructabilityArtifact::pgsConstructabilityArtifact(const pgsConstructabilityArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsConstructabilityArtifact::~pgsConstructabilityArtifact()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsConstructabilityArtifact& pgsConstructabilityArtifact::operator=(const pgsConstructabilityArtifact& rOther)
-{
-   if ( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
- //======================== ACCESS     =======================================
 void pgsConstructabilityArtifact::ClearArtifacts()
 {
    m_SegmentArtifacts.clear();
@@ -925,33 +794,3 @@ bool pgsConstructabilityArtifact::CheckStirrupLength() const
 
    return true;
 }
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void pgsConstructabilityArtifact::MakeCopy(const pgsConstructabilityArtifact& rOther)
-{
-   m_SegmentArtifacts = rOther.m_SegmentArtifacts;
-
-   m_HaunchBearingCLApplicability = rOther.m_HaunchBearingCLApplicability;
-   m_ProvidedAtBearingCLs = rOther.m_ProvidedAtBearingCLs;
-   m_RequiredAtBearingCLs = rOther.m_RequiredAtBearingCLs;
-}
-
-void pgsConstructabilityArtifact::MakeAssignment(const pgsConstructabilityArtifact& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

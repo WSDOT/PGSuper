@@ -29,8 +29,8 @@
 // BridgeDescDeckPointGrid.h : header file
 //
 
-#include <PgsExt\DeckDescription2.h>
-#include <PgsExt\DeckPoint.h>
+#include <PsgLib\DeckDescription2.h>
+#include <PsgLib\DeckPoint.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDeckPointGrid window
@@ -96,7 +96,7 @@ private:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    void SelectRow(ROWCOL nRow);
-   BOOL ValidatePoint(CDeckPoint& point,IEAFDisplayUnits* pDisplayUnits);
+   BOOL ValidatePoint(CDeckPoint& point,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 };
 
 

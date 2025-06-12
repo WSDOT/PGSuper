@@ -27,15 +27,12 @@
 #include "ProfileGrid.h"
 #include "ProfilePage.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <CoordGeom/Station.h>
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CProfileGrid, CS_DBLCLKS, 0, 0, 0);
 

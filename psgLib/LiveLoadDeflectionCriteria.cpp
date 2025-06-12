@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib\LiveLoadDeflectionCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib\LiveLoadDeflectionCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 
 bool LiveLoadDeflectionCriteria::operator==(const LiveLoadDeflectionCriteria& other) const
 {
@@ -33,20 +33,20 @@ bool LiveLoadDeflectionCriteria::operator!=(const LiveLoadDeflectionCriteria& ot
    return bCheck != other.bCheck or !::IsEqual(DeflectionLimit, other.DeflectionLimit);
 }
 
-bool LiveLoadDeflectionCriteria::Compare(const LiveLoadDeflectionCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool LiveLoadDeflectionCriteria::Compare(const LiveLoadDeflectionCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (operator!=(other))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Live Load Deflection Check Options are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Live Load Deflection Check Options are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void LiveLoadDeflectionCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void LiveLoadDeflectionCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

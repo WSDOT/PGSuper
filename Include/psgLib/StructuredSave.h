@@ -20,27 +20,10 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_STRUCTUREDSAVE_H_
-#define INCLUDED_STRUCTUREDSAVE_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#include <WBFLCore.h>
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_SYSTEM_ISTRUCTUREDSAVE_H_
+#include "PsgLibLib.h"
 #include <System\IStructuredSave.h>
-#endif
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -67,116 +50,65 @@ LOG
 class PSGLIBCLASS CStructuredSave : public WBFL::System::IStructuredSave
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    CStructuredSave(::IStructuredSave* pStrSave);
-
-   //------------------------------------------------------------------------
-   // Destructor
    ~CStructuredSave();
 
-   // GROUP: OPERATORS
 
-   //------------------------------------------------------------------------
    // Mark the Beginning of a structured data chunk. This call must be always
    // balanced by a corresponding call to EndUnit. An optional version number
    // may be used to tag major units.
-   virtual void BeginUnit(LPCTSTR name, Float64 version=0);
+   void BeginUnit(LPCTSTR name, Float64 version=0) override;
 
-   //------------------------------------------------------------------------
    // Mark the end of a structured data chunk that was started by a call to 
    // BeginUnit.
-   virtual void EndUnit();
+   void EndUnit() override;
 
-   //------------------------------------------------------------------------
    // Get the version number of the current unit
-   virtual Float64 GetVersion();
+   Float64 GetVersion() override;
 
-   //------------------------------------------------------------------------
    // Get the version number of the top-most unit
-   virtual Float64 GetTopVersion();
+   Float64 GetTopVersion() override;
 
-   //------------------------------------------------------------------------
    // Get the version number of the parent to the current unit
    virtual Float64 GetParentVersion();
 
    virtual std::_tstring GetParentUnit();
 
-   //------------------------------------------------------------------------
    // Write a string property
-   virtual void Property(LPCTSTR name, LPCTSTR value);
+   void Property(LPCTSTR name, LPCTSTR value) override;
 
-   //------------------------------------------------------------------------
    // Write a real number property
-   virtual void Property(LPCTSTR name, Float64 value);
+   void Property(LPCTSTR name, Float64 value) override;
 
-   //------------------------------------------------------------------------
    // Write an integral property
-   virtual void Property(LPCTSTR name, Int16 value);
+   void Property(LPCTSTR name, Int16 value) override;
 
-   //------------------------------------------------------------------------
    // Write an unsigned integral property
-   virtual void Property(LPCTSTR name, Uint16 value);
+   void Property(LPCTSTR name, Uint16 value) override;
 
-   //------------------------------------------------------------------------
    // Write an integral property
-   virtual void Property(LPCTSTR name, Int32 value);
+   void Property(LPCTSTR name, Int32 value) override;
 
-   //------------------------------------------------------------------------
    // Write an unsigned integral property
-   virtual void Property(LPCTSTR name, Uint32 value);
+   void Property(LPCTSTR name, Uint32 value) override;
 
-   //------------------------------------------------------------------------
    // Write an integral property
-   virtual void Property(LPCTSTR name, Int64 value);
+   void Property(LPCTSTR name, Int64 value) override;
 
-   //------------------------------------------------------------------------
    // Write an unsigned integral property
-   virtual void Property(LPCTSTR name, Uint64 value);
+   void Property(LPCTSTR name, Uint64 value) override;
 
-   //------------------------------------------------------------------------
    // Write an integral property
-   virtual void Property(LPCTSTR name, LONG value);
+   void Property(LPCTSTR name, LONG value) override;
 
-   //------------------------------------------------------------------------
    // Write an unsigned integral property
-   virtual void Property(LPCTSTR name, ULONG value);
+   void Property(LPCTSTR name, ULONG value) override;
 
-   //------------------------------------------------------------------------
    // Write a bool property
-   virtual void Property(LPCTSTR name, bool value);
+   void Property(LPCTSTR name, bool value) override;
 
    virtual void PutUnit(LPCTSTR xml);
 
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
    ::IStructuredSave* m_pStrSave;
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_STRUCTUREDSAVE_H_

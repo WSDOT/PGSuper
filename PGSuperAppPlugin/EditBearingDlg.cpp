@@ -33,13 +33,8 @@
 
 #include "PGSuperUnits.h"
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNAMIC(CEditBearingDlg, CDialog)

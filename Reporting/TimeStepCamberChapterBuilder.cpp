@@ -23,20 +23,16 @@
 #include "StdAfx.h"
 #include <Reporting\TimeStepCamberChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
 #include <iterator>
-
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CTimeStepCamberChapterBuilder::CTimeStepCamberChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -51,8 +47,7 @@ LPCTSTR CTimeStepCamberChapterBuilder::GetName() const
 rptChapter* CTimeStepCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -103,12 +98,7 @@ rptChapter* CTimeStepCamberChapterBuilder::Build(const std::shared_ptr<const WBF
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimeStepCamberChapterBuilder::Clone() const
-{
-   return std::make_unique<CTimeStepCamberChapterBuilder>();
-}
-
-rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -167,7 +157,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(IBroker*
    return pLayoutTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateHandlingDeflectionTable(IBroker* pBroker, const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateHandlingDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    GET_IFACE2(pBroker, IBridge, pBridge);
@@ -217,7 +207,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateHandlingDeflectionTable(IBroker
    return pLayoutTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateAfterErectionDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateAfterErectionDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -280,7 +270,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateAfterErectionDeflectionTable(IB
    return pLayoutTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
 {
    ASSERT_SEGMENT_KEY(segmentKey);
 
@@ -477,7 +467,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
    return pTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -661,7 +651,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    return pTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
@@ -860,7 +850,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    return pTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBroker,const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -931,7 +921,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBro
    return pTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);

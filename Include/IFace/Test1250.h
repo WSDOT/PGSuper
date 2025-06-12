@@ -20,29 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_TEST1250_H_
-#define INCLUDED_IFACE_TEST1250_H_
-
-// SYSTEM INCLUDES
-//
-#if !defined INCLUDED_WBFLTYPES_H_
-#include <WbflTypes.h>
-#endif
+#pragma once
 
 #include <PGSuperTypes.h>
 #include <string>
 
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 inline bool create_test_file_names(const CString& strExt,const CString& input, CString* pResultsFileName, CString* pPoiFileName, CString* pErrFileName)
 {
    // files must be of type .pgs
@@ -84,8 +66,9 @@ DESCRIPTION
 // {9A8EA2AC-7209-11d3-ADC5-00105A9AF985}
 DEFINE_GUID(IID_ITest1250, 
 0x9a8ea2ac, 0x7209, 0x11d3, 0xad, 0xc5, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface ITest1250 : IUnknown
+class ITest1250
 {
+public:
    virtual bool RunTest(long  type,
                         const std::_tstring& outputFileName,
                         const std::_tstring& poiFileName) = 0;
@@ -96,6 +79,3 @@ interface ITest1250 : IUnknown
 
    virtual bool IsTesting() const = 0;
 };
-
-#endif // INCLUDED_IFACE_TEST1250_H_
-

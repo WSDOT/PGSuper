@@ -27,11 +27,6 @@
 #include "resource.h"
 #include <PgsExt\TimelineItemListBox.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // NOTE: The list box resource most have the owner draw and has strings attributes set.
 

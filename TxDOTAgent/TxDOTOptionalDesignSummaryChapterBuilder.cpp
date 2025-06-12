@@ -28,10 +28,11 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\DebondUtil.h>
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
@@ -44,44 +45,30 @@
 #include "TexasIBNSParagraphBuilder.h"
 
 #include <psgLib\ConnectionLibraryEntry.h>
-
+#include <psgLib/GirderLibraryEntry.h>
+#include <psgLib/SpecLibraryEntry.h>
 #include <psgLib/PrestressedElementCriteria.h>
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-static void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits);
-static void design_data(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits);
-static void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignGirderData* pGirderData,
-                          GirderIndexType gdr, IEAFDisplayUnits* pDisplayUnits);
-static void non_standard_table(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& tableName, 
+static void design_information(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignData* pProjectData,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+static void design_data(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignData* pProjectData,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+static void girder_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignGirderData* pGirderData,
+                          GirderIndexType gdr, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+static void non_standard_table(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& tableName, 
                                const CTxDOTOptionalDesignGirderData::StrandRowContainer& strandRows );
-static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits);
-static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits);
-static void camber_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits);
-static void shear_summary(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
-
-/****************************************************************************
-CLASS
-   CTxDOTOptionalDesignSummaryChapterBuilder
-****************************************************************************/
+static void original_results_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignData* pProjectData,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+static void optional_results_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignData* pProjectData,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+static void camber_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignData* pProjectData,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+static void shear_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTxDOTOptionalDesignSummaryChapterBuilder::CTxDOTOptionalDesignSummaryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTxDOTOptionalDesignSummaryChapterBuilder::GetName() const
 {
    return TEXT("Optional Design Summary");
@@ -90,8 +77,7 @@ LPCTSTR CTxDOTOptionalDesignSummaryChapterBuilder::GetName() const
 rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
    
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -128,24 +114,8 @@ rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(const std::shared_p
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTxDOTOptionalDesignSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CTxDOTOptionalDesignSummaryChapterBuilder>();
-}
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData, IEAFDisplayUnits* pDisplayUnits)
+void design_information(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignData* pProjectData, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
@@ -252,7 +222,7 @@ void design_information(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    }
 }
 
-static void design_data(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits)
+static void design_data(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignData* pProjectData,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,      pDisplayUnits->GetStressUnit(), true );
@@ -296,8 +266,8 @@ static void design_data(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
 
 }
 
-void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignGirderData* pGirderData,
-                          GirderIndexType gdrIdx, IEAFDisplayUnits* pDisplayUnits)
+void girder_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignGirderData* pGirderData,
+                          GirderIndexType gdrIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CSegmentKey segmentKey(TOGA_SPAN,gdrIdx,0);
 
@@ -399,7 +369,7 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
    }
 }
 
-void non_standard_table(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& tableName, 
+void non_standard_table(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& tableName, 
                    const CTxDOTOptionalDesignGirderData::StrandRowContainer& strandRows )
 {
    // Setup up some unit value prototypes
@@ -426,7 +396,7 @@ void non_standard_table(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, c
    }
 }
 
-static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits)
+static void original_results_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignData* pProjectData,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,      pDisplayUnits->GetStressUnit(), false );
@@ -492,7 +462,7 @@ static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    *p<<Bold(_T("Note:"))<<_T(" Values in the above table reflect the following sign convention: Compressive stress is positive. Tensile stress is negative.");
 }
 
-static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits)
+static void optional_results_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignData* pProjectData,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,      pDisplayUnits->GetStressUnit(), false );
@@ -561,7 +531,7 @@ static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const
 
 
 
-static void camber_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDesignData* pProjectData,IEAFDisplayUnits* pDisplayUnits)
+static void camber_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CTxDOTOptionalDesignData* pProjectData,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptLengthUnitValue,   length, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -598,7 +568,7 @@ static void camber_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOpt
    *p<<Bold(_T("Note:"))<<_T(" Upward Camber is positive");
 }
 
-static void shear_summary(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
+static void shear_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
 
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);

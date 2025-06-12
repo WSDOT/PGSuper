@@ -23,11 +23,11 @@
 #ifndef INCLUDED_EDITENVIRONMENTTXN_H_
 #define INCLUDED_EDITENVIRONMENTTXN_H_
 
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 #include <IFace\Project.h>
 #include <array>
 
-class txnEditEnvironment : public CEAFTransaction
+class txnEditEnvironment : public WBFL::EAF::Transaction
 {
 public:
    txnEditEnvironment(pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
@@ -38,7 +38,7 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const;
    virtual bool IsRepeatable() const;

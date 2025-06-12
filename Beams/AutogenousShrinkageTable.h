@@ -25,18 +25,18 @@
 #include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 
 class CAutogenousShrinkageTable : public rptRcTable
 {
 public:
-   static CAutogenousShrinkageTable* PrepareTable(rptChapter* pChapter, IBroker* pBroker, const CSegmentKey& segmentKey, bool bTemporaryStrands, const LOSSDETAILS* pDetails, IEAFDisplayUnits* pDisplayUnits, Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   static CAutogenousShrinkageTable* PrepareTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, bool bTemporaryStrands, const LOSSDETAILS* pDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level);
+   void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CAutogenousShrinkageTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CAutogenousShrinkageTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    bool m_bTemporaryStrands;
    bool m_bIsPrismatic;

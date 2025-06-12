@@ -28,8 +28,8 @@
 #endif // _MSC_VER >= 1000
 // BridgeDescShearGrid.h : header file
 //
-#include "psgLibLib.h"
-#include <psgLib\GirderLibraryEntry.h>
+#include "PsgLibLib.h"
+#include <PsgLib\GirderLibraryEntry.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CShearSteelGrid window

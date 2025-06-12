@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib\BearingCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib\BearingCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
 bool BearingCriteria::operator==(const BearingCriteria& other) const
@@ -36,42 +36,37 @@ bool BearingCriteria::operator!=(const BearingCriteria& other) const
       !IsEqual(TaperedSolePlateInclinationThreshold, other.TaperedSolePlateInclinationThreshold)
       or
       bUseImpactForBearingReactions != bUseImpactForBearingReactions;
-
-
-
-
-
 }
 
-bool BearingCriteria::Compare(const BearingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool BearingCriteria::Compare(const BearingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
    if (bAlertTaperedSolePlateRequirement != other.bAlertTaperedSolePlateRequirement)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Alert tapered sole plate requirement are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Alert tapered sole plate requirement are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (bAlertTaperedSolePlateRequirement && !::IsEqual(TaperedSolePlateInclinationThreshold, other.TaperedSolePlateInclinationThreshold))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Tapered Sole Plate inclination thresholds are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Tapered Sole Plate inclination thresholds are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (bUseImpactForBearingReactions != other.bUseImpactForBearingReactions)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Bearing reactions dynamic load allowances are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Bearing reactions dynamic load allowances are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void BearingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void BearingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

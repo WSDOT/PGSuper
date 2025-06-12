@@ -32,7 +32,7 @@ class CInitialStrainAnalysisDlg : public CDialog
 	DECLARE_DYNAMIC(CInitialStrainAnalysisDlg)
 
 public:
-	CInitialStrainAnalysisDlg(IBroker* pBroker,std::shared_ptr<CInitialStrainAnalysisReportSpecification>& pRptSpec,const CGirderKey& initialGirderKey,IntervalIndexType intervalIdx,CWnd* pParent = nullptr);   // standard constructor
+	CInitialStrainAnalysisDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CInitialStrainAnalysisReportSpecification>& pRptSpec,const CGirderKey& initialGirderKey,IntervalIndexType intervalIdx,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CInitialStrainAnalysisDlg();
 
 // Dialog Data
@@ -47,7 +47,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    std::shared_ptr<CInitialStrainAnalysisReportSpecification> m_pRptSpec;
 
    CGirderKey m_GirderKey;

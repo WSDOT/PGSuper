@@ -32,12 +32,8 @@
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -73,8 +69,8 @@ CUserAxialTable& CUserAxialTable::operator= (const CUserAxialTable& rOther)
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CUserAxialTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
-                                      IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CUserAxialTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
+                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );

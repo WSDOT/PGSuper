@@ -25,9 +25,7 @@
 
 #include "CLSID.h"
 
-#include "resource.h"       // main symbols
 
-#include <EAF\EAFInterfaceCache.h>
 
 #include <IFace\Project.h>
 #include <IFace\ReportOptions.h>
@@ -47,12 +45,7 @@ class rptReport;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSpliceReporterImp
-class ATL_NO_VTABLE CPGSpliceReporterImp : 
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CPGSpliceReporterImp, &CLSID_PGSpliceReportAgent>,
-   public CReporterBase,
-	public IConnectionPointContainerImpl<CPGSpliceReporterImp>,
-   public IAgentEx,
+class CPGSpliceReporterImp : public CReporterBase,
    public IReportOptions,
    public ISpecificationEventSink,
    public CProxyIReporterEventSink<CPGSpliceReporterImp>
@@ -60,50 +53,32 @@ class ATL_NO_VTABLE CPGSpliceReporterImp :
 public:
 	CPGSpliceReporterImp()
 	{
-      m_pBroker = 0;
-   }
-
-DECLARE_REGISTRY_RESOURCEID(IDR_PGSPLICE_REPORTER)
-
-BEGIN_COM_MAP(CPGSpliceReporterImp)
-	COM_INTERFACE_ENTRY(IAgent)
-   COM_INTERFACE_ENTRY(IAgentEx)
-   COM_INTERFACE_ENTRY(ISpecificationEventSink)
-	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-   COM_INTERFACE_ENTRY(IReportOptions)
-END_COM_MAP()
-
-BEGIN_CONNECTION_POINT_MAP(CPGSpliceReporterImp)
-	CONNECTION_POINT_ENTRY(IID_IReporterEventSink)
-END_CONNECTION_POINT_MAP()
-
+    }
 
 // IAgent
 public:
-	STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker) override;
-   STDMETHOD(RegInterfaces)() override;
-	STDMETHOD(Init)() override;
-	STDMETHOD(Reset)() override;
-	STDMETHOD(ShutDown)() override;
-   STDMETHOD(Init2)() override;
-   STDMETHOD(GetClassID)(CLSID* pCLSID) override;
+   bool RegisterInterfaces() override;
+   bool Init() override;
+   bool Reset() override;
+   bool ShutDown() override;
+   CLSID GetCLSID() const override;
 
 // ISpecificationEventSink
 public:
-   virtual HRESULT OnSpecificationChanged() override;
-   virtual HRESULT OnAnalysisTypeChanged() override;
+   HRESULT OnSpecificationChanged() override;
+   HRESULT OnAnalysisTypeChanged() override;
 
    // IReportOptions
-   virtual bool IncludeSpanAndGirder4Pois(const CGirderKey& rKey) override;
+   bool IncludeSpanAndGirder4Pois(const CGirderKey& rKey) override;
 
 protected:
    // CReporterBase implementation
-   virtual WBFL::Reporting::TitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strName,bool bFullVersion=true) override;
+   WBFL::Reporting::TitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strName,bool bFullVersion=true) override;
 
 private:
-   DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
-   DWORD m_dwSpecCookie;
+   IDType m_dwSpecCookie;
 
    HRESULT InitReportBuilders();
 };

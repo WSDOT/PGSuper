@@ -29,60 +29,40 @@
 #include <IFace\AnalysisResults.h>
 
 struct TIME_STEP_DETAILS;
-interface IIntervals;
-interface IMaterials;
+class IIntervals;
+class IMaterials;
 
-
-/*****************************************************************************
-CLASS 
-   CTimeStepDetailsChapterBuilder
-
-DESCRIPTION
-   Chapter builder for reporting details of time-step analysis calculations
-   at a specified POI
-*****************************************************************************/
 
 class REPORTINGCLASS CTimeStepDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CTimeStepDetailsChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
 protected:
-   rptRcTable* BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,IIntervals* pIntervals,IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildConcreteTable(const TIME_STEP_DETAILS& tsDetails, const CSegmentKey& segmentKey, IMaterials* pMaterials, IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildComponentPropertiesTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildSectionPropertiesTable(const TIME_STEP_DETAILS& tsDetails, IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildFreeCreepDeformationTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildStrandRelaxationTable(const TIME_STEP_DETAILS& tsDetails,IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildSegmentTendonRelaxationTable(const TIME_STEP_DETAILS& tsDetails, IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildGirderTendonRelaxationTable(const TIME_STEP_DETAILS& tsDetails, IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildComponentRestrainingForceTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildSectionRestrainingForceTable(const TIME_STEP_DETAILS& tsDetails,IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildSectionRestrainingDeformationTable(const TIME_STEP_DETAILS& tsDetails,IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildRestrainedSectionForceTable(const TIME_STEP_DETAILS& tsDetails,IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildRestrainedComponentForceTable(const TIME_STEP_DETAILS& tsDetails,bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildIncrementalForceTable(IBroker* pBroker,const std::vector<pgsTypes::ProductForceType>& vLoads,const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildIncrementalStressTable(IBroker* pBroker,const std::vector<pgsTypes::ProductForceType>& vLoads,const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildIncrementalStrainTable(IBroker* pBroker, const std::vector<pgsTypes::ProductForceType>& vLoads, const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const;
-   rptRcTable* BuildConcreteStressSummaryTable(IBroker* pBroker,const pgsPointOfInterest& poi,ResultsType resultsType,bool bGirder,IEAFDisplayUnits* pDisplayUnits) const;
+   rptRcTable* BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IIntervals> pIntervals,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildConcreteTable(const TIME_STEP_DETAILS& tsDetails, const CSegmentKey& segmentKey, std::shared_ptr<IMaterials> pMaterials, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildComponentPropertiesTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildSectionPropertiesTable(const TIME_STEP_DETAILS& tsDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildFreeCreepDeformationTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildStrandRelaxationTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildSegmentTendonRelaxationTable(const TIME_STEP_DETAILS& tsDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildGirderTendonRelaxationTable(const TIME_STEP_DETAILS& tsDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildComponentRestrainingForceTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildSectionRestrainingForceTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildSectionRestrainingDeformationTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildRestrainedSectionForceTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildRestrainedComponentForceTable(const TIME_STEP_DETAILS& tsDetails,bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildIncrementalForceTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<pgsTypes::ProductForceType>& vLoads,const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildIncrementalStressTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<pgsTypes::ProductForceType>& vLoads,const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildIncrementalStrainTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<pgsTypes::ProductForceType>& vLoads, const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildConcreteStressSummaryTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,ResultsType resultsType,bool bGirder,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
-   void ReportCreepDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const;
-   void ReportShrinkageDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const;
-   void ReportStrandRelaxationDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const;
-   void ReportSegmentTendonRelaxationDetails(rptChapter* pChapter, IBroker* pBroker, const pgsPointOfInterest& poi, IntervalIndexType firstIntervalIdx, IntervalIndexType lastIntervalIdx, IEAFDisplayUnits* pDisplayUnits) const;
-   void ReportGirderTendonRelaxationDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const;
-
-   // Prevent accidental copying and assignment
-   CTimeStepDetailsChapterBuilder(const CTimeStepDetailsChapterBuilder&) = delete;
-   CTimeStepDetailsChapterBuilder& operator=(const CTimeStepDetailsChapterBuilder&) = delete;
+   void ReportCreepDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void ReportShrinkageDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void ReportStrandRelaxationDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void ReportSegmentTendonRelaxationDetails(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi, IntervalIndexType firstIntervalIdx, IntervalIndexType lastIntervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void ReportGirderTendonRelaxationDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };

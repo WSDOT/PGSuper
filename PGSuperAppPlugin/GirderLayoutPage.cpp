@@ -35,18 +35,14 @@
 #include <PGSuperUnits.h>
 
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanGirderLayoutPage property page
@@ -74,8 +70,8 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_Control(pDX, IDC_NUMGDR_SPIN,         m_NumGdrSpinner);
@@ -228,8 +224,7 @@ void CSpanGirderLayoutPage::GetPierSkewAngles(Float64& skew1,Float64& skew2)
    const CPierData2* pPrevPier = pParent->m_pSpanData->GetPrevPier();
    const CPierData2* pNextPier = pParent->m_pSpanData->GetNextPier();
 
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
+   auto broker = EAFGetBroker();
    GET_IFACE2(broker,IBridge,pBridge);
 
    Float64 skew_angle_1;
@@ -463,7 +458,7 @@ void CSpanGirderLayoutPage::FillGirderSpacingMeasurementComboBox(int nIDC, pgsTy
    item_data = HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::NormalToItem);
    pSpacingType->SetItemData(idx,item_data);
    
-   if (bearingMeasure != ConnectionLibraryEntry::AlongGirder)
+   if (bearingMeasure != ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder)
    {
       idx = pSpacingType->AddString(_T("Measured at and along the CL bearing"));
       item_data = HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::AlongItem);
@@ -550,8 +545,7 @@ void CSpanGirderLayoutPage::GirderTypeChanged()
 
 GirderIndexType CSpanGirderLayoutPage::GetMinGirderCount()
 {
-   CComPtr<IBeamFactory> factory;
-   GetBeamFactory(&factory);
+   auto factory = GetBeamFactory();
    return factory->GetMinimumBeamCount();
 }
 
@@ -610,8 +604,7 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
       {
          // there is more than one unique girder spacing... which one do we want to use
          // for the entire bridge???
-         CComPtr<IBroker> broker;
-         EAFGetBroker(&broker);
+         auto broker = EAFGetBroker();
          GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
          CResolveGirderSpacingDlg dlg;
@@ -646,7 +639,7 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
          ConnectionLibraryEntry::BearingOffsetMeasurementType start_measure, end_measure;
          std::tie(offset,start_measure) = pParent->m_pPrevPier->GetBearingOffset(pgsTypes::Ahead,true);
          std::tie(offset,end_measure) = pParent->m_pNextPier->GetBearingOffset(pgsTypes::Back,true);
-         dlg.m_RestrictSpacing = start_measure==ConnectionLibraryEntry::AlongGirder || end_measure==ConnectionLibraryEntry::AlongGirder;
+         dlg.m_RestrictSpacing = start_measure==ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder || end_measure==ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder;
 
          dlg.m_strSpacings = strItems;
          dlg.m_MeasurementDatum = 0;
@@ -713,12 +706,10 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
       if (1 < topWidths.size())
       {
          // there is more than one top widths... which one do we want to use for the entire bridge?
-         CComPtr<IBroker> broker;
-         EAFGetBroker(&broker);
+         auto broker = EAFGetBroker();
          GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
-         CComPtr<IBeamFactory> factory;
-         GetBeamFactory(&factory);
+         auto factory = GetBeamFactory();
 
          CResolveGirderSpacingDlg dlg;
          CString strItems;
@@ -1115,7 +1106,7 @@ void CSpanGirderLayoutPage::OnCbnSelchangeNgdrsCombo()
    UpdateChildWindowState();
 }
 
-void CSpanGirderLayoutPage::GetBeamFactory(IBeamFactory** ppFactory)
+std::shared_ptr<PGS::Beams::BeamFactory> CSpanGirderLayoutPage::GetBeamFactory()
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
    const CGirderGroupData* pGroup = pParent->m_pGirderGroup;
@@ -1125,5 +1116,5 @@ void CSpanGirderLayoutPage::GetBeamFactory(IBeamFactory** ppFactory)
    // same factory
    const GirderLibraryEntry* pGdrEntry = pGroup->GetGirderLibraryEntry(0);
 
-   pGdrEntry->GetBeamFactory(ppFactory);
+   return pGdrEntry->GetBeamFactory();
 }

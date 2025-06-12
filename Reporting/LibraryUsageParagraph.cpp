@@ -24,13 +24,9 @@
 #include <Reporting\LibraryUsageParagraph.h>
 #include <Reporting\LibraryUsageTable.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -45,7 +41,7 @@ CLibraryUsageParagraph::~CLibraryUsageParagraph()
 {
 }
 
-rptParagraph* CLibraryUsageParagraph::Build(IBroker* pBroker, bool doPrintTable) const
+rptParagraph* CLibraryUsageParagraph::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, bool doPrintTable) const
 {
    rptParagraph* pParagraph = new rptParagraph;
 

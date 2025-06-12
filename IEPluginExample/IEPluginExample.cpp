@@ -31,26 +31,26 @@
 #include "resource.h"
 #include <initguid.h>
 #include <Plugins\PGSuperIEPlugin.h>
+#include <EAF/EAFProgress.h>
 #include "IEPluginExample.h"
 #include "PGSuperCatCom.h"
-#include <WBFLCore_i.c>
 
 #include "PGSuperProjectImporter.h"
 #include "PGSuperDataImporter.h"
-#include "PGSuperExporter.h"
+#include "PGSuperDataExporter.h"
 
 #include "PGSpliceProjectImporter.h"
 
 #include "PGSuperInterfaces.h"
+#include <EAF\ComponentModule.h>
 
-CComModule _Module;
-
-BEGIN_OBJECT_MAP(ObjectMap)
-   OBJECT_ENTRY(CLSID_PGSuperProjectImporter, CPGSuperProjectImporter)
-   OBJECT_ENTRY(CLSID_PGSuperDataImporter,    CPGSuperDataImporter)
-   OBJECT_ENTRY(CLSID_PGSuperDataExporter,    CPGSuperDataExporter)
-   OBJECT_ENTRY(CLSID_PGSpliceProjectImporter, CPGSpliceProjectImporter)
-END_OBJECT_MAP()
+WBFL::EAF::ComponentModule _Module;
+EAF_BEGIN_OBJECT_MAP(ObjectMap)
+   EAF_OBJECT_ENTRY(CLSID_PGSuperDataImporter, CPGSuperDataImporter)
+   EAF_OBJECT_ENTRY(CLSID_PGSuperDataExporter, CPGSuperDataExporter)
+   EAF_OBJECT_ENTRY(CLSID_PGSuperProjectImporter, CPGSuperProjectImporter)
+   EAF_OBJECT_ENTRY(CLSID_PGSpliceProjectImporter, CPGSpliceProjectImporter)
+EAF_END_OBJECT_MAP()
 
 class CIEPluginExampleApp : public CWinApp
 {
@@ -82,7 +82,7 @@ CIEPluginExampleApp theApp;
 
 BOOL CIEPluginExampleApp::InitInstance()
 {
-    _Module.Init(ObjectMap, m_hInstance, &LIBID_PGSuperIEPluginExample);
+    _Module.Init(ObjectMap);
     return CWinApp::InitInstance();
 }
 
@@ -91,61 +91,3 @@ int CIEPluginExampleApp::ExitInstance()
     _Module.Term();
     return CWinApp::ExitInstance();
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// Used to determine whether the DLL can be unloaded by OLE
-
-STDAPI DllCanUnloadNow(void)
-{
-    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-    return (AfxDllCanUnloadNow()==S_OK && _Module.GetLockCount()==0) ? S_OK : S_FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Returns a class factory to create an object of the requested type
-
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-    return _Module.GetClassObject(rclsid, riid, ppv);
-}
-
-void RegisterPlugins(bool bRegister)
-{
-   // Importer/Exporter Plugins
-
-   // PGSuper
-   WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperProjectImporter, CATID_PGSuperProjectImporter, bRegister);
-   WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperDataImporter,    CATID_PGSuperDataImporter,    bRegister);
-   WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperDataExporter,    CATID_PGSuperDataExporter,    bRegister);
-
-   // PGSplice
-   WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSpliceProjectImporter, CATID_PGSpliceProjectImporter, bRegister);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllRegisterServer - Adds entries to the system registry
-
-STDAPI DllRegisterServer(void)
-{
-	// registers object, typelib and all interfaces in typelib
-	HRESULT hr = _Module.RegisterServer(FALSE);
-   if ( FAILED(hr) )
-      return hr;
-
-   RegisterPlugins(true);
-
-   return S_OK;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllUnregisterServer - Removes entries from the system registry
-
-STDAPI DllUnregisterServer(void)
-{
-   RegisterPlugins(false);
-   
-   _Module.UnregisterServer();
-	return S_OK;
-}
-
-

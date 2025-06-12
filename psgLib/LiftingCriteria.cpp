@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib\LiftingCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib\LiftingCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include "SpecLibraryEntryImpl.h"
 #include <EAF/EAFDisplayUnits.h>
 
@@ -39,7 +39,7 @@ LiftingCriteria::LiftingCriteria()
    ModulusOfRuptureCoefficient[pgsTypes::AllLightweight] = WBFL::Units::ConvertToSysUnits(0.18, WBFL::Units::Measure::SqrtKSI);
 }
 
-bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -53,7 +53,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Lifting Check/Design Options are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Lifting Check/Design Options are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -63,7 +63,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Lifting Factors of Safety are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Lifting Factors of Safety are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -76,7 +76,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Modulus of Rupture for Cracking Moment During Lifting are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Modulus of Rupture for Cracking Moment During Lifting are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -92,7 +92,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Lifting Analysis Parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Lifting Analysis Parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -103,7 +103,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Lifting Concrete Stresses Limits are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Lifting Concrete Stresses Limits are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -111,7 +111,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
    return bSame;
 }
 
-void LiftingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void LiftingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -139,7 +139,7 @@ void LiftingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUni
    *pPara << _T("Height of pick point above top of girder = ") << dim.SetValue(PickPointHeight) << rptNewLine;
    *pPara << _T("Lifting loop placement tolerance = ") << dim.SetValue(LiftingLoopTolerance) << rptNewLine;
 
-   if (pDisplayUnits->GetUnitMode() == eafTypes::umSI)
+   if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::SI)
    {
       *pPara << _T("Sweep tolerance = ") << SweepTolerance << _T("m/m") << rptNewLine;
    }

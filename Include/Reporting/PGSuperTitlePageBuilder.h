@@ -24,13 +24,13 @@
 
 #include <Reporting\ReportingExp.h>
 #include <ReportManager\TitlePageBuilder.h>
-#include <WBFLCore.h>
 
+/// @brief 
 class REPORTINGCLASS CPGSuperTitlePageBuilder :
    public WBFL::Reporting::TitlePageBuilder
 {
 public:
-   CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion=true, bool bPageBreakAfter=true);
+   CPGSuperTitlePageBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion=true, bool bPageBreakAfter=true);
    CPGSuperTitlePageBuilder(const CPGSuperTitlePageBuilder& other);
    ~CPGSuperTitlePageBuilder(void);
 
@@ -40,7 +40,7 @@ public:
    virtual std::unique_ptr<WBFL::Reporting::TitlePageBuilder> Clone() const;
 
 protected:
-   CComPtr<IBroker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
    bool m_bFullVersion;
    bool m_bPageBreakAfter;
 };

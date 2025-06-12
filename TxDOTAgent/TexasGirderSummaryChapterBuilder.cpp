@@ -29,15 +29,13 @@
 #include "TexasGirderSummaryChapterBuilder.h"
 #include "TexasIBNSParagraphBuilder.h"
 
-#include <ReportManager\ReportManager.h>
-#include <Reporting\PGSuperChapterBuilder.h>
-
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\BridgeDescription2.h>
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
@@ -48,30 +46,14 @@
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-static void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits);
+static void girder_line_geometry(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-/****************************************************************************
-CLASS
-   CTexasGirderSummaryChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTexasGirderSummaryChapterBuilder::CTexasGirderSummaryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTexasGirderSummaryChapterBuilder::GetName() const
 {
    return TEXT("Girder Summary");
@@ -80,8 +62,7 @@ LPCTSTR CTexasGirderSummaryChapterBuilder::GetName() const
 rptChapter* CTexasGirderSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    // This is a single segment report
@@ -118,24 +99,8 @@ rptChapter* CTexasGirderSummaryChapterBuilder::Build(const std::shared_ptr<const
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasGirderSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CTexasGirderSummaryChapterBuilder>();
-}
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
+void girder_line_geometry(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;

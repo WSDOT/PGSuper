@@ -22,24 +22,9 @@
 
 #pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-
 #include <PgsExt\ISummaryRatingArtifact.h>
 
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-interface IBroker;
 class CEngAgentImp;
-
-// MISCELLANEOUS
 
 /*****************************************************************************
 CLASS 
@@ -57,75 +42,36 @@ LOG
 class pgsSummaryRatingArtifactImpl: public pgsISummaryRatingArtifact
 {
 public:
-   // GROUP: LIFECYCLE
+   pgsSummaryRatingArtifactImpl(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const CEngAgentImp* pEngAgentImp);
 
-   //------------------------------------------------------------------------
-   // constructor
-   pgsSummaryRatingArtifactImpl(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, IBroker* pBroker, const CEngAgentImp* pEngAgentImp);
+   ~pgsSummaryRatingArtifactImpl() = default;
 
-   ~pgsSummaryRatingArtifactImpl()
-   {
-      ;
-   }
-   
-   // GROUP: OPERATIONS
-public:
-   virtual Float64 GetMomentRatingFactor(bool bPositiveMoment) const override;
-   virtual Float64 GetMomentRatingFactorEx(bool bPositiveMoment,const pgsMomentRatingArtifact** ppArtifact) const override;
+   Float64 GetMomentRatingFactor(bool bPositiveMoment) const override;
+   Float64 GetMomentRatingFactorEx(bool bPositiveMoment,const pgsMomentRatingArtifact** ppArtifact) const override;
 
-   virtual Float64 GetShearRatingFactor() const override;
-   virtual Float64 GetShearRatingFactorEx(const pgsShearRatingArtifact** ppArtifact) const override;
+   Float64 GetShearRatingFactor() const override;
+   Float64 GetShearRatingFactorEx(const pgsShearRatingArtifact** ppArtifact) const override;
 
-   virtual Float64 GetStressRatingFactor() const override;
-   virtual Float64 GetStressRatingFactorEx(const pgsStressRatingArtifact** ppArtifact) const override;
+   Float64 GetStressRatingFactor() const override;
+   Float64 GetStressRatingFactorEx(const pgsStressRatingArtifact** ppArtifact) const override;
 
-   virtual Float64 GetYieldStressRatio(bool bPositiveMoment) const override;
-   virtual Float64 GetYieldStressRatioEx(bool bPositiveMoment,const pgsYieldStressRatioArtifact** ppArtifact) const override;
+   Float64 GetYieldStressRatio(bool bPositiveMoment) const override;
+   Float64 GetYieldStressRatioEx(bool bPositiveMoment,const pgsYieldStressRatioArtifact** ppArtifact) const override;
 
-   virtual Float64 GetRatingFactor() const override;
-   virtual Float64 GetRatingFactorEx(const pgsMomentRatingArtifact** ppPositiveMoment,const pgsMomentRatingArtifact** ppNegativeMoment,
-                             const pgsShearRatingArtifact** ppShear,
-                             const pgsStressRatingArtifact** ppStress) const override;
-   virtual Float64 GetYieldStressRatio(const pgsYieldStressRatioArtifact** ppYieldStressPositiveMoment, const pgsYieldStressRatioArtifact** ppYieldStressNegativeMoment) const override;
+   Float64 GetRatingFactor() const override;
+   Float64 GetRatingFactorEx(const pgsMomentRatingArtifact** ppPositiveMoment,const pgsMomentRatingArtifact** ppNegativeMoment,
+                     const pgsShearRatingArtifact** ppShear,
+                     const pgsStressRatingArtifact** ppStress) const override;
+   Float64 GetYieldStressRatio(const pgsYieldStressRatioArtifact** ppYieldStressPositiveMoment, const pgsYieldStressRatioArtifact** ppYieldStressNegativeMoment) const override;
 
-   virtual bool IsLoadPostingRequired() const override;
-   virtual void GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeight,Float64* pRF,std::_tstring* pVehicle) const override;
-
-   // ACCESS
-   //////////
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-   // GROUP: DATA MEMBERS
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
+   bool IsLoadPostingRequired() const override;
+   void GetSafePostingLoad(Float64* pPostingLoad,Float64* pWeight,Float64* pRF,std::_tstring* pVehicle) const override;
 
 private:
    pgsSummaryRatingArtifactImpl();
 
-   CComPtr<IBroker> m_pBroker;
    const CEngAgentImp* m_pEngAgentImp;
    std::vector<CGirderKey> m_GirderKeys;
    pgsTypes::LoadRatingType m_RatingType;
    VehicleIndexType m_VehicleIdx;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-

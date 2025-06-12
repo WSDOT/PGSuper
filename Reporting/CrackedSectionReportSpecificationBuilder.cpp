@@ -28,16 +28,13 @@
 #include <Reporting\CrackedSectionReportSpecification.h>
 #include "SelectCrackedSectionDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Selection.h>
 #include <IFace\Bridge.h>
+#include <IFace/PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CCrackedSectionReportSpecificationBuilder::CCrackedSectionReportSpecificationBuilder(IBroker* pBroker) :
+CCrackedSectionReportSpecificationBuilder::CCrackedSectionReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -57,10 +54,10 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CCrackedSectionReportSpeci
    std::shared_ptr<CCrackedSectionReportSpecification> pInitRptSpec( std::dynamic_pointer_cast<CCrackedSectionReportSpecification>(pOldRptSpec) );
    if (!pInitRptSpec)
    {
-      // Fist time through get CL of selected segement
+      // Fist time through get CL of selected segment
       CSegmentKey segmentKey;
-      GET_IFACE(ISelection, pSelection);
-   CSelection selection = pSelection->GetSelection();
+      GET_IFACE2(GetBroker(),ISelection, pSelection);
+      CSelection selection = pSelection->GetSelection();
 
       if (selection.Type == CSelection::Girder)
    {
@@ -96,12 +93,12 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CCrackedSectionReportSpeci
 
       if (selection.Type != CSelection::Segment)
       {
-         GET_IFACE(IBridge, pBridge);
+         GET_IFACE2(GetBroker(),IBridge, pBridge);
          SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
          segmentKey.segmentIndex = (nSegments - 1) / 2;
       }
 
-      GET_IFACE(IPointOfInterest, pPOI);
+      GET_IFACE2(GetBroker(),IPointOfInterest, pPOI);
    PoiList vPoi;
    pPOI->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
       ATLASSERT(vPoi.size() == 1);
@@ -118,7 +115,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CCrackedSectionReportSpeci
       {
          // Not on the bridge. Default to something safe
          ::AfxMessageBox(_T("The selected location for this report no longer exists. The report has been moved to a valid location."), MB_OK | MB_ICONEXCLAMATION);
-         GET_IFACE(IPointOfInterest, pPOI);
+         GET_IFACE2(GetBroker(),IPointOfInterest, pPOI);
          PoiList vPoi;
          pPOI->GetPointsOfInterest(CSegmentKey(0, 0, 0), POI_5L | POI_ERECTED_SEGMENT, &vPoi);
          ATLASSERT(vPoi.size() == 1);
@@ -128,7 +125,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CCrackedSectionReportSpeci
       }
    }
 
-   CSelectCrackedSectionDlg dlg(m_pBroker,pInitRptSpec);
+   CSelectCrackedSectionDlg dlg(GetBroker(), pInitRptSpec);
    dlg.m_InitialPOI = current_poi;
 
    if ( dlg.DoModal() == IDOK )

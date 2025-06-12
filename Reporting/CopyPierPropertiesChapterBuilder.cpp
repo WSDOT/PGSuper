@@ -29,11 +29,6 @@
 #include <IFace\DocumentType.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CCopyPierPropertiesChapterBuilder::CCopyPierPropertiesChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect),
@@ -41,8 +36,6 @@ m_FromPierIdx(INVALID_INDEX)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CCopyPierPropertiesChapterBuilder::GetName() const
 {
    return TEXT("Pier Properties Comparison");
@@ -53,8 +46,7 @@ rptChapter* CCopyPierPropertiesChapterBuilder::Build(const std::shared_ptr<const
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pCopyPierPropertiesMgrRptSpec = std::dynamic_pointer_cast<const CCopyPierPropertiesReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    rptChapter* pChapter = new rptChapter(GetName());
    if (!m_CallBacks.empty())
@@ -75,11 +67,6 @@ rptChapter* CCopyPierPropertiesChapterBuilder::Build(const std::shared_ptr<const
       *pPara << _T("Nothing to report. Please select a property type");
    }
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCopyPierPropertiesChapterBuilder::Clone() const
-{
-   return std::make_unique<CCopyPierPropertiesChapterBuilder>();
 }
 
 void CCopyPierPropertiesChapterBuilder::SetCopyPierProperties(std::vector<ICopyPierPropertiesCallback*>& rCallbacks, PierIndexType fromPierIdx, const std::vector<PierIndexType>& toPiers)

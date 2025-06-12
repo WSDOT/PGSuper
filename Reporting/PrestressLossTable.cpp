@@ -25,20 +25,18 @@
 #include <Reporting\ReportNotes.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace/PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -75,7 +73,7 @@ CPrestressLossTable& CPrestressLossTable::operator= (const CPrestressLossTable& 
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CPrestressLossTable::Build(IBroker* pBroker, const CSegmentKey& segmentKey, bool bIncludeElasticEffects, bool bRating, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CPrestressLossTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, bool bIncludeElasticEffects, bool bRating, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);

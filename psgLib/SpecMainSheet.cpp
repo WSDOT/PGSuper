@@ -24,21 +24,17 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "SpecMainSheet.h"
 #include "SpecLibraryEntryImpl.h"
 #include <MfcTools\CustomDDX.h>
 
 #include <Units\Convert.h>
 #include <EAF\EAFApp.h>
+#include <EAF\Agent.h>
 
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecMainSheet
@@ -232,8 +228,8 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   CString fciTag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
-   CString fcTag  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))")  : _T("sqrt(f'c (KSI))"));
+   CString fciTag = (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
+   CString fcTag  = (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))")  : _T("sqrt(f'c (KSI))"));
 
    if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
@@ -378,11 +374,11 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))");
    }
    else
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'ci (MPa))") : _T("(lambda)sqrt(f'ci (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'ci (MPa))") : _T("(lambda)sqrt(f'ci (KSI))");
    }
 
    DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_pImpl->m_LiftingCriteria.ModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
@@ -402,7 +398,7 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    DDV_UnitValueRange(pDX, IDC_MIN_CABLE_ANGLE,m_Entry.m_pImpl->m_LiftingCriteria.MinCableInclination, 0.0, 90., pDisplayUnits->Angle );
 
    Float64 sweepTolerance = m_Entry.m_pImpl->m_LiftingCriteria.SweepTolerance;
-   if ( pApp->GetUnitsMode() == eafTypes::umSI )
+   if ( pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI )
    {
       sweepTolerance *= 1000;
       DDX_Text(pDX,IDC_GIRDER_SWEEP_TOL,sweepTolerance);
@@ -510,11 +506,11 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
    else
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
 
    DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.ModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
@@ -578,7 +574,7 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
 
    DDX_CBItemData(pDX, IDC_IMPACT_USAGE, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.ImpactUsage); // don't use DDX_CBEnum since the combo list is in a different order than the enum
 
-   CString slope_unit(pApp->GetUnitsMode() == eafTypes::umSI ? _T("m/m") : _T("ft/ft"));
+   CString slope_unit(pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("m/m") : _T("ft/ft"));
 
    DDX_Text(pDX, IDC_CROWN_SLOPE, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.RoadwayCrownSlope);
    DDX_Text(pDX, IDC_CROWN_SLOPE_UNIT, slope_unit);
@@ -587,7 +583,7 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    DDX_Text(pDX, IDC_HE_ROADWAY_SUPERELEVATION_UNIT, slope_unit);
 
    Float64 sweepTolerance = m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.SweepTolerance;
-   if ( pApp->GetUnitsMode() == eafTypes::umSI )
+   if ( pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI )
    {
       sweepTolerance *= 1000;
       DDX_Text(pDX,IDC_GIRDER_SWEEP_TOL,sweepTolerance);
@@ -663,11 +659,11 @@ void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
    else
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
 
    // Use the normal crown values for KDOT
@@ -715,11 +711,11 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
    else
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
 
    DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_pImpl->m_MomentCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
@@ -834,11 +830,11 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
    else
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
 
    DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_pImpl->m_ShearCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
@@ -1009,12 +1005,10 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       ATLASSERT(0 <= rad_ord && rad_ord < map_size);
       m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod = map[rad_ord];
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      if ( pBroker )
+      auto broker = EAFGetBroker();
+      if ( broker )
       {
-         CComPtr<IDocumentType> pDocType;
-         pBroker->GetInterface(IID_IDocumentType,(IUnknown**)&pDocType);
+         auto pDocType = broker->GetInterface<IDocumentType>(IID_IDocumentType);
          if ( pDocType->IsPGSpliceDocument() && m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP && 0 <  m_Entry.GetRefCount() )
          {
             AfxMessageBox(_T("Time-step method must be selected for spliced girder bridges"));
@@ -1250,8 +1244,8 @@ void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   CString tagBeforeLosses = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
-   CString tagAfterLosses  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))"));
+   CString tagBeforeLosses = (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
+   CString tagAfterLosses  = (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))"));
 
    if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {

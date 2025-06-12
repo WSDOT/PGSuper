@@ -29,22 +29,18 @@
 #include <MFCTools\CustomDDX.h>
 #include "..\Documentation\PGSuper.hh"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CBridgeAnalysisReportDlg dialog
 
 IMPLEMENT_DYNAMIC(CBridgeAnalysisReportDlg, CSpanGirderReportDlg)
 
-CBridgeAnalysisReportDlg::CBridgeAnalysisReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CBridgeAnalysisReportDlg::CBridgeAnalysisReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CSpanGirderReportDlg(pBroker,rptDesc, CSpanGirderReportDlg::Mode::GirderAndChapters,pRptSpec,nIDTemplate, pParent)
 {
    m_bDesign = true;
@@ -86,8 +82,7 @@ BOOL CBridgeAnalysisReportDlg::OnInitDialog()
    }
 
    // if there aren't any load rating types selected, don't report for rating and disable the UI element
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
    if (!pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && 
        !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
@@ -116,8 +111,7 @@ void CBridgeAnalysisReportDlg::UpdateChapterList()
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();

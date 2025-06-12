@@ -32,11 +32,6 @@
 #include <future>
 #endif
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // Gets the controlling rating factor from a collection of rating factor artifacts
 //

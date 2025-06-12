@@ -29,7 +29,7 @@
 // BridgeDescRailingSystemPage.h : header file
 //
 
-#include <PgsExt\RailingSystem.h>
+#include <PsgLib\RailingSystem.h>
 #include <MfcTools\WideDropDownComboBox.h>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -117,7 +117,7 @@ protected:
    CString UpdateConcreteParametersToolTip(CRailingSystem* pRailingSystem);
    CString m_strToolTip[2];
 
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    Float64 m_MinNWCDensity;
    Float64 m_MaxLWCDensity;
 

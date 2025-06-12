@@ -80,7 +80,7 @@ protected:
 
    void UpdateGraph();
 
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    CSegmentKey m_SegmentKey;
    CClosureKey m_ClosureKey;

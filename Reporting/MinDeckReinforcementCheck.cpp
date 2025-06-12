@@ -27,6 +27,7 @@
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -34,13 +35,6 @@
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\ReportOptions.h>
-
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -56,7 +50,7 @@ LPCTSTR CMinDeckReinforcementCheck::GetName() const
    return TEXT("Minimum Deck Reinforcement Check");
 }
 
-void CMinDeckReinforcementCheck::Build(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const
+void CMinDeckReinforcementCheck::Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, ISpecification, pSpec);
    GET_IFACE2(pBroker, IBridge, pBridge);

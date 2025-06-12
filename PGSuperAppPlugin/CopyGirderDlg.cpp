@@ -31,6 +31,7 @@
 #include "CopyGirderDlg.h"
 #include "CopyGirderPropertiesCallbacks.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Selection.h>
@@ -38,23 +39,18 @@
 #include <IFace\EditByUI.h>
 
 #include <PgsExt\MacroTxn.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <EAF\EAFCustSiteVars.h>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <Reporting\CopyGirderPropertiesReportSpecification.h>
 #include <Reporting\CopyGirderPropertiesChapterBuilder.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyGirderDlg dialog
 
-CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, const std::map<IDType,ICopyGirderPropertiesCallback*>&  rcopyGirderPropertiesCallbacks, IDType selectedID, CWnd* pParent)
+CCopyGirderDlg::CCopyGirderDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::map<IDType,ICopyGirderPropertiesCallback*>&  rcopyGirderPropertiesCallbacks, IDType selectedID, CWnd* pParent)
 	: CDialog(CCopyGirderDlg::IDD, pParent),
    m_pBroker(pBroker),
    m_CopyGirderPropertiesCallbacks(rcopyGirderPropertiesCallbacks)
@@ -160,7 +156,7 @@ BOOL CCopyGirderDlg::OnInitDialog()
    m_cyMin = rect.Height();
 
    // set up report window
-   GET_IFACE(IReportManager, pReportMgr);
+   GET_IFACE(IEAFReportManager, pReportMgr);
    WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Girder Properties Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
@@ -315,7 +311,7 @@ void CCopyGirderDlg::FillGirderComboBox(CComboBox& cbGirder,GroupIndexType grpId
 
 void CCopyGirderDlg::UpdateReportData()
 {
-   GET_IFACE(IReportManager,pReportMgr);
+   GET_IFACE(IEAFReportManager,pReportMgr);
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
    CGirderKey gdrKey = GetFromGirder();
@@ -342,7 +338,7 @@ void CCopyGirderDlg::UpdateReport()
    {
       UpdateReportData();
 
-      GET_IFACE(IReportManager,pReportMgr);
+      GET_IFACE(IEAFReportManager,pReportMgr);
       std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
       std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CCopyGirderPropertiesReportSpecification>(m_pRptSpec);
@@ -597,7 +593,7 @@ void CCopyGirderDlg::OnOK()
    std::vector<ICopyGirderPropertiesCallback*> callbacks = GetSelectedCopyGirderPropertiesCallbacks();
    for (auto callback : callbacks)
    {
-      std::unique_ptr<CEAFTransaction> txn = callback->CreateCopyTransaction(m_FromGirderKey, m_ToGirderKeys);
+      std::unique_ptr<WBFL::EAF::Transaction> txn = callback->CreateCopyTransaction(m_FromGirderKey, m_ToGirderKeys);
       pMacro->AddTransaction(std::move(txn));
    }
 

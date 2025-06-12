@@ -36,13 +36,8 @@
 #include <EAF\EAFGraphBuilderBase.h>
 #include <EAF\EAFGraphView.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNAMIC(CSegmentGraphControllerBase,CEAFGraphControlWindow)
 
@@ -66,7 +61,7 @@ BOOL CSegmentGraphControllerBase::OnInitDialog()
 {
    CEAFGraphControlWindow::OnInitDialog();
 
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    // Fill group and girder combo boxes
    FillGroupCtrl();

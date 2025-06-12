@@ -20,11 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// SYSTEM INCLUDES
-//
+#pragma once
 
-// PROJECT INCLUDES
-//
 #include <IFace\Bridge.h>
 
 #include <IFace\TestFileExport.h>
@@ -32,17 +29,9 @@
 // Utility class for structuring debond data
 #include <PgsExt\DebondUtil.h>
 
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
 // Utility constants, stuff for TxDOT CAD export
 #define CAD_DELIM	_T(" ")
 #define CAD_SPACE	_T(" ")
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -60,8 +49,8 @@ LOG
 static const int BF_SIZ=1024; // buffer size
 
 // Main External functions that write the file
-int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, bool designSucceeded);
-int Test_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girderKey);
+int Test_WriteCADDataToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, bool designSucceeded);
+int Test_WriteDistributionFactorsToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey);
 
 
 // Local utility class that does the real writing
@@ -110,7 +99,7 @@ class TestFileWriter : public TxDOTDebondTool
 {
 public:
 
-   TestFileWriter(const CSegmentKey& segmentKey, Float64 girderLength, bool isUBeam, IStrandGeometry* pStrandGeometry):
+   TestFileWriter(const CSegmentKey& segmentKey, Float64 girderLength, bool isUBeam, std::shared_ptr<IStrandGeometry> pStrandGeometry):
    TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry), 
    m_isUBeam(isUBeam)
    {;}

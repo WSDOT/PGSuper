@@ -38,7 +38,7 @@ class CSectionCutDlgEx : public CDialog
 {
 // Construction
 public:
-   CSectionCutDlgEx(IBroker* pBroker,const CGirderKey& girderKey,const pgsPointOfInterest& initialPoi,CWnd* pParent=nullptr);
+   CSectionCutDlgEx(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,const pgsPointOfInterest& initialPoi,CWnd* pParent=nullptr);
 
    pgsPointOfInterest GetPOI();
 
@@ -68,7 +68,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    pgsPointOfInterest m_InitialPOI;
    CGirderKey m_GirderKey;
 

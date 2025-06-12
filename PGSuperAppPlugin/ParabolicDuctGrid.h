@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <PgsExt\PTData.h>
+#include <PsgLib\PTData.h>
 
 // ParabolicDuctGrid.h : header file
 //

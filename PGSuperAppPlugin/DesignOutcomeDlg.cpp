@@ -27,20 +27,16 @@
 #include "PGSuperApp.h"
 #include "DesignOutcomeDlg.h"
 
-#include <EAF\EAFAutoProgress.h>
+#include <IFace/Tools.h>
+#include <EAF/AutoProgress.h>
 
 #include <IFace\Artifact.h>
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 #include <EAF\EAFCustSiteVars.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CDesignOutcomeDlg dialog
@@ -242,10 +238,10 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
       OnBnClickedCheckAdesign();
    }
 
-   CComPtr<IBroker> pBroker;
-   m_pRptSpec->GetBroker(&pBroker);
+   
+   auto pBroker = m_pRptSpec->GetBroker();
 
-   GET_IFACE2(pBroker,IReportManager,pRptMgr);
+   GET_IFACE2(pBroker,IEAFReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CMultiGirderReportSpecification>(m_pRptSpec);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    CWnd* pWnd = GetDlgItem(IDC_BROWSER);

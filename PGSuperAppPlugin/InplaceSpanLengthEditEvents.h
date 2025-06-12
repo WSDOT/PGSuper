@@ -27,7 +27,7 @@
 class CInplaceSpanLengthEditEvents : public CInplaceEditDisplayObjectEvents
 {
 public:
-   CInplaceSpanLengthEditEvents(IBroker* pBroker,SpanIndexType spanIdx);
+   CInplaceSpanLengthEditEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker,SpanIndexType spanIdx);
 
 protected:
    virtual void Handle_OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);

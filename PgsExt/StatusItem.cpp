@@ -23,32 +23,30 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\StatusItem.h>
 
-#include <IFace\Project.h>
+#include "resource.h"
+
+#include <IFace/Tools.h>
 #include <IFace\EditByUI.h>
-#include <IFace\StatusCenter.h>
+#include <IFace/Project.h>
 #include <EAF\EAFTransactions.h>
-#include <EAF\EAFUtilities.h>
 
 #include "RefinedAnalysisOptionsDlg.h"
 #include "BoundaryConditionDlg.h"
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <psgLib/LibraryManager.h>
+#include <psgLib/SpecLibraryEntry.h>
+
 #include <PgsExt\EditBridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 pgsRefinedAnalysisStatusItem::pgsRefinedAnalysisStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsRefinedAnalysisStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsRefinedAnalysisStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsRefinedAnalysisStatusItem* other = dynamic_cast<pgsRefinedAnalysisStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsRefinedAnalysisStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -58,20 +56,19 @@ bool pgsRefinedAnalysisStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsRefinedAnalysisStatusCallback::pgsRefinedAnalysisStatusCallback(IBroker* pBroker):
-m_pBroker(pBroker)
+pgsRefinedAnalysisStatusCallback::pgsRefinedAnalysisStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsRefinedAnalysisStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsRefinedAnalysisStatusCallback::GetSeverity() const
 {
-   return eafTypes::statusError;
+   return WBFL::EAF::StatusSeverityType::Error;
 }
 
-void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsRefinedAnalysisStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   pgsRefinedAnalysisStatusItem* pItem = dynamic_cast<pgsRefinedAnalysisStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsRefinedAnalysisStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    CRefinedAnalysisOptionsDlg dlg;
@@ -80,7 +77,8 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    if ( dlg.DoModal() == IDOK )
    {
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      auto broker = EAFGetBroker();
+      GET_IFACE2(broker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
       pgsTypes::DistributionFactorMethod method;
@@ -109,7 +107,7 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
       case CRefinedAnalysisOptionsDlg::lldfDefault:
          {
-         GET_IFACE(ILiveLoads,pLiveLoads);
+         GET_IFACE2(broker,ILiveLoads,pLiveLoads);
          method = pBridgeDesc->GetDistributionFactorMethod();
          roaAction = pLiveLoads->GetRangeOfApplicabilityAction();
          }
@@ -119,7 +117,7 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
          ATLASSERT(false); // is there a new choice???
       }
 
-      GET_IFACE(IEditByUI,pEdit);
+      GET_IFACE2(broker,IEditByUI,pEdit);
       pEdit->EditLiveLoadDistributionFactors(method,roaAction);
    }
 }
@@ -127,13 +125,13 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 ////////////////
 
 pgsInstallationErrorStatusItem::pgsInstallationErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strComponent,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_Component(strComponent)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription), m_Component(strComponent)
 {
 }
 
-bool pgsInstallationErrorStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsInstallationErrorStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsInstallationErrorStatusItem* other = dynamic_cast<pgsInstallationErrorStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsInstallationErrorStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -152,18 +150,18 @@ pgsInstallationErrorStatusCallback::pgsInstallationErrorStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsInstallationErrorStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsInstallationErrorStatusCallback::GetSeverity() const
 {
-   return eafTypes::statusError;
+   return WBFL::EAF::StatusSeverityType::Error;
 }
 
-void pgsInstallationErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsInstallationErrorStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
-   pgsInstallationErrorStatusItem* pItem = dynamic_cast<pgsInstallationErrorStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsInstallationErrorStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    CString msg;
-   msg.Format(_T("The software was not successfully installed or has become damanged.\n\n%s could not be created.\n\nPlease re-install the software."),pItem->m_Component.c_str());
+   msg.Format(_T("The software was not successfully installed or has become damaged.\n\n%s could not be created.\n\nPlease re-install the software."),pItem->m_Component.c_str());
    AfxMessageBox(msg,MB_OK | MB_ICONEXCLAMATION);
 }
 
@@ -171,13 +169,13 @@ void pgsInstallationErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 ////////////////
 
 pgsUnknownErrorStatusItem::pgsUnknownErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strFile,long line,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_File(strFile), m_Line(line)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription), m_File(strFile), m_Line(line)
 {
 }
 
-bool pgsUnknownErrorStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsUnknownErrorStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsUnknownErrorStatusItem* other = dynamic_cast<pgsUnknownErrorStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsUnknownErrorStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -201,27 +199,27 @@ pgsUnknownErrorStatusCallback::pgsUnknownErrorStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsUnknownErrorStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsUnknownErrorStatusCallback::GetSeverity() const
 {
-   return eafTypes::statusError;
+   return WBFL::EAF::StatusSeverityType::Error;
 }
 
-void pgsUnknownErrorStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsUnknownErrorStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   pgsUnknownErrorStatusItem* pItem = dynamic_cast<pgsUnknownErrorStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsUnknownErrorStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    CString msg;
-   msg.Format(_T("An unspecified error occured at %s, Line %d"),pItem->m_File.c_str(),pItem->m_Line);
+   msg.Format(_T("An unspecified error occurred at %s, Line %d"),pItem->m_File.c_str(),pItem->m_Line);
    AfxMessageBox(msg,MB_OK | MB_ICONEXCLAMATION);
 }
 
 ////////////////
 
 pgsInformationalStatusItem::pgsInformationalStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
@@ -229,9 +227,9 @@ pgsInformationalStatusItem::~pgsInformationalStatusItem()
 {
 }
 
-bool pgsInformationalStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsInformationalStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsInformationalStatusItem* other = dynamic_cast<pgsInformationalStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsInformationalStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -241,17 +239,17 @@ bool pgsInformationalStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsInformationalStatusCallback::pgsInformationalStatusCallback(eafTypes::StatusSeverityType severity,UINT helpID):
+pgsInformationalStatusCallback::pgsInformationalStatusCallback(WBFL::EAF::StatusSeverityType severity,UINT helpID):
 m_Severity(severity), m_HelpID(helpID)
 {
 }
 
-eafTypes::StatusSeverityType pgsInformationalStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsInformationalStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsInformationalStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    EAFShowStatusMessage(pStatusItem,m_Severity,FALSE,FALSE,AfxGetAppName(),m_HelpID);
@@ -261,13 +259,13 @@ void pgsInformationalStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 ////////////////
 
 pgsProjectCriteriaStatusItem::pgsProjectCriteriaStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsProjectCriteriaStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsProjectCriteriaStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsProjectCriteriaStatusItem* other = dynamic_cast<pgsProjectCriteriaStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsProjectCriteriaStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -282,18 +280,17 @@ bool pgsProjectCriteriaStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsProjectCriteriaStatusCallback::pgsProjectCriteriaStatusCallback(IBroker* pBroker):
-m_pBroker(pBroker)
+pgsProjectCriteriaStatusCallback::pgsProjectCriteriaStatusCallback()
 {
    m_HelpID = 0;
 }
 
-eafTypes::StatusSeverityType pgsProjectCriteriaStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsProjectCriteriaStatusCallback::GetSeverity() const
 {
-   return eafTypes::statusError;
+   return WBFL::EAF::StatusSeverityType::Error;
 }
 
-void pgsProjectCriteriaStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsProjectCriteriaStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -301,10 +298,10 @@ void pgsProjectCriteriaStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    //ATLASSERT(pItem!=nullptr);
 
    std::_tstring msg = pStatusItem->GetDescription();
-
-   GET_IFACE(ISpecification,pSpec);
+   auto broker = EAFGetBroker();
+   GET_IFACE2(broker,ISpecification,pSpec);
    std::_tstring strSpec(pSpec->GetSpecification());
-   GET_IFACE(ILibrary,pLib);
+   GET_IFACE2(broker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(strSpec.c_str());
    if ( pSpecEntry->IsEditingEnabled() )
    {
@@ -316,7 +313,7 @@ void pgsProjectCriteriaStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       msg += _T("\r\n\r\nWould you like to select a different Project Criteria?");
       if ( AfxMessageBox(msg.c_str(),MB_YESNO | MB_ICONQUESTION) == IDYES )
       {
-         GET_IFACE(IEditByUI,pEdit);
+         GET_IFACE2(broker,IEditByUI,pEdit);
          pEdit->SelectProjectCriteria();
       }
    }
@@ -329,9 +326,9 @@ pgsSegmentRelatedStatusItem(statusGroupID,callbackID,strDescription,segmentKey),
 {
 }
 
-bool pgsGirderDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsGirderDescriptionStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsGirderDescriptionStatusItem* other = dynamic_cast<pgsGirderDescriptionStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsGirderDescriptionStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -356,19 +353,19 @@ bool pgsGirderDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsGirderDescriptionStatusCallback::pgsGirderDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker), m_Severity(severity)
+pgsGirderDescriptionStatusCallback::pgsGirderDescriptionStatusCallback(WBFL::EAF::StatusSeverityType severity):
+m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsGirderDescriptionStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsGirderDescriptionStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
-   pgsGirderDescriptionStatusItem* pItem = dynamic_cast<pgsGirderDescriptionStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsGirderDescriptionStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    CString strMessage;
@@ -377,13 +374,14 @@ void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    if ( result == IDYES )
    {
-      GET_IFACE(IEditByUI,pEdit);
+      auto broker = EAFGetBroker();
+      GET_IFACE2(broker,IEditByUI,pEdit);
 
       if (pItem->m_SegmentKey.segmentIndex == INVALID_INDEX ? pEdit->EditGirderDescription(pItem->m_SegmentKey, pItem->m_Page) : pEdit->EditSegmentDescription(pItem->m_SegmentKey, pItem->m_Page))
       {
          // assume that edit took care of status
          StatusItemIDType id = pItem->GetID();
-         GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         GET_IFACE2(broker,IEAFStatusCenter, pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }
@@ -392,13 +390,13 @@ void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 ////////////////
 
 pgsStructuralAnalysisTypeStatusItem::pgsStructuralAnalysisTypeStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsStructuralAnalysisTypeStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsStructuralAnalysisTypeStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsStructuralAnalysisTypeStatusItem* other = dynamic_cast<pgsStructuralAnalysisTypeStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsStructuralAnalysisTypeStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -413,24 +411,24 @@ pgsStructuralAnalysisTypeStatusCallback::pgsStructuralAnalysisTypeStatusCallback
 {
 }
 
-eafTypes::StatusSeverityType pgsStructuralAnalysisTypeStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsStructuralAnalysisTypeStatusCallback::GetSeverity() const
 {
-   return eafTypes::statusWarning;
+   return WBFL::EAF::StatusSeverityType::Warning;
 }
 
-void pgsStructuralAnalysisTypeStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsStructuralAnalysisTypeStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    AfxMessageBox(pStatusItem->GetDescription(),MB_OK);
 }
 
 pgsBridgeDescriptionStatusItem::pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,pgsBridgeDescriptionStatusItem::IssueType issueType,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_IssueType(issueType)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription), m_IssueType(issueType)
 {
 }
 
-bool pgsBridgeDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsBridgeDescriptionStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsBridgeDescriptionStatusItem* other = dynamic_cast<pgsBridgeDescriptionStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsBridgeDescriptionStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -450,19 +448,19 @@ bool pgsBridgeDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsBridgeDescriptionStatusCallback::pgsBridgeDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker), m_Severity(severity)
+pgsBridgeDescriptionStatusCallback::pgsBridgeDescriptionStatusCallback(WBFL::EAF::StatusSeverityType severity):
+m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsBridgeDescriptionStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsBridgeDescriptionStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsBridgeDescriptionStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
-   pgsBridgeDescriptionStatusItem* pItem = dynamic_cast<pgsBridgeDescriptionStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsBridgeDescriptionStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    long dlgPage;
@@ -488,9 +486,11 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       dlgPage = -1;
    }
 
+   auto broker = EAFGetBroker();
+
    if (0 <= dlgPage)
    {
-      GET_IFACE(IEditByUI,pEdit);
+      GET_IFACE2(broker,IEditByUI,pEdit);
       pEdit->EditBridgeDescription(dlgPage);
    }
    else
@@ -501,7 +501,7 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
          dlg.m_PierIdx = 1;
          if ( dlg.DoModal() == IDOK )
          {
-            GET_IFACE(IBridgeDescription,pBridgeDesc);
+            GET_IFACE2(broker,IBridgeDescription,pBridgeDesc);
             CBridgeDescription2 bridge = *pBridgeDesc->GetBridgeDescription();
             CPierData2* pPier = bridge.GetPier(dlg.m_PierIdx);
 #pragma Reminder("REVIEW: is this only for boundary piers?") // should InteriorPiers be included too?
@@ -518,7 +518,7 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
             std::unique_ptr<txnEditBridge> pTxn(std::make_unique<txnEditBridge>(*pBridgeDesc->GetBridgeDescription(), bridge));
 
-            GET_IFACE(IEAFTransactions,pTransactions);
+            GET_IFACE2(broker,IEAFTransactions,pTransactions);
             pTransactions->Execute(std::move(pTxn));
          }
       }
@@ -526,40 +526,40 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       {
          // Show status item in larger area so we can see it.
          AFX_MANAGE_STATE(AfxGetStaticModuleState());
-         eafTypes::StatusItemDisplayReturn retval = EAFShowStatusMessage(pItem,m_Severity,FALSE,TRUE,AfxGetAppName(),NULL);
+         auto retval = EAFShowStatusMessage(pItem,m_Severity,FALSE,TRUE,AfxGetAppName(),NULL);
 
          bool didEdit(false);
-         if (retval == eafTypes::eafsiEdit)
+         if (retval == WBFL::EAF::StatusItemDisplayReturn::Edit)
          {
-            GET_IFACE(IEditByUI, pEdit);
+            GET_IFACE2(broker,IEditByUI, pEdit);
             didEdit = pEdit->EditBearings();
          }
 
-         if (retval == eafTypes::eafsiRemove || didEdit)
+         if (retval == WBFL::EAF::StatusItemDisplayReturn::Remove || didEdit)
          {
             // assume that edit took care of status
             StatusItemIDType id = pItem->GetID();
-            GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
             pStatusCenter->RemoveByID(id);
          }
       }
       else if (pItem->m_IssueType == pgsBridgeDescriptionStatusItem::DeckCasting)
       {
          AFX_MANAGE_STATE(AfxGetStaticModuleState());
-         eafTypes::StatusItemDisplayReturn retval = EAFShowStatusMessage(pItem, m_Severity, FALSE, TRUE, AfxGetAppName(), NULL);
+         auto retval = EAFShowStatusMessage(pItem, m_Severity, FALSE, TRUE, AfxGetAppName(), NULL);
 
          bool didEdit(false);
-         if (retval == eafTypes::eafsiEdit)
+         if (retval == WBFL::EAF::StatusItemDisplayReturn::Edit)
          {
-            GET_IFACE(IEditByUI, pEdit);
+            GET_IFACE2(broker,IEditByUI, pEdit);
             didEdit = pEdit->EditCastDeckActivity();
          }
 
-         if (retval == eafTypes::eafsiRemove || didEdit)
+         if (retval == WBFL::EAF::StatusItemDisplayReturn::Remove || didEdit)
          {
             // assume that edit took care of status
             StatusItemIDType id = pItem->GetID();
-            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            GET_IFACE2(broker,IEAFStatusCenter, pStatusCenter);
             pStatusCenter->RemoveByID(id);
          }
       }
@@ -572,13 +572,13 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////////////////////////////////////////
 pgsLldfWarningStatusItem::pgsLldfWarningStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsLldfWarningStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsLldfWarningStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsLldfWarningStatusItem* other = dynamic_cast<pgsLldfWarningStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsLldfWarningStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -588,43 +588,43 @@ bool pgsLldfWarningStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsLldfWarningStatusCallback::pgsLldfWarningStatusCallback(IBroker* pBroker):
-m_pBroker(pBroker)
+pgsLldfWarningStatusCallback::pgsLldfWarningStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsLldfWarningStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsLldfWarningStatusCallback::GetSeverity() const
 {
-   return eafTypes::statusInformation;
+   return WBFL::EAF::StatusSeverityType::Information;
 }
 
-void pgsLldfWarningStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsLldfWarningStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
-   pgsLldfWarningStatusItem* pItem = dynamic_cast<pgsLldfWarningStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsLldfWarningStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
-   // Just go straight to main lldf  editing dialog
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   // Just go straight to main LLDF editing dialog
+   auto broker = EAFGetBroker();
+   GET_IFACE2(broker,ILiveLoads,pLiveLoads);
+   GET_IFACE2(broker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    pgsTypes::DistributionFactorMethod method = pBridgeDesc->GetDistributionFactorMethod();
    auto roaAction = pLiveLoads->GetRangeOfApplicabilityAction();
 
-   GET_IFACE(IEditByUI,pEdit);
+   GET_IFACE2(broker,IEditByUI,pEdit);
    pEdit->EditLiveLoadDistributionFactors(method,roaAction);
 }
 
 //////////////////////////////////////////////////////////
 pgsEffectiveFlangeWidthStatusItem::pgsEffectiveFlangeWidthStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsEffectiveFlangeWidthStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsEffectiveFlangeWidthStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
    // we only want one of these in the status center
-   pgsEffectiveFlangeWidthStatusItem* other = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsEffectiveFlangeWidthStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -634,36 +634,36 @@ bool pgsEffectiveFlangeWidthStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsEffectiveFlangeWidthStatusCallback::pgsEffectiveFlangeWidthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker),
+pgsEffectiveFlangeWidthStatusCallback::pgsEffectiveFlangeWidthStatusCallback(WBFL::EAF::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsEffectiveFlangeWidthStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsEffectiveFlangeWidthStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsEffectiveFlangeWidthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsEffectiveFlangeWidthStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
-   pgsEffectiveFlangeWidthStatusItem* pItem = dynamic_cast<pgsEffectiveFlangeWidthStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsEffectiveFlangeWidthStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    // Just go straight to main editing dialog
-   GET_IFACE(IEditByUI,pEdit);
+   auto broker = EAFGetBroker();
+   GET_IFACE2(broker,IEditByUI,pEdit);
    pEdit->EditEffectiveFlangeWidth();
 }
 
 
 pgsTimelineStatusItem::pgsTimelineStatusItem(StatusGroupIDType statusGroupID, StatusCallbackIDType callbackID, LPCTSTR strDescription) :
-   CEAFStatusItem(statusGroupID, callbackID, strDescription)
+   WBFL::EAF::StatusItem(statusGroupID, callbackID, strDescription)
 {
 }
 
-bool pgsTimelineStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsTimelineStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsTimelineStatusItem* other = dynamic_cast<pgsTimelineStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsTimelineStatusItem>(pOther);
    if (!other)
    {
       return false;
@@ -678,31 +678,32 @@ bool pgsTimelineStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsTimelineStatusCallback::pgsTimelineStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity) :
-   m_pBroker(pBroker), m_Severity(severity)
+pgsTimelineStatusCallback::pgsTimelineStatusCallback(WBFL::EAF::StatusSeverityType severity) :
+   m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsTimelineStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsTimelineStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsTimelineStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsTimelineStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
-   pgsTimelineStatusItem* pItem = dynamic_cast<pgsTimelineStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsTimelineStatusItem>(pStatusItem);
    ATLASSERT(pItem != nullptr);
 
    CString str(pItem->GetDescription());
    AfxMessageBox(str, MB_ICONEXCLAMATION);
 
-   GET_IFACE(IEditByUI, pEdit);
+   auto broker = EAFGetBroker();
+   GET_IFACE2(broker,IEditByUI, pEdit);
 
    if (pEdit->EditTimeline())
    {
       // assume that edit took care of status
       StatusItemIDType id = pItem->GetID();
-      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      GET_IFACE2(broker, IEAFStatusCenter, pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
 }
@@ -710,14 +711,14 @@ void pgsTimelineStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
 //////////////////////////////////////////////////////////
 pgsConnectionGeometryStatusItem::pgsConnectionGeometryStatusItem(StatusGroupIDType statusGroupID, StatusCallbackIDType callbackID, PierIndexType pierIdx, LPCTSTR strDescription) :
-   CEAFStatusItem(statusGroupID, callbackID, strDescription),
+   WBFL::EAF::StatusItem(statusGroupID, callbackID, strDescription),
    m_PierIdx(pierIdx)
 {
 }
 
-bool pgsConnectionGeometryStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsConnectionGeometryStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsConnectionGeometryStatusItem* other = dynamic_cast<pgsConnectionGeometryStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsConnectionGeometryStatusItem>(pOther);
    if (!other)
    {
       return false;
@@ -738,32 +739,33 @@ bool pgsConnectionGeometryStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 
-pgsConnectionGeometryStatusCallback::pgsConnectionGeometryStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity) :
-   m_pBroker(pBroker), m_Severity(severity)
+pgsConnectionGeometryStatusCallback::pgsConnectionGeometryStatusCallback(WBFL::EAF::StatusSeverityType severity) :
+   m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsConnectionGeometryStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsConnectionGeometryStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsConnectionGeometryStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsConnectionGeometryStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
-   pgsConnectionGeometryStatusItem* pItem = dynamic_cast<pgsConnectionGeometryStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsConnectionGeometryStatusItem>(pStatusItem);
    ATLASSERT(pItem != nullptr);
 
    CString str;
    str.Format(_T("%s"),pItem->GetDescription());
    AfxMessageBox(str, MB_ICONEXCLAMATION);
 
-   GET_IFACE(IEditByUI, pEdit);
+   auto broker = EAFGetBroker();
+   GET_IFACE2(broker,IEditByUI, pEdit);
 
    if (pEdit->EditPierDescription(pItem->m_PierIdx,EPD_CONNECTION))
    {
       // assume that edit took care of status
       StatusItemIDType id = pItem->GetID();
-      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      GET_IFACE2(broker, IEAFStatusCenter, pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
 }

@@ -88,11 +88,11 @@ private:
 
    void CreateDisplayLists();
    void UpdateDisplayObjects();
-   void BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey);
-   void BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey);
-   void BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey);
-   void BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey);
-   void BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey);
+   void BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey);
+   void BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey);
+   void BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey);
+   void BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey);
+   void BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey);
 
    bool m_bUpdateError;
    std::_tstring m_ErrorMsg;

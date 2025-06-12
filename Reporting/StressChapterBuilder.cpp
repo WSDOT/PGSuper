@@ -31,6 +31,8 @@
 #include <Reporting\PosttensionStressTable.h>
 #include <Reporting\LiveLoadDistributionFactorTable.h>
 
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
@@ -42,7 +44,7 @@
 #include <psgLib\SpecLibraryEntry.h>
 
 
-std::_tstring GetImage(IBroker* pBroker)
+std::_tstring GetImage(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    GET_IFACE2(pBroker, ISectionProperties, pSectProps);
    GET_IFACE2(pBroker, ILossParameters, pLosses);
@@ -113,17 +115,17 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -383,9 +385,4 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CStressChapterBuilder::Clone() const
-{
-   return std::make_unique<CStressChapterBuilder>(m_bDesign,m_bRating);
 }

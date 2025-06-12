@@ -28,7 +28,7 @@ class REPORTINGCLASS CCopyGirderPropertiesReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CCopyGirderPropertiesReportSpecification(const std::_tstring& strReportName, IBroker* pBroker);
+   CCopyGirderPropertiesReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CCopyGirderPropertiesReportSpecification(void);
 
    virtual bool IsValid() const override;

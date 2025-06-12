@@ -84,9 +84,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="AnalysisAgent.def" />
-    <None Include="AnalysisAgent.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

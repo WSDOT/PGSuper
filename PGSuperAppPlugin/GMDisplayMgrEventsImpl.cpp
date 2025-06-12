@@ -28,7 +28,7 @@
 #include "PGSuperApp.h"
 #include "GMDisplayMgrEventsImpl.h"
 #include "GirderModelChildFrame.h"
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <IFace\EditByUI.h>
 #include "PGSpliceDoc.h"
 
@@ -107,7 +107,7 @@ bool CGMDisplayMgrEventsImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDispl
    CDisplayView* pView = pDisplayMgr->GetView();
    CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
-   CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+   auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_GIRDER_CTX,nullptr);
 
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
@@ -116,7 +116,7 @@ bool CGMDisplayMgrEventsImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDispl
       CString strDesignGirder;
       pMenu->GetMenuString(ID_GIRDERVIEW_DESIGNGIRDERDIRECT,strDesignGirder,MF_BYCOMMAND);
       UINT nPos = pMenu->FindMenuItem(strDesignGirder);
-      pMenu->RemoveMenu(nPos-1,MF_BYPOSITION,nullptr); // remove the separater before "Design Girder"
+      pMenu->RemoveMenu(nPos-1,MF_BYPOSITION,nullptr); // remove the separator before "Design Girder"
       pMenu->RemoveMenu(ID_GIRDERVIEW_DESIGNGIRDERDIRECT,MF_BYCOMMAND,nullptr);
       pMenu->RemoveMenu(ID_GIRDERVIEW_DESIGNGIRDERDIRECTHOLDSLABOFFSET,MF_BYCOMMAND,nullptr);
 

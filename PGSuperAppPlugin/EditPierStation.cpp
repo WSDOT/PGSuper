@@ -23,13 +23,10 @@
 #include "stdafx.h"
 #include "PGSuperDoc.h"
 #include "EditPierStation.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditPierStation::txnEditPierStation(PierIndexType pierIdx,Float64 oldStation,Float64 newStation,pgsTypes::MovePierOption moveOption)
 {
@@ -54,7 +51,7 @@ void txnEditPierStation::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditPierStation::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditPierStation::CreateClone() const
 {
    return std::make_unique<txnEditPierStation>(m_PierIdx,m_Station[0],m_Station[1],m_MoveOption);
 }
@@ -78,8 +75,8 @@ bool txnEditPierStation::IsRepeatable() const
 
 void txnEditPierStation::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder to keep from fireing events until we are done

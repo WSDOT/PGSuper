@@ -194,7 +194,7 @@
     <ClCompile Include="BearingDesignEngineer.cpp" />
     <ClCompile Include="Designer2.cpp" />
     <ClCompile Include="DevelopmentLengthEngineer.cpp" />
-    <ClCompile Include="EngAgent.cpp" />
+    <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="EngAgentImp.cpp" />
     <ClCompile Include="GirderHandlingChecker.cpp" />
     <ClCompile Include="GirderLiftingChecker.cpp" />
@@ -218,7 +218,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="EngAgent.def" />
-    <None Include="EngAgent.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngAgent.rc" />
@@ -259,9 +258,14 @@
     <ClInclude Include="WsDOTGirderHaulingChecker.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Beams\Beams.vcxproj">
+      <Project>{3dbe87d2-ceed-457b-b345-7748084d947d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Reporting\Reporting.vcxproj">
+      <Project>{4a38b3b0-7c87-40e8-bf6a-9d1b4051ff71}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

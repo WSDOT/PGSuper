@@ -20,9 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_SPECAGENT_H_
-#define INCLUDED_ENGAGENT_H_
+#pragma once
 
+#include <IFace/Tools.h>
 
 #include <IFace/Limits.h>
 #include <IFace\TransverseReinforcementSpec.h>
@@ -30,5 +30,3 @@
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-
-#endif // INCLUDED_SPECAGENT_H_

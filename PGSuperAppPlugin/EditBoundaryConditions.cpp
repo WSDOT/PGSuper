@@ -23,13 +23,10 @@
 #include "stdafx.h"
 #include "EditBoundaryConditions.h"
 #include "PGSuperApp.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::BoundaryConditionType oldBC,pgsTypes::BoundaryConditionType newBC)
 {
@@ -78,7 +75,7 @@ std::_tstring txnEditBoundaryConditions::Name() const
    return _T("Change Boundary Conditions");
 }
 
-std::unique_ptr<CEAFTransaction> txnEditBoundaryConditions::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditBoundaryConditions::CreateClone() const
 {
    if (m_bIsPier)
    {
@@ -118,8 +115,8 @@ void txnEditBoundaryConditions::Undo()
 
 bool txnEditBoundaryConditions::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder to keep from fireing events until we are done

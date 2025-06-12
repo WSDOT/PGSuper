@@ -25,7 +25,6 @@
 #include <DManip/DisplayObjectEvents.h>
 #include <DManip/DropSite.h>
 
-interface IBroker;
 class CBridgeModelViewChildFrame;
 
 class CAlignmentDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents, public WBFL::DManip::iDropSite
@@ -38,7 +37,7 @@ public:
       Alignment
    } ViewType;
 
-   CAlignmentDisplayObjectEvents(IBroker* pDoc, CBridgeModelViewChildFrame* pFrame,ViewType viewType,std::shared_ptr<WBFL::DManip::iDisplayObject> pDO = nullptr);
+   CAlignmentDisplayObjectEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,ViewType viewType,std::shared_ptr<WBFL::DManip::iDisplayObject> pDO = nullptr);
    ~CAlignmentDisplayObjectEvents();
 
    virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
@@ -66,7 +65,7 @@ public:
 
 private:
    ViewType m_ViewType;
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
    std::weak_ptr<WBFL::DManip::iDisplayObject> m_DispObj;
 

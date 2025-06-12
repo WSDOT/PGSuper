@@ -29,14 +29,12 @@
 #include "TogaSectionCutDlgEx.h"
 #include <ostream>
 #include <MfcTools\CustomDDx.h>
+
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CTogaSectionCutDlgEx dialog
@@ -81,8 +79,7 @@ void CTogaSectionCutDlgEx::SetBounds(Float64 lowerBound, Float64 upperBound)
 
 void CTogaSectionCutDlgEx::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	CDialog::DoDataExchange(pDX);

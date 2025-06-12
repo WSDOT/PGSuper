@@ -22,9 +22,9 @@
 
 #pragma once
 
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 
-class txnEditConstructionLoad : public CEAFTransaction
+class txnEditConstructionLoad : public WBFL::EAF::Transaction
 {
 public:
    txnEditConstructionLoad(Float64 oldLoad,Float64 newLoad);
@@ -33,7 +33,7 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const;
    virtual bool IsRepeatable() const;

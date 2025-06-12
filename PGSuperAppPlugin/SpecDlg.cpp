@@ -27,17 +27,15 @@
 #include "PGSuperApp.h"
 #include "SpecDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDocument.h>
 
 #include <psgLib/HaunchCriteria.h>
+#include <psglib/PrestressLossCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecDlg dialog
@@ -62,8 +60,8 @@ void CSpecDlg::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
       GET_IFACE2(pBroker, IDocumentType, pDocType);
       bool bIsPGSplice = pDocType->IsPGSpliceDocument();
@@ -108,8 +106,8 @@ BOOL CSpecDlg::OnInitDialog()
    CComboBox* pBox = (CComboBox*)GetDlgItem( IDC_SPEC );
    ASSERT( pBox );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker, ILibraryNames, pLibNames );
 

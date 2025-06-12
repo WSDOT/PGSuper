@@ -23,9 +23,9 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\StrandData.h>
-#include <PgsExt\ShearData.h>
-#include <PgsExt\PrecastSegmentData.h>
+#include <PsgLib/StrandData.h>
+#include <PsgLib/ShearData.h>
+#include <PsgLib/PrecastSegmentData.h>
 #include <IFace\Bridge.h>
 
 // Various utility functions that operate on CONFIG objects in PGSuperTypes.h
@@ -36,8 +36,8 @@
 
 // convert config fill to compacted CDirectStrandFillCollection
 CDirectStrandFillCollection PGSEXTFUNC ConvertConfigToDirectStrandFill(const ConfigStrandFillVector& rconfigfil);
-ConfigStrandFillVector PGSEXTFUNC ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, LPCTSTR strGirderName, const CDirectStrandFillCollection& coll);
-ConfigStrandFillVector PGSEXTFUNC ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, const CSegmentKey& segmentKey, const CDirectStrandFillCollection& coll);
+ConfigStrandFillVector PGSEXTFUNC ConvertDirectToConfigFill(std::shared_ptr<IStrandGeometry> pStrandGeometry, pgsTypes::StrandType type, LPCTSTR strGirderName, const CDirectStrandFillCollection& coll);
+ConfigStrandFillVector PGSEXTFUNC ConvertDirectToConfigFill(std::shared_ptr<IStrandGeometry> pStrandGeometry, pgsTypes::StrandType type, const CSegmentKey& segmentKey, const CDirectStrandFillCollection& coll);
 
 // mean/lean compute class for computing strand ordering information
 class PGSEXTCLASS ConfigStrandFillTool
@@ -205,7 +205,7 @@ bool PGSEXTFUNC DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config);
 
 
 // Some other utilities for dealing with strands. Perhaps we should have called this file strandutil.h
-inline ConfigStrandFillVector ComputeHarpedStrandFillVector(const CSegmentKey& segmentKey,const CPrecastSegmentData& segmentData, IStrandGeometry* pStrandGeometry)
+inline ConfigStrandFillVector ComputeHarpedStrandFillVector(const CSegmentKey& segmentKey,const CPrecastSegmentData& segmentData, std::shared_ptr<IStrandGeometry> pStrandGeometry)
 {
    if (segmentData.Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection )
    {
@@ -224,7 +224,7 @@ inline ConfigStrandFillVector ComputeHarpedStrandFillVector(const CSegmentKey& s
    }
 }
 
-inline void DealWithLegacyEndHarpedStrandAdjustment(const CSegmentKey& segmentKey,CPrecastSegmentData& segmentData, IStrandGeometry* pStrandGeometry)
+inline void DealWithLegacyEndHarpedStrandAdjustment(const CSegmentKey& segmentKey,CPrecastSegmentData& segmentData, std::shared_ptr<IStrandGeometry> pStrandGeometry)
 {
    // New girder types are given legacy status so we must modify data here
    if(segmentData.Strands.GetHarpStrandOffsetMeasurementAtEnd() == hsoLEGACY)
@@ -251,7 +251,7 @@ inline void DealWithLegacyEndHarpedStrandAdjustment(const CSegmentKey& segmentKe
    }
 }
 
-inline void DealWithLegacyHpHarpedStrandAdjustment(const CSegmentKey& segmentKey,CPrecastSegmentData& segmentData, IStrandGeometry* pStrandGeometry)
+inline void DealWithLegacyHpHarpedStrandAdjustment(const CSegmentKey& segmentKey,CPrecastSegmentData& segmentData, std::shared_ptr<IStrandGeometry> pStrandGeometry)
 {
    // New girder types are given legacy status so we must modify data here for UI
    if(segmentData.Strands.GetHarpStrandOffsetMeasurementAtHarpPoint() == hsoLEGACY)
@@ -278,7 +278,7 @@ inline void DealWithLegacyHpHarpedStrandAdjustment(const CSegmentKey& segmentKey
    }
 }
 
-inline void DealWithLegacyHarpedStrandAdjustment(const CSegmentKey& segmentKey,CPrecastSegmentData& segmentData, IStrandGeometry* pStrandGeometry)
+inline void DealWithLegacyHarpedStrandAdjustment(const CSegmentKey& segmentKey,CPrecastSegmentData& segmentData, std::shared_ptr<IStrandGeometry> pStrandGeometry)
 {
    DealWithLegacyEndHarpedStrandAdjustment(segmentKey,segmentData, pStrandGeometry);
    DealWithLegacyHpHarpedStrandAdjustment(segmentKey,segmentData, pStrandGeometry);

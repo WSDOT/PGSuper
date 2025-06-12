@@ -33,6 +33,7 @@
 #include "PGSuperColors.h"
 #include "GirderModelElevationView.h"
 #include "GirderModelChildFrame.h"
+
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DrawBridgeSettings.h>
@@ -41,9 +42,10 @@
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include "SupportDrawStrategyImpl.h"
 #include "TemporarySupportDrawStrategyImpl.h"
@@ -344,8 +346,8 @@ void CGirderModelElevationView::UpdateDisplayObjects()
    EventIndexType eventIdx = m_pFrame->GetEvent();
 
    // Grab hold of the broker so we can pass it as a parameter
-   CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   
+   auto pBroker = pDoc->GetBroker();
 
    UINT settings = pDoc->GetGirderEditorSettings();
    
@@ -581,8 +583,8 @@ void CGirderModelElevationView::OnViewSettings()
 
 void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 groupOffset,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,std::shared_ptr<WBFL::DManip::iDisplayList> pDL)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
@@ -764,8 +766,8 @@ void CGirderModelElevationView::CreateIntermediatePierDisplayObject(Float64 grou
       return; // no intermediate pier
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -858,8 +860,8 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
             continue; // temp support does not exist in this event
          }
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         
+         auto pBroker = EAFGetBroker();
          GET_IFACE2(pBroker,ISectionProperties,pSectProp);
          GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -887,7 +889,7 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
    }
 }
 
-void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey,EventIndexType eventIdx)
+void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,EventIndexType eventIdx)
 {
    auto pDL = m_pDispMgr->FindDisplayList(SUPPORT_LIST);
    ATLASSERT(pDL);
@@ -938,7 +940,7 @@ void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSDocBase* pDoc, IB
    } // group loop
 }
 
-void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx)
+void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx)
 {
    auto pSupportDisplayList = m_pDispMgr->FindDisplayList(SUPPORT_LIST);
    ATLASSERT(pSupportDisplayList);
@@ -1000,7 +1002,7 @@ void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSDocBase* pDoc,
    }
 }
 
-void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
+void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
    // get the display list and clear out any old display objects
    auto pDL = m_pDispMgr->FindDisplayList(GDR_LIST);
@@ -1095,7 +1097,7 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,IBr
    } // group loop
 }
 
-void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
+void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
    // get the display list and clear out any old display objects
    auto pDL = m_pDispMgr->FindDisplayList(CP_LIST);
@@ -1184,7 +1186,7 @@ void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDo
    } // group loop
 }
 
-void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
+void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
    auto pDL = m_pDispMgr->FindDisplayList(STRAND_LIST);
    ATLASSERT(pDL);
@@ -1333,7 +1335,7 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
    } // end of group loop
 }
 
-void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
+void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
 #pragma Reminder("UPDATE: this shows the geometric centroid of the strand, need to show location of resultant PS force")
 
@@ -1427,7 +1429,7 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
    }
 }
 
-void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx)
+void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx)
 {
    auto pDL = m_pDispMgr->FindDisplayList(CG_LIST);
    ATLASSERT(pDL);
@@ -1536,7 +1538,7 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
    } // next group
 }
 
-void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
+void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
    auto pDL = m_pDispMgr->FindDisplayList(TENDON_LIST);
    ATLASSERT(pDL);
@@ -1673,7 +1675,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
    } // next group
 }
 
-void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
+void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
    auto pDL = m_pDispMgr->FindDisplayList(REBAR_LIST);
    ATLASSERT(pDL);
@@ -1792,7 +1794,7 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBro
    } // next group
 }
 
-template <class T> bool IsLoadApplicable(IBroker* pBroker,const T* pLoad,EventIndexType eventIdx,const CGirderKey& girderKey)
+template <class T> bool IsLoadApplicable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const T* pLoad,EventIndexType eventIdx,const CGirderKey& girderKey)
 {
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -1823,7 +1825,7 @@ template <class T> bool IsLoadApplicable(IBroker* pBroker,const T* pLoad,EventIn
    return bMatchSpan && bMatchGirder;
 }
 
-void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx, bool* casesExist)
+void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx, bool* casesExist)
 {
    auto pDL = m_pDispMgr->FindDisplayList(LOAD_LIST);
    ATLASSERT(pDL);
@@ -1932,8 +1934,8 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
             point_disp->SetPosition(point, false, false);
 
             // tool tip
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
+            
+            auto pBroker = EAFGetBroker();
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strMagnitude = FormatDimension(pLoad->m_Magnitude,pDisplayUnits->GetGeneralForceUnit(),true);
             CString strLocation  = FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit(),true);
@@ -1958,7 +1960,7 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
    }
 }
 
-void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx, bool* casesExist)
+void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx, bool* casesExist)
 {
    auto pDL = m_pDispMgr->FindDisplayList(LOAD_LIST);
    ATLASSERT(pDL);
@@ -2066,8 +2068,8 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
             point_disp->SetPosition(point, FALSE, FALSE);
 
             // tool tip
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
+            
+            auto pBroker = EAFGetBroker();
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strStartMagnitude = FormatDimension(pLoad->m_WStart,pDisplayUnits->GetForcePerLengthUnit(),true);
             CString strEndMagnitude   = FormatDimension(pLoad->m_WEnd,pDisplayUnits->GetForcePerLengthUnit(),true);
@@ -2095,7 +2097,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
    }
 }
 
-void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist)
+void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist)
 {
    auto pDL = m_pDispMgr->FindDisplayList(LOAD_LIST);
    ATLASSERT(pDL);
@@ -2206,8 +2208,8 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
             point_disp->SetPosition(point, FALSE, FALSE);
 
             // tool tip
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
+            
+            auto pBroker = EAFGetBroker();
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strMagnitude = FormatDimension(pLoad->m_Magnitude,pDisplayUnits->GetMomentUnit(),true);
             CString strLocation  = FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit(),true);
@@ -2230,7 +2232,7 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
    }
 }
 
-void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist)
+void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist)
 {
    if (casesExist[UserLoads::DC] || casesExist[UserLoads::DW] || casesExist[UserLoads::LL_IM])
    {
@@ -2283,7 +2285,7 @@ void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSDocBase* pDoc, IBr
    }
 }
 
-void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
+void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
    auto pDL = m_pDispMgr->FindDisplayList(DIMLINE_LIST);
    ATLASSERT(pDL);
@@ -2743,7 +2745,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
    }
 }
 
-void CGirderModelElevationView::BuildSectionCutDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
+void CGirderModelElevationView::BuildSectionCutDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
    auto factory = m_pDispMgr->GetDisplayObjectFactory(0);
 
@@ -2766,7 +2768,7 @@ void CGirderModelElevationView::BuildSectionCutDisplayObjects(CPGSDocBase* pDoc,
    pDL->AddDisplayObject(disp_obj);
 }
 
-void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey,EventIndexType eventIdx)
+void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,EventIndexType eventIdx)
 {
    auto pDL = m_pDispMgr->FindDisplayList(STIRRUP_LIST);
    ATLASSERT(pDL);
@@ -2969,7 +2971,7 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
    }
 }
 
-void CGirderModelElevationView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx)
+void CGirderModelElevationView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx)
 {
    auto pDL = m_pDispMgr->FindDisplayList(PROPERTIES_LIST);
    ATLASSERT(pDL);
@@ -3159,8 +3161,8 @@ std::shared_ptr<WBFL::DManip::DimensionLine> CGirderModelElevationView::BuildDim
    auto textBlock = WBFL::DManip::TextBlock::Create();
 
    // Format the dimension text
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strDimension = FormatDimension(dimension,pDisplayUnits->GetSpanLengthUnit());
 
@@ -3340,8 +3342,8 @@ CGirderKey CGirderModelElevationView::GetGirderKey()
 
 Float64 CGirderModelElevationView::GetSegmentStartLocation(const CSegmentKey& segmentKey)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IBridge,           pBridge);
 
@@ -3373,8 +3375,8 @@ Float64 CGirderModelElevationView::GetSegmentStartLocation(const CSegmentKey& se
 
 Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanKey& spanKey)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2_NOCHECK(pBroker,IBridge,           pBridge);
 
@@ -3410,7 +3412,7 @@ Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanKey& spanKey)
    return span_offset;
 }
 
-CString CGirderModelElevationView::GetSegmentTooltip(IBroker* pBroker, const CSegmentKey& segmentKey)
+CString CGirderModelElevationView::GetSegmentTooltip(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -3501,7 +3503,7 @@ CString CGirderModelElevationView::GetSegmentTooltip(IBroker* pBroker, const CSe
    return strMsg;
 }
 
-CString CGirderModelElevationView::GetClosureTooltip(IBroker* pBroker, const CClosureKey& closureKey)
+CString CGirderModelElevationView::GetClosureTooltip(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CClosureKey& closureKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -3530,7 +3532,7 @@ CString CGirderModelElevationView::GetClosureTooltip(IBroker* pBroker, const CCl
    return strMsg;
 }
 
-void CGirderModelElevationView::GetSpanRange(IBroker* pBroker,const CGirderKey& girderKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx)
+void CGirderModelElevationView::GetSpanRange(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType startPierIdx, endPierIdx;

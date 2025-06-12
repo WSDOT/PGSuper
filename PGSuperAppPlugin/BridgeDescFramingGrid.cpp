@@ -41,18 +41,16 @@
 #include "TemporarySupportDlg.h"
 
 #include <Units\Measure.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <CoordGeom\Station.h>
 
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 class CRowType : public CGXAbstractUserAttribute
 {
@@ -451,7 +449,7 @@ bool CBridgeDescFramingGrid::EnableRemoveTemporarySupportBtn()
    return true;
 }
 
-void CBridgeDescFramingGrid::GetTransactions(CEAFMacroTxn& macro)
+void CBridgeDescFramingGrid::GetTransactions(WBFL::EAF::MacroTxn& macro)
 {
    std::for_each(std::begin(m_PierTransactions), std::end(m_PierTransactions),
       [&macro](auto& txns)
@@ -603,8 +601,7 @@ CString CBridgeDescFramingGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 
 CPierData2* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
@@ -643,8 +640,7 @@ CPierData2* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
 
 CTemporarySupportData CBridgeDescFramingGrid::GetTemporarySupportRowData(ROWCOL nRow)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
@@ -755,8 +751,7 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData2* pPierData)
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
@@ -829,8 +824,7 @@ void CBridgeDescFramingGrid::FillTemporarySupportRow(ROWCOL row,const CTemporary
       );
 
    // station
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),pTSData->GetStation());
@@ -906,8 +900,7 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
@@ -1040,8 +1033,7 @@ void CBridgeDescFramingGrid::FillSpanColumn()
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
@@ -1254,8 +1246,7 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	if (nCol==1)
 	{
       // station
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       try
@@ -1276,9 +1267,8 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    }
 	else if (nCol==2)
 	{
-         // orientation
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      // orientation
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IValidate,pValidate);
       UINT result = pValidate->Orientation(s);
 
@@ -1339,8 +1329,7 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
             if (tsData.GetStation() <= pDlg->m_BridgeDesc.GetPier(0)->GetStation() || pDlg->m_BridgeDesc.GetPier(pDlg->m_BridgeDesc.GetPierCount() - 1)->GetStation() <= tsData.GetStation())
             {
                // new station is not on the bridge
-               CComPtr<IBroker> pBroker;
-               EAFGetBroker(&pBroker);
+               auto pBroker = EAFGetBroker();
                GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
                CString strStation = FormatStation(pDisplayUnits->GetStationFormat(), tsData.GetStation());
                m_sWarningText.Format(_T("Station %s is not on the bridge"), strStation);
@@ -1604,7 +1593,7 @@ SupportIndexType CBridgeDescFramingGrid::GetTemporarySupportIndex(ROWCOL nRow)
    return INVALID_INDEX;
 }
 
-void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,std::unique_ptr<CEAFTransaction>&& pTxn)
+void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,std::unique_ptr<WBFL::EAF::Transaction>&& pTxn)
 {
    if ( pTxn == nullptr )
    {
@@ -1614,13 +1603,13 @@ void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,std::uniq
    auto found(m_PierTransactions.find(pierIdx));
    if ( found == m_PierTransactions.end())
    {
-      m_PierTransactions.insert(std::make_pair(pierIdx,std::vector<std::unique_ptr<CEAFTransaction>>()));
+      m_PierTransactions.insert(std::make_pair(pierIdx,std::vector<std::unique_ptr<WBFL::EAF::Transaction>>()));
       found = m_PierTransactions.find(pierIdx);
    }
    found->second.emplace_back(std::move(pTxn));
 }
 
-void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx, std::unique_ptr<CEAFTransaction>&& pTxn)
+void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx, std::unique_ptr<WBFL::EAF::Transaction>&& pTxn)
 {
    if ( pTxn == nullptr )
    {
@@ -1630,13 +1619,13 @@ void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx, std::uni
    auto found(m_SpanTransactions.find(spanIdx));
    if ( found == m_SpanTransactions.end())
    {
-      m_SpanTransactions.insert(std::make_pair(spanIdx, std::vector<std::unique_ptr<CEAFTransaction>>()));
+      m_SpanTransactions.insert(std::make_pair(spanIdx, std::vector<std::unique_ptr<WBFL::EAF::Transaction>>()));
       found = m_SpanTransactions.find(spanIdx);
    }
    found->second.emplace_back(std::move(pTxn));
 }
 
-void CBridgeDescFramingGrid::SaveTemporarySupportTransaction(SupportIndexType tsIdx, std::unique_ptr<CEAFTransaction>&& pTxn)
+void CBridgeDescFramingGrid::SaveTemporarySupportTransaction(SupportIndexType tsIdx, std::unique_ptr<WBFL::EAF::Transaction>&& pTxn)
 {
    if ( pTxn == nullptr )
    {
@@ -1646,7 +1635,7 @@ void CBridgeDescFramingGrid::SaveTemporarySupportTransaction(SupportIndexType ts
    auto found(m_TempSupportTransactions.find(tsIdx));
    if ( found == m_TempSupportTransactions.end())
    {
-      m_TempSupportTransactions.insert(std::make_pair(tsIdx,std::vector<std::unique_ptr<CEAFTransaction>>()));
+      m_TempSupportTransactions.insert(std::make_pair(tsIdx,std::vector<std::unique_ptr<WBFL::EAF::Transaction>>()));
       found = m_TempSupportTransactions.find(tsIdx);
    }
    found->second.emplace_back(std::move(pTxn));

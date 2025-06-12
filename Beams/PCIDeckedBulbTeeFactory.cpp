@@ -22,11 +22,14 @@
 
 // PCIDeckedBulbTeeFactory.cpp : Implementation of CPCIDeckedBulbTeeFactory
 #include "stdafx.h"
+#include "Beams.h"
+#include "resource.h"
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "PCIDeckedBulbTeeFactory.h"
-#include <IFace\DistFactorEngineer.h>
-#include <IFace\PsLossEngineer.h>
+#include <Beams\BulbTeeDistFactorEngineer.h>
+#include <Beams/TimeStepLossEngineer.h>
+#include <Beams/PsBeamLossEngineer.h>
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
 #include <sstream>
@@ -39,11 +42,12 @@
 #include <IFace\AgeAdjustedMaterial.h>
 
 #include <Beams\Helper.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderLabel.h>
 
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <PgsExt\StatusItem.h>
+#include <PgsExt/PoiMgr.h>
 
 #include <Beams\Interfaces.h>
 #include <Plugins\CLSID.h>
@@ -52,27 +56,24 @@
 
 #include <psgLib/SectionPropertiesCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
+#include <psgLib/GirderLibraryEntry.h>
+#include <psgLib/SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+using namespace PGS::Beams;
 
-/////////////////////////////////////////////////////////////////////////////
-// CPCIDeckedBulbTeeFactory
-HRESULT CPCIDeckedBulbTeeFactory::FinalConstruct()
+INIT_BEAM_FACTORY_SINGLETON(PCIDeckedBulbTeeFactory)
+
+PCIDeckedBulbTeeFactory::PCIDeckedBulbTeeFactory() : BeamFactory()
 {
    StatusGroupIDType m_StatusGroupID = INVALID_ID;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    // It's possible for the library editor to call this code. In that case there is no broker
    if (pBroker)
    {
       GET_IFACE2(pBroker, IEAFStatusCenter, pStatusCenter);
-      m_scidInformationalWarning     = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
+      m_scidInformationalWarning = pStatusCenter->RegisterCallback(std::make_shared<pgsInformationalStatusCallback>(WBFL::EAF::StatusSeverityType::Warning)); 
    }
    else
    {
@@ -174,11 +175,9 @@ HRESULT CPCIDeckedBulbTeeFactory::FinalConstruct()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmax
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmin
-
-   return S_OK;
 }
 
-void CPCIDeckedBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void PCIDeckedBulbTeeFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    m_StatusGroupID = statusID; // catch status group id here so we can use it later
 
@@ -243,7 +242,7 @@ void CPCIDeckedBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusItemID
    gdrSection.QueryInterface(ppSection);
 }
 
-void CPCIDeckedBulbTeeFactory::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
+void PCIDeckedBulbTeeFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<ISuperstructureMemberSegment> segment;
    segment.CoCreateInstance(CLSID_ThickenedFlangeBulbTeeSegment);
@@ -253,7 +252,7 @@ void CPCIDeckedBulbTeeFactory::CreateSegment(IBroker* pBroker,StatusItemIDType s
    segment.CopyTo(ppSegment);
 }
 
-void CPCIDeckedBulbTeeFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+void PCIDeckedBulbTeeFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
 {
    // Create basic beam shape from dimensions in girder library
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
@@ -306,7 +305,7 @@ void CPCIDeckedBulbTeeFactory::CreateSegmentShape(IBroker* pBroker, const CPreca
    beam.QueryInterface(ppShape);
 }
 
-Float64 CPCIDeckedBulbTeeFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 PCIDeckedBulbTeeFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -330,7 +329,7 @@ Float64 CPCIDeckedBulbTeeFactory::GetSegmentHeight(IBroker* pBroker, const CPrec
    //return H;
 }
 
-void CPCIDeckedBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+void PCIDeckedBulbTeeFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -423,7 +422,7 @@ void CPCIDeckedBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDTy
    //lj->put_JointThickness(tj);
 }
 
-void CPCIDeckedBulbTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
+void PCIDeckedBulbTeeFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
@@ -448,54 +447,32 @@ void CPCIDeckedBulbTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBro
    }
 }
 
-void CPCIDeckedBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType statusID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
+std::unique_ptr<DistFactorEngineer> PCIDeckedBulbTeeFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   CComPtr<IBulbTeeDistFactorEngineer> pEngineer;
-   HRESULT hr = ::CoCreateInstance(CLSID_BulbTeeDistFactorEngineer, nullptr, CLSCTX_ALL, IID_IBulbTeeDistFactorEngineer, (void**)&pEngineer);
-
-   pEngineer->Init();
-
-   CComQIPtr<IDistFactorEngineer, &IID_IDistFactorEngineer> pDFEng(pEngineer);
-   pDFEng->SetBroker(pBroker, statusID);
-
-   pDFEng.CopyTo(ppEng);
+   return std::make_unique<BulbTeeDistFactorEngineer>(pBroker, statusGroupID);
 }
 
-void CPCIDeckedBulbTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+std::unique_ptr<PsLossEngineerBase> PCIDeckedBulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
-      CComPtr<IPsLossEngineer> engineer;
-      HRESULT hr = ::CoCreateInstance(CLSID_TimeStepLossEngineer, nullptr, CLSCTX_ALL, IID_IPsLossEngineer, (void**)&engineer);
-      CComQIPtr<IInitialize, &IID_IInitialize> initEngineer(engineer);
-      initEngineer->SetBroker(pBroker, statusGroupID);
-      (*ppEng) = engineer;
-      (*ppEng)->AddRef();
+      return std::make_unique<TimeStepLossEngineer>(pBroker, statusGroupID);
    }
    else
    {
-      CComPtr<IPsBeamLossEngineer> engineer;
-      HRESULT hr = ::CoCreateInstance(CLSID_PsBeamLossEngineer, nullptr, CLSCTX_ALL, IID_IPsLossEngineer, (void**)&engineer);
-      ATLASSERT(SUCCEEDED(hr));
-      engineer->Init(IBeam);
-
-      CComQIPtr<IInitialize, &IID_IInitialize> initEngineer(engineer);
-      initEngineer->SetBroker(pBroker, statusGroupID);
-
-      (*ppEng) = engineer;
-      (*ppEng)->AddRef();
+      return std::make_unique<PsBeamLossEngineer>(PsBeamLossEngineer::BeamType::IBeam, pBroker, statusGroupID);
    }
 }
 
-void CPCIDeckedBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+void PCIDeckedBulbTeeFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+                                  BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    HRESULT hr = S_OK;
 
-   // set the shape for harped strand bounds - only in the thinest part of the web
+   // set the shape for harped strand bounds - only in the thinnest part of the web
    CComPtr<IRectangle> harp_rect;
    hr = harp_rect.CoCreateInstance(CLSID_Rect);
    ATLASSERT (SUCCEEDED(hr));
@@ -527,10 +504,10 @@ void CPCIDeckedBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions&
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - h : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - h : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - h : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - h : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == BeamFactory::BeamFace::Bottom ? hpTopLimit     - h : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == BeamFactory::BeamFace::Bottom ? hpBottomLimit  - h : -hpBottomLimit;
+   Float64 endtb = endTopFace    == BeamFactory::BeamFace::Bottom ? endTopLimit    - h : -endTopLimit;
+   Float64 endbb = endBottomFace == BeamFactory::BeamFace::Bottom ? endBottomLimit - h : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, h, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -539,22 +516,22 @@ void CPCIDeckedBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions&
    ATLASSERT (SUCCEEDED(hr));
 }
 
-const std::vector<std::_tstring>& CPCIDeckedBulbTeeFactory::GetDimensionNames() const
+const std::vector<std::_tstring>& PCIDeckedBulbTeeFactory::GetDimensionNames() const
 {
    return m_DimNames;
 }
 
-const std::vector<Float64>& CPCIDeckedBulbTeeFactory::GetDefaultDimensions() const
+const std::vector<Float64>& PCIDeckedBulbTeeFactory::GetDefaultDimensions() const
 {
    return m_DefaultDims;
 }
 
-const std::vector<const WBFL::Units::Length*>& CPCIDeckedBulbTeeFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& PCIDeckedBulbTeeFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CPCIDeckedBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
+bool PCIDeckedBulbTeeFactory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
 {
    Float64 c1;
    Float64 d1, d2, d3, d4, d5, d6, d7, d8, d9;
@@ -746,7 +723,7 @@ bool CPCIDeckedBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions
    return true;
 }
 
-void CPCIDeckedBulbTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void PCIDeckedBulbTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("PCIDeckedBulbTeeDimensions"),1.0);
    for( const auto& name : m_DimNames)
@@ -757,7 +734,7 @@ void CPCIDeckedBulbTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSa
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CPCIDeckedBulbTeeFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions PCIDeckedBulbTeeFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -769,7 +746,7 @@ IBeamFactory::Dimensions CPCIDeckedBulbTeeFactory::LoadSectionDimensions(WBFL::S
       parent_version = pLoad->GetVersion();
    }
    
-   IBeamFactory::Dimensions dimensions;
+   BeamFactory::Dimensions dimensions;
 
    if (14 <= parent_version && !pLoad->BeginUnit(_T("PCIDeckedBulbTeeDimensions")))
    {
@@ -796,15 +773,15 @@ IBeamFactory::Dimensions CPCIDeckedBulbTeeFactory::LoadSectionDimensions(WBFL::S
    return dimensions;
 }
 
-bool CPCIDeckedBulbTeeFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
+bool PCIDeckedBulbTeeFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    return true;
 }
 
-bool CPCIDeckedBulbTeeFactory::IsPrismatic(const CSegmentKey& segmentKey) const
+bool PCIDeckedBulbTeeFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
+
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -813,17 +790,17 @@ bool CPCIDeckedBulbTeeFactory::IsPrismatic(const CSegmentKey& segmentKey) const
    return IsPrismatic(pSegment);
 }
 
-bool CPCIDeckedBulbTeeFactory::IsSymmetric(const CSegmentKey& segmentKey) const
+bool PCIDeckedBulbTeeFactory::IsSymmetric(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-std::_tstring CPCIDeckedBulbTeeFactory::GetImage() const
+std::_tstring PCIDeckedBulbTeeFactory::GetImage() const
 {
    return std::_tstring(_T("PCIDeckedBulbTee.png"));
 }
 
-std::_tstring CPCIDeckedBulbTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring PCIDeckedBulbTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -846,7 +823,7 @@ std::_tstring CPCIDeckedBulbTeeFactory::GetSlabDimensionsImage(pgsTypes::Support
    return strImage;
 }
 
-std::_tstring CPCIDeckedBulbTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring PCIDeckedBulbTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -869,7 +846,7 @@ std::_tstring CPCIDeckedBulbTeeFactory::GetPositiveMomentCapacitySchematicImage(
    return strImage;
 }
 
-std::_tstring CPCIDeckedBulbTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring PCIDeckedBulbTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -892,7 +869,7 @@ std::_tstring CPCIDeckedBulbTeeFactory::GetNegativeMomentCapacitySchematicImage(
    return strImage;
 }
 
-std::_tstring CPCIDeckedBulbTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring PCIDeckedBulbTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -915,12 +892,12 @@ std::_tstring CPCIDeckedBulbTeeFactory::GetShearDimensionsSchematicImage(pgsType
    return strImage;
 }
 
-std::_tstring CPCIDeckedBulbTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring PCIDeckedBulbTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    return _T("BulbTee_Effective_Flange_Width_Interior_Girder.gif");
 }
 
-std::_tstring CPCIDeckedBulbTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring PCIDeckedBulbTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -938,60 +915,44 @@ std::_tstring CPCIDeckedBulbTeeFactory::GetExteriorGirderEffectiveFlangeWidthIma
    }
 }
 
-CLSID CPCIDeckedBulbTeeFactory::GetCLSID() const
+CLSID PCIDeckedBulbTeeFactory::GetCLSID() const
 {
    return CLSID_PCIDeckedBulbTeeFactory;
 }
 
-std::_tstring CPCIDeckedBulbTeeFactory::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
-CLSID CPCIDeckedBulbTeeFactory::GetFamilyCLSID() const
+CLSID PCIDeckedBulbTeeFactory::GetFamilyCLSID() const
 {
    return CLSID_DeckBulbTeeBeamFamily;
 }
 
-std::_tstring CPCIDeckedBulbTeeFactory::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
-std::_tstring CPCIDeckedBulbTeeFactory::GetPublisher() const
+std::_tstring PCIDeckedBulbTeeFactory::GetPublisher() const
 {
    return std::_tstring(_T("WSDOT"));
 }
 
-std::_tstring CPCIDeckedBulbTeeFactory::GetPublisherContactInformation() const
+std::_tstring PCIDeckedBulbTeeFactory::GetPublisherContactInformation() const
 {
    return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
-HINSTANCE CPCIDeckedBulbTeeFactory::GetResourceInstance() const
+HINSTANCE PCIDeckedBulbTeeFactory::GetResourceInstance() const
 {
    return _Module.GetResourceInstance();
 }
 
-LPCTSTR CPCIDeckedBulbTeeFactory::GetImageResourceName() const
+LPCTSTR PCIDeckedBulbTeeFactory::GetImageResourceName() const
 {
     return _T("PCIDECKEDBULBTEE");
 }
 
-HICON  CPCIDeckedBulbTeeFactory::GetIcon()  const
+HICON  PCIDeckedBulbTeeFactory::GetIcon()  const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_BULBTEE) );
 }
 
-void CPCIDeckedBulbTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions, Float64& w1,
+void PCIDeckedBulbTeeFactory::GetDimensions(const BeamFactory::Dimensions& dimensions, Float64& w1,
    Float64& w2, Float64& w3, Float64& w4, Float64& w5, Float64& d1, Float64& d2, Float64& d3, Float64& d4, Float64& d5, Float64& d6, Float64& d7, Float64& d8, Float64& d9,
    Float64& h, Float64& t, Float64& r1, Float64& r2, Float64& r3, Float64& c1, Float64& wmin, Float64& wmax) const
 {
@@ -1019,7 +980,7 @@ void CPCIDeckedBulbTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dim
     wmax = GetDimension(dimensions, _T("Wmax"));
 }
 
-Float64 CPCIDeckedBulbTeeFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const
+Float64 PCIDeckedBulbTeeFactory::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
    for ( const auto& dim : dimensions)
    {
@@ -1033,7 +994,7 @@ Float64 CPCIDeckedBulbTeeFactory::GetDimension(const IBeamFactory::Dimensions& d
    return -99999;
 }
 
-pgsTypes::SupportedBeamSpacings CPCIDeckedBulbTeeFactory::GetSupportedBeamSpacings() const
+pgsTypes::SupportedBeamSpacings PCIDeckedBulbTeeFactory::GetSupportedBeamSpacings() const
 {
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsUniformAdjacentWithTopWidth);
@@ -1041,14 +1002,14 @@ pgsTypes::SupportedBeamSpacings CPCIDeckedBulbTeeFactory::GetSupportedBeamSpacin
    return sbs;
 }
 
-bool CPCIDeckedBulbTeeFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
+bool PCIDeckedBulbTeeFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::SupportedBeamSpacings sbs = GetSupportedBeamSpacings();
    auto found = std::find(sbs.cbegin(), sbs.cend(),spacingType);
    return found == sbs.end() ? false : true;
 }
 
-bool CPCIDeckedBulbTeeFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool PCIDeckedBulbTeeFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    ATLASSERT(!IsSupportedBeamSpacing(spacingType));
    if (spacingType == pgsTypes::sbsUniform || spacingType == pgsTypes::sbsUniformAdjacent || spacingType == pgsTypes::sbsConstantAdjacent)
@@ -1073,7 +1034,7 @@ bool CPCIDeckedBulbTeeFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions
    return true;
 }
 
-pgsTypes::WorkPointLocations CPCIDeckedBulbTeeFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+pgsTypes::WorkPointLocations PCIDeckedBulbTeeFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::WorkPointLocations wpls;
    wpls.push_back(pgsTypes::wplTopGirder);
@@ -1082,14 +1043,14 @@ pgsTypes::WorkPointLocations CPCIDeckedBulbTeeFactory::GetSupportedWorkPointLoca
    return wpls;
 }
 
-bool CPCIDeckedBulbTeeFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+bool PCIDeckedBulbTeeFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
 {
    pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
    auto found = std::find(sbs.cbegin(), sbs.cend(),wpType);
    return found == sbs.end() ? false : true;
 }
 
-pgsTypes::SupportedDeckTypes CPCIDeckedBulbTeeFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
+pgsTypes::SupportedDeckTypes PCIDeckedBulbTeeFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
 {
    pgsTypes::SupportedDeckTypes sdt;
 
@@ -1110,23 +1071,23 @@ pgsTypes::SupportedDeckTypes CPCIDeckedBulbTeeFactory::GetSupportedDeckTypes(pgs
    return sdt;
 }
 
-std::vector<pgsTypes::GirderOrientationType> CPCIDeckedBulbTeeFactory::GetSupportedGirderOrientation() const
+std::vector<pgsTypes::GirderOrientationType> PCIDeckedBulbTeeFactory::GetSupportedGirderOrientation() const
 {
    std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb,pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal, pgsTypes::Balanced };
    return types;
 }
 
-bool CPCIDeckedBulbTeeFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+bool PCIDeckedBulbTeeFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return true;
 }
 
-pgsTypes::GirderOrientationType CPCIDeckedBulbTeeFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+pgsTypes::GirderOrientationType PCIDeckedBulbTeeFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return orientation;
 }
 
-pgsTypes::SupportedDiaphragmTypes CPCIDeckedBulbTeeFactory::GetSupportedDiaphragms() const
+pgsTypes::SupportedDiaphragmTypes PCIDeckedBulbTeeFactory::GetSupportedDiaphragms() const
 {
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
    diaphragmTypes.push_back(pgsTypes::dtPrecast);
@@ -1134,7 +1095,7 @@ pgsTypes::SupportedDiaphragmTypes CPCIDeckedBulbTeeFactory::GetSupportedDiaphrag
    return diaphragmTypes;
 }
 
-pgsTypes::SupportedDiaphragmLocationTypes CPCIDeckedBulbTeeFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
+pgsTypes::SupportedDiaphragmLocationTypes PCIDeckedBulbTeeFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
 {
    pgsTypes::SupportedDiaphragmLocationTypes locations;
    switch(type)
@@ -1151,7 +1112,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CPCIDeckedBulbTeeFactory::GetSupported
    return locations;
 }
 
-void CPCIDeckedBulbTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void PCIDeckedBulbTeeFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    // this is for joint spacing... effective want unrestrained joint spacing
    // need 0 for welded shear tab and grout key connection and a specific value for UHPC-type connections
@@ -1159,7 +1120,7 @@ void CPCIDeckedBulbTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dime
    *maxSpacing = MAX_GIRDER_SPACING;
 }
 
-std::vector<pgsTypes::TopWidthType> CPCIDeckedBulbTeeFactory::GetSupportedTopWidthTypes() const
+std::vector<pgsTypes::TopWidthType> PCIDeckedBulbTeeFactory::GetSupportedTopWidthTypes() const
 {
    //std::vector<pgsTypes::TopWidthType> types{ pgsTypes::twtSymmetric,pgsTypes::twtCenteredCG,pgsTypes::twtAsymmetric };
    std::vector<pgsTypes::TopWidthType> types{ pgsTypes::twtSymmetric };
@@ -1167,7 +1128,7 @@ std::vector<pgsTypes::TopWidthType> CPCIDeckedBulbTeeFactory::GetSupportedTopWid
    return types;
 }
 
-void CPCIDeckedBulbTeeFactory::GetAllowableTopWidthRange(pgsTypes::TopWidthType topWidthType, const IBeamFactory::Dimensions& dimensions, Float64* pWleftMin, Float64* pWleftMax, Float64* pWrightMin, Float64* pWrightMax) const
+void PCIDeckedBulbTeeFactory::GetAllowableTopWidthRange(pgsTypes::TopWidthType topWidthType, const BeamFactory::Dimensions& dimensions, Float64* pWleftMin, Float64* pWleftMax, Float64* pWrightMin, Float64* pWrightMax) const
 {
    Float64 Wmin = GetDimension(dimensions, _T("Wmin"));
    Float64 Wmax = GetDimension(dimensions, _T("Wmax"));
@@ -1188,22 +1149,22 @@ void CPCIDeckedBulbTeeFactory::GetAllowableTopWidthRange(pgsTypes::TopWidthType 
    }
 }
 
-WebIndexType CPCIDeckedBulbTeeFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
+WebIndexType PCIDeckedBulbTeeFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    return 1;
 }
 
-Float64 CPCIDeckedBulbTeeFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 PCIDeckedBulbTeeFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("H"));
 }
 
-Float64 CPCIDeckedBulbTeeFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 PCIDeckedBulbTeeFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("Wmax"));
 }
 
-void CPCIDeckedBulbTeeFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void PCIDeckedBulbTeeFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 Wmin = GetDimension(dimensions, _T("Wmin"));
 
@@ -1214,23 +1175,23 @@ void CPCIDeckedBulbTeeFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& d
    *pRightWidth = top;
 }
 
-bool CPCIDeckedBulbTeeFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool PCIDeckedBulbTeeFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CPCIDeckedBulbTeeFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void PCIDeckedBulbTeeFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
 }
 
-bool CPCIDeckedBulbTeeFactory::HasLongitudinalJoints() const
+bool PCIDeckedBulbTeeFactory::HasLongitudinalJoints() const
 {
    return true;
 }
 
-bool CPCIDeckedBulbTeeFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+bool PCIDeckedBulbTeeFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
 {
    if (deckType == pgsTypes::sdtCompositeCIP)
    {
@@ -1243,23 +1204,23 @@ bool CPCIDeckedBulbTeeFactory::IsLongitudinalJointStructural(pgsTypes::Supported
    }
 }
 
-bool CPCIDeckedBulbTeeFactory::HasTopFlangeThickening() const
+bool PCIDeckedBulbTeeFactory::HasTopFlangeThickening() const
 {
    return false;
 }
 
-bool CPCIDeckedBulbTeeFactory::CanPrecamber() const
+bool PCIDeckedBulbTeeFactory::CanPrecamber() const
 {
    return false;
 }
 
-GirderIndexType CPCIDeckedBulbTeeFactory::GetMinimumBeamCount() const
+GirderIndexType PCIDeckedBulbTeeFactory::GetMinimumBeamCount() const
 {
    return 2;
 }
 
 
-bool CPCIDeckedBulbTeeFactory::IsPrismatic(const CPrecastSegmentData* pSegment) const
+bool PCIDeckedBulbTeeFactory::IsPrismatic(const CPrecastSegmentData* pSegment) const
 {
     return true;
    //if (pSegment->TopFlangeThickeningType == pgsTypes::tftNone || IsZero(pSegment->TopFlangeThickening))
@@ -1270,7 +1231,7 @@ bool CPCIDeckedBulbTeeFactory::IsPrismatic(const CPrecastSegmentData* pSegment) 
    //return false;
 }
 
-void CPCIDeckedBulbTeeFactory::ConfigureBeamShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, IPCIDeckedIBeam* pBeam) const
+void PCIDeckedBulbTeeFactory::ConfigureBeamShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, IPCIDeckedIBeam* pBeam) const
 {
    //// pBeam is the basic section... figure out actual top width parameters
    //Float64 c2, n1, n2, left, right;
@@ -1282,7 +1243,7 @@ void CPCIDeckedBulbTeeFactory::ConfigureBeamShape(IBroker* pBroker, const CPreca
    //pBeam->put_W6(right);
 }
 
-void CPCIDeckedBulbTeeFactory::GetTopWidth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs,Float64* pLeft, Float64* pRight) const
+void PCIDeckedBulbTeeFactory::GetTopWidth(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs,Float64* pLeft, Float64* pRight) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
 
@@ -1317,7 +1278,7 @@ void CPCIDeckedBulbTeeFactory::GetTopWidth(IBroker* pBroker, const CPrecastSegme
    *pRight = ::LinInterp(Xs, rightStart, rightEnd, Ls);
 }
 //
-//void CPCIDeckedBulbTeeFactory::GetTopFlangeParameters(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64* pC, Float64* pN1, Float64* pN2,Float64* pLeft,Float64* pRight) const
+//void CPCIDeckedBulbTeeFactory::GetTopFlangeParameters(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64* pC, Float64* pN1, Float64* pN2,Float64* pLeft,Float64* pRight) const
 //{
 //   const CSplicedGirderData* pGirder = pSegment->GetGirder();
 //
@@ -1465,7 +1426,7 @@ void CPCIDeckedBulbTeeFactory::GetTopWidth(IBroker* pBroker, const CPrecastSegme
 //   *pRight = right;
 //}
 
-//Float64 CPCIDeckedBulbTeeFactory::GetFlangeThickening(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+//Float64 CPCIDeckedBulbTeeFactory::GetFlangeThickening(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 //{
 //   Float64 tft = 0;
 //   if (pSegment->TopFlangeThickeningType != pgsTypes::tftNone)
@@ -1490,7 +1451,7 @@ void CPCIDeckedBulbTeeFactory::GetTopWidth(IBroker* pBroker, const CPrecastSegme
 //   return tft;
 //}
 
-void CPCIDeckedBulbTeeFactory::PositionBeamShape(IPCIDeckedIBeam* pBeam) const
+void PCIDeckedBulbTeeFactory::PositionBeamShape(IPCIDeckedIBeam* pBeam) const
 {
 
    // Hook point is at bottom center of bounding box.

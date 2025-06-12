@@ -22,9 +22,9 @@
 
 #pragma once
 
-#include <PgsExt\ConcreteMaterial.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\ConcreteMaterial.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\Keys.h>
 #include <Materials/Materials.h>
 #include <LRFD\LRFD.h>
 #include "StatusItems.h"
@@ -42,8 +42,9 @@ public:
    CConcreteManager();
    ~CConcreteManager();
 
-   void Init(IBroker* pBroker,StatusGroupIDType statusGroupID);
+   void Init(std::shared_ptr<WBFL::EAF::Broker>,StatusGroupIDType statusGroupID);
    void Reset();
+   void ShutDown();
 
    pgsTypes::ConcreteType GetSegmentConcreteType(const CSegmentKey& segmentKey) const;
    bool DoesSegmentConcreteHaveAggSplittingStrength(const CSegmentKey& segmentKey) const;
@@ -196,7 +197,7 @@ public:
    Float64 GetLongitudinalJointLambda() const;
 
 private:
-   IBroker* m_pBroker; // weak reference
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    mutable bool m_bIsValidated; // Level 1 concrete definition is valid
    mutable bool m_bIsSegmentValidated; // Level 2 concrete definition is valid for segments/closure joints

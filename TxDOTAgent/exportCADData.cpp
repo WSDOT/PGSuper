@@ -30,20 +30,17 @@
 #include "exportCADData.h"
 #include "Documentation\TxCADExport\TxCADExport.hh"
 
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
+
 #include <MfcTools\CustomDDX.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // exportCADData dialog
 
 /*--------------------------------------------------------------------*/
-exportCADData::exportCADData(IBroker* pBroker,CWnd* pParent /*=nullptr*/)
+exportCADData::exportCADData(std::shared_ptr<WBFL::EAF::Broker> pBroker,CWnd* pParent /*=nullptr*/)
 	: CDialog(exportCADData::IDD, pParent)
 {
    m_pBroker  = pBroker;

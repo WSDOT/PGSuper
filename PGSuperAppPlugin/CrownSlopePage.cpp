@@ -33,11 +33,7 @@
 #include <Graphing/GraphingTypes.h>
 #include <Graphing/PointMapper.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <GeomModel/GeomModel.h>
 
 static void DrawArrowLine(CDC* pDC, long xstart, long ystart, long xend, long yend, long arrowWidth, long arrowLength)
 {
@@ -85,7 +81,7 @@ CCrownSlopePage::~CCrownSlopePage()
 {
 }
 
-IBroker* CCrownSlopePage::GetBroker()
+std::shared_ptr<WBFL::EAF::Broker> CCrownSlopePage::GetBroker()
 {
    CAlignmentDescriptionDlg* pParent = (CAlignmentDescriptionDlg*)GetParent();
    return pParent->m_pBroker;

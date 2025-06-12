@@ -27,16 +27,13 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <IFace/PointOfInterest.h>
 
 /****************************************************************************
 CLASS
@@ -72,9 +69,9 @@ CConcurrentShearTable& CConcurrentShearTable::operator= (const CConcurrentShearT
 }
 
 //======================== OPERATIONS =======================================
-void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
+void CConcurrentShearTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,
                                        const CGirderKey& girderKey,
-                                       IEAFDisplayUnits* pDisplayUnits,
+                                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                        IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );

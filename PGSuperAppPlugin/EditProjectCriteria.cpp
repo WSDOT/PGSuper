@@ -22,14 +22,12 @@
 
 #include "stdafx.h"
 #include "EditProjectCriteria.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h> // for IEvents and ISpecification
+
 #include "PGSuperDoc.h" // for EAFGetBroker
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditProjectCriteria::txnEditProjectCriteria(LPCTSTR strOldCriteria,LPCTSTR strNewCriteria,pgsTypes::AnalysisType oldAnalysisType,pgsTypes::AnalysisType newAnalysisType,pgsTypes::WearingSurfaceType oldWearingSurfaceType,pgsTypes::WearingSurfaceType newWearingSurfaceType)
 {
@@ -60,8 +58,8 @@ void txnEditProjectCriteria::Undo()
 
 void txnEditProjectCriteria::Execute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    GET_IFACE2(pBroker, ISpecification, pSpec );
@@ -75,7 +73,7 @@ void txnEditProjectCriteria::Execute(int i)
    pBridgeDesc->SetWearingSurfaceType(m_WearingSurfaceType[i]);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditProjectCriteria::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditProjectCriteria::CreateClone() const
 {
    return std::make_unique<txnEditProjectCriteria>(m_strProjectCriteria[0].c_str(),m_strProjectCriteria[1].c_str(),m_AnalysisType[0],m_AnalysisType[1],m_WearingSurfaceType[0],m_WearingSurfaceType[1]);
 }

@@ -34,7 +34,7 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <Units\UnitValueNumericalFormatTools.h>
 #include <PgsExt\SegmentArtifact.h>
 #include <PgsExt\RatingArtifact.h>
@@ -52,11 +52,12 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\Selection.h>
 #include <IFace\PrincipalWebStress.h>
+#include <IFace/PointOfInterest.h>
 
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFDocument.h>
 
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <MFCTools\MFCTools.h>
 
@@ -64,11 +65,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // Utility class for managing map between principal web stress section elevations and graph data series
 struct WebSectionManager
@@ -377,8 +373,8 @@ CSegmentGraphControllerBase* CSegmentAnalysisResultsGraphBuilder::CreateGraphCon
 
 bool CSegmentAnalysisResultsGraphBuilder::UpdateNow()
 {
-   GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress,0);
+   GET_IFACE(IEAFProgress,pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress,0);
 
    pProgress->UpdateMessage(_T("Building Graph"));
 

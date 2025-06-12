@@ -117,11 +117,11 @@ public:
    const pgsSegmentStabilityArtifact* GetSegmentStabilityArtifact() const;
    pgsSegmentStabilityArtifact* GetSegmentStabilityArtifact();
 
-   void SetLiftingCheckArtifact(const WBFL::Stability::LiftingCheckArtifact* artifact);
-   const WBFL::Stability::LiftingCheckArtifact* GetLiftingCheckArtifact() const;
+   void SetLiftingCheckArtifact(std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> artifact);
+   std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> GetLiftingCheckArtifact() const;
 
-   void SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact*  artifact);
-   const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact() const;
+   void SetHaulingAnalysisArtifact(std::shared_ptr<const pgsHaulingAnalysisArtifact>  artifact);
+   std::shared_ptr<const pgsHaulingAnalysisArtifact> GetHaulingAnalysisArtifact() const;
 
    const pgsPrincipalTensionStressArtifact* GetPrincipalTensionStressArtifact() const;
    pgsPrincipalTensionStressArtifact* GetPrincipalTensionStressArtifact();
@@ -222,8 +222,8 @@ private:
    std::map<DuctIndexType, pgsTendonStressArtifact> m_TendonStressArtifacts;
    std::map<DuctIndexType, pgsDuctSizeArtifact> m_DuctSizeArtifacts;
 
-   const WBFL::Stability::LiftingCheckArtifact* m_pLiftingCheckArtifact; // point is not owned by this object
-   const pgsHaulingAnalysisArtifact* m_pHaulingAnalysisArtifact; // pointer is not owned by this object
+   std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> m_pLiftingCheckArtifact;
+   std::shared_ptr<const pgsHaulingAnalysisArtifact> m_pHaulingAnalysisArtifact;
 
    pgsDebondArtifact m_DebondArtifact;
 

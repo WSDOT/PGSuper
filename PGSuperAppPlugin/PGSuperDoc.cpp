@@ -25,10 +25,10 @@
 #include "stdafx.h"
 #include "PGSuperDoc.h"
 #include "PGSuperApp.h"
-#include "PGSuperBaseAppPlugin.h"
+#include "PGSPluginAppBase.h"
 
-#include <PgsExt\BridgeDescription2.h>
-#include <EAF\EAFAutoProgress.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <EAF/AutoProgress.h>
 
 #include <MFCTools\AutoRegistry.h>
 
@@ -41,12 +41,13 @@
 #include "FillHaunchDlg.h"
 
 // Interfaces
+#include <IFace/Tools.h>
 #include <IFace\EditByUI.h> // for EDG_GENERAL
 #include <IFace\Bridge.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Transactions.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 
 // Transactions
 #include "EditGirder.h"
@@ -56,11 +57,6 @@
 #include <PgsExt\EditBridge.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperDoc
@@ -265,12 +261,12 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
          newGirderData.m_BearingData[pgsTypes::metEnd] = dlg.m_SpanGdrDetailsBearingsPage.m_Bearings[pgsTypes::metEnd];
       }
 
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditGirder>(girderKey,newGirderData));
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditGirder>(girderKey,newGirderData));
 
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -367,7 +363,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType haunchDesign
    }
 
    GET_IFACE(IEAFStatusCenter, pStatusCenter);
-   if (pStatusCenter->GetSeverity() == eafTypes::statusError)
+   if (pStatusCenter->GetSeverity() == WBFL::EAF::StatusSeverityType::Error)
    {
       AfxMessageBox(_T("There are errors that must be corrected before you can design a girder\r\n\r\nSee the Status Center for details."), MB_OK);
       return;
@@ -467,9 +463,9 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
    {
       bool bMultiGirderDesign = 1 < myGirderKeys.size() ? true : false;
 
-      GET_IFACE(IProgress,pProgress);
+      GET_IFACE(IEAFProgress,pProgress);
       DWORD mask = bMultiGirderDesign ? PW_ALL : PW_ALL|PW_NOGAUGE; // Progress window has a cancel button,
-      CEAFAutoProgress ap(pProgress,0,mask); 
+      WBFL::EAF::AutoProgress ap(pProgress,0,mask); 
 
       if (bMultiGirderDesign)
       {
@@ -511,7 +507,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
 
    if (0 < myGirderKeys.size())
    {
-      GET_IFACE(IReportManager, pReportMgr);
+      GET_IFACE(IEAFReportManager, pReportMgr);
       auto rptDesc = pReportMgr->GetReportDescription(_T("Design Outcome Report"));
       auto pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
       auto pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);

@@ -29,16 +29,13 @@
 #include "GirderNameGrid.h"
 #include "GirderLayoutPage.h"
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\Helpers.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\BeamFactory.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 class CNameGroupData : public CGXAbstractUserAttribute
@@ -131,8 +128,8 @@ void CGirderNameGrid::CustomInit(CGirderGroupData* pGirderGroup)
 
 void CGirderNameGrid::UpdateGrid()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILibrary,pLib);
 
 	GetParam()->EnableUndo(FALSE);
@@ -275,13 +272,13 @@ void CGirderNameGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    CString strNewName;
    GetCurrentCellControl()->GetCurrentText(strNewName);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, ILibrary, pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strNewName);
 
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   auto factory = pGdrEntry->GetBeamFactory();
+
 
    pgsTypes::SupportedBeamSpacing spacingType = m_pGirderGroup->GetBridgeDescription()->GetGirderSpacingType();
 
@@ -338,8 +335,8 @@ BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
    {
       m_pGirderGroup->SetGirderName(gdrTypeGroupIdx, strNewName);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker, ILibrary, pLib);
       const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strNewName);
 
@@ -422,8 +419,8 @@ void CGirderNameGrid::OnJoin()
 void CGirderNameGrid::UpdateGirderFamilyList(LPCTSTR strGirderFamily)
 {
    // fill the girder list
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;

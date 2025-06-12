@@ -33,7 +33,7 @@ class CSelectPointOfInterestDlg : public CDialog
 	DECLARE_DYNAMIC(CSelectPointOfInterestDlg)
 
 public:
-	CSelectPointOfInterestDlg(IBroker* pBroker,std::shared_ptr<CPointOfInterestReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,PoiAttributeType poiReferenceAttribute,CWnd* pParent = nullptr);   // standard constructor
+	CSelectPointOfInterestDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CPointOfInterestReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,PoiAttributeType poiReferenceAttribute,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CSelectPointOfInterestDlg();
 
 // Dialog Data
@@ -47,7 +47,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    std::shared_ptr<CPointOfInterestReportSpecification> m_pRptSpec;
 
    PoiAttributeType m_PoiReferenceAttribute;

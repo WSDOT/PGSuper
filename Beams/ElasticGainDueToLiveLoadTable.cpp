@@ -22,18 +22,17 @@
 
 // ElasticGainDueToLiveLoadTable.cpp : Implementation of CElasticGainDueToLiveLoadTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "ElasticGainDueToLiveLoadTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace/AnalysisResults.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <psgLib/SpecLibraryEntry.h>
 
-CElasticGainDueToLiveLoadTable::CElasticGainDueToLiveLoadTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+
+CElasticGainDueToLiveLoadTable::CElasticGainDueToLiveLoadTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -48,7 +47,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 8;
@@ -162,7 +161,7 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
    return table;
 }
 
-void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter, IBroker* pBroker, const pgsPointOfInterest& poi, RowIndexType row, const LOSSDETAILS* pDetails, IEAFDisplayUnits* pDisplayUnits, Uint16 level)
+void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi, RowIndexType row, const LOSSDETAILS* pDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level)
 {
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;

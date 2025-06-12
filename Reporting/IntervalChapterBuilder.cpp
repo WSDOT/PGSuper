@@ -23,35 +23,21 @@
 #include "StdAfx.h"
 #include <Reporting\IntervalChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\ClosureJointData.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CIntervalChapterBuilder
-****************************************************************************/
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\ClosureJointData.h>
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CIntervalChapterBuilder::CIntervalChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CIntervalChapterBuilder::GetName() const
 {
    return TEXT("Analysis Intervals");
@@ -61,8 +47,7 @@ rptChapter* CIntervalChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
@@ -108,9 +93,4 @@ rptChapter* CIntervalChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CIntervalChapterBuilder::Clone() const
-{
-   return std::make_unique<CIntervalChapterBuilder>();
 }

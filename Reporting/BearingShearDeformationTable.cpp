@@ -1,30 +1,31 @@
-/////////////////////////////////////////////////////////////////////////
-//// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-//// Copyright © 1999-2025  Washington State Department of Transportation
-////                        Bridge and Structures Office
-////
-//// This program is free software; you can redistribute it and/or modify
-//// it under the terms of the Alternate Route Open Source License as 
-//// published by the Washington State Department of Transportation, 
-//// Bridge and Structures Office.
-////
-//// This program is distributed in the hope that it will be useful, but 
-//// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-//// the Alternate Route Open Source License for more details.
-////
-//// You should have received a copy of the Alternate Route Open Source 
-//// License along with this program; if not, write to the Washington 
-//// State Department of Transportation, Bridge and Structures Office, 
-//// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-//// Bridge_Support@wsdot.wa.gov
-/////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2025  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
 #include "StdAfx.h"
 #include <Reporting\BearingShearDeformationTable.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
 
-
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -32,46 +33,8 @@
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-///****************************************************************************
-//CLASS
-//   CBearingShearDeformationtionTable
-//****************************************************************************/
-//
-//
-//////////////////////////// PUBLIC     ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-CBearingShearDeformationTable::CBearingShearDeformationTable()
-{
-}
-
-CBearingShearDeformationTable::CBearingShearDeformationTable(const CBearingShearDeformationTable& rOther)
-{
-    MakeCopy(rOther);
-}
-
-CBearingShearDeformationTable::~CBearingShearDeformationTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CBearingShearDeformationTable& CBearingShearDeformationTable::operator= (const CBearingShearDeformationTable& rOther)
-{
-    if (this != &rOther)
-    {
-        MakeAssignment(rOther);
-    }
-
-    return *this;
-}
-
-ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey,
+ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,
     SHEARDEFORMATIONDETAILS* details, bool bDetail) const
 {
 
@@ -108,8 +71,8 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroke
     return nCols;
 }
 
-RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptRcTable* p_table, 
-    IEAFDisplayUnits* pDisplayUnits, SHEARDEFORMATIONDETAILS* pDetails, bool bDetail)
+RowIndexType ConfigureBearingShearDeformationTableHeading(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptRcTable* p_table, 
+    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, SHEARDEFORMATIONDETAILS* pDetails, bool bDetail)
 
 {
     RowIndexType rowSpan = 3;
@@ -213,13 +176,8 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
     return p_table->GetNumberOfHeaderRows();
 }
 
-
-
-
-
-//======================== OPERATIONS =======================================
-rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBroker* pBroker, const CGirderKey& girderKey,
-    IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool bCold, SHEARDEFORMATIONDETAILS* details) const
+rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,
+    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bDetail, bool bCold, SHEARDEFORMATIONDETAILS* details) const
 {
     
     GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
@@ -285,7 +243,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
         if (bDetail)
         {
             (*p_table)(row, col++) << bearing.percentExpansion;
-            if (pDisplayUnits->GetUnitMode() == eafTypes::UnitMode::umUS)
+            if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
             {
                 (*p_table)(row, col++) << 1.0 / ((1.0 / bearing.thermal_expansion_coefficient) * 9.0 / 5.0 + 32.0);
             }
@@ -355,37 +313,3 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     return p_table;
 
 }
-
-
-
-
-
-
-////======================== ACCESS     =======================================
-////======================== INQUIRY    =======================================
-//
-//////////////////////////// PROTECTED  ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-////======================== OPERATORS  =======================================
-////======================== OPERATIONS =======================================
-void CBearingShearDeformationTable::MakeCopy(const CBearingShearDeformationTable& rOther)
-{
-    // Add copy code here...
-}
-
-void CBearingShearDeformationTable::MakeAssignment(const CBearingShearDeformationTable& rOther)
-{
-    MakeCopy(rOther);
-}
-//
-////======================== ACCESS     =======================================
-////======================== INQUIRY    =======================================
-//
-//////////////////////////// PRIVATE    ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-////======================== OPERATORS  =======================================
-////======================== OPERATIONS =======================================
-////======================== ACCESS     =======================================
-////======================== INQUERY    =======================================

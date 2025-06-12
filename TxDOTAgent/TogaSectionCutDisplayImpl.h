@@ -25,7 +25,7 @@
 
 #include <DManip/DisplayObject.h>
 #include "TogaSectionCutDrawStrategy.h" 
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 
 #include <DManip/DrawPointStrategy.h>
 #include <DManip/DisplayObjectEvents.h>
@@ -38,7 +38,7 @@ public:
    ~CTogaSectionCutDisplayImpl();
 
    virtual void SetColor(COLORREF color) override;
-   virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CSegmentKey& segmentKey, iCutLocation* pCutLoc) override;
+   virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, iCutLocation* pCutLoc) override;
 
    virtual void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const override;
    virtual void DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const override;
@@ -79,7 +79,7 @@ private:
 
    COLORREF           m_Color;
    CSegmentKey        m_SegmentKey;
-   IBroker*           m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker>           m_pBroker;
    Float64            m_gdrLength;
    iCutLocation*      m_pCutLocation;
    

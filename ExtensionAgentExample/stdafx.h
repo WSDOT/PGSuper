@@ -27,7 +27,4 @@
 #pragma once
 
 #include <PGSuperAll.h>
-#include <AgentTools.h>
 #include <afxdlgs.h>
-
-#include <PgsExt\Keys.h>

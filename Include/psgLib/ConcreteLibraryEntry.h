@@ -20,33 +20,20 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PSGLIB_CONCRETEMATERIAL_H_
-#define INCLUDED_PSGLIB_CONCRETEMATERIAL_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-#include "psgLibLib.h"
-
-#include <psgLib\ISupportIcon.h>
+#include "PsgLibLib.h"
+#include <PsgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
-
-// LOCAL INCLUDES
-//
 #include <System\SubjectT.h>
 
-// FORWARD DECLARATIONS
-//
-class pgsLibraryEntryDifferenceItem;
 class ConcreteLibraryEntry;
 class ConcreteLibraryEntryObserver;
+namespace PGS {namespace Library{class DifferenceItem;};};
+
 #pragma warning(disable:4231)
 PSGLIBTPL WBFL::System::SubjectT<ConcreteLibraryEntryObserver, ConcreteLibraryEntry>;
 
-// MISCELLANEOUS
-//
 /*****************************************************************************
 CLASS 
    ConcreteLibraryEntryObserver
@@ -246,7 +233,7 @@ public:
    //------------------------------------------------------------------------
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const ConcreteLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool& bMustRename,bool bReturnOnFirstDifference=false, bool considerName=false) const;
+   bool Compare(const ConcreteLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool& bMustRename,bool bReturnOnFirstDifference=false, bool considerName=false) const;
    
    bool IsEqual(const ConcreteLibraryEntry& rOther,bool bConsiderName=false) const;
 
@@ -297,18 +284,4 @@ private:
    bool m_bUserCEBFIPParameters;
    Float64 m_S,m_BetaSc;
    pgsTypes::CEBFIPCementType m_CEBFIPCementType;
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_PSGLIB_CONCRETEMATERIAL_H_

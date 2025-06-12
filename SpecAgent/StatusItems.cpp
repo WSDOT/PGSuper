@@ -21,19 +21,14 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-
+#include "SpecAgent.h"
 #include "StatusItems.h"
 
 #include <IFace\EditByUI.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
+#include <EAF\EAFUtilities.h>
 
 
 pgsHaulTruckStatusItem::pgsHaulTruckStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription, const CSegmentKey& segmentKey) :
@@ -41,9 +36,9 @@ pgsSegmentRelatedStatusItem(statusGroupID,callbackID,strDescription,segmentKey),
 {
 }
 
-bool pgsHaulTruckStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsHaulTruckStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsHaulTruckStatusItem* other = dynamic_cast<pgsHaulTruckStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsHaulTruckStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -53,24 +48,24 @@ bool pgsHaulTruckStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsHaulTruckStatusCallback::pgsHaulTruckStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker),
+pgsHaulTruckStatusCallback::pgsHaulTruckStatusCallback(WBFL::EAF::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsHaulTruckStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsHaulTruckStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsHaulTruckStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsHaulTruckStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
-   pgsHaulTruckStatusItem* pItem = dynamic_cast<pgsHaulTruckStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsHaulTruckStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
-   GET_IFACE(IDocumentType, pDocType);
-   GET_IFACE(IEditByUI,pEdit);
+   auto broker = EAFGetBroker();
+   GET_IFACE2(broker,IDocumentType, pDocType);
+   GET_IFACE2(broker,IEditByUI,pEdit);
    if (pDocType->IsPGSuperDocument())
    {
       pEdit->EditGirderDescription(pItem->m_SegmentKey, EGD_TRANSPORTATION);

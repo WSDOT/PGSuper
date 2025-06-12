@@ -20,9 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib\EndZoneCriteria.h>
+#include <PsgLib\EndZoneCriteria.h>
 #include <EAF/EAFDisplayUnits.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/DifferenceItem.h>
 
 bool EndZoneCriteria::operator==(const EndZoneCriteria& other) const
 {
@@ -38,20 +38,20 @@ bool EndZoneCriteria::operator!=(const EndZoneCriteria& other) const
       !::IsEqual(SplittingZoneLengthFactor, other.SplittingZoneLengthFactor);
 }
 
-bool EndZoneCriteria::Compare(const EndZoneCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool EndZoneCriteria::Compare(const EndZoneCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (operator!=(other))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Splitting and Confinement requirements are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Splitting and Confinement requirements are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void EndZoneCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void EndZoneCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
 

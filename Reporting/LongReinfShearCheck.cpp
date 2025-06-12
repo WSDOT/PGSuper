@@ -25,6 +25,8 @@
 #include <Reporting\LongReinfShearCheck.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
@@ -42,17 +44,12 @@
 #include <Reporter\ReportingUtils.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 void CLongReinfShearCheck::Build(rptChapter* pChapter,
-                              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
                               IntervalIndexType intervalIdx,pgsTypes::LimitState ls,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
@@ -266,9 +263,9 @@ void CLongReinfShearCheck::Build(rptChapter* pChapter,
 }
 
 void CLongReinfShearCheck::Build(rptChapter* pChapter,
-                              IBroker* pBroker,const CGirderKey& girderKey,
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
                               pgsTypes::LimitState ls,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    GET_IFACE2(pBroker,IReportOptions,pReportOptions);

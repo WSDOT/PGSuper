@@ -22,19 +22,15 @@
 
 // RelaxationAtDeckPlacementTable.cpp : Implementation of CRelaxationAtDeckPlacementTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "RelaxationAtDeckPlacementTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <Reporting\ReportNotes.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CRelaxationAtDeckPlacementTable::CRelaxationAtDeckPlacementTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CRelaxationAtDeckPlacementTable::CRelaxationAtDeckPlacementTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
@@ -45,7 +41,7 @@ rptRcTable(NumColumns,0)
    scalar.SetPrecision(3);
 }
 
-CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -140,7 +136,7 @@ CRelaxationAtDeckPlacementTable* CRelaxationAtDeckPlacementTable::PrepareTable(r
    return table;
 }
 
-void CRelaxationAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CRelaxationAtDeckPlacementTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;

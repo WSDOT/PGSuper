@@ -25,7 +25,11 @@
 #include <MathEx.h>
 #include <MfcTools\MfcTools.h> 
 #include <PGSuperColors.h>
+
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
+#include <IFace/PointOfInterest.h>
+
 #include "TxDOTOptionalDesignDoc.h"
 
 #include <DManip/PointDisplayObject.h>
@@ -49,7 +53,7 @@ CTogaSectionCutDisplayImpl::~CTogaSectionCutDisplayImpl()
 {
 }
 
-void CTogaSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CSegmentKey& segmentKey, iCutLocation* pCutLoc)
+void CTogaSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, iCutLocation* pCutLoc)
 {
    m_pBroker = pBroker;
 
@@ -374,7 +378,7 @@ bool CTogaSectionCutDisplayImpl::PrepareForDrag(std::shared_ptr<WBFL::DManip::iD
 
    pSink->Write(ms_Format,&threadid,sizeof(DWORD));
    pSink->Write(ms_Format,&m_Color,sizeof(COLORREF));
-   pSink->Write(ms_Format,&m_pBroker,sizeof(IBroker*));
+   pSink->Write(ms_Format,&m_pBroker,sizeof(std::shared_ptr<WBFL::EAF::Broker>));
    pSink->Write(ms_Format,&m_SegmentKey,sizeof(CSegmentKey));
    pSink->Write(ms_Format,&m_gdrLength,sizeof(Float64));
    pSink->Write(ms_Format,&m_pCutLocation,sizeof(iCutLocation*));
@@ -396,7 +400,7 @@ void CTogaSectionCutDisplayImpl::OnDrop(std::shared_ptr<WBFL::DManip::iDisplayOb
    ATLASSERT(threadid == threadl);
 
    pSource->Read(ms_Format,&m_Color,sizeof(COLORREF));
-   pSource->Read(ms_Format,&m_pBroker,sizeof(IBroker*));
+   pSource->Read(ms_Format,&m_pBroker,sizeof(std::shared_ptr<WBFL::EAF::Broker>));
    pSource->Read(ms_Format,&m_SegmentKey,sizeof(CSegmentKey));
    pSource->Read(ms_Format,&m_gdrLength,sizeof(Float64));
    pSource->Read(ms_Format,&m_pCutLocation,sizeof(iCutLocation*));

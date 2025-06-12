@@ -20,26 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_TXDOTDEBONDUTIL_H_
-#define INCLUDED_PGSEXT_TXDOTDEBONDUTIL_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
 #include <PgsExt\PgsExtExp.h>
-
-// PROJECT INCLUDES
-//
 #include <PGSuperTypes.h>
 #include <IFace\Bridge.h>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 // free function for checking if a set of numbers is divisible by a number
 typedef std::set<Float64> FloatSet;
@@ -65,12 +50,12 @@ static bool IsDivisible(FloatSetIterator start, FloatSetIterator end, Float64 di
 class PGSEXTCLASS TxDOTDebondTool
 {
 public:
-   TxDOTDebondTool(const CSegmentKey& segmentKey, Float64 girderLength, IStrandGeometry* pStrandGeometry);
+   TxDOTDebondTool(const CSegmentKey& segmentKey, Float64 girderLength, std::weak_ptr<IStrandGeometry> pStrandGeometry);
 
 protected:
    CSegmentKey m_SegmentKey;
    Float64 m_GirderLength;
-   IStrandGeometry* m_pStrandGeometry;
+   std::weak_ptr<IStrandGeometry> m_pStrandGeometry;
 
    enum OutComeType {AllStandard, NonStandardSection, SectionMismatch, SectionsNotSymmetrical, TooManySections};
    OutComeType m_OutCome;
@@ -136,16 +121,16 @@ private:
 
 inline void TxDOTDebondTool::Compute()
 {
-   m_NumDebonded = m_pStrandGeometry->GetNumDebondedStrands(m_SegmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
+   m_NumDebonded = m_pStrandGeometry.lock()->GetNumDebondedStrands(m_SegmentKey, pgsTypes::Straight, pgsTypes::dbetEither);
 
    // standard debond increment
    Float64 three_feet = WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Feet);
 
-   StrandIndexType nss = m_pStrandGeometry->GetStrandCount(m_SegmentKey,pgsTypes::Straight);
+   StrandIndexType nss = m_pStrandGeometry.lock()->GetStrandCount(m_SegmentKey, pgsTypes::Straight);
 
    pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
    CComPtr<IPoint2dCollection> coords;
-   m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Straight, &coords);
+   m_pStrandGeometry.lock()->GetStrandPositions(poi, pgsTypes::Straight, &coords);
 
    // We also want to see if there is a common debond increment, and if by chance, it is 3 feet
    FloatSet section_spacings;
@@ -182,7 +167,7 @@ inline void TxDOTDebondTool::Compute()
       rowData.m_NumTotalStrands++; // add our strand to row
 
       Float64 startLoc, endLoc;
-      if( m_pStrandGeometry->IsStrandDebonded(m_SegmentKey,idx, pgsTypes::Straight, nullptr, &startLoc, &endLoc) )
+      if( m_pStrandGeometry.lock()->IsStrandDebonded(m_SegmentKey, idx, pgsTypes::Straight, nullptr, &startLoc, &endLoc))
       {
          if (!IsEqual(startLoc,m_GirderLength-endLoc))
          {
@@ -219,7 +204,7 @@ inline void TxDOTDebondTool::Compute()
 
    // Next add any adjustable strands at same row elevations to running total
    CComPtr<IPoint2dCollection> hcoords;
-   m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Harped, &hcoords);
+   m_pStrandGeometry.lock()->GetStrandPositions(poi, pgsTypes::Harped, &hcoords);
    hcoords->get_Count(&size);
    for (IndexType idx = 0; idx < size; idx++)
    {
@@ -391,10 +376,8 @@ public:
    typedef std::set<StrandRow> StrandRowSet;
    typedef StrandRowSet::iterator StrandRowIter;
 
-   static StrandRowSet GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+   static StrandRowSet GetStrandRowSet(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi);
 
    // row set with all strand locations filled
-   static StrandRowUtil::StrandRowSet GetFullyPopulatedStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+   static StrandRowUtil::StrandRowSet GetFullyPopulatedStrandRowSet(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi);
 };
-
-#endif // INCLUDED_PGSEXT_TXDOTDEBONDUTIL_H_

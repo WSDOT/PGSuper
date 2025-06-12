@@ -31,7 +31,7 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <Units\UnitValueNumericalFormatTools.h>
 
 #include <IFace\Intervals.h>
@@ -39,6 +39,7 @@
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\DocumentType.h>
+#include <IFace/PointOfInterest.h>
 
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFDocument.h>
@@ -47,11 +48,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 BEGIN_MESSAGE_MAP(CEffectivePrestressGraphBuilder, CGirderGraphBuilderBase)
 END_MESSAGE_MAP()
@@ -146,8 +142,8 @@ CGirderGraphControllerBase* CEffectivePrestressGraphBuilder::CreateGraphControll
 
 bool CEffectivePrestressGraphBuilder::UpdateNow()
 {
-   GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
 

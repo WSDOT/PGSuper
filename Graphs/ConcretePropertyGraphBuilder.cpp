@@ -30,11 +30,11 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <Units\UnitValueNumericalFormatTools.h>
 #include <PgsExt\IntervalTool.h>
 
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
@@ -53,11 +53,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // create a dummy unit conversion tool to pacify the graph constructor
@@ -179,7 +174,7 @@ int CConcretePropertyGraphBuilder::InitializeGraphController(CWnd* pParent,UINT 
    // create the graph definitions before creating the graph controller.
    // our graph controller will call GetLoadCaseNames to populate the 
    // list of load cases
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    // setup the graph
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
@@ -243,8 +238,8 @@ void CConcretePropertyGraphBuilder::ShowGrid(bool bShowGrid)
 
 bool CConcretePropertyGraphBuilder::UpdateNow()
 {
-   GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
 

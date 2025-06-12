@@ -19,13 +19,13 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
 #include "StdAfx.h"
-#include <psgLib/HaulingCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
-#include "SpecLibraryEntryImpl.h"
+#include <PsgLib/HaulingCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
-bool KDOTHaulingCriteria::Compare(const KDOTHaulingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool KDOTHaulingCriteria::Compare(const KDOTHaulingCriteria& other, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -33,7 +33,7 @@ bool KDOTHaulingCriteria::Compare(const KDOTHaulingCriteria& other, const SpecLi
       !::IsEqual(InteriorGFactor, other.InteriorGFactor))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling Dynamic Load Factors are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling Dynamic Load Factors are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -44,7 +44,7 @@ bool KDOTHaulingCriteria::Compare(const KDOTHaulingCriteria& other, const SpecLi
       TensionStressLimitWithReinforcement != other.TensionStressLimitWithReinforcement)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling concrete stress limits are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling concrete stress limits are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -80,7 +80,7 @@ void KDOTHaulingCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
    if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
 }
 
-void KDOTHaulingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void KDOTHaulingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -192,7 +192,7 @@ void WSDOTHaulingCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
    if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
 }
 
-void WSDOTHaulingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void WSDOTHaulingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -219,7 +219,7 @@ void WSDOTHaulingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDispl
    *pPara << _T("- Upward   = ") << percentage.SetValue(ImpactUp) << rptNewLine;
    *pPara << _T("- Downward = ") << percentage.SetValue(ImpactDown) << rptNewLine;
 
-   if (pDisplayUnits->GetUnitMode() == eafTypes::umSI)
+   if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::SI)
    {
       *pPara << _T("Normal Crown Slope = ") << RoadwayCrownSlope << _T(" m/m") << rptNewLine;
       *pPara << _T("Max. Superelevation = ") << RoadwaySuperelevation << _T(" m/m") << rptNewLine;
@@ -284,7 +284,7 @@ void WSDOTHaulingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDispl
    *pPara << _T("- Tensile Stress (w/  mild rebar) = "); TensionStressLimitWithReinforcement[+WBFL::Stability::HaulingSlope::Superelevation].Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
 }
 
-bool WSDOTHaulingCriteria::Compare(const WSDOTHaulingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool WSDOTHaulingCriteria::Compare(const WSDOTHaulingCriteria& other, WBFL::LRFD::BDSManager::Edition specEdition, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -292,17 +292,17 @@ bool WSDOTHaulingCriteria::Compare(const WSDOTHaulingCriteria& other, const Spec
       !::IsEqual(FsFailure, other.FsFailure))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling Factors of Safety are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling Factors of Safety are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (!::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::Normal], other.ModulusOfRuptureCoefficient[pgsTypes::Normal]) ||
       !::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::SandLightweight], other.ModulusOfRuptureCoefficient[pgsTypes::SandLightweight]) ||
-      (impl.GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims ? !::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::AllLightweight], other.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false)
+      (specEdition <= WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims ? !::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::AllLightweight], other.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight]) : false)
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Modulus of Rupture for Cracking Moment During Hauling are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Modulus of Rupture for Cracking Moment During Hauling are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -323,14 +323,14 @@ bool WSDOTHaulingCriteria::Compare(const WSDOTHaulingCriteria& other, const Spec
       )
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling Analysis Parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling Analysis Parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-bool HaulingCriteria::Compare(const HaulingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool HaulingCriteria::Compare(const HaulingCriteria& other, WBFL::LRFD::BDSManager::Edition specEdition, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -341,20 +341,20 @@ bool HaulingCriteria::Compare(const HaulingCriteria& other, const SpecLibraryEnt
       (bUseMinBunkPointLimit != other.bUseMinBunkPointLimit || (bUseMinBunkPointLimit == true && !::IsEqual(MinBunkPointLimitFactor, other.MinBunkPointLimitFactor))))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling Check/Design Options are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling Check/Design Options are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if(AnalysisMethod != other.AnalysisMethod)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling Analysis Methods are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling Analysis Methods are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (AnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT)
    {
-      if (!WSDOT.Compare(other.WSDOT,impl,vDifferences,bReturnOnFirstDifference))
+      if (!WSDOT.Compare(other.WSDOT,specEdition,vDifferences,bReturnOnFirstDifference))
       {
          bSame = false;
          if (bReturnOnFirstDifference) return false;
@@ -362,7 +362,7 @@ bool HaulingCriteria::Compare(const HaulingCriteria& other, const SpecLibraryEnt
    }
    else
    {
-      if (!KDOT.Compare(other.KDOT,impl,vDifferences,bReturnOnFirstDifference))
+      if (!KDOT.Compare(other.KDOT,vDifferences,bReturnOnFirstDifference))
       {
          bSame = false;
          if (bReturnOnFirstDifference) return false;
@@ -372,7 +372,7 @@ bool HaulingCriteria::Compare(const HaulingCriteria& other, const SpecLibraryEnt
    return bSame;
 }
 
-void HaulingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void HaulingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim2, pDisplayUnits->GetSpanLengthUnit(), true);
 

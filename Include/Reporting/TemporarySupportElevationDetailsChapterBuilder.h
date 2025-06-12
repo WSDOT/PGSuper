@@ -23,32 +23,12 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-/////////////////////////////////////////////////////////////////////////
 class REPORTINGCLASS CTemporarySupportElevationDetailsChapterBuilder :
    public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CTemporarySupportElevationDetailsChapterBuilder(bool bSelect=true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-protected:
-
-private:
-
-   // Prevent accidental copying and assignment
-   CTemporarySupportElevationDetailsChapterBuilder(const CTemporarySupportElevationDetailsChapterBuilder&) = delete;
-   CTemporarySupportElevationDetailsChapterBuilder& operator=(const CTemporarySupportElevationDetailsChapterBuilder&) = delete;
 };

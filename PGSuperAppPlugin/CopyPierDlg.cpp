@@ -31,6 +31,7 @@
 #include "CopyPierDlg.h"
 #include "CopyPierPropertiesCallbacks.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Selection.h>
@@ -38,25 +39,20 @@
 #include <IFace\EditByUI.h>
 
 #include <PgsExt\MacroTxn.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <EAF\EAFCustSiteVars.h>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <Reporting\CopyPierPropertiesReportSpecification.h>
 #include <Reporting\CopyPierPropertiesChapterBuilder.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyPierDlg dialog
 
 
-CCopyPierDlg::CCopyPierDlg(IBroker* pBroker, const std::map<IDType,ICopyPierPropertiesCallback*>&  rCopyPierPropertiesCallbacks, IDType selectedID, CWnd* pParent /*=nullptr*/)
+CCopyPierDlg::CCopyPierDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::map<IDType,ICopyPierPropertiesCallback*>&  rCopyPierPropertiesCallbacks, IDType selectedID, CWnd* pParent /*=nullptr*/)
 	: CDialog(CCopyPierDlg::IDD, pParent),
    m_pBroker(pBroker),
    m_CopyPierPropertiesCallbacks(rCopyPierPropertiesCallbacks)
@@ -110,7 +106,7 @@ BOOL CCopyPierDlg::OnInitDialog()
    m_cyMin = rect.Height();
 
    // set up report window
-   GET_IFACE(IReportManager, pReportMgr);
+   GET_IFACE(IEAFReportManager, pReportMgr);
    WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Pier Properties Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
@@ -131,7 +127,7 @@ BOOL CCopyPierDlg::OnInitDialog()
    // set up reporting window
    UpdateReportData();
 
-   GET_IFACE(IReportManager,pRptMgr);
+   GET_IFACE(IEAFReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    CWnd* pWnd = GetDlgItem(IDC_BROWSER);
    m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(), WS_BORDER,pRptSpec,nullSpecBuilder);
@@ -308,7 +304,7 @@ void CCopyPierDlg::FillComboBoxes(CComboBox& cbPier, bool bIncludeAllPiers, Pier
 
 void CCopyPierDlg::UpdateReportData()
 {
-   GET_IFACE(IReportManager,pReportMgr);
+   GET_IFACE(IEAFReportManager,pReportMgr);
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
    PierIndexType pierIdx = GetFromPier();
@@ -336,7 +332,7 @@ void CCopyPierDlg::UpdateReport()
    {
       UpdateReportData();
 
-      GET_IFACE(IReportManager,pReportMgr);
+      GET_IFACE(IEAFReportManager,pReportMgr);
       std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
       std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CCopyPierPropertiesReportSpecification>(m_pRptSpec);

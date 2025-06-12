@@ -23,11 +23,11 @@
 #ifndef INCLUDED_EDITLLDFTXN_H_
 #define INCLUDED_EDITLLDFTXN_H_
 
-#include <EAF\EAFTransaction.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <EAF\Transaction.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <IFace\Project.h>
 
-class txnEditLLDF : public CEAFTransaction
+class txnEditLLDF : public WBFL::EAF::Transaction
 {
 public:
    txnEditLLDF(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
@@ -37,7 +37,7 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction>CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const;
    virtual bool IsRepeatable() const;

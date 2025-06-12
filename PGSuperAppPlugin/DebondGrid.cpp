@@ -31,16 +31,14 @@
 #include "GirderSegmentDlg.h"
 #include "GirderSegmentStrandsPage.h"
 #include <Units\Measure.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <PgsExt\DesignConfigUtil.h>
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CGirderDescDebondGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -121,8 +119,8 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
 // in OnInitialUpdate.
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
@@ -294,8 +292,8 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
 {
    IDebondGridParent* pParent = dynamic_cast<IDebondGridParent*>(GetParent());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -510,8 +508,8 @@ void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
 
    IDebondGridParent* pParent = dynamic_cast<IDebondGridParent*>(GetParent());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    StrandIndexType nStrands = segment.Strands.GetStrandCount(pgsTypes::Straight);
@@ -579,8 +577,8 @@ Float64 CGirderDescDebondGrid::GetRightDebondLength(ROWCOL row)
 
 Float64 CGirderDescDebondGrid::GetDebondLength(ROWCOL row,ROWCOL col)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    Float64 length;
@@ -776,8 +774,8 @@ void CGirderDescDebondGrid::CanDebond(bool bCanDebond,bool bSymmetricDebond)
       return;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strColHeading = CString(_T("Debond\nLength\n(")) + 

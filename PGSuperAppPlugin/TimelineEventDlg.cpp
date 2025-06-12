@@ -23,7 +23,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "TimelineEventDlg.h"
 #include "ErectPiersDlg.h"
 #include "ErectSegmentsDlg.h"
@@ -37,17 +37,14 @@
 #include "GeometryControlDlg.h"
 
 #include <EAF\EAFDocument.h>
+
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 
@@ -246,8 +243,8 @@ void CTimelineEventDlg::UpdateAddButton()
 {
    m_btnAdd.Clear();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    CString strErectPiers;
    CString strConstructSegments;
@@ -369,8 +366,8 @@ void CTimelineEventDlg::OnCastClosureJoints()
 void CTimelineEventDlg::OnCastDeck()
 {
    UpdateData();
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
    CString strName(GetCastDeckEventName(deckType));

@@ -26,7 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -67,14 +67,14 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LiveLoadType llType,
+   virtual rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::LiveLoadType llType,
                              const std::_tstring& strLLName,VehicleIndexType vehicleIdx,
                              pgsTypes::AnalysisType analysisType,
                              bool bReportTruckConfig,
-                             IEAFDisplayUnits* pDisplayUnits) const;
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
-   static void ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,RowIndexType row,ColumnIndexType col,IEAFDisplayUnits* pDisplayUnits);
+   static void ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,RowIndexType row,ColumnIndexType col,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 protected:
    // GROUP: DATA MEMBERS

@@ -28,8 +28,8 @@
 #endif // _MSC_VER >= 1000
 // ConnectionEntryDlg.h : header file
 //
-#if !defined INCLUDED_PSGLIB_CONNECTIONLIBRARYENTRY_H_
-#include <psgLib\ConnectionLibraryEntry.h>
+#if !defined INCLUDED_PsgLib_CONNECTIONLIBRARYENTRY_H_
+#include <PsgLib\ConnectionLibraryEntry.h>
 #endif
 
 #if !defined INCLUDED_MFCTOOLS_METAFILESTATIC_H_
@@ -92,7 +92,7 @@ private:
    void FillBearingOffsetComboBox();
    void FillEndDistanceComboBox();
 
-   CString GetImageName(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
+   CString GetImageName(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType, ConnectionLibraryEntry::EndDistanceMeasurementType endType);
 
    CMetaFileStatic m_ConnectionPicture;
    CBrush m_WhiteBrush;

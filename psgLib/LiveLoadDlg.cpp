@@ -24,20 +24,15 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "LiveLoadDlg.h"
 #include <MfcTools\CustomDDX.h>
 #include <MfcTools\Format.h>
-#include <psgLib\LiveLoadLibraryEntry.h>
+#include <PsgLib\LiveLoadLibraryEntry.h>
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CLiveLoadDlg dialog

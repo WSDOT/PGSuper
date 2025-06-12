@@ -22,15 +22,9 @@
 
 #pragma once
 
-// SYSTEM INCLUDES
-//
-#include <PGSuperTypes.h>
+#include "PsgLibLib.h"
 
-// PROJECT INCLUDES
-//
-#include "psgLibLib.h"
-
-#include <psgLib\ISupportIcon.h>
+#include <PsgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 
 #include <System\SubjectT.h>
@@ -39,7 +33,7 @@
 
 // forward declarations
 class SpecLibraryEntryImpl;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class RefactoredSpecLibraryParameters;
 class rptChapter;
 
@@ -54,7 +48,7 @@ struct EndZoneCriteria;
 struct HarpedStrandDesignCriteria;
 struct PrestressedElementCriteria;
 struct LiftingCriteria;
-struct HaulingCriteria;
+//struct HaulingCriteria;
 struct PrincipalTensionStressCriteria;
 struct ClosureJointCriteria;
 struct CreepCriteria;
@@ -67,7 +61,7 @@ struct TendonStressCriteria;
 struct DuctSizeCriteria;
 struct LiveLoadDeflectionCriteria;
 struct LimitsCriteria;
-struct SlabOffsetCriteria;
+//struct SlabOffsetCriteria;
 struct InterfaceShearCriteria;
 struct LiveLoadCriteria;
 struct TransferLengthCriteria;
@@ -82,10 +76,13 @@ struct BearingCriteria;
 
 // FORWARD DECLARATIONS
 //
-class pgsLibraryEntryDifferenceItem;
 class CSpecMainSheet;
 class SpecLibraryEntry;
 class SpecLibraryEntryObserver;
+namespace PGS {namespace Library{class DifferenceItem;};};
+struct SlabOffsetCriteria;
+struct HaulingCriteria;
+
 #pragma warning(disable:4231)
 PSGLIBTPL WBFL::System::SubjectT<SpecLibraryEntryObserver, SpecLibraryEntry>;
 
@@ -182,7 +179,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const SpecLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const SpecLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
 
    bool IsEqual(const SpecLibraryEntry& rOther,bool bConsiderName=false) const;
 
@@ -360,7 +357,7 @@ public:
    const BearingCriteria& GetBearingCriteria() const;
    void SetBearingCriteria(const BearingCriteria& criteria);
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    ////////////////////////////////////////
    //

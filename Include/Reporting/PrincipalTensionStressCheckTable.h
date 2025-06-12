@@ -23,7 +23,7 @@
 #pragma once
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class pgsGirderArtifact;
 class pgsPrincipalTensionStressArtifact;
 
@@ -36,10 +36,10 @@ public:
 
    CPrincipalTensionStressCheckTable& operator = (const CPrincipalTensionStressCheckTable& rOther);
 
-   virtual void Build(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const;
+   virtual void Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
 protected:
-   void BuildTable(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    void MakeCopy(const CPrincipalTensionStressCheckTable& rOther);
    void MakeAssignment(const CPrincipalTensionStressCheckTable& rOther);
 };

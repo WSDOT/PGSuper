@@ -66,7 +66,7 @@ public:
    enum txcwNsTableLayout { ttlnTwoTables, ttlnSingleTable };
 
    // Main External function to write the file
-   int WriteCADDataToFile(CTxDataExporter& rDataExporter, IBroker* pBroker, const CGirderKey& girderKey, txcwStrandLayoutType strandLayout, txcwNsTableLayout tableLayout, bool isIBeam);
+   int WriteCADDataToFile(CTxDataExporter& rDataExporter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, txcwStrandLayoutType strandLayout, txcwNsTableLayout tableLayout, bool isIBeam);
 
 private:
    Uint32 m_RowNum;

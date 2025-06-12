@@ -25,7 +25,6 @@
 // Used by TestAgent.rc
 //
 #define IDS_PROJNAME                    100
-#define IDR_TESTAGENT                   102
 
 // Next default values for new objects
 // 

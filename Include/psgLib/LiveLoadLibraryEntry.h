@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PSGLIB_USER_LIVE_LOAD_H_
-#define INCLUDED_PSGLIB_USER_LIVE_LOAD_H_
+#ifndef INCLUDED_PsgLib_USER_LIVE_LOAD_H_
+#define INCLUDED_PsgLib_USER_LIVE_LOAD_H_
 
 // SYSTEM INCLUDES
 //
@@ -29,18 +29,21 @@
 // PROJECT INCLUDES
 //
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
-#include <psgLib\ISupportIcon.h>
+#include <PsgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 
 #include <System\SubjectT.h>
 
 // FORWARD DECLARATIONS
 //
-class pgsLibraryEntryDifferenceItem;
+
 class LiveLoadLibraryEntry;
 class LiveLoadLibraryEntryObserver;
+namespace PGS {namespace Library{class DifferenceItem;};};
+
+
 #pragma warning(disable:4231)
 PSGLIBTPL WBFL::System::SubjectT<LiveLoadLibraryEntryObserver, LiveLoadLibraryEntry>;
 
@@ -199,7 +202,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const LiveLoadLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const LiveLoadLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
 
    bool IsEqual(const LiveLoadLibraryEntry& rOther,bool bConsiderName=false) const;
 
@@ -250,4 +253,4 @@ private:
 // EXTERNAL REFERENCES
 //
 
-#endif // INCLUDED_PSGLIB_TRAFFIC_BARRIER_H_
+#endif // INCLUDED_PsgLib_TRAFFIC_BARRIER_H_

@@ -23,34 +23,19 @@
 #include "StdAfx.h"
 #include <Reporting\GirderTendonGeometryChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CGirderTendonGeometryChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CGirderTendonGeometryChapterBuilder::CGirderTendonGeometryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CGirderTendonGeometryChapterBuilder::GetName() const
 {
    return TEXT("Girder Tendon Geometry");
@@ -60,8 +45,7 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(const std::shared_ptr<con
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    CGirderKey girderKey(pGirderRptSpec->GetGirderKey());
 
@@ -204,9 +188,4 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(const std::shared_ptr<con
 
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CGirderTendonGeometryChapterBuilder::Clone() const
-{
-   return std::make_unique<CGirderTendonGeometryChapterBuilder>();
 }

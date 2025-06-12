@@ -20,11 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib/ClosureJointCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/ClosureJointCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
-bool ClosureJointCriteria::Compare(const ClosureJointCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool ClosureJointCriteria::Compare(const ClosureJointCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -47,7 +47,7 @@ bool ClosureJointCriteria::Compare(const ClosureJointCriteria& other, const Spec
       TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses != other.TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Closure Joint Stress Limits for Temporary Stresses are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Closure Joint Stress Limits for Temporary Stresses are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -64,21 +64,21 @@ bool ClosureJointCriteria::Compare(const ClosureJointCriteria& other, const Spec
       TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses != other.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Closure Joint Stress Limits at Service Limit State are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Closure Joint Stress Limits at Service Limit State are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (!::IsEqual(CompressionStressCoefficient_Fatigue, other.CompressionStressCoefficient_Fatigue))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Closure Joint Allowable Concrete Stress at Fatigue Limit State are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Closure Joint Allowable Concrete Stress at Fatigue Limit State are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void ClosureJointCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void ClosureJointCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -119,7 +119,7 @@ void ClosureJointCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDispl
 
    if (bCheckFinalServiceITension)
    {
-      *pPara << _T(" - (Optional, Enabled) Tension due to the sum of effective prestress and permanent loads : "); TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Report(pPara,pDisplayUnits,TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
+      *pPara << _T(" - (Optional, Enabled) Tension due to the sum of effective prestress and permanent loads : "); TensionStressLimit_ServiceI_PermanentLoadsOnly_AfterLosses.Report(pPara,pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc); *pPara << rptNewLine;
    }
 
    *pPara << _T("- Longitudinal Stresses through Joints in the Precompressed Tensile Zone") << rptNewLine;

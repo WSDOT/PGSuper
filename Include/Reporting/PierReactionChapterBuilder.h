@@ -26,33 +26,11 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CPierReactionChapterBuilder
-
-
-DESCRIPTION
-   Reports reactions at the base of piers
-*****************************************************************************/
-
 class REPORTINGCLASS CPierReactionChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CPierReactionChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-private:
-   // Prevent accidental copying and assignment
-   CPierReactionChapterBuilder(const CPierReactionChapterBuilder&) = delete;
-   CPierReactionChapterBuilder& operator=(const CPierReactionChapterBuilder&) = delete;
 };

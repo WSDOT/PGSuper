@@ -23,22 +23,14 @@
 #include "StdAfx.h"
 #include <Reporting\LoadRatingReactionsChapterBuilder.h>
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
+#include <Reporting\VehicularLoadReactionTable.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
-#include <Reporting\VehicularLoadReactionTable.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CLoadRatingReactionsChapterBuilder
-****************************************************************************/
 
 CLoadRatingReactionsChapterBuilder::CLoadRatingReactionsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -53,8 +45,7 @@ LPCTSTR CLoadRatingReactionsChapterBuilder::GetName() const
 rptChapter* CLoadRatingReactionsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    auto pLrGirderRptSpec = std::dynamic_pointer_cast<const CLoadRatingReportSpecificationBase>(pRptSpec);
    if (!pLrGirderRptSpec)
@@ -69,7 +60,7 @@ rptChapter* CLoadRatingReactionsChapterBuilder::Build(const std::shared_ptr<cons
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   // Responses from individual live load vehicules
+   // Responses from individual live load vehicles
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    std::vector<pgsTypes::LiveLoadType> live_load_types;
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
@@ -197,10 +188,4 @@ rptChapter* CLoadRatingReactionsChapterBuilder::Build(const std::shared_ptr<cons
    }
 
    return pChapter;
-}
-
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingReactionsChapterBuilder::Clone() const
-{
-   return std::make_unique<CLoadRatingReactionsChapterBuilder>();
 }

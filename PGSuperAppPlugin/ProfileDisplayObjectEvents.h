@@ -27,7 +27,7 @@
 
 #include <DManip/DisplayObjectEvents.h>
 
-interface IBroker;
+
 class CBridgeModelViewChildFrame;
 
 
@@ -37,7 +37,7 @@ class CBridgeModelViewChildFrame;
 class CProfileDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents
 {
 public:
-	CProfileDisplayObjectEvents(IBroker* pDoc,CBridgeModelViewChildFrame* pFrame,std::weak_ptr<WBFL::DManip::iDisplayObject> pDO);
+	CProfileDisplayObjectEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker,CBridgeModelViewChildFrame* pFrame,std::weak_ptr<WBFL::DManip::iDisplayObject> pDO);
    ~CProfileDisplayObjectEvents();
 
    virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
@@ -58,7 +58,7 @@ public:
    virtual void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
    std::weak_ptr<WBFL::DManip::iDisplayObject> m_DispObj;
 

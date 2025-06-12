@@ -23,31 +23,16 @@
 #include "StdAfx.h"
 #include <Reporting\HaulingCheckChapterBuilder.h>
 #include <Reporting\HaulingCheck.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CHaulingCheckChapterBuilder
-****************************************************************************/
-
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CHaulingCheckChapterBuilder::CHaulingCheckChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CHaulingCheckChapterBuilder::GetName() const
 {
    return TEXT("Hauling Check");
@@ -55,14 +40,14 @@ LPCTSTR CHaulingCheckChapterBuilder::GetName() const
 
 rptChapter* CHaulingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    rptChapter* pChapter;
 
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pSegmentRptSpec = std::dynamic_pointer_cast<const CSegmentReportSpecification>(pRptSpec);
    if (pGirderRptSpec)
    {
-      pGirderRptSpec->GetBroker(&pBroker);
+      pBroker = pGirderRptSpec->GetBroker();
       GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
       pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
@@ -70,7 +55,7 @@ rptChapter* CHaulingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL:
    }
    else
    {
-      pSegmentRptSpec->GetBroker(&pBroker);
+      pBroker = pSegmentRptSpec->GetBroker();
       GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       const CSegmentKey& segmentKey(pSegmentRptSpec->GetSegmentKey());
       pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
@@ -79,27 +64,3 @@ rptChapter* CHaulingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL:
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CHaulingCheckChapterBuilder::Clone() const
-{
-   return std::make_unique<CHaulingCheckChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

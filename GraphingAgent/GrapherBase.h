@@ -22,12 +22,10 @@
 
 #pragma once
 
-class CGrapherBase
+#include <EAF\Agent.h>
+class CGrapherBase : public WBFL::EAF::Agent
 {
 public:
-   STDMETHODIMP SetBroker(IBroker* pBroker);
-   void InitCommonGraphBuilders();
-
-protected:
-   IBroker* m_pBroker; // weak reference
+   std::_tstring GetName() const override { return _T("GraphingAgent"); }
+   bool InitCommonGraphBuilders(std::shared_ptr<WBFL::EAF::Broker> broker);
 };

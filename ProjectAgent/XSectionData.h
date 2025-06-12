@@ -33,7 +33,7 @@
 //
 
 #include <PGSuperTypes.h>
-#include <PgsExt\DeckRebarData.h>
+#include <PsgLib\DeckRebarData.h>
 
 // LOCAL INCLUDES
 //
@@ -44,7 +44,7 @@ class TrafficBarrierEntry;
 class GirderLibraryEntry;
 class ConcreteLibraryEntry;
 class DiaphragmLayoutEntry;
-struct ILibrary;
+class ILibrary;
 
 // MISCELLANEOUS
 //
@@ -153,8 +153,8 @@ public:
 
    // GROUP: OPERATIONS
 
-	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILibrary* library);
-	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
+	HRESULT Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress, ILibrary* library);
+	HRESULT Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress> pProgress);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

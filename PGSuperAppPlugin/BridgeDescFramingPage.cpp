@@ -29,16 +29,12 @@
 #include "SpanLengthDlg.h"
 #include "BridgeDescDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescFramingPage property page
@@ -221,8 +217,7 @@ BOOL CBridgeDescFramingPage::OnInitDialog()
 	// TODO: Add extra initialization here
    CString fmt;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    fmt.LoadString( IS_SI_UNITS(pDisplayUnits) ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US );
@@ -338,8 +333,7 @@ void CBridgeDescFramingPage::OnOrientPiers()
    {
       if ( AfxQuestion(_T("Orient Piers"),_T("Enter orientation of all piers and temporary supports"),_T("NORMAL"),strResult) )
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         auto pBroker = EAFGetBroker();
          GET_IFACE2(pBroker,IValidate,pValidate);
          UINT result = pValidate->Orientation(strResult);
          if ( result == VALIDATE_SUCCESS )

@@ -23,6 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\TimeStepParametersChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
@@ -34,14 +36,9 @@
 
 #include <WBFLGenericBridgeTools.h>
 
-#include <PgsExt\TimelineEvent.h>
-#include <PgsExt\CastDeckActivity.h>
+#include <PsgLib\TimelineEvent.h>
+#include <PsgLib\CastDeckActivity.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // When defined, the computation details for initial strains are reported
 // This is the summation part of Tadros 1977 Eqns 3 and 4.
@@ -49,22 +46,12 @@ static char THIS_FILE[] = __FILE__;
 
 //#define REPORT_PRODUCT_LOAD_DETAILS
 
-/****************************************************************************
-CLASS
-   CTimeStepParametersChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTimeStepParametersChapterBuilder::CTimeStepParametersChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTimeStepParametersChapterBuilder::GetName() const
 {
    return TEXT("Time Step Parameters");
@@ -78,8 +65,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
 
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
@@ -1326,9 +1312,4 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimeStepParametersChapterBuilder::Clone() const
-{
-   return std::make_unique<CTimeStepParametersChapterBuilder>();
 }

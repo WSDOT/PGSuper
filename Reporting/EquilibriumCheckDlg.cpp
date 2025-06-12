@@ -26,25 +26,22 @@
 #include "Reporting.h"
 #include "EquilibriumCheckDlg.h"
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CEquilibriumCheckDlg dialog
 
 IMPLEMENT_DYNAMIC(CEquilibriumCheckDlg, CDialog)
 
-CEquilibriumCheckDlg::CEquilibriumCheckDlg(IBroker* pBroker,std::shared_ptr<CEquilibriumCheckReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
+CEquilibriumCheckDlg::CEquilibriumCheckDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CEquilibriumCheckReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CEquilibriumCheckDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pRptSpec(pRptSpec)

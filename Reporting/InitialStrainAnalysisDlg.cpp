@@ -26,25 +26,21 @@
 #include "Reporting.h"
 #include "InitialStrainAnalysisDlg.h"
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Intervals.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CInitialStrainAnalysisDlg dialog
 
 IMPLEMENT_DYNAMIC(CInitialStrainAnalysisDlg, CDialog)
 
-CInitialStrainAnalysisDlg::CInitialStrainAnalysisDlg(IBroker* pBroker,std::shared_ptr<CInitialStrainAnalysisReportSpecification>& pRptSpec,const CGirderKey& initialGirderKey,IntervalIndexType intervalIdx,CWnd* pParent)
+CInitialStrainAnalysisDlg::CInitialStrainAnalysisDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CInitialStrainAnalysisReportSpecification>& pRptSpec,const CGirderKey& initialGirderKey,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CInitialStrainAnalysisDlg::IDD, pParent)
    , m_pRptSpec(pRptSpec)
 {

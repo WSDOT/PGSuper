@@ -32,13 +32,10 @@
 
 #include "GirderModelChildFrame.h"
 
-// Forward declarations
-struct IBroker; 
-
 class CGirderViewPrintJob : public CPrinterJob  
 {
 public:
-	CGirderViewPrintJob(CGirderModelElevationView* ppv, CGirderModelSectionView* psv, CGirderModelChildFrame* pframe, IBroker* pBroker);
+	CGirderViewPrintJob(CGirderModelElevationView* ppv, CGirderModelSectionView* psv, CGirderModelChildFrame* pframe, std::shared_ptr<WBFL::EAF::Broker> pBroker);
 	virtual ~CGirderViewPrintJob();
 
 	// virtual overridden from base class; same meaning as CView's 
@@ -59,7 +56,7 @@ private:
    CGirderModelElevationView*    m_pElevationView;
 	CGirderModelSectionView* m_pSectionView = nullptr;
 	CGirderModelChildFrame* m_pFrame;
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 };
 
 #endif // !defined(AFX_GirderViewPRINTJOB_H__E1B3DDE2_9D53_11D1_8BAC_0000B43382FE__INCLUDED_)

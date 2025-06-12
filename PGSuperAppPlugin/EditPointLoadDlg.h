@@ -25,8 +25,8 @@
 // EditPointLoadDlg.h : header file
 //
 #include "resource.h"
-#include <PgsExt\PointLoadData.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\PointLoadData.h>
+#include <PsgLib\TimelineManager.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditPointLoadDlg dialog
@@ -50,7 +50,7 @@ public:
 
    CPointLoadData m_Load;
    EventIDType m_EventID; // ID of the event when the load is applied
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    bool                 m_WasLiveLoad;
 

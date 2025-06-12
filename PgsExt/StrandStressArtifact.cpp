@@ -30,11 +30,6 @@ CLASS
 #include <PgsExt\StrandStressArtifact.h>
 #include <MathEx.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define JACKING       0
 #define BEFORE_XFER   1

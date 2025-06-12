@@ -24,6 +24,7 @@
 #include <Reporting\BearingTimeStepDetailsChapterBuilder.h>
 #include <Reporting\BearingTimeStepDetailsReportSpecification.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
@@ -34,18 +35,13 @@
 
 #include <WBFLGenericBridgeTools.h>
 
-#include <PgsExt\TimelineEvent.h>
+#include <PsgLib\TimelineEvent.h>
 #include <IFace/BearingDesignParameters.h>
 
 #include <string>
 #include <Reporting/BearingTimeStepShearDeformationTable.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define DELTA_P    symbol(DELTA) << _T("P")
 #define DELTA_M    symbol(DELTA) << _T("M")
@@ -67,23 +63,11 @@ static char THIS_FILE[] = __FILE__;
 #define CREEP_tb_to  CREEP(Sub2(_T("t"),_T("b")),Sub2(_T("t"),_T("o")))
 #define CREEP_te_to  CREEP(Sub2(_T("t"),_T("e")),Sub2(_T("t"),_T("o")))
 
-/****************************************************************************
-CLASS
-   CBearingTimeStepDetailsChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CBearingTimeStepDetailsChapterBuilder::CBearingTimeStepDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
-
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-
 
 LPCTSTR CBearingTimeStepDetailsChapterBuilder::GetName() const
 {
@@ -98,8 +82,7 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
 
    auto pBTSDRptSpec = std::dynamic_pointer_cast<const CBearingTimeStepDetailsReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pBTSDRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBTSDRptSpec->GetBroker();
    const ReactionLocation& rptLocation(pBTSDRptSpec->GetReactionLocation());
    const CGirderKey& girderKey(rptLocation.GirderKey);
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
@@ -173,9 +156,3 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingTimeStepDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CBearingTimeStepDetailsChapterBuilder>();
-}
-

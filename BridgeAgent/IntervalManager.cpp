@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "BridgeAgent.h"
 #include "IntervalManager.h"
 #include <algorithm>
 
@@ -29,24 +30,20 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\Helpers.h>
 
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\MomentLoadData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\DistributedLoadData.h>
+#include <PsgLib\MomentLoadData.h>
+#include <PsgLib\ClosureJointData.h>
 #include <PgsExt\StatusItem.h>
+
+#include <psgLib/GirderLibraryEntry.h>
 
 #include <MfcTools\Exceptions.h>
 
 #include <boost/icl/interval_map.hpp>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #if defined ASSERT_VALID
 #undef ASSERT_VALID
@@ -58,9 +55,10 @@ static char THIS_FILE[] = __FILE__;
 #define ASSERT_VALID
 #endif
 
-inline CGirderKey GetSafeGirderKey(IBroker* pBroker,const CGirderKey& oldKey)
+inline CGirderKey GetSafeGirderKey(const CGirderKey& oldKey)
 {
    // called if there is an unequal number of girders per group, and this one has less. use the right-most girder
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GirderIndexType gdrIdx = pBridge->GetGirderCount(oldKey.groupIndex)-1;
@@ -68,9 +66,9 @@ inline CGirderKey GetSafeGirderKey(IBroker* pBroker,const CGirderKey& oldKey)
    return CGirderKey(oldKey.groupIndex, gdrIdx);
 }
 
-inline CSegmentKey GetSafeSegmentKey(IBroker* pBroker,const CSegmentKey& key)
+inline CSegmentKey GetSafeSegmentKey(const CSegmentKey& key)
 {
-   return CSegmentKey(GetSafeGirderKey(pBroker,key), key.segmentIndex);
+   return CSegmentKey(GetSafeGirderKey(key), key.segmentIndex);
 }
 
 bool IsClosureJointCuring(Float64 curingStart,Float64 curingEnd,Float64 closureCuringStart,Float64 closureCuringEnd)
@@ -87,38 +85,37 @@ bool IsClosureJointCuring(Float64 curingStart,Float64 curingEnd,Float64 closureC
 CIntervalManager::CIntervalManager()
 {
    m_bIsPGSuper = false;
-   m_pBroker = nullptr;
    m_StatusGroupID = INVALID_ID;
 }
 
-void CIntervalManager::Init(IBroker* pBroker, StatusGroupIDType statusGroupID)
+void CIntervalManager::Init(StatusGroupIDType statusGroupID)
 {
-   m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IEAFStatusCenter, pStatusCenter);
-   m_scidTimelineError = pStatusCenter->RegisterCallback(new pgsTimelineStatusCallback(m_pBroker,eafTypes::statusError));
+   auto broker = EAFGetBroker();
+   GET_IFACE2(broker, IEAFStatusCenter, pStatusCenter);
+   m_scidTimelineError = pStatusCenter->RegisterCallback(std::make_shared<pgsTimelineStatusCallback>(WBFL::EAF::StatusSeverityType::Error));
 }
 
 void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
 {
    // this method builds the analysis interval sequence as well as defines the stage model
    // for the generic bridge model.
+   auto broker = EAFGetBroker();
+
    int result = pTimelineMgr->Validate();
    if (result != TLM_SUCCESS)
    {
       CString strError = pTimelineMgr->GetErrorMessage(result).c_str();
 
       strError += _T("\nUse the timeline manager to correct the error.");
-      GET_IFACE(IEAFStatusCenter, pStatusCenter);
-
-      pgsTimelineStatusItem* pStatusItem = new pgsTimelineStatusItem(m_StatusGroupID, m_scidTimelineError, strError);
-      pStatusCenter->Add(pStatusItem);
+      GET_IFACE2(broker, IEAFStatusCenter, pStatusCenter);
+      pStatusCenter->Add(std::make_shared<pgsTimelineStatusItem>(m_StatusGroupID, m_scidTimelineError, strError));
 
       strError += _T("\n\nSee the Status Center for details");
    }
 
-   GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE2(broker, IDocumentType,pDocType);
    m_bIsPGSuper = pDocType->IsPGSuperDocument();
 
    // reset everything
@@ -399,7 +396,7 @@ IntervalIndexType CIntervalManager::GetFirstStressStrandInterval(const CGirderKe
       else
       {
          // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(m_pBroker,girderKey);
+         CGirderKey newKey = GetSafeGirderKey(girderKey);
 
          found = m_StrandStressingSequenceIntervalLimits.find(newKey);
          return found->second.second; // this will crash if not found, so no bother with assert
@@ -438,7 +435,7 @@ IntervalIndexType CIntervalManager::GetLastStressStrandInterval(const CGirderKey
       else
       {
          // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(m_pBroker,girderKey);
+         CGirderKey newKey = GetSafeGirderKey(girderKey);
 
          found = m_StrandStressingSequenceIntervalLimits.find(newKey);
          return found->second.second; // this will crash if not found, so no bother with assert
@@ -457,7 +454,7 @@ IntervalIndexType CIntervalManager::GetStressStrandInterval(const CSegmentKey& s
    else
    {
       // there is an unequal number of girders per group, and this one has less. use the right-most girder
-      CSegmentKey newkey(GetSafeSegmentKey(m_pBroker,segmentKey));
+      CSegmentKey newkey(GetSafeSegmentKey(segmentKey));
 
       found = m_StressStrandIntervals.find(newkey);
       return found->second; // this will crash if not found, so no bother with assert
@@ -485,7 +482,7 @@ IntervalIndexType CIntervalManager::GetPrestressReleaseInterval(const CSegmentKe
    else
    {
       // probably an unequal number of girders per group, and this one has less.
-      CSegmentKey newKey = GetSafeSegmentKey(m_pBroker,segmentKey);
+      CSegmentKey newKey = GetSafeSegmentKey(segmentKey);
 
       found = m_ReleaseIntervals.find(newKey);
       return found->second; // this will crash if not found, so no bother with assert
@@ -504,7 +501,7 @@ IntervalIndexType CIntervalManager::GetLiftingInterval(const CSegmentKey& segmen
    else
    {
       // probably an unequal number of girders per group, and this one has less.
-      CSegmentKey newKey = GetSafeSegmentKey(m_pBroker, segmentKey);
+      CSegmentKey newKey = GetSafeSegmentKey(segmentKey);
 
       found = m_SegmentLiftingIntervals.find(newKey);
       return found->second; // this will crash if not found, so no bother with assert
@@ -532,7 +529,7 @@ IntervalIndexType CIntervalManager::GetStorageInterval(const CSegmentKey& segmen
    else
    {
       // probably an unequal number of girders per group, and this one has less.
-      CSegmentKey newKey = GetSafeSegmentKey(m_pBroker, segmentKey);
+      CSegmentKey newKey = GetSafeSegmentKey(segmentKey);
 
       found = m_SegmentStorageIntervals.find(newKey);
       return found->second; // this will crash if not found, so no bother with assert
@@ -560,7 +557,7 @@ IntervalIndexType CIntervalManager::GetHaulingInterval(const CSegmentKey& segmen
    else
    {
       // probably an unequal number of girders per group, and this one has less.
-      CSegmentKey newKey = GetSafeSegmentKey(m_pBroker,segmentKey);
+      CSegmentKey newKey = GetSafeSegmentKey(segmentKey);
 
       found = m_SegmentHaulingIntervals.find(newKey);
       return found->second; // this will crash if not found, so no bother with assert
@@ -590,7 +587,7 @@ IntervalIndexType CIntervalManager::GetErectSegmentInterval(const CSegmentKey& s
    else
    {
       // probably an unequal number of girders per group, and this one has less.
-      CSegmentKey newKey = GetSafeSegmentKey(m_pBroker,segmentKey);
+      CSegmentKey newKey = GetSafeSegmentKey(segmentKey);
 
       found = m_SegmentErectionIntervals.find(newKey);
       return found->second; // this will crash if not found, so no bother with assert
@@ -657,7 +654,7 @@ IntervalIndexType CIntervalManager::GetCastClosureInterval(const CClosureKey& cl
    else
    {
       // probably an unequal number of girders per group, and this one has less.
-      CClosureKey newKey = GetSafeSegmentKey(m_pBroker,clousreKey);
+      CClosureKey newKey = GetSafeSegmentKey(clousreKey);
 
       found = m_CastClosureIntervals.find(newKey);
       return found->second; // this will crash if not found, so no bother with assert
@@ -1107,8 +1104,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
          // Here is an alternative method that works
          const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(tendonKey.girderKey.groupIndex)->GetGirder(tendonKey.girderKey.girderIndex);
          const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
-         CComPtr<IBeamFactory> factory;
-         pGirderEntry->GetBeamFactory(&factory);
+         auto factory = pGirderEntry->GetBeamFactory();
          WebIndexType nWebs = factory->GetWebCount(pGirderEntry->GetDimensions());
 
          for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )
@@ -2003,7 +1999,8 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx, const CTimelineEven
 
       if ( bUserLoad )
       {
-         GET_IFACE(IUserDefinedLoadData,pUserDefinedLoadData);
+         auto broker = EAFGetBroker();
+         GET_IFACE2(broker,IUserDefinedLoadData,pUserDefinedLoadData);
 
          IndexType nUserLoads = applyLoadActivity.GetUserLoadCount();
          for ( IndexType userLoadIdx = 0; userLoadIdx < nUserLoads; userLoadIdx++ )
@@ -2220,7 +2217,7 @@ IntervalIndexType CIntervalManager::GetFirstInterval(const CGirderKey& girderKey
       else
       {
          // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(m_pBroker, girderKey);
+         CGirderKey newKey = GetSafeGirderKey( girderKey);
 
          found = intervalLimits.find(newKey);
          return found->second.second; // this will crash if not found, so no bother with assert
@@ -2259,7 +2256,7 @@ IntervalIndexType CIntervalManager::GetLastInterval(const CGirderKey& girderKey,
       else
       {
          // probably an unequal number of girders per group, and this one has less.
-         CGirderKey newKey = GetSafeGirderKey(m_pBroker, girderKey);
+         CGirderKey newKey = GetSafeGirderKey(girderKey);
 
          found = intervalLimits.find(newKey);
          return found->second.second; // this will crash if not found, so no bother with assert

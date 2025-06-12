@@ -25,37 +25,29 @@
 #include "IEPluginExample.h"
 #include "PGSpliceProjectImporter.h"
 
-HRESULT CPGSpliceProjectImporter::FinalConstruct()
+CPGSpliceProjectImporter::CPGSpliceProjectImporter()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    VERIFY(m_Bitmap.LoadBitmap(IDB_IEPLUGIN));
-   return S_OK;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CPGSpliceProjectImporter
-
-STDMETHODIMP CPGSpliceProjectImporter::GetCLSID(CLSID* pCLSID) const
+CString CPGSpliceProjectImporter::GetItemText() const
 {
-   *pCLSID = CLSID_PGSuperProjectImporter;
-   return S_OK;
+   return CString("Example Importer");
 }
 
-STDMETHODIMP CPGSpliceProjectImporter::GetItemText(BSTR*  bstrText) const
+CLSID CPGSpliceProjectImporter::GetCLSID() const
 {
-   CComBSTR bstrItemText("Example Importer");
-   *bstrText = bstrItemText.Copy();
-   return S_OK;
+   return CLSID_PGSuperProjectImporter;
 }
 
-STDMETHODIMP CPGSpliceProjectImporter::GetIcon(HICON* phIcon) const
+HICON CPGSpliceProjectImporter::GetIcon() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   *phIcon = AfxGetApp()->LoadIcon(IDI_IMPORTER);
-   return S_OK;
+   return AfxGetApp()->LoadIcon(IDI_IMPORTER);
 }
 
-STDMETHODIMP CPGSpliceProjectImporter::Import(IBroker* pBroker)
+HRESULT CPGSpliceProjectImporter::Import(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
 //   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -70,4 +62,3 @@ STDMETHODIMP CPGSpliceProjectImporter::Import(IBroker* pBroker)
       return E_FAIL;
    }
 }
-

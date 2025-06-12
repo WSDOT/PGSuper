@@ -31,6 +31,8 @@
 #include "BridgeModelViewChildFrame.h"
 #include "mfcdual.h"
 #include "PGSuperDoc.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
 
@@ -46,7 +48,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSlabDisplayObjectEvents
 
-CBridgePlanViewSlabDisplayObjectEvents::CBridgePlanViewSlabDisplayObjectEvents(CPGSDocBase* pDoc,IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
+CBridgePlanViewSlabDisplayObjectEvents::CBridgePlanViewSlabDisplayObjectEvents(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
 {
    m_pDoc = pDoc;
    m_pBroker = pBroker;
@@ -157,7 +159,7 @@ bool CBridgePlanViewSlabDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL:
       auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,nullptr);
 
       const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
@@ -242,7 +244,7 @@ void CBridgePlanViewSlabDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DM
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionViewSlabDisplayObjectEvents
 
-CBridgeSectionViewSlabDisplayObjectEvents::CBridgeSectionViewSlabDisplayObjectEvents(CPGSDocBase* pDoc,IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
+CBridgeSectionViewSlabDisplayObjectEvents::CBridgeSectionViewSlabDisplayObjectEvents(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
 {
    m_pDoc = pDoc;
    m_pBroker = pBroker;
@@ -345,7 +347,7 @@ bool CBridgeSectionViewSlabDisplayObjectEvents::OnContextMenu(std::shared_ptr<WB
       auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,nullptr);
 
       const std::map<IDType,IBridgeSectionViewEventCallback*>& callbacks = pDoc->GetBridgeSectionViewCallbacks();

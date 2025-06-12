@@ -22,19 +22,15 @@
 
 // RelaxationAfterTransferTable.cpp : Implementation of CRelaxationAfterTransferTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "RelaxationAfterTransferTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <Reporting\ReportNotes.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CRelaxationAfterTransferTable::CRelaxationAfterTransferTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CRelaxationAfterTransferTable::CRelaxationAfterTransferTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -49,7 +45,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 5;
@@ -108,7 +104,7 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    return table;
 }
 
-void CRelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CRelaxationAfterTransferTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
   // Typecast to our known type (eating own doggy food)
    std::shared_ptr<const WBFL::LRFD::RefinedLosses> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses>(pDetails->pLosses);

@@ -20,31 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_FLEXURALSTRESSARTIFACT_H_
-#define INCLUDED_PGSEXT_FLEXURALSTRESSARTIFACT_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
-
-#include <PgsExt\PointOfInterest.h>
-
+#include <PsgLib\PointOfInterest.h>
 #include <WBFLGenericBridgeTools\AlternativeTensileStressCalculator.h>
 
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -64,20 +45,14 @@ LOG
 class PGSEXTCLASS pgsFlexuralStressArtifact
 {
 public:
-   //------------------------------------------------------------------------
-   // Default constructor
    pgsFlexuralStressArtifact();
    pgsFlexuralStressArtifact(const pgsPointOfInterest& poi,const StressCheckTask& task);
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsFlexuralStressArtifact(const pgsFlexuralStressArtifact& rOther);
+   pgsFlexuralStressArtifact(const pgsFlexuralStressArtifact& rOther) = default;
 
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsFlexuralStressArtifact();
+   ~pgsFlexuralStressArtifact() = default;
 
-   pgsFlexuralStressArtifact& operator = (const pgsFlexuralStressArtifact& rOther);
+   pgsFlexuralStressArtifact& operator = (const pgsFlexuralStressArtifact& rOther) = default;
    bool operator<(const pgsFlexuralStressArtifact& rOther) const;
 
    // Set/Get the point of interest where this stress check occurs
@@ -135,11 +110,6 @@ public:
    Float64 GetBeamCDRatio() const;
    Float64 GetDeckCDRatio() const;
 
-
-protected:
-   void MakeCopy(const pgsFlexuralStressArtifact& rOther);
-   void MakeAssignment(const pgsFlexuralStressArtifact& rOther);
-
 private:
    pgsPointOfInterest m_Poi;
    StressCheckTask m_Task;
@@ -173,5 +143,3 @@ private:
    Float64 GetCDRatio(Float64 c,Float64 d) const;
    Float64 GetCDRatio(pgsTypes::StressLocation topStressLocation,pgsTypes::StressLocation botStressLocation) const;
 };
-
-#endif // INCLUDED_PGSEXT_FLEXURALSTRESSARTIFACT_H_

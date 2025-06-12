@@ -21,13 +21,9 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Beams.h"
 #include "UBeamHelpers.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 void GetSlope(IUBeam* beam,Float64* slope)
 {

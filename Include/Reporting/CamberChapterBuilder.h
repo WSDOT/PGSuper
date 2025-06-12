@@ -27,7 +27,7 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class REPORTINGCLASS CCamberChapterBuilder : public CPGSuperChapterBuilder
 {
@@ -36,10 +36,4 @@ public:
 
    virtual LPCTSTR GetName() const override;
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-private:
-   // Prevent accidental copying and assignment
-   CCamberChapterBuilder(const CCamberChapterBuilder&) = delete;
-   CCamberChapterBuilder& operator=(const CCamberChapterBuilder&) = delete;
 };

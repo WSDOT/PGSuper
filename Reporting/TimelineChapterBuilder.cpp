@@ -25,26 +25,21 @@
 #include <Reporting\BrokerReportSpecification.h>
 #include <Reporting\TimelineManagerReportSpecification.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TimelineManager.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TimelineManager.h>
+#include <PsgLib\ClosureJointData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CTimelineChapterBuilder::CTimelineChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTimelineChapterBuilder::GetName() const
 {
    return TEXT("Construction Timeline");
@@ -56,8 +51,7 @@ rptChapter* CTimelineChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    auto pTimelineMgrRptSpec = std::dynamic_pointer_cast<const CTimelineManagerReportSpecification>(pRptSpec);
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    CGirderKey girderKey;
    if (pGirderRptSpec)
@@ -437,9 +431,4 @@ rptChapter* CTimelineChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimelineChapterBuilder::Clone() const
-{
-   return std::make_unique<CTimelineChapterBuilder>();
 }

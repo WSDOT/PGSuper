@@ -38,17 +38,12 @@
 #include <EAF\EAFGraphBuilderBase.h>
 #include <EAF\EAFGraphView.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <PGSuperUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 bool IsTSIndex(IndexType key) { return MAX_INDEX/2 <= key ? true : false; }
 SupportIndexType EncodeTSIndex(SupportIndexType tsIdx) { return MAX_INDEX-tsIdx; }
@@ -92,7 +87,7 @@ BOOL CConcretePropertyGraphController::OnInitDialog()
 {
    CEAFGraphControlWindow::OnInitDialog();
 
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    CheckRadioButton(IDC_PRECAST_SEGMENT,IDC_DECK,IDC_PRECAST_SEGMENT);
    CheckRadioButton(IDC_FC,IDC_CR,IDC_FC);

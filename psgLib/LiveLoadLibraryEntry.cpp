@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <psgLib\LiveLoadLibraryEntry.h>
+#include <PsgLib\LiveLoadLibraryEntry.h>
 
 #include <System\IStructuredSave.h>
 #include <System\IStructuredLoad.h>
@@ -33,14 +33,9 @@
 
 #include <MathEx.h>
 #include <EAF\EAFApp.h>
-#include <psgLib\LibraryEntryDifferenceItem.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\DifferenceItem.h>
+#include <PsgLib\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -245,12 +240,12 @@ CString LiveLoadLibraryEntry::GetApplicabilityType(pgsTypes::LiveLoadApplicabili
 
 bool LiveLoadLibraryEntry::IsEqual(const LiveLoadLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
+   std::vector<std::unique_ptr<PGS::Library::DifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -260,31 +255,31 @@ bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vect
    if ( m_IsNotional != rOther.m_IsNotional )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Neglect axles that do not contribute to the maximum load effect under consideration"),m_IsNotional,rOther.m_IsNotional,_T("Checked"),_T("Unchecked")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceBooleanItem>(_T("Neglect axles that do not contribute to the maximum load effect under consideration"),m_IsNotional,rOther.m_IsNotional,_T("Checked"),_T("Unchecked")));
    }
 
    if ( m_LiveLoadConfigurationType != rOther.m_LiveLoadConfigurationType )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Load Type"),GetConfigurationType(m_LiveLoadConfigurationType),GetConfigurationType(rOther.m_LiveLoadConfigurationType)));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Load Type"),GetConfigurationType(m_LiveLoadConfigurationType),GetConfigurationType(rOther.m_LiveLoadConfigurationType)));
    }
 
    if ( m_LiveLoadApplicabilityType != rOther.m_LiveLoadApplicabilityType )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Usage"),GetApplicabilityType(m_LiveLoadApplicabilityType),GetApplicabilityType(rOther.m_LiveLoadApplicabilityType)));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Usage"),GetApplicabilityType(m_LiveLoadApplicabilityType),GetApplicabilityType(rOther.m_LiveLoadApplicabilityType)));
    }
 
    if ( !::IsEqual(m_LaneLoad,rOther.m_LaneLoad) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceForcePerLengthItem>(_T("Lane Load"),m_LaneLoad,rOther.m_LaneLoad,pDisplayUnits->ForcePerLength));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceForcePerLengthItem>(_T("Lane Load"),m_LaneLoad,rOther.m_LaneLoad,pDisplayUnits->ForcePerLength));
    }
 
    if ( !::IsEqual(m_LaneLoadSpanLength,rOther.m_LaneLoadSpanLength) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Lane Load Minimum Span Length"),m_LaneLoadSpanLength,rOther.m_LaneLoadSpanLength,pDisplayUnits->SpanLength));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthItem>(_T("Lane Load Minimum Span Length"),m_LaneLoadSpanLength,rOther.m_LaneLoadSpanLength,pDisplayUnits->SpanLength));
    }
 
    if ( m_LiveLoadConfigurationType != LiveLoadLibraryEntry::lcLaneOnly )
@@ -293,19 +288,19 @@ bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vect
       if ( nAxles != rOther.m_Axles.size() )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceIndexItem>(_T("Number of Axles"),nAxles,rOther.m_Axles.size()));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceIndexItem>(_T("Number of Axles"),nAxles,rOther.m_Axles.size()));
       }
 
       if ( m_VariableAxleIndex != rOther.m_VariableAxleIndex )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceIndexItem>(_T("Variable Axle Index"),m_VariableAxleIndex,rOther.m_VariableAxleIndex));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceIndexItem>(_T("Variable Axle Index"),m_VariableAxleIndex,rOther.m_VariableAxleIndex));
       }
 
       if ( !::IsEqual(m_MaxVariableAxleSpacing,rOther.m_MaxVariableAxleSpacing) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Maximum Variable Axle Spacing"),m_MaxVariableAxleSpacing,rOther.m_MaxVariableAxleSpacing,pDisplayUnits->SpanLength));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthItem>(_T("Maximum Variable Axle Spacing"),m_MaxVariableAxleSpacing,rOther.m_MaxVariableAxleSpacing,pDisplayUnits->SpanLength));
       }
 
       for ( AxleIndexType axleIdx = 0; axleIdx < nAxles; axleIdx++ )
@@ -318,7 +313,7 @@ bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vect
             RETURN_ON_DIFFERENCE;
             CString strAxle;
             strAxle.Format(_T("Axle %d - Weight"),LABEL_INDEX(axleIdx));
-            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceForceItem>(strAxle,axle.Weight,otherAxle.Weight,pDisplayUnits->GeneralForce));
+            vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceForceItem>(strAxle,axle.Weight,otherAxle.Weight,pDisplayUnits->GeneralForce));
          }
 
          if ( !::IsEqual(axle.Spacing,otherAxle.Spacing) )
@@ -326,7 +321,7 @@ bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vect
             RETURN_ON_DIFFERENCE;
             CString strAxle;
             strAxle.Format(_T("Axle %d - Spacing"),LABEL_INDEX(axleIdx));
-            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(strAxle,axle.Spacing,otherAxle.Spacing,pDisplayUnits->SpanLength));
+            vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthItem>(strAxle,axle.Spacing,otherAxle.Spacing,pDisplayUnits->SpanLength));
          }
       }
 
@@ -335,7 +330,7 @@ bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vect
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;

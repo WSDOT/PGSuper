@@ -24,16 +24,11 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "DuctEntryDlg.h"
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CDuctEntryDlg dialog

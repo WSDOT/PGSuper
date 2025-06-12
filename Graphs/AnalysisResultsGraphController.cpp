@@ -35,19 +35,13 @@
 #include <EAF\EAFDocument.h>
 #include <Hints.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNCREATE(CAnalysisResultsGraphController,CGirderGraphControllerBase)
 
 CAnalysisResultsGraphController::CAnalysisResultsGraphController():
 CGirderGraphControllerBase(true/*false*//*exclude ALL_GROUPS*/)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    m_LiveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 }
@@ -600,8 +594,7 @@ std::vector<ActionType> CAnalysisResultsGraphController::GetActionTypes() const
 {
    std::vector<ActionType> vActions;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
    if (pProductLoads->ReportAxialResults())
    {
@@ -648,8 +641,7 @@ LPCTSTR CAnalysisResultsGraphController::GetActionName(ActionType action) const
 {
    if (action == actionDeflection)
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker, IBridge, pBridge);
       if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
       {

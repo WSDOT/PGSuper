@@ -24,62 +24,39 @@
 
 #pragma once
 
+#include <EAF\ComponentObject.h>
 #include <Plugins\PGSuperIEPlugin.h>
 #include "CLSID.h"
-#include "resource.h"       // main symbols
 #include "ExportCadData.h" 
 
 
-#if defined(_WIN32_WCE) && !defined(_CE_DCOM) && !defined(_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA)
-#error "Single-threaded COM objects are not properly supported on Windows CE platform, such as the Windows Mobile platforms that do not include full DCOM support. Define _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA to force ATL to support creating single-thread COM object's and allow use of it's single-threaded COM object implementations. The threading model in your rgs file was set to 'Free' as that is the only threading model supported in non DCOM Windows CE platforms."
-#endif
-
 // CTxDOTCadExporter
 
-class ATL_NO_VTABLE CTxDOTCadExporter :
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CTxDOTCadExporter, &CLSID_TxDOTCadExporter>,
-	public IPGSDataExporter,
-   public IPGSDocumentation
+class CTxDOTCadExporter : public WBFL::EAF::ComponentObject,
+   public PGS::IDataExporter,
+   public PGS::IPluginDocumentation
 {
 public:
-	CTxDOTCadExporter()
-	{
-	}
+   CTxDOTCadExporter();
+   ~CTxDOTCadExporter();
 
-DECLARE_REGISTRY_RESOURCEID(IDR_TXDOTCADEXPORTER)
-
-DECLARE_NOT_AGGREGATABLE(CTxDOTCadExporter)
-
-BEGIN_COM_MAP(CTxDOTCadExporter)
-	COM_INTERFACE_ENTRY(IPGSDataExporter)
-   COM_INTERFACE_ENTRY(IPGSDocumentation)
-END_COM_MAP()
-
-
-
-	DECLARE_PROTECT_FINAL_CONSTRUCT()
-
-   HRESULT FinalConstruct();
-   void FinalRelease();
-
-// IPGSDataExporter
+// IDataExporter
 public:
    STDMETHOD(Init)(UINT nCmdID) override;
-   STDMETHOD(GetMenuText)(/*[out,retval]*/BSTR*  bstrText) const override;
-   STDMETHOD(GetBitmapHandle)(/*[out]*/HBITMAP* phBmp) const override;
-   STDMETHOD(GetCommandHintText)(BSTR*  bstrText) const override;
-   STDMETHOD(Export)(/*[in]*/IBroker* pBroker) override;
+   CString GetMenuText() const override;
+   HBITMAP GetBitmapHandle() const override;
+   CString GetCommandHintText() const override;
+   STDMETHOD(Export)(/*[in]*/std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
 
-// IPGSDocumentation
+// IPluginDocumentation
 public:
-   STDMETHOD(GetDocumentationSetName)(BSTR* pbstrName) const override;
+   CString GetDocumentationSetName() const override;
    STDMETHOD(LoadDocumentationMap)() override;
-   STDMETHOD(GetDocumentLocation)(UINT nHID,BSTR* pbstrURL) const override;
+   std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(UINT nHID) const override;
 
 private:
-   HRESULT ExportGirderDesignData(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat);
-   HRESULT ExportHaunchDeflectionData(IBroker * pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat);
+   HRESULT ExportGirderDesignData(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat);
+   HRESULT ExportHaunchDeflectionData(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat);
 
    std::map<UINT,CString> m_HelpTopics;
    CString GetDocumentationURL() const;
@@ -88,5 +65,3 @@ private:
 
    CString m_strTemplateLocation;
 };
-
-OBJECT_ENTRY_AUTO(__uuidof(TxDOTCadExporter), CTxDOTCadExporter)

@@ -30,7 +30,7 @@ class REPORTINGCLASS CInitialStrainAnalysisReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-	CInitialStrainAnalysisReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx);
+	CInitialStrainAnalysisReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx);
    CInitialStrainAnalysisReportSpecification(const CInitialStrainAnalysisReportSpecification& rOther);
    ~CInitialStrainAnalysisReportSpecification(void);
 

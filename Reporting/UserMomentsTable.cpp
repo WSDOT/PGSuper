@@ -31,49 +31,15 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CUserMomentsTable
-****************************************************************************/
+#include <IFace/PointOfInterest.h>
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CUserMomentsTable::CUserMomentsTable()
 {
 }
 
-CUserMomentsTable::CUserMomentsTable(const CUserMomentsTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CUserMomentsTable::~CUserMomentsTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CUserMomentsTable& CUserMomentsTable::operator= (const CUserMomentsTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
-                                      IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CUserMomentsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
+                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -169,32 +135,3 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
 
    return p_table;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CUserMomentsTable::MakeCopy(const CUserMomentsTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CUserMomentsTable::MakeAssignment(const CUserMomentsTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

@@ -26,26 +26,15 @@
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include <Reporting\RatingSummaryTable.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Artifact.h>
 #include <IFace\Intervals.h>
-
 #include <IFace\RatingSpecification.h>
 #include <IFace\Bridge.h>
 
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/****************************************************************************
-CLASS
-   CTexasLoadRatingSummaryChapterBuilder
-****************************************************************************/
 
 CTexasLoadRatingSummaryChapterBuilder::CTexasLoadRatingSummaryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -69,8 +58,7 @@ rptChapter* CTexasLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<c
    {
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pGirderRptSpec, level);
 
-      CComPtr<IBroker> pBroker;
-      pGirderRptSpec->GetBroker(&pBroker);
+      auto pBroker = pGirderRptSpec->GetBroker();
       const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
       std::vector<CGirderKey> girderKeys{ girderKey };
 
@@ -96,9 +84,4 @@ rptChapter* CTexasLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<c
       }
    }
 
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasLoadRatingSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CTexasLoadRatingSummaryChapterBuilder>();
 }

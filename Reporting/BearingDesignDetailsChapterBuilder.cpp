@@ -35,6 +35,7 @@
 #include <Reporting\CombinedReactionTable.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
@@ -42,35 +43,18 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 #include <IFace\DistributionFactors.h>
+#include <IFace/PointOfInterest.h>
 
 #include <psgLib/ThermalMovementCriteria.h>
-
-#include <PgsExt\PierData2.h>
+#include <PsgLib/SpecLibraryEntry.h>
+#include <PsgLib\PierData2.h>
 #include <Reporting/BearingDesignPropertiesTable.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CBearingDesignParametersChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CBearingDesignDetailsChapterBuilder::CBearingDesignDetailsChapterBuilder(bool bSelect) :
     CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CBearingDesignDetailsChapterBuilder::GetName() const
 {
     return TEXT("Bearing Design Details");
@@ -79,8 +63,7 @@ LPCTSTR CBearingDesignDetailsChapterBuilder::GetName() const
 rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
     auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-    CComPtr<IBroker> pBroker;
-    pGirderRptSpec->GetBroker(&pBroker);
+    auto pBroker = pGirderRptSpec->GetBroker();
     const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
     rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
@@ -407,9 +390,4 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingRecessSlope.png")) << rptNewLine;
 
     return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder>CBearingDesignDetailsChapterBuilder::Clone() const
-{
-    return std::make_unique<CBearingDesignDetailsChapterBuilder>();
 }

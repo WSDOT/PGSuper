@@ -24,7 +24,8 @@
 #include <Reporter\Chapter.h>
 #include <PgsExt\RatingArtifact.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
+namespace WBFL { namespace EAF { class Broker; }; };
 
 class CLoadRatingSummaryChapterBuilder : public CPGSuperChapterBuilder
 {
@@ -32,13 +33,8 @@ public:
    CLoadRatingSummaryChapterBuilder(bool bSelect = true);
    virtual LPCTSTR GetName() const override;
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 private:
-   // Prevent accidental copying and assignment
-   CLoadRatingSummaryChapterBuilder(const CLoadRatingSummaryChapterBuilder&) = delete;
-   CLoadRatingSummaryChapterBuilder& operator=(const CLoadRatingSummaryChapterBuilder&) = delete;
-
-   void ReportRatingFactor(IBroker* pBroker,rptRcTable* pTable,RowIndexType& row,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const;
-   void ReportRatingFactor2(IBroker* pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const;
+   void ReportRatingFactor(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType& row,const pgsRatingArtifact* pRatingArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptParagraph* pRemarks) const;
+   void ReportRatingFactor2(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptParagraph* pRemarks) const;
 };

@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 // Reports the stresses in the girder or deck due to post-tensioning
 class REPORTINGCLASS CPosttensionStressTable
@@ -35,6 +35,6 @@ public:
    ~CPosttensionStressTable() = default;
 
    CPosttensionStressTable& operator = (const CPosttensionStressTable& rOther) = default;
-   rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,
-                             bool bDesign,IEAFDisplayUnits* pDisplayUnits,bool bGirderStresses) const;
+   rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                             bool bDesign,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bGirderStresses) const;
 };

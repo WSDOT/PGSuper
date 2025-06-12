@@ -1,20 +1,20 @@
 HKCR
 {
-	PGSuper.PGSuperAppPlugin.1 = s 'PGSuper'
+	PGSuper.PGSuperPluginApp.1 = s 'PGSuper'
 	{
 		CLSID = s '{22F091F9-B2BE-4313-BDA3-8F46A44681E9}'
 	}
-	PGSuper.PGSuperAppPlugin = s 'PGSuper'
+	PGSuper.PGSuperPluginApp = s 'PGSuper'
 	{
 		CLSID = s '{22F091F9-B2BE-4313-BDA3-8F46A44681E9}'
-		CurVer = s 'PGSuper.PGSuperAppPlugin.1'
+		CurVer = s 'PGSuper.PGSuperPluginApp.1'
 	}
 	NoRemove CLSID
 	{
 		ForceRemove {22F091F9-B2BE-4313-BDA3-8F46A44681E9} = s 'PGSuper'
 		{
-			ProgID = s 'PGSuper.PGSuperAppPlugin.1'
-			VersionIndependentProgID = s 'PGSuper.PGSuperAppPlugin'
+			ProgID = s 'PGSuper.PGSuperPluginApp.1'
+			VersionIndependentProgID = s 'PGSuper.PGSuperPluginApp'
 			ForceRemove 'Programmable'
 			InprocServer32 = s '%MODULE%'
 			{

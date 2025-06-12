@@ -24,19 +24,16 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "PGSuperColors.h"
 #include "DrawDeckRegionControl.h"
 #include "CastDeckDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CDrawDeckRegionControl
@@ -84,8 +81,7 @@ void CDrawDeckRegionControl::OnPaint()
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
    PierIndexType nPiers = pBridgeDesc->GetPierCount();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridge, pBridge);
 
    CComPtr<IPoint2d> pntLeft, pntBridge, pntRight;

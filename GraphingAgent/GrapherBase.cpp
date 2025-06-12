@@ -20,12 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// PGSuperGrapherImp.cpp : Implementation of CPGSuperGrapherImp
 #include "stdafx.h"
+#include <IFace\Tools.h>
 #include "GrapherBase.h"
 
 // Interfaces
-#include <IGraphManager.h>
+#include <EAF/EAFGraphManager.h>
 #include <IFace\Project.h>
 
 // Graph Builders
@@ -39,15 +39,10 @@
 #include <Graphs\ConcretePropertyGraphBuilder.h>
 #include <Graphs\DeflectionHistoryGraphBuilder.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-void CGrapherBase::InitCommonGraphBuilders()
+bool CGrapherBase::InitCommonGraphBuilders(std::shared_ptr<WBFL::EAF::Broker> broker)
 {
-   GET_IFACE(IGraphManager,pGraphMgr);
+   GET_IFACE2(broker,IEAFGraphManager,pGraphMgr);
 
    pGraphMgr->SortByName(false); // don't sort alphabetically
 
@@ -61,10 +56,6 @@ void CGrapherBase::InitCommonGraphBuilders()
    pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CGirderPropertiesGraphBuilder>()));
    pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CStabilityGraphBuilder>()));
    pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CStressHistoryGraphBuilder>()));
-}
 
-STDMETHODIMP CGrapherBase::SetBroker(IBroker* pBroker)
-{
-   m_pBroker = pBroker;
-   return S_OK;
+   return true;
 }

@@ -32,7 +32,7 @@
 class CBridgeDescDlg;
 
 #include "resource.h"
-#include <PgsExt\DeckDescription.h>
+#include <PsgLib\DeckDescription.h>
 #include "BridgeDescDeckPointGrid.h"
 #include <PgsExt\HaunchShapeComboBox.h>
 

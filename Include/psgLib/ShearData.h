@@ -20,36 +20,18 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSLIB_SHEARDATA_H_
-#define INCLUDED_PGSLIB_SHEARDATA_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#include <WBFLCore.h>
-
-#if !defined INCLUDED_MATHEX_H_
+#include "PsgLibLib.h"
 #include <MathEx.h>
-#endif
-
-// PROJECT INCLUDES
-//
-#include "psgLibLib.h"
-
 #include <StrData.h>
-
-// LOCAL INCLUDES
-//
-#include <psgLib\ShearZoneData.h>
 #include <PsgLib\HorizontalInterfaceZoneData.h>
+#include <PsgLib\ShearZoneData.h>
 
 #include <Materials/Rebar.h>
 
-// FORWARD DECLARATIONS
-//
+class CShearData2;
 class GirderLibraryEntry;
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -66,9 +48,76 @@ LOG
    rdp : 12.03.1998 : Created file
 *****************************************************************************/
 
+class PSGLIBCLASS CShearData
+{
+public:
+   CShearData();
+
+   CShearData(const CShearData& rOther) = default;
+   ~CShearData();
+
+   CShearData& operator = (const CShearData& rOther) = default;
+
+   bool operator == (const CShearData& rOther) const;
+   bool operator != (const CShearData& rOther) const;
+
+   HRESULT Load(WBFL::System::IStructuredLoad* pStrLoad);
+   HRESULT Save(WBFL::System::IStructuredSave* pStrSave);
+   
+   // copy shear data from a girder entry
+   void CopyGirderEntryData(const GirderLibraryEntry& rGird);
+   
+   CShearData2 Convert() const;
+
+   WBFL::Materials::Rebar::Type  ShearBarType;
+   WBFL::Materials::Rebar::Grade ShearBarGrade;
+
+   bool  bIsRoughenedSurface;
+   bool  bAreZonesSymmetrical;
+   bool  bUsePrimaryForSplitting;
+
+   typedef std::vector<CShearZoneData> ShearZoneVec;
+   typedef ShearZoneVec::iterator ShearZoneIterator;
+   typedef ShearZoneVec::const_iterator ShearZoneConstIterator;
+   typedef ShearZoneVec::reverse_iterator ShearZoneReverseIterator;
+   typedef ShearZoneVec::const_reverse_iterator ShearZoneConstReverseIterator;
+   ShearZoneVec ShearZones;
+
+   // Horiz interface zones, splitting and confinement data added in v 9
+   typedef std::vector<CHorizontalInterfaceZoneData> HorizontalInterfaceZoneVec;
+   typedef HorizontalInterfaceZoneVec::iterator HorizontalInterfaceZoneIterator;
+   typedef HorizontalInterfaceZoneVec::const_iterator HorizontalInterfaceZoneConstIterator;
+   typedef HorizontalInterfaceZoneVec::reverse_iterator HorizontalInterfaceZoneReverseIterator;
+   typedef HorizontalInterfaceZoneVec::const_reverse_iterator HorizontalInterfaceZoneConstReverseIterator;
+   HorizontalInterfaceZoneVec HorizontalInterfaceZones;
+   
+   WBFL::Materials::Rebar::Size SplittingBarSize;
+   Float64 SplittingBarSpacing;
+   Float64 SplittingZoneLength;
+   Float64 nSplittingBars;
+
+   WBFL::Materials::Rebar::Size ConfinementBarSize;
+   Float64 ConfinementBarSpacing;
+   Float64 ConfinementZoneLength;
+};
+
 class PSGLIBCLASS CShearData2
 {
 public:
+   CShearData2();
+   CShearData2(const CShearData2& rOther) = default;
+   ~CShearData2();
+
+   CShearData2& operator = (const CShearData2& rOther) = default;
+   bool operator == (const CShearData2& rOther) const;
+   bool operator != (const CShearData2& rOther) const;
+
+   HRESULT Load(WBFL::System::IStructuredLoad* pStrLoad);
+   HRESULT Save(WBFL::System::IStructuredSave* pStrSave);
+
+   // copy shear data from a girder entry
+   void CopyGirderEntryData(const GirderLibraryEntry* pGirderEntry);
+
    WBFL::Materials::Rebar::Type  ShearBarType;
    WBFL::Materials::Rebar::Grade ShearBarGrade;
 
@@ -103,71 +152,4 @@ public:
    WBFL::Materials::Rebar::Size ConfinementBarSize;
    Float64 ConfinementBarSpacing;
    Float64 ConfinementZoneLength;
-
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Constructor
-   CShearData2();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CShearData2(const CShearData2& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   ~CShearData2();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CShearData2& operator = (const CShearData2& rOther);
-   bool operator == (const CShearData2& rOther) const;
-   bool operator != (const CShearData2& rOther) const;
-
-   // GROUP: OPERATIONS
-
-	HRESULT Load(WBFL::System::IStructuredLoad* pStrLoad);
-	HRESULT Save(WBFL::System::IStructuredSave* pStrSave);
-
-   // copy shear data from a girder entry
-   void CopyGirderEntryData(const GirderLibraryEntry* pGirderEntry);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-#if defined _DEBUG
-   void AssertValid();
-#endif
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CShearData2& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CShearData2& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-//   static HRESULT ShearProc(IStructuredSave*,IStructuredLoad*,IProgress*,CShearData*);
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_PGSLIB_SHEARDATA_H_

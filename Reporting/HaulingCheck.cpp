@@ -24,24 +24,20 @@
 #include <Reporting\HaulingCheck.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Artifact.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -78,8 +74,8 @@ CHaulingCheck& CHaulingCheck::operator= (const CHaulingCheck& rOther)
 
 //======================== OPERATIONS =======================================
 void CHaulingCheck::Build(rptChapter* pChapter,
-                              IBroker* pBroker,const CGirderKey& girderKey,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
@@ -111,8 +107,8 @@ void CHaulingCheck::Build(rptChapter* pChapter,
 
 
 void CHaulingCheck::Build(rptChapter* pChapter,
-   IBroker* pBroker, const CSegmentKey& segmentKey,
-   IEAFDisplayUnits* pDisplayUnits) const
+   std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, ISegmentHaulingSpecCriteria, pSegmentHaulingSpecCriteria);
    if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
@@ -133,7 +129,7 @@ void CHaulingCheck::Build(rptChapter* pChapter,
          *pChapter << p;
       }
 
-      const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
+      auto pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
       pHaulArtifact->BuildHaulingCheckReport(segmentKey, pChapter, pBroker, pDisplayUnits);
    }
    else

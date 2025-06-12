@@ -39,7 +39,7 @@ static const Float64 SSIZE = 1440 * 3/8; // (twips)
 
 UINT CBridgeSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat(_T("BridgeSectionCutData"));
 
-void CBridgeSectionCutDisplayImpl::Init(CBridgeModelViewChildFrame* pFrame,std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IRoadway* pRoadway,IBridge* pBridge, iCutLocation* pCutLoc)
+void CBridgeSectionCutDisplayImpl::Init(CBridgeModelViewChildFrame* pFrame,std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::weak_ptr<IRoadway> pRoadway,std::weak_ptr<IBridge> pBridge, iCutLocation* pCutLoc)
 {
    m_pFrame = pFrame;
    m_pRoadway = pRoadway;
@@ -130,24 +130,27 @@ void CBridgeSectionCutDisplayImpl::GetBoundingBox(std::shared_ptr<const WBFL::DM
 
 std::pair<WBFL::Geometry::Point2d,WBFL::Geometry::Point2d> CBridgeSectionCutDisplayImpl::GetSectionCutPointsInWorldSpace(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,const WBFL::Geometry::Point2d& userLoc) const
 {
+   auto roadway = m_pRoadway.lock();
+   auto bridge = m_pBridge.lock();
+
    CComPtr<IPoint2d> p;
    p.CoCreateInstance(CLSID_Point2d);
    p->Move(userLoc.X(), userLoc.Y());
    Float64 station, offset;
-   m_pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,p,&station,&offset);
+   roadway->GetStationAndOffset(pgsTypes::pcGlobal,p,&station,&offset);
    
    CComPtr<IDirection> normal;
-   m_pRoadway->GetBearingNormal(station,&normal);
+   roadway->GetBearingNormal(station,&normal);
 
-   Float64 start_station = m_pBridge->GetPierStation(0);
+   Float64 start_station = bridge->GetPierStation(0);
    Float64 Xb = station - start_station;
 
-   Float64 left  = m_pBridge->GetLeftSlabEdgeOffset(Xb);
-   Float64 right = m_pBridge->GetRightSlabEdgeOffset(Xb);
+   Float64 left  = bridge->GetLeftSlabEdgeOffset(Xb);
+   Float64 right = bridge->GetRightSlabEdgeOffset(Xb);
 
    CComPtr<IPoint2d> p1, p2;
-   m_pRoadway->GetPoint(station, left,  normal, pgsTypes::pcGlobal, &p1);
-   m_pRoadway->GetPoint(station, right, normal, pgsTypes::pcGlobal, &p2);
+   roadway->GetPoint(station, left,  normal, pgsTypes::pcGlobal, &p1);
+   roadway->GetPoint(station, right, normal, pgsTypes::pcGlobal, &p2);
 
    Float64 x1, y1; p1->Location(&x1, &y1);
    Float64 x2, y2; p2->Location(&x2, &y2);
@@ -257,18 +260,20 @@ void CBridgeSectionCutDisplayImpl::OnChanged(std::shared_ptr<WBFL::DManip::iDisp
 
 void CBridgeSectionCutDisplayImpl::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
+   auto roadway = m_pRoadway.lock();
+
    Float64 pos =  m_pCutLocation->GetCurrentCutLocation();
 
    CComPtr<IDirection> direction;
-   m_pRoadway->GetBearing(pos,&direction);
+   roadway->GetBearing(pos,&direction);
 
    CComPtr<IPoint2d> point;
-   m_pRoadway->GetPoint(pos,0.00,direction,pgsTypes::pcGlobal,&point);
+   roadway->GetPoint(pos,0.00,direction,pgsTypes::pcGlobal,&point);
 
    point->Offset(offset.Dx(), offset.Dy());
 
    Float64 station, alignment_offset;
-   m_pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,point,&station,&alignment_offset);
+   roadway->GetStationAndOffset(pgsTypes::pcGlobal,point,&station,&alignment_offset);
 
    PutPosition(station);
 }

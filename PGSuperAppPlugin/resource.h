@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by PGSuperAppPlugin.rc
+// Used by PGSuperPluginApp.rc
 //
 #define ID_INDICATOR_CRITERIA           4
 #define ID_INDICATOR_ANALYSIS           5
@@ -14,15 +14,13 @@
 #define EAF_TOOLBAR_MENU_COUNT          40
 #define EAF_REPORT_MENU_COUNT           50
 #define EAF_GRAPH_MENU_COUNT            50
-#define IDR_PGSUPERAPPPLUGIN            101
-#define IDR_PGSUPERCOMPONENTINFO        102
+#define IDR_PGSuperPluginApp            101
 #define IDC_CONCRETE_TYPE_LABEL         102
-#define IDR_PGSUPERAPPPLUGINIMPL        103
-#define IDR_PGSPLICEAPPPLUGINIMPL       104
-#define IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN 105
-#define IDR_PGSPLICEPROJECTIMPORTERAPPPLUGIN 106
+#define IDR_PGSuperPluginAppIMPL        103
+#define IDR_PGSplicePluginAppIMPL       104
+#define IDR_PGSuperProjectImporterPluginApp 105
+#define IDR_PGSpliceProjectImporterPluginApp 106
 #define IDD_CLOSURE_CONNECTION          107
-#define IDR_PGSPLICECOMPONENTINFO       110
 #define IDD_SELECTBOUNDARYCONDITION     113
 #define IDR_PGSUPER                     130
 #define IDD_PROJECTPROPERTIES           131

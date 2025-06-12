@@ -29,7 +29,7 @@ class REPORTINGCLASS CInitialStrainAnalysisReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CInitialStrainAnalysisReportSpecificationBuilder(IBroker* pBroker);
+   CInitialStrainAnalysisReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CInitialStrainAnalysisReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;

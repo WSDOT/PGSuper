@@ -29,15 +29,11 @@
 #include "PierDetailsDlg.h"
 #include "PGSuperColors.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 void CPierBearingOffsetMeasureComboBox::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
@@ -152,8 +148,8 @@ void CPierConnectionsPage::Init(CPierData2* pPier)
 
 void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    CPropertyPage::DoDataExchange(pDX);
@@ -211,8 +207,8 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
          // Note that this check doesn't occur if there isn't a previous span, which would be a situation where there could be a cantilever,
          // so only the first two cases need to be checked.
 
-         if ((m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierAlongGirder ||
-            m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierNormalToPier)
+         if ((m_EndDistanceMeasurementType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder ||
+            m_EndDistanceMeasurementType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier)
             && (m_BearingOffset[pgsTypes::Back] < m_EndDistance[pgsTypes::Back]))
          {
             pDX->PrepareEditCtrl(IDC_LEFT_END_DISTANCE);
@@ -226,8 +222,8 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
          DDV_UnitValueZeroOrMore(pDX, IDC_RIGHT_END_DISTANCE,   m_EndDistance[pgsTypes::Ahead],   pDisplayUnits->GetComponentDimUnit() );
 
          // See comment above about back side of pier
-         if ((m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierAlongGirder ||
-            m_EndDistanceMeasurementType == ConnectionLibraryEntry::FromPierNormalToPier)
+         if ((m_EndDistanceMeasurementType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder ||
+            m_EndDistanceMeasurementType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier)
             && (m_BearingOffset[pgsTypes::Ahead] < m_EndDistance[pgsTypes::Ahead]))
          {
             pDX->PrepareEditCtrl(IDC_RIGHT_END_DISTANCE);
@@ -253,7 +249,7 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    DDX_KeywordUnitValueAndTag(pDX,IDC_BACK_DIAPHRAGM_WIDTH, IDC_BACK_DIAPHRAGM_WIDTH_T, _T("Compute"),m_DiaphragmWidth[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit());
    DDX_CBItemData(pDX,IDC_BACK_DIAPHRAGM_LOAD,m_DiaphragmLoadType[pgsTypes::Back]);
    DDX_Tag( pDX, IDC_BACK_DIAPHRAGM_OFFSET_UNITS, pDisplayUnits->GetComponentDimUnit() );
-   if (m_pPier->GetPrevSpan() != nullptr && m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation )
+   if (m_pPier->GetPrevSpan() != nullptr && m_DiaphragmLoadType[pgsTypes::Back] == ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation )
    {
       DDX_UnitValue(pDX, IDC_BACK_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit());
       DDV_UnitValueZeroOrMore(pDX, IDC_BACK_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Back], pDisplayUnits->GetComponentDimUnit() );
@@ -263,7 +259,7 @@ void CPierConnectionsPage::DoDataExchange(CDataExchange* pDX)
    DDX_KeywordUnitValueAndTag(pDX,IDC_AHEAD_DIAPHRAGM_WIDTH, IDC_AHEAD_DIAPHRAGM_WIDTH_T, _T("Compute"),m_DiaphragmWidth[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit());
    DDX_CBItemData(pDX,IDC_AHEAD_DIAPHRAGM_LOAD,m_DiaphragmLoadType[pgsTypes::Ahead]);
    DDX_Tag( pDX, IDC_AHEAD_DIAPHRAGM_OFFSET_UNITS, pDisplayUnits->GetComponentDimUnit() );
-   if (m_pPier->GetNextSpan() != nullptr && m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation )
+   if (m_pPier->GetNextSpan() != nullptr && m_DiaphragmLoadType[pgsTypes::Ahead] == ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation )
    {
       DDX_UnitValue( pDX, IDC_AHEAD_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit() );
       DDV_UnitValueZeroOrMore(pDX, IDC_AHEAD_DIAPHRAGM_OFFSET, m_DiaphragmLoadLocation[pgsTypes::Ahead], pDisplayUnits->GetComponentDimUnit() );
@@ -369,22 +365,22 @@ void CPierConnectionsPage::FillBoundaryConditionComboBox()
 void CPierConnectionsPage::FillDiaphragmLoadComboBox()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_BACK_DIAPHRAGM_LOAD);
-   pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm over CL Bearing")), DWORD_PTR(ConnectionLibraryEntry::ApplyAtBearingCenterline));
+   pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm over CL Bearing")), DWORD_PTR(ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline));
    if ( m_pPier->IsBoundaryPier() )
    {
       // this option is only available at boundary piers
-      pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm to girder")), DWORD_PTR(ConnectionLibraryEntry::ApplyAtSpecifiedLocation));
+      pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm to girder")), DWORD_PTR(ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation));
    }
-   pCB->SetItemData( pCB->AddString(_T("Ignore diaphragm weight")), DWORD_PTR(ConnectionLibraryEntry::DontApply));
+   pCB->SetItemData( pCB->AddString(_T("Ignore diaphragm weight")), DWORD_PTR(ConnectionLibraryEntry::DiaphragmLoadType::DontApply));
 
    pCB = (CComboBox*)GetDlgItem(IDC_AHEAD_DIAPHRAGM_LOAD);
-   pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm over CL Bearing")), DWORD_PTR(ConnectionLibraryEntry::ApplyAtBearingCenterline));
+   pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm over CL Bearing")), DWORD_PTR(ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline));
    if ( m_pPier->IsBoundaryPier() )
    {
       // this option is only available at boundary piers
-      pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm to girder")), DWORD_PTR(ConnectionLibraryEntry::ApplyAtSpecifiedLocation));
+      pCB->SetItemData( pCB->AddString(_T("Apply weight of diaphragm to girder")), DWORD_PTR(ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation));
    }
-   pCB->SetItemData( pCB->AddString(_T("Ignore diaphragm weight")), DWORD_PTR(ConnectionLibraryEntry::DontApply));
+   pCB->SetItemData( pCB->AddString(_T("Ignore diaphragm weight")), DWORD_PTR(ConnectionLibraryEntry::DiaphragmLoadType::DontApply));
 }
 
 void CPierConnectionsPage::OnHelp() 
@@ -521,12 +517,12 @@ void CPierConnectionsPage::FillBearingOffsetComboBox()
    strLabel.Format(_T("Normal to %s Line"),strType);
 
    int idx = pCB->AddString(strLabel);
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::NormalToPier));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier));
 
    if (CanMeasureBearingOffsetAlongGirder())
    {
       idx = pCB->AddString(_T("Along Girder"));
-      pCB->SetItemData(idx, DWORD(ConnectionLibraryEntry::AlongGirder));
+      pCB->SetItemData(idx, DWORD(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder));
    }
 }
 
@@ -536,24 +532,24 @@ void CPierConnectionsPage::FillEndDistanceComboBox()
    pCB->ResetContent();
 
    int idx = pCB->AddString(_T("Measured from CL Bearing, Along Girder"));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingAlongGirder));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder));
 
    idx = pCB->AddString(_T("Measured from and Normal to CL Bearing"));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingNormalToPier));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier));
 
    CString strType = pgsPierLabel::GetPierTypeLabelEx(m_pPier->IsAbutment(), m_pPier->GetIndex()).c_str();
 
    CString strLabel;
    strLabel.Format(_T("Measured from %s Line, Along Girder"),strType);
    idx = pCB->AddString(strLabel);
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierAlongGirder));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder));
 
    strLabel.Format(_T("Measured from and Normal to %s Line"),strType);
    idx = pCB->AddString(strLabel);
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierNormalToPier));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier));
 }
 
-CString CPierConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
+CString CPierConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType connectionType, ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType, ConnectionLibraryEntry::EndDistanceMeasurementType endType)
 {
    CSpanData2* pPrevSpan = m_pPier->GetPrevSpan();
    CSpanData2* pNextSpan = m_pPier->GetNextSpan();
@@ -563,11 +559,11 @@ CString CPierConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType conne
    int pierType = (pPrevSpan != nullptr && pNextSpan != nullptr ? IntPier : (pPrevSpan == nullptr ? StartPier : EndPier));
 
    CString strName;
-   if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )
+   if ( brgOffsetType == ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder )
    {
       switch( endType )
       {
-      case ConnectionLibraryEntry::FromBearingAlongGirder:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGGDR_ENDALONGGDRFROMBRG");
@@ -582,7 +578,7 @@ CString CPierConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType conne
          }
          break;
 
-      case ConnectionLibraryEntry::FromBearingNormalToPier:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGGDR_ENDALONGNORMALFROMBRG");
@@ -597,7 +593,7 @@ CString CPierConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType conne
          }
          break;
 
-      case ConnectionLibraryEntry::FromPierAlongGirder:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGGDR_ENDALONGGDRFROMPIER");
@@ -612,7 +608,7 @@ CString CPierConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType conne
          }
          break;
 
-      case ConnectionLibraryEntry::FromPierNormalToPier:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGGDR_ENDALONGNORMALFROMPIER");
@@ -628,11 +624,11 @@ CString CPierConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType conne
          break;
       }
    }
-   else if ( brgOffsetType == ConnectionLibraryEntry::NormalToPier )
+   else if ( brgOffsetType == ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier )
    {
       switch( endType )
       {
-      case ConnectionLibraryEntry::FromBearingAlongGirder:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
@@ -647,7 +643,7 @@ CString CPierConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType conne
          }
          break;
 
-      case ConnectionLibraryEntry::FromBearingNormalToPier:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
@@ -662,7 +658,7 @@ CString CPierConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType conne
          }
          break;
 
-      case ConnectionLibraryEntry::FromPierAlongGirder:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
@@ -677,7 +673,7 @@ CString CPierConnectionsPage::GetImageName(pgsTypes::BoundaryConditionType conne
          }
          break;
 
-      case ConnectionLibraryEntry::FromPierNormalToPier:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier:
          if ( pierType == StartPier )
          {
             strName = _T("SA_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
@@ -703,7 +699,7 @@ void CPierConnectionsPage::OnBackDiaphragmLoadTypeChanged()
    int cursel = pCB->GetCurSel();
    ConnectionLibraryEntry::DiaphragmLoadType loadType = (ConnectionLibraryEntry::DiaphragmLoadType)pCB->GetItemData(cursel);
 
-   BOOL bEnable = (m_pPier->GetPrevSpan() == nullptr ? FALSE : (loadType == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)) ? TRUE : FALSE;
+   BOOL bEnable = (m_pPier->GetPrevSpan() == nullptr ? FALSE : (loadType == ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation)) ? TRUE : FALSE;
 
    GetDlgItem(IDC_BACK_DIAPHRAGM_OFFSET_LABEL)->EnableWindow(bEnable);
    m_DiaphragmLoadLocationEdit[pgsTypes::Back].EnableWindow(bEnable);
@@ -716,7 +712,7 @@ void CPierConnectionsPage::OnAheadDiaphragmLoadTypeChanged()
    int cursel = pCB->GetCurSel();
    ConnectionLibraryEntry::DiaphragmLoadType loadType = (ConnectionLibraryEntry::DiaphragmLoadType)pCB->GetItemData(cursel);
 
-   BOOL bEnable = (m_pPier->GetNextSpan() == nullptr ? FALSE : (loadType == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)) ? TRUE : FALSE;
+   BOOL bEnable = (m_pPier->GetNextSpan() == nullptr ? FALSE : (loadType == ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation)) ? TRUE : FALSE;
 
    GetDlgItem(IDC_AHEAD_DIAPHRAGM_OFFSET_LABEL)->EnableWindow(bEnable);
    m_DiaphragmLoadLocationEdit[pgsTypes::Ahead].EnableWindow(bEnable);
@@ -725,8 +721,8 @@ void CPierConnectionsPage::OnAheadDiaphragmLoadTypeChanged()
 
 void CPierConnectionsPage::OnCopyFromLibrary()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames);
    std::vector<std::_tstring> names;
@@ -774,7 +770,7 @@ void CPierConnectionsPage::OnCopyFromLibrary()
 	      m_EndDistanceMeasurementType   = pEntry->GetEndDistanceMeasurementType();
 
          auto brgOffsetMeasurementType = pEntry->GetBearingOffsetMeasurementType();
-         if( (CanMeasureBearingOffsetAlongGirder() && brgOffsetMeasurementType == ConnectionLibraryEntry::AlongGirder) || brgOffsetMeasurementType == ConnectionLibraryEntry::NormalToPier)
+         if( (CanMeasureBearingOffsetAlongGirder() && brgOffsetMeasurementType == ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder) || brgOffsetMeasurementType == ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier)
          {
             m_BearingOffsetMeasurementType = brgOffsetMeasurementType;
          }

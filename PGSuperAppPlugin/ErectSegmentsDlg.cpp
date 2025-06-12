@@ -5,17 +5,13 @@
 #include "resource.h"
 #include "ErectSegmentsDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CErectSegmentsDlg dialog
@@ -113,8 +109,8 @@ BOOL CErectSegmentsDlg::OnInitDialog()
       SetDefID(IDCANCEL);
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
@@ -147,8 +143,8 @@ void CErectSegmentsDlg::OnMoveToSourceList()
 
 void CErectSegmentsDlg::FillLists()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IDocumentType,pDocType);
 
    GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();

@@ -22,10 +22,10 @@
 
 #pragma once
 
-#include <EAF\EAFTransaction.h>
-#include <PgsExt\LoadFactors.h>
+#include <EAF\Transaction.h>
+#include <PsgLib\LoadFactors.h>
 
-class txnEditLoadFactors : public CEAFTransaction
+class txnEditLoadFactors : public WBFL::EAF::Transaction
 {
 public:
    txnEditLoadFactors(const CLoadFactors& oldLoadFactors,const CLoadFactors& newLoadFactors);
@@ -34,7 +34,7 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction>CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const;
    virtual bool IsRepeatable() const;

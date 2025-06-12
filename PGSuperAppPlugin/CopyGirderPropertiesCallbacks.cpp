@@ -25,6 +25,7 @@
 
 #include <EAF\EAFUtilities.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
@@ -32,18 +33,14 @@
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\GirderHandling.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderData.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderData.h>
+#include <PsgLib\GirderLabel.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 #include <Reporter\ReportingUtils.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////// reporting utilities
 inline void ColorFromRow(rptRcTable* p_table, RowIndexType row, ColumnIndexType nCols)
@@ -184,16 +181,16 @@ inline LPCTSTR GetRebarLayoutTypeStr(pgsTypes::RebarLayoutType layoutType)
 
 
 // Declaration of girder comparison reports
-void GirderAllPropertiesComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, const CGirderKey& fromGirderKey);
-void GirderMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, const CGirderKey& fromGirderKey);
-bool GirderPrestressingComparison(rptParagraph* pPara, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void debonding(rptParagraph* pPara, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void GirderSegmentPostensioningComparison(rptParagraph* pPara, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void GirderGroupPostensioningComparison(rptParagraph* pPara, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void GirderLongRebarComparison(rptParagraph* pPara, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void GirderPrimaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void GirderSecondaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void GirderHandlingComparison(rptParagraph* pPara, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderAllPropertiesComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& fromGirderKey);
+void GirderMaterialsComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& fromGirderKey);
+bool GirderPrestressingComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void debonding(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderSegmentPostensioningComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderGroupPostensioningComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderLongRebarComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderPrimaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderSecondaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderHandlingComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
 
 ////////////////////////////////////////////////////
 //////////////////// Transaction Classes ////////////
@@ -211,8 +208,8 @@ txnCopyGirderAllProperties::~txnCopyGirderAllProperties()
 
 bool txnCopyGirderAllProperties::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    m_strOldNames.clear();
@@ -243,8 +240,8 @@ bool txnCopyGirderAllProperties::Execute()
 
 void txnCopyGirderAllProperties::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    // May need to change library entry type as well as data
@@ -273,7 +270,7 @@ void txnCopyGirderAllProperties::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyGirderAllProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyGirderAllProperties::CreateClone() const
 {
    return std::make_unique<txnCopyGirderAllProperties>(m_FromGirderKey,m_ToGirderKeys);
 }
@@ -299,8 +296,8 @@ txnCopyGirderStirrups::~txnCopyGirderStirrups()
 
 bool txnCopyGirderStirrups::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IShear,pShear);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -330,8 +327,8 @@ bool txnCopyGirderStirrups::Execute()
 
 void txnCopyGirderStirrups::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IShear,pShear);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -353,7 +350,7 @@ void txnCopyGirderStirrups::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyGirderStirrups::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyGirderStirrups::CreateClone() const
 {
    return std::make_unique<txnCopyGirderStirrups>(m_FromGirderKey,m_ToGirderKeys);
 }
@@ -377,8 +374,8 @@ txnCopyGirderPrestressing::~txnCopyGirderPrestressing()
 
 bool txnCopyGirderPrestressing::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -425,8 +422,8 @@ bool txnCopyGirderPrestressing::Execute()
 
 void txnCopyGirderPrestressing::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -465,7 +462,7 @@ void txnCopyGirderPrestressing::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyGirderPrestressing::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyGirderPrestressing::CreateClone() const
 {
    return std::make_unique<txnCopyGirderPrestressing>(m_FromGirderKey,m_ToGirderKeys);
 }
@@ -489,8 +486,8 @@ txnCopyGirderHandling::~txnCopyGirderHandling()
 
 bool txnCopyGirderHandling::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -521,8 +518,8 @@ bool txnCopyGirderHandling::Execute()
 
 void txnCopyGirderHandling::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -545,7 +542,7 @@ void txnCopyGirderHandling::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyGirderHandling::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyGirderHandling::CreateClone() const
 {
    return std::make_unique<txnCopyGirderHandling>(m_FromGirderKey,m_ToGirderKeys);
 }
@@ -569,8 +566,8 @@ txnCopyGirderMaterial::~txnCopyGirderMaterial()
 
 bool txnCopyGirderMaterial::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -601,8 +598,8 @@ bool txnCopyGirderMaterial::Execute()
 
 void txnCopyGirderMaterial::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -625,7 +622,7 @@ void txnCopyGirderMaterial::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyGirderMaterial::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyGirderMaterial::CreateClone() const
 {
    return std::make_unique<txnCopyGirderMaterial>(m_FromGirderKey,m_ToGirderKeys);
 }
@@ -649,8 +646,8 @@ txnCopyGirderRebar::~txnCopyGirderRebar()
 
 bool txnCopyGirderRebar::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILongitudinalRebar,pRebar);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -681,8 +678,8 @@ bool txnCopyGirderRebar::Execute()
 
 void txnCopyGirderRebar::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILongitudinalRebar,pRebar);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -705,7 +702,7 @@ void txnCopyGirderRebar::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyGirderRebar::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyGirderRebar::CreateClone() const
 {
    return std::make_unique<txnCopyGirderRebar>(m_FromGirderKey,m_ToGirderKeys);
 }
@@ -733,7 +730,7 @@ BOOL CCopyGirderAllProperties::CanCopy(const CGirderKey& fromGirderKey,const std
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyGirderAllProperties::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderAllProperties::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
    return std::make_unique<txnCopyGirderAllProperties>(fromGirderKey,toGirderKeys);
 }
@@ -746,8 +743,8 @@ UINT CCopyGirderAllProperties::GetGirderEditorTabIndex()
 rptParagraph* CCopyGirderAllProperties::BuildComparisonReportParagraph(const CGirderKey& fromGirderKey)
 {
    rptParagraph* pPara = new rptParagraph;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GirderAllPropertiesComparison(pPara, pBroker, fromGirderKey);
 
    return pPara;
@@ -769,7 +766,7 @@ BOOL CCopyGirderMaterial::CanCopy(const CGirderKey& fromGirderKey,const std::vec
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyGirderMaterial::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderMaterial::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
    return std::make_unique<txnCopyGirderMaterial>(fromGirderKey,toGirderKeys);
 }
@@ -782,8 +779,8 @@ UINT CCopyGirderMaterial::GetGirderEditorTabIndex()
 rptParagraph* CCopyGirderMaterial::BuildComparisonReportParagraph(const CGirderKey& fromGirderKey)
 {
    rptParagraph* pPara = new rptParagraph;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GirderMaterialsComparison(pPara, pBroker, fromGirderKey);
 
@@ -805,8 +802,8 @@ BOOL CCopyGirderRebar::CanCopy(const CGirderKey& fromGirderKey,const std::vector
 {
    // if the source and any of the destination girders are not the same type
    // the prestressing and longitudinal reinforcement data must be copied
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -830,7 +827,7 @@ BOOL CCopyGirderRebar::CanCopy(const CGirderKey& fromGirderKey,const std::vector
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyGirderRebar::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderRebar::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
    return std::make_unique<txnCopyGirderRebar>(fromGirderKey,toGirderKeys);
 }
@@ -844,8 +841,8 @@ rptParagraph* CCopyGirderRebar::BuildComparisonReportParagraph(const CGirderKey&
 {
    rptParagraph* pPara = new rptParagraph;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    GirderLongRebarComparison(pPara, pBroker, pDisplayUnits, fromGirderKey);
@@ -869,7 +866,7 @@ BOOL CCopyGirderStirrups::CanCopy(const CGirderKey& fromGirderKey,const std::vec
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyGirderStirrups::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderStirrups::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
    return std::make_unique<txnCopyGirderStirrups>(fromGirderKey,toGirderKeys);
 }
@@ -883,8 +880,8 @@ rptParagraph* CCopyGirderStirrups::BuildComparisonReportParagraph(const CGirderK
 {
    rptParagraph* pPara = new rptParagraph;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    GirderPrimaryStirrupComparison(pPara, pBroker, pDisplayUnits, fromGirderKey);
@@ -909,8 +906,8 @@ BOOL CCopyGirderPrestressing::CanCopy(const CGirderKey& fromGirderKey,const std:
 {
    // if the source and any of the destination girders are not the same type
    // the prestressing and longitudinal reinforcement data must be copied
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -934,7 +931,7 @@ BOOL CCopyGirderPrestressing::CanCopy(const CGirderKey& fromGirderKey,const std:
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyGirderPrestressing::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderPrestressing::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
    return std::make_unique<txnCopyGirderPrestressing>(fromGirderKey,toGirderKeys);
 }
@@ -948,8 +945,8 @@ rptParagraph* CCopyGirderPrestressing::BuildComparisonReportParagraph(const CGir
 {
    rptParagraph* pPara = new rptParagraph;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
@@ -986,7 +983,7 @@ BOOL CCopyGirderHandling::CanCopy(const CGirderKey& fromGirderKey,const std::vec
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyGirderHandling::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderHandling::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
    return std::make_unique<txnCopyGirderHandling>(fromGirderKey, toGirderKeys);
 }
@@ -1000,8 +997,8 @@ rptParagraph* CCopyGirderHandling::BuildComparisonReportParagraph(const CGirderK
 {
    rptParagraph* pPara = new rptParagraph;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    GirderHandlingComparison(pPara, pBroker, pDisplayUnits, fromGirderKey);
@@ -1013,7 +1010,7 @@ rptParagraph* CCopyGirderHandling::BuildComparisonReportParagraph(const CGirderK
 //////////////////// Reporting functions /////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void GirderAllPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, const CGirderKey & fromGirderKey)
+void GirderAllPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey & fromGirderKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -1063,7 +1060,7 @@ void GirderAllPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroke
    }
 }
 
-void GirderPrimaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey)
+void GirderPrimaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IShear,pShear);
@@ -1170,7 +1167,7 @@ void GirderPrimaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDi
    }
 }
 
-void GirderSecondaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey)
+void GirderSecondaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IShear,pShear);
@@ -1255,7 +1252,7 @@ void GirderSecondaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAF
    }
 }
 
-void GirderHandlingComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey)
+void GirderHandlingComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
@@ -1412,7 +1409,7 @@ void GirderHandlingComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayU
    }
 }
 
-void GirderMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, const CGirderKey& fromGirderKey)
+void GirderMaterialsComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& fromGirderKey)
 {
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -1511,7 +1508,7 @@ void GirderMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, co
 
 
 // return true if debonding exists
-bool GirderPrestressingComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey)
+bool GirderPrestressingComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey)
 {
    bool was_debonding = false;
 
@@ -1752,7 +1749,7 @@ public:
    // status of debonding
    enum DebondStatus {IsDebonding, NonSymmetricDebonding, NoDebonding};
 
-   DebondStatus Init(IBridge* pBridge, IStrandGeometry* pStrandGeometry);
+   DebondStatus Init(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IStrandGeometry> pStrandGeometry);
 
    // get debond row data for a given index. order is assumed as same order in Init function loop
    std::pair<CSegmentKey, DebondRowDataSet>* GetDebondRowDataSet(IndexType idx)
@@ -1767,7 +1764,7 @@ private:
    std::vector<std::pair<CSegmentKey,DebondRowDataSet>> m_DebondRowData;
 };
 
-DebondComparison::DebondStatus DebondComparison::Init(IBridge* pBridge, IStrandGeometry* pStrandGeometry)
+DebondComparison::DebondStatus DebondComparison::Init(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IStrandGeometry> pStrandGeometry)
 {
    assert(m_DebondRowData.empty());
 
@@ -1786,7 +1783,7 @@ DebondComparison::DebondStatus DebondComparison::Init(IBridge* pBridge, IStrandG
 
             if (!pStrandGeometry->IsDebondingSymmetric(segmentKey))
             {
-               // can't do for non-symetrical strands
+               // can't do for non-symmetrical strands
                return NonSymmetricDebonding;
             }
 
@@ -1853,7 +1850,7 @@ DebondComparison::DebondStatus DebondComparison::Init(IBridge* pBridge, IStrandG
       return IsDebonding;
 }
 
-void debonding(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey)
+void debonding(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
@@ -1980,7 +1977,7 @@ void debonding(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayUnits* pDisplayU
    }
 }
 
-void GirderGroupPostensioningComparison(rptParagraph * pPara, IBroker * pBroker, IEAFDisplayUnits * pDisplayUnits, const CGirderKey & fromGirderKey)
+void GirderGroupPostensioningComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey & fromGirderKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IGirder,pGirder);
@@ -2092,7 +2089,7 @@ void GirderGroupPostensioningComparison(rptParagraph * pPara, IBroker * pBroker,
    }
 }
 
-void GirderSegmentPostensioningComparison(rptParagraph * pPara, IBroker * pBroker, IEAFDisplayUnits * pDisplayUnits, const CGirderKey & fromGirderKey)
+void GirderSegmentPostensioningComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey & fromGirderKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -2242,7 +2239,7 @@ void GirderSegmentPostensioningComparison(rptParagraph * pPara, IBroker * pBroke
    }
 }
 
-void GirderLongRebarComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey)
+void GirderLongRebarComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILongitudinalRebar,pLongitudinalRebar);

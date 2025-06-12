@@ -32,7 +32,7 @@
 #include "BridgeDescDeckDetailsPage.h"
 #include "BridgeDescDlg.h"
 #include <PgsExt\ConcreteDetailsDlg.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
 #include "TimelineEventDlg.h"
 #include "EditHaunchDlg.h"
@@ -44,6 +44,7 @@
 
 #include <WBFLGenericBridge.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -51,11 +52,6 @@
 
 #include <EAF\EAFMainFrame.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDeckDetailsPage property page
@@ -96,8 +92,8 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_PANEL_DEPTH, m_ctrlPanelDepth);
    DDX_Control(pDX, IDC_PANEL_SUPPORT, m_ctrlPanelSupportWidth);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 	
    CEAFDocument* pDoc = EAFGetDocument();
@@ -298,8 +294,8 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          // AssumedExcessCamber
          if (pParent->m_BridgeDesc.GetHaunchInputDepthType() == pgsTypes::hidACamber && pParent->m_BridgeDesc.GetAssumedExcessCamberType() == pgsTypes::aecBridge)
          {
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
+            
+            auto pBroker = EAFGetBroker();
             GET_IFACE2(pBroker,ISpecification,pSpec);
             if (pSpec->IsAssumedExcessCamberInputEnabled(false))
             {
@@ -368,8 +364,8 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
 void CBridgeDescDeckDetailsPage::ExchangeConcreteData(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
@@ -448,8 +444,8 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 
    FillEventList();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    PrestressLossCriteria::LossMethodType lossMethod = pLossParams->GetLossMethod();
    if (lossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP)
@@ -690,8 +686,8 @@ void CBridgeDescDeckDetailsPage::UpdateEc()
       CString strFc, strDensity, strK1, strK2;
       m_ctrlFc.GetWindowText(strFc);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       strDensity.Format(_T("%s"),FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Concrete.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
@@ -721,8 +717,8 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    PrestressLossCriteria::LossMethodType lossMethod = pLossParams->GetLossMethod();
 
@@ -969,8 +965,8 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const WBFL::Units::DensityData& density = pDisplayUnits->GetDensityUnit();
@@ -1078,8 +1074,8 @@ void CBridgeDescDeckDetailsPage::UpdateHaunchAndCamberControls()
    }
    else
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 

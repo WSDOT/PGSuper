@@ -26,30 +26,15 @@
 
 #include "PGSuperUnits.h"
 
+#include <IFace/Tools.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Project.h>
 #include <IFace\PointOfInterest.h>
 
 #include <EAF\EAFDisplayUnits.h>
 
-#include <psgLib/HaulingCriteria.h>
+#include <PsgLib/HaulingCriteria.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/****************************************************************************
-CLASS
-   pgsKdotHaulingStressAnalysisArtifact
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 pgsKdotHaulingStressAnalysisArtifact::pgsKdotHaulingStressAnalysisArtifact():
 m_EffectiveHorizPsForce(0.0),
 m_EccentricityPsForce(0.0),
@@ -72,27 +57,6 @@ m_fLimit(0.0)
 {
 }
 
-pgsKdotHaulingStressAnalysisArtifact::pgsKdotHaulingStressAnalysisArtifact(const pgsKdotHaulingStressAnalysisArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsKdotHaulingStressAnalysisArtifact::~pgsKdotHaulingStressAnalysisArtifact()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsKdotHaulingStressAnalysisArtifact& pgsKdotHaulingStressAnalysisArtifact::operator= (const pgsKdotHaulingStressAnalysisArtifact& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
 bool pgsKdotHaulingStressAnalysisArtifact::TensionPassed() const
 {
    Float64 fTop, fBottom, Capacity;
@@ -128,7 +92,6 @@ bool pgsKdotHaulingStressAnalysisArtifact::Passed() const
     return TensionPassed() && CompressionPassed();
 }
 
-//======================== ACCESS     =======================================
 void pgsKdotHaulingStressAnalysisArtifact::SetCompressiveCapacity(Float64 fLimit)
 {
    m_AllowableCompression = fLimit;
@@ -247,57 +210,8 @@ void pgsKdotHaulingStressAnalysisArtifact::GetRequiredConcreteStrength(Float64* 
    *pfciTensWithRebar = m_ReqdTensConcreteStrengthWithRebar;   
 }
 
-//======================== INQUIRY    =======================================
 
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void pgsKdotHaulingStressAnalysisArtifact::MakeCopy(const pgsKdotHaulingStressAnalysisArtifact& rOther)
-{
-   m_EffectiveHorizPsForce     = rOther.m_EffectiveHorizPsForce;
-   m_EccentricityPsForce       = rOther.m_EccentricityPsForce;
-
-   m_Moment                    = rOther.m_Moment;
-   m_TopFiberStressPrestress   = rOther.m_TopFiberStressPrestress;
-   m_TopFiberStress            = rOther.m_TopFiberStress;
-   m_BottomFiberStressPrestress= rOther.m_BottomFiberStressPrestress;
-   m_BottomFiberStress         = rOther.m_BottomFiberStress;
-
-   m_Yna     = rOther.m_Yna;
-   m_At      = rOther.m_At;
-   m_T       = rOther.m_T;
-   m_AsReqd  = rOther.m_AsReqd;
-   m_AsProvd = rOther.m_AsProvd;
-   m_fLimit  = rOther.m_fLimit;
-
-   m_AllowableCompression = rOther.m_AllowableCompression;
-   m_ReqdCompConcreteStrength = rOther.m_ReqdCompConcreteStrength;
-   m_ReqdTensConcreteStrengthNoRebar   = rOther.m_ReqdTensConcreteStrengthNoRebar;
-   m_ReqdTensConcreteStrengthWithRebar = rOther.m_ReqdTensConcreteStrengthWithRebar;
-   m_WasRebarReqd = rOther.m_WasRebarReqd;
-}
-
-void pgsKdotHaulingStressAnalysisArtifact::MakeAssignment(const pgsKdotHaulingStressAnalysisArtifact& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
 #if defined _DEBUG
-
 void pgsKdotHaulingStressAnalysisArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
    os << "Dump for pgsKdotHaulingStressAnalysisArtifact" << WBFL::Debug::endl;
@@ -310,9 +224,6 @@ CLASS
    pgsKdotHaulingAnalysisArtifact
 ****************************************************************************/
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 pgsKdotHaulingAnalysisArtifact::pgsKdotHaulingAnalysisArtifact():
 m_DesignOutcome(doNoDesignDone),
 m_DesignOverhang(0.0),
@@ -329,27 +240,6 @@ m_GirderWeight(0.0) // total girder weight
 {
 }
 
-pgsKdotHaulingAnalysisArtifact::pgsKdotHaulingAnalysisArtifact(const pgsKdotHaulingAnalysisArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsKdotHaulingAnalysisArtifact::~pgsKdotHaulingAnalysisArtifact()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsKdotHaulingAnalysisArtifact& pgsKdotHaulingAnalysisArtifact::operator= (const pgsKdotHaulingAnalysisArtifact& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
 bool pgsKdotHaulingAnalysisArtifact::Passed(bool bIgnoreConfigurationLimits) const
 {
    return Passed(WBFL::Stability::HaulingSlope::CrownSlope);
@@ -471,7 +361,7 @@ pgsHaulingAnalysisArtifact* pgsKdotHaulingAnalysisArtifact::Clone() const
    return clone.release();
 }
 
-void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
+void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -553,10 +443,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    }
 
    GET_IFACE2(pBroker, ISpecification, pSpec );
-   GET_IFACE2(pBroker, ILibrary,       pLib );
-   std::_tstring specName = pSpec->GetSpecification();
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
-   const auto& hauling_criteria = pSpecEntry->GetHaulingCriteria();
+   const auto& hauling_criteria = pSpec->GetHaulingCriteria();
 
    Float64 c; // compression coefficient
    Float64 t; // tension coefficient
@@ -746,7 +633,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    }
 }
 
-void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
+void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(),    false );
@@ -880,7 +767,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
 
 }
 
-void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter* pChapter, const CSegmentKey& segmentKey) const
+void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter, const CSegmentKey& segmentKey) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
@@ -978,7 +865,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
    *p << _T("* Bars must be fully developed and lie within tension area of section before they are considered.");
 }
 
-void pgsKdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, IBroker* pBroker,
+void pgsKdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                                     const std::_tstring& pid, const std::_tstring& bridgeId) const
 {
    GET_IFACE2(pBroker,ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
@@ -1081,52 +968,6 @@ void pgsKdotHaulingAnalysisArtifact::SetElasticModulusOfGirderConcrete(Float64 v
 {
    m_ElasticModulusOfGirderConcrete = val;
 }
-
-//======================== OPERATIONS =======================================
-void pgsKdotHaulingAnalysisArtifact::MakeCopy(const pgsKdotHaulingAnalysisArtifact& rOther)
-{
-   m_GirderLength = rOther.m_GirderLength;
-   m_GirderWeightPerLength = rOther.m_GirderWeightPerLength;
-   m_GirderWeight = rOther.m_GirderWeight;
-
-   m_gOverhang = rOther.m_gOverhang;
-   m_gInterior = rOther.m_gInterior;
-
-   m_ClearSpanBetweenSupportLocations = rOther.m_ClearSpanBetweenSupportLocations;
-
-   m_HaulingStressAnalysisArtifacts = rOther.m_HaulingStressAnalysisArtifacts;
-   m_HaulingPois = rOther.m_HaulingPois;
-
-   m_LeadingOverhang  = rOther.m_LeadingOverhang;
-   m_TrailingOverhang = rOther.m_TrailingOverhang;
-
-   m_HardOverhangLimit = rOther.m_HardOverhangLimit;
-   m_SoftOverhangLimit = rOther.m_SoftOverhangLimit;
-
-   m_ElasticModulusOfGirderConcrete = rOther.m_ElasticModulusOfGirderConcrete;
-
-
-   m_DesignOutcome = rOther.m_DesignOutcome;
-   m_DesignOverhang = rOther.m_DesignOverhang;
-}
-
-void pgsKdotHaulingAnalysisArtifact::MakeAssignment(const pgsKdotHaulingAnalysisArtifact& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
 #if defined _DEBUG
 void pgsKdotHaulingAnalysisArtifact::Dump(WBFL::Debug::LogContext& os) const
 {

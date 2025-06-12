@@ -20,29 +20,15 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// SYSTEM INCLUDES
-//
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_PGSEXTEXP_H_
+#pragma once
+
 #include <PgsExt\PgsExtExp.h>
-#endif
-
 #include <PgsExt\LiftHaulConstants.h>
-#include <PgsExt\PointOfInterest.h>
-
 #include <PgsExt\HaulingAnalysisArtifact.h>
-
+#include <PsgLib/PointOfInterest.h>
 #include <map>
 
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-interface IEAFDisplayUnits;
-
-#pragma once
+class IEAFDisplayUnits;
 
 
 
@@ -62,35 +48,17 @@ LOG
 class PGSEXTCLASS pgsKdotHaulingStressAnalysisArtifact
 {
 public:
-
-   // GROUP: DATA MEMBERS
-
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // constructor
    pgsKdotHaulingStressAnalysisArtifact();
+   pgsKdotHaulingStressAnalysisArtifact(const pgsKdotHaulingStressAnalysisArtifact& rOther) = default;
+   ~pgsKdotHaulingStressAnalysisArtifact() = default;
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsKdotHaulingStressAnalysisArtifact(const pgsKdotHaulingStressAnalysisArtifact& rOther);
+   pgsKdotHaulingStressAnalysisArtifact& operator = (const pgsKdotHaulingStressAnalysisArtifact& rOther) = default;
 
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsKdotHaulingStressAnalysisArtifact();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   pgsKdotHaulingStressAnalysisArtifact& operator = (const pgsKdotHaulingStressAnalysisArtifact& rOther);
-
-   // GROUP: OPERATIONS
 
    bool Passed() const;
    bool CompressionPassed() const;
    bool TensionPassed() const;
 
-   // GROUP: ACCESS
    Float64 GetEffectiveHorizPsForce() const;
    void SetEffectiveHorizPsForce(Float64 f);
 
@@ -125,30 +93,11 @@ public:
    void SetRequiredConcreteStrength(Float64 fciComp,Float64 fciTensNoRebar,Float64 fciTensWithRebar);
    void GetRequiredConcreteStrength(Float64 *pfciComp,Float64 *pfciTensNoRebar,Float64 *pfciTensWithRebar) const;
 
-   // GROUP: INQUIRY
-   // GROUP: DEBUG
    #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Dumps the contents of the class to the given stream.
    virtual void Dump(WBFL::Debug::LogContext& os) const;
    #endif // _DEBUG
 
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const pgsKdotHaulingStressAnalysisArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsKdotHaulingStressAnalysisArtifact& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
    Float64 m_EffectiveHorizPsForce;
    Float64 m_EccentricityPsForce;
 
@@ -172,12 +121,6 @@ private:
    Float64 m_ReqdTensConcreteStrengthNoRebar;
    Float64 m_ReqdTensConcreteStrengthWithRebar;
    bool m_WasRebarReqd;
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
 
 
@@ -185,42 +128,27 @@ private:
 class PGSEXTCLASS pgsKdotHaulingAnalysisArtifact : public pgsHaulingAnalysisArtifact
 {
 public:
-   // GROUP: LIFECYCLE
-   //------------------------------------------------------------------------
-   // Default constructor
    pgsKdotHaulingAnalysisArtifact();
+   pgsKdotHaulingAnalysisArtifact(const pgsKdotHaulingAnalysisArtifact& rOther) = default;
+   ~pgsKdotHaulingAnalysisArtifact() = default;
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsKdotHaulingAnalysisArtifact(const pgsKdotHaulingAnalysisArtifact& rOther);
+   pgsKdotHaulingAnalysisArtifact& operator = (const pgsKdotHaulingAnalysisArtifact& rOther) = default;
 
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsKdotHaulingAnalysisArtifact();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   pgsKdotHaulingAnalysisArtifact& operator = (const pgsKdotHaulingAnalysisArtifact& rOther);
-
-   // GROUP: OPERATIONS
-   // virtual functions
-   virtual bool Passed(bool bIgnoreConfigurationLimits = false) const override;
-   virtual bool Passed(WBFL::Stability::HaulingSlope slope) const override;
-   virtual bool PassedStressCheck(WBFL::Stability::HaulingSlope slope) const override;
-   virtual void GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension, Float64* pfcTensionWithRebar) const override;
+   bool Passed(bool bIgnoreConfigurationLimits = false) const override;
+   bool Passed(WBFL::Stability::HaulingSlope slope) const override;
+   bool PassedStressCheck(WBFL::Stability::HaulingSlope slope) const override;
+   void GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension, Float64* pfcTensionWithRebar) const override;
 
    Float64 GetLeadingOverhang() const;
    Float64 GetTrailingOverhang() const;
 
-   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
-   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
+   void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
+   void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
 
-   virtual pgsHaulingAnalysisArtifact* Clone() const override;
+   pgsHaulingAnalysisArtifact* Clone() const override;
 
-   virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const override;
+   void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const override;
 
-   // GROUP: ACCESS
    Float64 GetGirderLength() const;
    void SetGirderLength(Float64 val);
 
@@ -263,26 +191,11 @@ public:
    void SetDesignOverhang(Float64);
    Float64 GetDesignOverhang() const;
 
-   // GROUP: INQUIRY
-
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const pgsKdotHaulingAnalysisArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsKdotHaulingAnalysisArtifact& rOther);
-
-   void BuildRebarTable(IBroker* pBroker, rptChapter* pChapter, const CSegmentKey& segmentKey) const;
+   void BuildRebarTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CSegmentKey& segmentKey) const;
 
 public:
-   // GROUP: DEBUG
    #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
    virtual void Dump(WBFL::Debug::LogContext& os) const override;
    #endif // _DEBUG
 

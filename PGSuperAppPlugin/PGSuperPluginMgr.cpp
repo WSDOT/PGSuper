@@ -25,12 +25,6 @@
 #include "PGSuperPluginMgr.h"
 #include <EAF\EAFApp.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 CPGSuperPluginMgrBase::CPGSuperPluginMgrBase()
 {
 }
@@ -40,135 +34,94 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
 
-
-   USES_CONVERSION;
-
    CWaitCursor cursor;
-
-   CComPtr<ICatRegister> pICatReg;
-   HRESULT hr = pICatReg.CoCreateInstance(CLSID_StdComponentCategoriesMgr);
-   if ( FAILED(hr) )
-   {
-      AfxMessageBox(_T("Failed to create the component category manager"));
-      return false;
-   }
-
-   CComQIPtr<ICatInformation> pICatInfo(pICatReg);
-   CComPtr<IEnumCLSID> pIEnumCLSID;
-
-   const int nID = 1;
-   CATID ID[nID];
-
-   ID[0] = GetImporterCATID();
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
-
-   const int nPlugins = 5;
-   CLSID clsid[nPlugins]; 
-   ULONG nFetched = 0;
 
    // Load Importers
    UINT cmdImporter = FIRST_DATA_IMPORTER_PLUGIN;
-   while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
+   auto components = WBFL::EAF::ComponentManager::GetInstance().GetComponents(GetImporterCATID());
+   for(const auto& component : components)
    {
-      if ( LAST_DATA_IMPORTER_PLUGIN <= cmdImporter )
+      if (LAST_DATA_IMPORTER_PLUGIN <= cmdImporter)
       {
          AfxMessageBox(_T("The maximum number of data importers has been exceeded."));
          break; // get out of while loop
       }
 
-      for ( ULONG i = 0; i < nFetched; i++ )
+      LPOLESTR pszCLSID;
+      ::StringFromCLSID(component.clsid, &pszCLSID);
+      CString strState = pApp->GetProfileString(_T("Plugins"), OLE2T(pszCLSID), _T("Enabled"));
+
+      if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         LPOLESTR pszCLSID;
-         ::StringFromCLSID(clsid[i],&pszCLSID);
-         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Enabled"));
-
-         if ( strState.CompareNoCase(_T("Enabled")) == 0 )
+         auto importer = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::IDataImporter>(component);
+         if (importer)
          {
-            CComPtr<IPGSDataImporter> importer;
-            importer.CoCreateInstance(clsid[i]);
+            ImporterRecord record;
+            record.commandID = cmdImporter++;
+            record.Plugin = importer;
 
-            if ( !importer )
+            importer->Init(record.commandID);
+
+            HBITMAP hBmp = importer->GetBitmapHandle();
+            record.Bitmap.Attach(hBmp);
+            m_ImporterPlugins.push_back(record);
+         }
+         else
+         {
+            CString strMsg;
+            strMsg.Format(_T("Failed to load %s PGSuper Data Importer plug-in (%s).\n\nWould you like to disable this plug-in?"), component.name.c_str(),OLE2T(pszCLSID));
+            if (AfxMessageBox(strMsg, MB_YESNO | MB_ICONQUESTION) == IDYES)
             {
-               LPOLESTR pszUserType;
-               OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
-               CString strMsg;
-               strMsg.Format(_T("Failed to load %s PGSuper Data Importer plug in.\n\nWould you like to disable this plug-in?"),OLE2T(pszUserType));
-               if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
-               {
-                  pApp->WriteProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Disabled"));
-               }
-            }
-            else
-            {
-               ImporterRecord record;
-               record.commandID = cmdImporter++;
-               record.Plugin    = importer;
-
-               importer->Init(record.commandID);
-
-               HBITMAP hBmp;
-               importer->GetBitmapHandle(&hBmp);
-               record.Bitmap.Attach(hBmp);
-               m_ImporterPlugins.push_back( record );
+               pApp->WriteProfileString(_T("Plugins"), OLE2T(pszCLSID), _T("Disabled"));
             }
          }
-
-         ::CoTaskMemFree((void*)pszCLSID);
       }
+
+      ::CoTaskMemFree((void*)pszCLSID);
    }
 
    // Load Exporters
-   ID[0] = GetExporterCATID();
-   pIEnumCLSID.Release();
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
    UINT cmdExporter = FIRST_DATA_EXPORTER_PLUGIN;
-   while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
+   components = WBFL::EAF::ComponentManager::GetInstance().GetComponents(GetExporterCATID());
+   for(const auto& component : components)
    {
-      if ( LAST_DATA_EXPORTER_PLUGIN <= cmdExporter )
+      if (LAST_DATA_EXPORTER_PLUGIN <= cmdExporter)
       {
          AfxMessageBox(_T("The maximum number of data exporters has been exceeded."));
          break; // get out of the while loop
       }
 
-      for ( ULONG i = 0; i < nFetched; i++ )
+      LPOLESTR pszCLSID;
+      ::StringFromCLSID(component.clsid, &pszCLSID);
+      CString strState = pApp->GetProfileString(_T("Plugins"), OLE2T(pszCLSID), _T("Enabled"));
+
+      if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         LPOLESTR pszCLSID;
-         ::StringFromCLSID(clsid[i],&pszCLSID);
-         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Enabled"));
-
-         if ( strState.CompareNoCase(_T("Enabled")) == 0 )
+         auto exporter = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::IDataExporter>(component);
+         if (exporter)
          {
-            CComPtr<IPGSDataExporter> exporter;
-            exporter.CoCreateInstance(clsid[i]);
+            ExporterRecord record;
+            record.commandID = cmdExporter++;
+            record.Plugin = exporter;
 
-            if ( !exporter )
+            exporter->Init(record.commandID);
+
+            HBITMAP hBmp = exporter->GetBitmapHandle();
+            record.Bitmap.Attach(hBmp);
+            m_ExporterPlugins.push_back(record);
+         }
+         else
+         {
+            CString strMsg;
+            strMsg.Format(_T("Failed to load %s PGSuper Data Export plug-in (%s).\n\nWould you like to disable this plug-in?"), component.name.c_str(),OLE2T(pszCLSID));
+            if (AfxMessageBox(strMsg, MB_YESNO | MB_ICONQUESTION) == IDYES)
             {
-               LPOLESTR pszUserType;
-               OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
-               CString strMsg;
-               strMsg.Format(_T("Failed to load %s PGSuper Data Export plug in.\n\nWould you like to disable this plug-in?"),OLE2T(pszUserType));
-               if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
-               {
-                  pApp->WriteProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Disabled"));
-               }
-            }
-            else
-            {
-               ExporterRecord record;
-               record.commandID = cmdExporter++;
-               record.Plugin    = exporter;
-
-               exporter->Init(record.commandID);
-
-               HBITMAP hBmp;
-               exporter->GetBitmapHandle(&hBmp);
-               record.Bitmap.Attach(hBmp);
-               m_ExporterPlugins.push_back( record );
+               pApp->WriteProfileString(_T("Plugins"), OLE2T(pszCLSID), _T("Disabled"));
             }
          }
-
-         ::CoTaskMemFree((void*)pszCLSID);
       }
+
+      ::CoTaskMemFree((void*)pszCLSID);
    }
 
    return true;
@@ -190,48 +143,44 @@ IndexType CPGSuperPluginMgrBase::GetExporterCount()
    return m_ExporterPlugins.size();
 }
 
-void CPGSuperPluginMgrBase::GetImporter(IndexType key,bool bByIndex,IPGSDataImporter** ppImporter)
+std::shared_ptr<PGS::IDataImporter> CPGSuperPluginMgrBase::GetImporter(IndexType key, bool bByIndex) const
 {
-   if ( bByIndex )
+   if (bByIndex)
    {
-      (*ppImporter) = m_ImporterPlugins[key].Plugin;
-      (*ppImporter)->AddRef();
+      return m_ImporterPlugins[key].Plugin;
    }
    else
    {
-      std::vector<ImporterRecord>::iterator iter;
-      for ( iter = m_ImporterPlugins.begin(); iter != m_ImporterPlugins.end(); iter++ )
+      for( const auto& record : m_ImporterPlugins)
       {
-         if ( key == (*iter).commandID )
+         if (key == record.commandID)
          {
-            (*ppImporter) = (*iter).Plugin;
-            (*ppImporter)->AddRef();
-            return;
+            return record.Plugin;
          }
       }
    }
+
+   return nullptr;
 }
 
-void CPGSuperPluginMgrBase::GetExporter(IndexType key,bool bByIndex,IPGSDataExporter** ppExporter)
+std::shared_ptr<PGS::IDataExporter> CPGSuperPluginMgrBase::GetExporter(IndexType key, bool bByIndex) const
 {
-   if ( bByIndex )
+   if (bByIndex)
    {
-      (*ppExporter) = m_ExporterPlugins[key].Plugin;
-      (*ppExporter)->AddRef();
+      return m_ExporterPlugins[key].Plugin;
    }
    else
    {
-      std::vector<ExporterRecord>::iterator iter;
-      for ( iter = m_ExporterPlugins.begin(); iter != m_ExporterPlugins.end(); iter++ )
+      for(const auto& record : m_ExporterPlugins)
       {
-         if ( key == (*iter).commandID )
+         if (key == record.commandID)
          {
-            (*ppExporter) = (*iter).Plugin;
-            (*ppExporter)->AddRef();
-            return;
+            return record.Plugin;
          }
       }
    }
+
+   return nullptr;
 }
 
 UINT CPGSuperPluginMgrBase::GetImporterCommand(IndexType idx)
@@ -256,79 +205,56 @@ const CBitmap* CPGSuperPluginMgrBase::GetExporterBitmap(IndexType idx)
 
 void CPGSuperPluginMgrBase::LoadDocumentationMaps()
 {
-   for (const auto& record : m_ImporterPlugins )
+   for (const auto& record : m_ImporterPlugins)
    {
-      CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
-      if ( pDocumentation )
+      auto pDocumentation = std::dynamic_pointer_cast<PGS::IPluginDocumentation>(record.Plugin);
+      if (pDocumentation)
       {
          pDocumentation->LoadDocumentationMap();
       }
    }
 
-   for (const auto& record : m_ExporterPlugins )
+   for (const auto& record : m_ExporterPlugins)
    {
-      CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
-      if ( pDocumentation )
+      auto pDocumentation = std::dynamic_pointer_cast<PGS::IPluginDocumentation>(record.Plugin);
+      if (pDocumentation)
       {
          pDocumentation->LoadDocumentationMap();
       }
    }
 }
 
-eafTypes::HelpResult CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL)
+std::pair<WBFL::EAF::HelpResult,CString> CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID)
 {
-   USES_CONVERSION;
-   CComBSTR bstrTargetDocSetName(lpszDocSetName);
+   CString strTargetDocSetName(lpszDocSetName);
 
-   for (const auto& record : m_ImporterPlugins )
+   for (const auto& record : m_ImporterPlugins)
    {
-      CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
-      if ( pDocumentation )
+      auto pDocumentation = std::dynamic_pointer_cast<PGS::IPluginDocumentation>(record.Plugin);
+      if (pDocumentation)
       {
-         CComBSTR bstrDocSetName;
-         pDocumentation->GetDocumentationSetName(&bstrDocSetName);
+         auto strDocSetName = pDocumentation->GetDocumentationSetName();
 
-         if ( bstrDocSetName == bstrTargetDocSetName )
+         if (strDocSetName == strTargetDocSetName)
          {
-            CComBSTR bstrURL;
-            HRESULT hr = pDocumentation->GetDocumentLocation(nHID,&bstrURL);
-            if ( SUCCEEDED(hr) )
-            {
-               strURL = OLE2T(bstrURL);
-               return eafTypes::hrOK;
-            }
-            else
-            {
-               return eafTypes::hrTopicNotFound;
-            }
+            return pDocumentation->GetDocumentLocation(nHID);
          }
       }
    }
 
-   for (const auto& record : m_ExporterPlugins )
+   for (const auto& record : m_ExporterPlugins)
    {
-      CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
-      if ( pDocumentation )
+      auto pDocumentation = std::dynamic_pointer_cast<PGS::IPluginDocumentation>(record.Plugin);
+      if (pDocumentation)
       {
-         CComBSTR bstrDocSetName;
-         pDocumentation->GetDocumentationSetName(&bstrDocSetName);
+         auto strDocSetName = pDocumentation->GetDocumentationSetName();
 
-         if ( bstrDocSetName == bstrTargetDocSetName )
+         if (strDocSetName == strTargetDocSetName)
          {
-            CComBSTR bstrURL;
-            HRESULT hr = pDocumentation->GetDocumentLocation(nHID,&bstrURL);
-            if ( SUCCEEDED(hr) )
-            {
-               strURL = OLE2T(bstrURL);
-               return eafTypes::hrOK;
-            }
-            else
-            {
-               return eafTypes::hrTopicNotFound;
-            }
+            return pDocumentation->GetDocumentLocation(nHID);
          }
       }
    }
 
-   return eafTypes::hrDocSetNotFound;
+   return { WBFL::EAF::HelpResult::DocSetNotFound,CString() };
 }

@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_PGSEXTEXP_H_
-#define INCLUDED_PGSEXT_PGSEXTEXP_H_
+#pragma once
 
 /*****************************************************************************
 LIBRARY
@@ -56,6 +55,3 @@ DESCRIPTION
 #include <WbflAll.h>
 #include <PGSuperTypes.h>
 #include <PgsExt\AutoLib.h>
-
-
-#endif // INCLUDED_PGSEXT_PGSEXTEXP_H_

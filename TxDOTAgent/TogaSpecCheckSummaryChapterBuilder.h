@@ -20,81 +20,20 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_TOGASPECCHECKSUMMARYCHAPTERBUILDER_H_
-#define INCLUDED_TOGASPECCHECKSUMMARYCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-class pgsSegmentArtifact;
-class CSpanGirderReportSpecification;
-
-/*****************************************************************************
-CLASS 
-   CTogaSpecCheckSummaryChapterBuilder
-
-   Writes out a summary of the spec chec.
-
-
-DESCRIPTION
-   Writes out a summary of the spec chec. The summary is either PASS or FAILED
-   with a listing of everything that failed.
-
-LOG
-   rab : 03.17.1999 : Created file
-*****************************************************************************/
-
 class CTogaSpecCheckSummaryChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CTogaSpecCheckSummaryChapterBuilder(bool referToDetailsReport);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
    bool m_ReferToDetailsReport;
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CTogaSpecCheckSummaryChapterBuilder(const CTogaSpecCheckSummaryChapterBuilder&) = delete;
-   CTogaSpecCheckSummaryChapterBuilder& operator=(const CTogaSpecCheckSummaryChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_TOGASPECCHECKSUMMARYCHAPTERBUILDER_H_

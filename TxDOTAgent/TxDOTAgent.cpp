@@ -33,29 +33,28 @@
 
 // interfaces used in this DLL.... resolves symbols for the linker
 
-#include <WBFLCore_i.c>
+
 #include <WBFLTools_i.c>
 #include <WBFLGeometry_i.c>
 #include <WBFLCogo_i.c>
 #include "dllmain.h"
 
-#include <EAF\EAFAppPlugin.h>
-#include <EAF\EAFComponentInfo.h>
+#include <EAF\PluginApp.h>
+#include <EAF\ApplicationComponentInfo.h>
 
 #include "BridgeLinkCATID.h"
 #include "PGSuperCatCom.h"
 #include "TogaCatCom.h"
-#include <System\ComCatMgr.h>
 
 #include <EAF\EAFUIIntegration.h>
 
 #include "PGSComponentInfo.h"
 #include <Plugins\PGSuperIEPlugin.h>
-#include <WBFLReportManagerAgent_i.c>
 #include "TxDOTOptionalDesignDocProxyAgent.h"
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF/EAFProgress.h>
 #include <IFace\Selection.h>
 #include <IFace\TestFileExport.h>
 #include <IFace\Project.h>
@@ -78,127 +77,4 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TogaSupportDrawStrategy.h"
 #include "TogaSectionCutDrawStrategy.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-// Used to determine whether the DLL can be unloaded by OLE
-STDAPI DllCanUnloadNow(void)
-{
-    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-    return (AfxDllCanUnloadNow()==S_OK && _AtlModule.GetLockCount()==0) ? S_OK : S_FALSE;
-}
-
-
-// Returns a class factory to create an object of the requested type
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-    return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
-}
-
-HRESULT Register(bool bRegister)
-{
-   HRESULT hr = S_OK;
-
-   // The TxDOTAppPlugin plugs into the BridgeLink application executable and brings the
-   // TxDOT Optional Design Document functionality
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
-   if ( FAILED(hr) )
-      return hr;
-
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAppPluginComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
-   if ( FAILED(hr) )
-      return hr;
-
-   // The TxDOT Agent extends the functionality of PGSuper by adding custom reporting and
-   // other features
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperExtensionAgent,bRegister);
-   if ( FAILED(hr) )
-      return hr;
-
-   // The TxDOT Agent extends the functionality of Toga by adding custom reporting and
-   // other features
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_TogaExtensionAgent,bRegister);
-   if ( FAILED(hr) )
-      return hr;
-
-   // The TxDOT Cad Exporter provides custom export functionatlity
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperDataExporter,bRegister);
-   if ( FAILED(hr) )
-      return hr;
-
-   // The TxDOT component info objects provides information about this entire plug-in component
-   // This information is used in the "About" dialog
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_PGSuperComponentInfo,bRegister);
-   if ( FAILED(hr) )
-      return hr;
-
-   return S_OK;
-}
-
-// DllRegisterServer - Adds entries to the system registry
-STDAPI DllRegisterServer(void)
-{
-   // registers object, typelib and all interfaces in typelib
-   HRESULT hr = _AtlModule.DllRegisterServer(FALSE);
-   if ( FAILED(hr) )
-      return hr;
-
-   hr = Register(true);
-   if ( FAILED(hr) )
-      return hr;
-
-   return S_OK;
-}
-
-
-// DllUnregisterServer - Removes entries from the system registry
-STDAPI DllUnregisterServer(void)
-{
-	HRESULT hr = _AtlModule.DllUnregisterServer();
-   if ( FAILED(hr) )
-      return hr;
-
-   hr = Register(false);
-   if ( FAILED(hr) )
-      return hr;
-
-   return S_OK;
-}
-
-//// DllInstall - Adds/Removes entries to the system registry per user
-////              per machine.	
-//STDAPI DllInstall(BOOL bInstall, LPCWSTR pszCmdLine)
-//{
-//    HRESULT hr = E_FAIL;
-//    static const wchar_t szUserSwitch[] = _T("user");
-//
-//    if (pszCmdLine != nullptr)
-//    {
-//    	if (_wcsnicmp(pszCmdLine, szUserSwitch, _countof(szUserSwitch)) == 0)
-//    	{
-//    		AtlSetPerUserRegistration(true);
-//    	}
-//    }
-//
-//    if (bInstall)
-//    {	
-//    	hr = DllRegisterServer();
-//    	if (FAILED(hr))
-//    	{	
-//    		DllUnregisterServer();
-//    	}
-//    }
-//    else
-//    {
-//    	hr = DllUnregisterServer();
-//    }
-//
-//    return hr;
-//}
-
 

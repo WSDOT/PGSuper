@@ -24,17 +24,13 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "LossParametersDlg.h"
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocument.h>
 #include "PGSuperDoc.h"
+#include <IFace/Tools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CLossParametersDlg
@@ -65,8 +61,8 @@ void CLossParametersDlg::Init()
    m_PostTensioning.m_psp.dwFlags |= PSP_HASHELP;
    m_TimeStepProperties.m_psp.dwFlags |= PSP_HASHELP;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    if ( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {

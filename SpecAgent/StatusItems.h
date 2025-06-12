@@ -30,20 +30,19 @@ class pgsHaulTruckStatusItem : public pgsSegmentRelatedStatusItem
 {
 public:
    pgsHaulTruckStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSegmentKey& segmentKey);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    CSegmentKey m_SegmentKey;
 };
 
 ///////////////////////////
-class pgsHaulTruckStatusCallback : public iStatusCallback
+class pgsHaulTruckStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsHaulTruckStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType statusLevel);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsHaulTruckStatusCallback(WBFL::EAF::StatusSeverityType statusLevel);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
 };

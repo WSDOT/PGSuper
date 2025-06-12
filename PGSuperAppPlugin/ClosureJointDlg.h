@@ -22,16 +22,16 @@
 
 #pragma once
 
-#include <PgsExt\Keys.h>
-#include <PgsExt\ClosureJointData.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\Keys.h>
+#include <PsgLib\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TimelineManager.h>
 #include "ClosureJointGeneralPage.h"
 #include "ClosureJointLongitudinalReinforcementPage.h"
 #include "ClosureJointStirrupsPage.h"
 
 #include <IFace\ExtendUI.h>
-#include <EAF\EAFMacroTxn.h>
+#include <EAF\MacroTxn.h>
 
 // CClosureJointDlg
 
@@ -64,7 +64,7 @@ public:
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
-   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
+   std::unique_ptr<WBFL::EAF::Transaction> GetExtensionPageTransaction();
 
    bool WasEventCreated() { return m_General.m_bWasEventCreated; }
 
@@ -79,7 +79,7 @@ protected:
    void DestroyExtensionPages();
 
 
-   CEAFMacroTxn m_Macro;
+   WBFL::EAF::MacroTxn m_Macro;
    std::vector<std::pair<IEditClosureJointCallback*,CPropertyPage*>> m_ExtensionPages;
    std::vector<EditSplicedGirderExtension> m_SplicedGirderExtensionPages;
    void NotifyExtensionPages();

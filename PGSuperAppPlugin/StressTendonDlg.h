@@ -1,7 +1,7 @@
 #pragma once
 
-#include <PgsExt\StressTendonActivity.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\StressTendonActivity.h>
+#include <PsgLib\TimelineManager.h>
 #include <PgsExt\TimelineItemListBox.h>
 
 // CStressTendonDlg dialog

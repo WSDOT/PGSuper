@@ -20,77 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_OPTIMIZEDFABRICATIONCHAPTERBUILDER_H_
-#define INCLUDED_OPTIMIZEDFABRICATIONCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   COptimizedFabricationChapterBuilder
-
-   Builds the chapter for optimized fabrication
-
-
-DESCRIPTION
-   Builds the chapter for optimized fabrication. The chapter consists of
-   a table showing the fabrication options related to temporary top strands
-
-LOG
-   rab : 05.31.2007 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS COptimizedFabricationChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    COptimizedFabricationChapterBuilder(bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   COptimizedFabricationChapterBuilder(const COptimizedFabricationChapterBuilder&) = delete;
-   COptimizedFabricationChapterBuilder& operator=(const COptimizedFabricationChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_OPTIMIZEDFABRICATIONCHAPTERBUILDER_H_

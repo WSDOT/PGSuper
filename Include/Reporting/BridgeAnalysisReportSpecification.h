@@ -24,14 +24,14 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <ReportManager\ReportManager.h>
-#include <WBFLCore.h>
+
 
 
 class REPORTINGCLASS CBridgeAnalysisReportSpecification :
    public CGirderLineReportSpecification
 {
 public:
-   CBridgeAnalysisReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,GirderIndexType gdrIdx,bool bDesign,bool bRating);
+   CBridgeAnalysisReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,GirderIndexType gdrIdx,bool bDesign,bool bRating);
    ~CBridgeAnalysisReportSpecification(void);
 
    void SetOptions(bool bDesign,bool bRating);

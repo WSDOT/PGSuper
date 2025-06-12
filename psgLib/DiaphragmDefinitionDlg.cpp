@@ -24,17 +24,12 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "DiaphragmDefinitionDlg.h"
 #include <MFCTools\MFCTools.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CDiaphragmDefinitionDlg dialog
@@ -47,10 +42,9 @@ CDiaphragmDefinitionDlg::CDiaphragmDefinitionDlg(const GirderLibraryEntry& entry
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 
-   m_Entry.GetBeamFactory(&m_pBeamFactory);
-
-   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedFactory(m_pBeamFactory);
-   m_bSplicedGirder = (splicedFactory == nullptr ? false : true);
+   m_pBeamFactory = m_Entry.GetBeamFactory();
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(m_pBeamFactory);
+   m_bSplicedGirder = (splicedBeamFactory == nullptr ? false : true);
 }
 
 

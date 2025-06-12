@@ -20,11 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib/CreepCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/CreepCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
-bool CreepCriteria::Compare(const CreepCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool CreepCriteria::Compare(const CreepCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (!::IsEqual(XferTime, other.XferTime) ||
@@ -36,7 +36,7 @@ bool CreepCriteria::Compare(const CreepCriteria& other, const SpecLibraryEntryIm
       !::IsEqual(CamberVariability, other.CamberVariability))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Creep and Camber parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Creep and Camber parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -44,14 +44,14 @@ bool CreepCriteria::Compare(const CreepCriteria& other, const SpecLibraryEntryIm
       (CuringMethod == pgsTypes::CuringMethod::Accelerated && (!::IsEqual(CuringMethodTimeAdjustmentFactor, other.CuringMethodTimeAdjustmentFactor))))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Curing of Precast Concrete parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Curing of Precast Concrete parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void CreepCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void CreepCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

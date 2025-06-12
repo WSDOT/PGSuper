@@ -27,15 +27,10 @@
 #include "PGSuperApp.h"
 #include "resource.h"
 #include "BridgeDescDlg.h"
-#include <PgsExt\DeckRebarData.h>
+#include <PsgLib\DeckRebarData.h>
 
 #include "PGSuperDocBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDlg
@@ -144,7 +139,7 @@ std::vector<EditBridgeExtension>& CBridgeDescDlg::GetExtensionPages()
    return m_ExtensionPages;
 }
 
-std::unique_ptr<CEAFTransaction> CBridgeDescDlg::GetExtensionPageTransaction()
+std::unique_ptr<WBFL::EAF::Transaction> CBridgeDescDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
    {
@@ -164,7 +159,7 @@ void CBridgeDescDlg::NotifyExtensionPages()
    {
       IEditBridgeCallback* pCallback = pageIter->pCallback;
       CPropertyPage* pPage = pageIter->pPage;
-      std::unique_ptr<CEAFTransaction> pTxn = pCallback->OnOK(pPage,this);
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn = pCallback->OnOK(pPage,this);
       if ( pTxn )
       {
          m_Macro.AddTransaction(std::move(pTxn));

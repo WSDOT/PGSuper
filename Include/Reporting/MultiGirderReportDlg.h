@@ -34,7 +34,7 @@ class CMultiGirderReportDlg : public CDialog
 	DECLARE_DYNAMIC(CMultiGirderReportDlg)
 
 public:
-	CMultiGirderReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_MULTIGIRDERREPORT,CWnd* pParent = nullptr);   // standard constructor
+	CMultiGirderReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_MULTIGIRDERREPORT,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CMultiGirderReportDlg();
 
 // Dialog Data
@@ -59,7 +59,7 @@ protected:
    CCheckListBox	m_ChList;
 
    const WBFL::Reporting::ReportDescription& m_RptDesc;
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    std::shared_ptr<WBFL::Reporting::ReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 

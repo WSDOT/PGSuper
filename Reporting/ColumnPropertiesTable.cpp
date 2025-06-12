@@ -23,15 +23,12 @@
 #include "StdAfx.h"
 #include <Reporting\ColumnPropertiesTable.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CColumnPropertiesTable::CColumnPropertiesTable()
 {
@@ -58,7 +55,7 @@ CColumnPropertiesTable& CColumnPropertiesTable::operator= (const CColumnProperti
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CColumnPropertiesTable::Build(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CColumnPropertiesTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue, l, pDisplayUnits->GetSpanLengthUnit(), false);
    INIT_UV_PROTOTYPE( rptAreaUnitValue, l2, pDisplayUnits->GetAreaUnit(), false );

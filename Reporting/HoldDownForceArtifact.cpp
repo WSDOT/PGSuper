@@ -23,6 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\HoldDownForceCheck.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -30,14 +32,10 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
 
+#include <psgLib/SpecLibraryEntry.h>
 #include <psgLib/HoldDownCriteria.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -73,8 +71,8 @@ CHoldDownForceCheck& CHoldDownForceCheck::operator= (const CHoldDownForceCheck& 
 }
 
 //======================== OPERATIONS =======================================
-void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                                       IEAFDisplayUnits* pDisplayUnits) const
+void CHoldDownForceCheck::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 

@@ -32,6 +32,7 @@
 #include "TogaGMDisplayMgrEventsImpl.h"
 #include "TogaDisplayObjectFactory.h"
 
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\DrawBridgeSettings.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -43,11 +44,6 @@
 #include <WBFLGeometry/GeomHelpers.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define SOCKET_HT   0
 #define SOCKET_HB   1
@@ -183,7 +179,7 @@ void CTogaGirderModelSectionView::UpdateDisplayObjects()
    // Grab hold of the broker so we can pass it as a parameter
    try
    {
-      CComPtr<IBroker> pBroker = pDoc->GetUpdatedBroker();
+      auto pBroker = pDoc->GetUpdatedBroker();
 
       UINT settings = pDoc->GetGirderEditorSettings();
 
@@ -209,7 +205,7 @@ void CTogaGirderModelSectionView::UpdateDisplayObjects()
    }
 }
 
-void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(SECTION_LIST);
    ATLASSERT(pDL);
@@ -280,7 +276,7 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    pDL->AddDisplayObject(doPnt);
 }
 
-void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
@@ -376,7 +372,7 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
    }
 }
 
-void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(LONG_REINF_LIST);
    ATLASSERT(pDL);
@@ -420,7 +416,7 @@ void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDes
    }
 }
 
-void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(CG_LIST);
    ATLASSERT(pDL);
@@ -459,7 +455,7 @@ void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc*
    pDL->AddDisplayObject(doPnt);
 }
 
-void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(DIMENSION_LIST);
    ATLASSERT(pDL);

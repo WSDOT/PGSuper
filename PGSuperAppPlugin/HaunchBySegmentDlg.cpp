@@ -28,13 +28,9 @@
 #include "HaunchBySegmentDlg.h"
 #include "EditHaunchDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 
@@ -55,8 +51,8 @@ CHaunchBySegmentDlg::~CHaunchBySegmentDlg()
 void CHaunchBySegmentDlg::DoDataExchange(CDataExchange* pDX)
 {
    CDialog::DoDataExchange(pDX);
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    if (pDocType->IsPGSuperDocument())
    {
@@ -86,8 +82,8 @@ END_MESSAGE_MAP()
 
 BOOL CHaunchBySegmentDlg::OnInitDialog()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    if (pDocType->IsPGSuperDocument())
    {

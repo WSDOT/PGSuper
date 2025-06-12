@@ -26,7 +26,7 @@
 
 // SYSTEM INCLUDES
 //
-#include <WBFLCore.h>
+
 
 #if !defined INCLUDED_STRDATA_H_
 #include <StrData.h>
@@ -36,7 +36,7 @@
 #include <Materials/PsStrand.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
 // LOCAL INCLUDES
 //
@@ -266,8 +266,8 @@ public:
 
    // GROUP: OPERATIONS
 
-	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
-	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
+	HRESULT Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress);
+	HRESULT Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress> pProgress);
 
    // GROUP: ACCESS
    // Get library entry name from our parent

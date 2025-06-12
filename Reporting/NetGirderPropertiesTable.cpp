@@ -24,21 +24,19 @@
 #include <Reporting\NetGirderPropertiesTable.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 
 #include <sstream>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -53,10 +51,10 @@ CNetGirderPropertiesTable::~CNetGirderPropertiesTable()
 {
 }
 
-rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
+rptRcTable* CNetGirderPropertiesTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                             const CSegmentKey& segmentKey,
                                             IntervalIndexType intervalIdx,
-                                            IEAFDisplayUnits* pDisplayUnits) const
+                                            std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    USES_CONVERSION;
    GET_IFACE2(pBroker,IIntervals,pIntervals);

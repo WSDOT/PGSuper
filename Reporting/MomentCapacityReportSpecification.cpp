@@ -24,15 +24,12 @@
 
 #include "StdAfx.h"
 #include <Reporting\MomentCapacityReportSpecification.h>
+
+#include <IFace/Tools.h>
 #include <IFace\PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CMomentCapacityReportSpecification::CMomentCapacityReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment) :
+CMomentCapacityReportSpecification::CMomentCapacityReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment) :
    CPoiReportSpecification(strReportName,pBroker,poi)
 {
    m_bPositiveMoment = bPositiveMoment;
@@ -64,7 +61,7 @@ bool CMomentCapacityReportSpecification::IsValid() const
    {
       // next check if POI is in a valid range 
       // Note that moments range from start to end of span, not just on segment
-      GET_IFACE(IPointOfInterest, pPoi);
+      GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
       const CSegmentKey& segmentKey = m_Poi.GetSegmentKey();
 
       PoiList vPoi = GetMomentCapacityDetailsPois(pPoi, segmentKey);
@@ -80,7 +77,7 @@ bool CMomentCapacityReportSpecification::IsValid() const
    }
 }
 
-PoiList CMomentCapacityReportSpecification::GetMomentCapacityDetailsPois(IPointOfInterest* pPois, const CSegmentKey& segmentKey)
+PoiList CMomentCapacityReportSpecification::GetMomentCapacityDetailsPois(std::shared_ptr<IPointOfInterest> pPois, const CSegmentKey& segmentKey)
 {
    PoiList vPoi;
    CSegmentKey segAsDialog(segmentKey.groupIndex, segmentKey.girderIndex, ALL_SEGMENTS);

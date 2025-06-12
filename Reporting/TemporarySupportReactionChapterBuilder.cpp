@@ -30,29 +30,11 @@
 
 #include <Reporting\ProductMomentsTable.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CTemporarySupportReactionChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTemporarySupportReactionChapterBuilder::CTemporarySupportReactionChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTemporarySupportReactionChapterBuilder::GetName() const
 {
    return TEXT("Temporary Support Reactions");
@@ -62,10 +44,9 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr
 {
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
 
-   pGdrLineRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrLineRptSpec->GetBroker();
    girderKey = pGdrLineRptSpec->GetGirderKey();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -445,9 +426,4 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTemporarySupportReactionChapterBuilder::Clone() const
-{
-   return std::make_unique<CTemporarySupportReactionChapterBuilder>();
 }

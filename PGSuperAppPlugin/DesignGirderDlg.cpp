@@ -27,6 +27,7 @@
 #include "PGSuperApp.h"
 #include "DesignGirderDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
@@ -35,18 +36,13 @@
 #include <EAF\EAFDocument.h>
 
 #include <MFCTools\AutoRegistry.h>
-#include "PGSuperBaseAppPlugin.h"
+#include "PGSPluginAppBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CDesignGirderDlg dialog
 
-CDesignGirderDlg::CDesignGirderDlg(const CGirderKey& girderKey, IBroker* pBroker, arSlabOffsetDesignType haunchDesignRequest, CWnd* pParent /*=nullptr*/)
+CDesignGirderDlg::CDesignGirderDlg(const CGirderKey& girderKey, std::shared_ptr<WBFL::EAF::Broker> pBroker, arSlabOffsetDesignType haunchDesignRequest, CWnd* pParent /*=nullptr*/)
 	: CDialog(CDesignGirderDlg::IDD, pParent),
    m_GirderKey(girderKey),
    m_DesignRadioNum(0),
@@ -196,9 +192,8 @@ void CDesignGirderDlg::LoadSettings(arSlabOffsetDesignType haunchDesignRequest, 
    // loads last settings from the registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
@@ -215,8 +210,8 @@ void CDesignGirderDlg::LoadSettings(arSlabOffsetDesignType haunchDesignRequest, 
    haunchDesignType = (strHaunchDesign.CompareNoCase(_T("On")) == 0) ? sodDesignHaunch : sodPreserveHaunch;
 
    // We can't do haunch design if library disallows, or we have no deck. Nip this in the bud
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    if (!pSpec->DesignSlabHaunch())
@@ -254,9 +249,8 @@ void CDesignGirderDlg::SaveSettings()
    // saves current settings to the registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);

@@ -21,25 +21,24 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include "EngAgent.h"
 #include <PgsExt\DevelopmentLength.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 #include <PgsExt\TransferLength.h>
 
 class rptChapter;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class pgsDevelopmentLengthEngineer
 {
 public:
-   pgsDevelopmentLengthEngineer();
-   ~pgsDevelopmentLengthEngineer();
-
-   void SetBroker(IBroker* pBroker);
+   pgsDevelopmentLengthEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker);
+   ~pgsDevelopmentLengthEngineer() = default;
 
    void Invalidate();
 
-   const std::shared_ptr<pgsDevelopmentLength> GetDevelopmentLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig = nullptr) const;
-   const std::shared_ptr<pgsDevelopmentLength> GetDevelopmentLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded, Float64 fps, Float64 fpe, const GDRCONFIG* pConfig = nullptr) const;
+   std::shared_ptr<const pgsDevelopmentLength> GetDevelopmentLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig = nullptr) const;
+   std::shared_ptr<const pgsDevelopmentLength> GetDevelopmentLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded, Float64 fps, Float64 fpe, const GDRCONFIG* pConfig = nullptr) const;
    
    Float64 GetDevelopmentLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig = nullptr) const;
 
@@ -49,10 +48,11 @@ public:
    void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const;
 
 private:
-   typedef std::array<std::map<const pgsPointOfInterest, std::shared_ptr<pgsDevelopmentLength>>, 3> Cache;
+   typedef std::array<std::map<const pgsPointOfInterest, std::shared_ptr<const pgsDevelopmentLength>>, 3> Cache;
    mutable Cache m_BondedCache;
    mutable Cache m_DebondCache;
-   IBroker* m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
 };
 
 /// Base class for computing development length. This class manages common parameters
@@ -78,7 +78,7 @@ public:
 
    Float64 GetDevelopmentLengthFactor() const;
 
-   virtual Float64 GetDevelopmentLength() const override;
+   Float64 GetDevelopmentLength() const override;
 
 protected:
    Float64 m_MbrDepth{0.0};
@@ -92,7 +92,7 @@ public:
    pgsPCIUHPCDevelopmentLength() = default;
    pgsPCIUHPCDevelopmentLength(Float64 db, Float64 fpe, Float64 fps);
 
-   virtual Float64 GetDevelopmentLength() const override;
+   Float64 GetDevelopmentLength() const override;
 };
 
 /// This class implements development length calculation based on the UHPC Draft Guide Specifications
@@ -102,7 +102,7 @@ public:
    pgsUHPCDevelopmentLength() = default;
    pgsUHPCDevelopmentLength(Float64 lt,Float64 db, Float64 fpe, Float64 fps);
 
-   virtual Float64 GetDevelopmentLength() const override;
+   Float64 GetDevelopmentLength() const override;
 
 private:
    Float64 m_lt{ 0.0 };
@@ -113,12 +113,13 @@ class pgsDevelopmentLengthReporterBase : public pgsDevelopmentLengthReporter
 {
 public:
    pgsDevelopmentLengthReporterBase() = delete;
-   pgsDevelopmentLengthReporterBase(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
-   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+   pgsDevelopmentLengthReporterBase(std::weak_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer& engineer);
+   void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 
 protected:
-   const pgsDevelopmentLengthEngineer* m_pEngineer;
-   IBroker* m_pBroker;
+   const pgsDevelopmentLengthEngineer& m_Engineer;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
 
    const std::_tstring& GetAdjustableStrandName() const;
    PoiAttributeType GetLocationPoiAttribute() const;
@@ -135,8 +136,8 @@ class pgsLRFDDevelopmentLengthReporter : public pgsDevelopmentLengthReporterBase
 {
 public:
    pgsLRFDDevelopmentLengthReporter() = delete;
-   pgsLRFDDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
-   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+   pgsLRFDDevelopmentLengthReporter(std::weak_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer& engineer);
+   void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 };
 
 /// This class reports the details of development length calculations based on the PCI UHPC Structural Design Guidance
@@ -144,8 +145,8 @@ class pgsPCIUHPCDevelopmentLengthReporter : public pgsDevelopmentLengthReporterB
 {
 public:
    pgsPCIUHPCDevelopmentLengthReporter() = delete;
-   pgsPCIUHPCDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
-   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+   pgsPCIUHPCDevelopmentLengthReporter(std::weak_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer& engineer);
+   void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 };
 
 /// This class reports the details of development length calculations based on the UHPC Draft Guide Specifications
@@ -153,6 +154,6 @@ class pgsUHPCDevelopmentLengthReporter : public pgsDevelopmentLengthReporterBase
 {
 public:
    pgsUHPCDevelopmentLengthReporter() = delete;
-   pgsUHPCDevelopmentLengthReporter(IBroker* pBroker, const pgsDevelopmentLengthEngineer* pEngineer);
-   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+   pgsUHPCDevelopmentLengthReporter(std::weak_ptr<WBFL::EAF::Broker> pBroker, const pgsDevelopmentLengthEngineer& engineer);
+   void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 };

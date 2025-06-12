@@ -54,7 +54,7 @@ LOG
    rdp : 04.09.2009 : Created file
 *****************************************************************************/
 // Main External functions that write the file
-int TxDOT_WriteTOGAReportToFile (FILE *fp, IBroker* pBroker);
+int TxDOT_WriteTOGAReportToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker);
 
 
 // Local utility class that does the real writing

@@ -27,8 +27,6 @@ class CPGSDocBase;
 
 #include <DManip/DManip.h>
 
-interface IBroker;
-
 class CGirderModelElevationView : public CDisplayView
 {
    friend CGirderModelChildFrame;
@@ -97,23 +95,23 @@ private:
 
    bool m_DoBlockUpdate;
 
-   void BuildSupportDisplayObjects(         CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
-   void BuildDropTargetDisplayObjects(      CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
-   void BuildStrandDisplayObjects(          CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
-   void BuildStrandCGDisplayObjects(        CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
-   void BuildSegmentCGDisplayObjects(       CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
-   void BuildSegmentDisplayObjects(         CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
-   void BuildClosureJointDisplayObjects(    CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
-   void BuildTendonDisplayObjects(          CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
-   void BuildRebarDisplayObjects(           CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
-   void BuildPointLoadDisplayObjects(       CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist);
-   void BuildDistributedLoadDisplayObjects( CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist);
-   void BuildMomentLoadDisplayObjects(      CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist);
-   void BuildLegendDisplayObjects(          CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist);
-   void BuildDimensionDisplayObjects(       CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
-   void BuildSectionCutDisplayObjects(      CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
-   void BuildStirrupDisplayObjects(         CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
-   void BuildPropertiesDisplayObjects(      CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildSupportDisplayObjects(         CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildDropTargetDisplayObjects(      CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildStrandDisplayObjects(          CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildStrandCGDisplayObjects(        CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildSegmentCGDisplayObjects(       CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildSegmentDisplayObjects(         CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildClosureJointDisplayObjects(    CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildTendonDisplayObjects(          CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildRebarDisplayObjects(           CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildPointLoadDisplayObjects(       CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist);
+   void BuildDistributedLoadDisplayObjects( CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist);
+   void BuildMomentLoadDisplayObjects(      CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist);
+   void BuildLegendDisplayObjects(          CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist);
+   void BuildDimensionDisplayObjects(       CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildSectionCutDisplayObjects(      CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildStirrupDisplayObjects(         CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildPropertiesDisplayObjects(      CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
    
    std::shared_ptr<WBFL::DManip::DimensionLine> BuildDimensionLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const WBFL::Geometry::Point2d& fromPoint, const WBFL::Geometry::Point2d& toPoint, Float64 dimension);
    std::shared_ptr<WBFL::DManip::iDisplayObject> BuildLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const std::vector<WBFL::Geometry::Point2d>& points, COLORREF color, UINT nWidth = 1);
@@ -132,8 +130,8 @@ private:
 
    CGirderKey GetGirderKey();
 
-   CString GetSegmentTooltip(IBroker* pBroker, const CSegmentKey& segmentKey);
-   CString GetClosureTooltip(IBroker* pBroker, const CClosureKey& closureKey);
+   CString GetSegmentTooltip(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey);
+   CString GetClosureTooltip(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CClosureKey& closureKey);
 
 
    void CreateSegmentEndSupportDisplayObject(Float64 groupOffset,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,std::shared_ptr<WBFL::DManip::iDisplayList> pDL);
@@ -147,5 +145,5 @@ private:
    Float64 GetSpanStartLocation(const CSpanKey& spanKey);
 
    // Returns the range of spans that are being displayed
-   void GetSpanRange(IBroker* pBroker,const CGirderKey& girderKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx);
+   void GetSpanRange(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx);
 };

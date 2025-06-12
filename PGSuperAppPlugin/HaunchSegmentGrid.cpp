@@ -30,16 +30,12 @@
 #include <System\Tokenizer.h>
 #include "PGSuperUnits.h"
 #include <Units\Measure.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\HaunchDepthInputConversionTool.h>
+#include <PsgLib\GirderLabel.h>
+#include <IFace/Project.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CHaunchSegmentGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -95,8 +91,8 @@ void CHaunchSegmentGrid::CustomInit(GroupIndexType grpIdx)
    m_GroupIdx = grpIdx;
 
    // initialize units
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pUnit = &(pDisplayUnits->GetComponentDimUnit());
 
@@ -304,8 +300,8 @@ void CHaunchSegmentGrid::DoDataExchange(CDataExchange* pDX)
 
 void CHaunchSegmentGrid::FillGrid()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -313,12 +309,11 @@ void CHaunchSegmentGrid::FillGrid()
    const CBridgeDescription2* pBridgeOrig = GetBridgeDesc();
 
    // Convert current haunch data if needed
-   HaunchDepthInputConversionTool conversionTool(pBridgeOrig,pBroker,false);
-   auto convPair = conversionTool.ConvertToSlabOffsetInput(pgsTypes::sotSegment);
-   const CBridgeDescription2* pBridge = &convPair.second;
+   GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+   auto bridge = pBridgeDesc->ConvertHaunchToSlabOffsetInput(*pBridgeOrig, pgsTypes::sotSegment).second;
 
    GroupIndexType startGroupIdx = (m_GroupIdx == ALL_GROUPS ? 0 : m_GroupIdx);
-   GroupIndexType endGroupIdx = (m_GroupIdx == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : startGroupIdx);
+   GroupIndexType endGroupIdx = (m_GroupIdx == ALL_GROUPS ? bridge.GetGirderGroupCount() - 1 : startGroupIdx);
 
    ROWCOL nRows = GetRowCount();
    if (m_nExtraHeaderRows+1 < nRows)
@@ -331,7 +326,7 @@ void CHaunchSegmentGrid::FillGrid()
    {
       ROWCOL row = m_nExtraHeaderRows+1;
 
-      auto* pGroup = pBridge->GetGirderGroup(grpIdx);
+      auto* pGroup = bridge.GetGirderGroup(grpIdx);
       auto nGirders = pGroup->GetGirderCount();
 
       for (auto gdrIdx = 0; gdrIdx < nGirders; gdrIdx++, row++)

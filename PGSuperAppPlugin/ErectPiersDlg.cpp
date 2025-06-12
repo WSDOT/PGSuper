@@ -5,6 +5,7 @@
 #include "resource.h"
 #include "ErectPiersDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 #include <EAF\EAFDocument.h>
@@ -17,11 +18,6 @@
 // the Temporary Support indices are encoded/decoded with the following methods
 #include "CastClosureJointDlg.h" // use Encode/Decode methods from CastClosureJointDlg
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNAMIC(CErectPiersDlg, CDialog)
@@ -33,9 +29,9 @@ CErectPiersDlg::CErectPiersDlg(const CTimelineManager& timelineMgr,EventIndexTyp
 {
    m_TimelineMgr = timelineMgr;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   pBroker->GetInterface(IID_IEAFDisplayUnits,(IUnknown**)&m_pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   m_pDisplayUnits = pBroker->GetInterface<IEAFDisplayUnits>(IID_IEAFDisplayUnits);
 
    m_pBridgeDesc = m_TimelineMgr.GetBridgeDescription();
 }

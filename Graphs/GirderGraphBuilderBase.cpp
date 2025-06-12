@@ -31,7 +31,7 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <Units\UnitValueNumericalFormatTools.h>
 
 #include <Hints.h>
@@ -41,17 +41,13 @@
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\EditByUI.h>
+#include <IFace/PointOfInterest.h>
 
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFGraphControlWindow.h>
 
 #include <MFCTools\MFCTools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // create a dummy unit conversion tool to pacify the graph constructor
@@ -135,7 +131,7 @@ bool CGirderGraphBuilderBase::HandleDoubleClick(UINT nFlags,CPoint point)
 
 int CGirderGraphBuilderBase::InitializeGraphController(CWnd* pParent,UINT nID)
 {
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    m_pGraphController = CreateGraphController();
 

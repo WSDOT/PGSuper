@@ -26,13 +26,18 @@
 #include "resource.h"
 #include "dllmain.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "CLSID.h"
+#include "PGSuperComponentInfo.h"
+#include "PGSpliceComponentInfo.h"
+#include "WSDOTAgentImp.h"
+#include <EAF/ComponentModule.h>
+WBFL::EAF::ComponentModule Module_;
 
-CWSDOTAgentModule _AtlModule;
+EAF_BEGIN_OBJECT_MAP(ObjectMap)
+EAF_OBJECT_ENTRY(CLSID_WSDOTPGSuperComponentInfo, CPGSuperComponentInfo)
+EAF_OBJECT_ENTRY(CLSID_WSDOTPGSpliceComponentInfo, CPGSpliceComponentInfo)
+EAF_OBJECT_ENTRY(CLSID_WSDOTAgent, CWSDOTAgentImp)
+EAF_END_OBJECT_MAP()
 
 class CWSDOTAgentApp : public CWinApp
 {
@@ -52,10 +57,12 @@ CWSDOTAgentApp theApp;
 
 BOOL CWSDOTAgentApp::InitInstance()
 {
+   Module_.Init(ObjectMap);
 	return CWinApp::InitInstance();
 }
 
 int CWSDOTAgentApp::ExitInstance()
 {
+   Module_.Term();
 	return CWinApp::ExitInstance();
 }

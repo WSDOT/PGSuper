@@ -22,17 +22,17 @@
 
 #pragma once
 #include <PgsExt\PgsExtExp.h>
-#include <EAF\EAFTransaction.h>
-#include <EAF\EAFTxnManager.h>
+#include <EAF\Transaction.h>
+#include <EAF\TxnManager.h>
 
-class PGSEXTCLASS pgsTxnManagerFactory : public CEAFTxnManagerFactory
+class PGSEXTCLASS pgsTxnManagerFactory : public WBFL::EAF::TxnManagerFactory
 {
 public:
-   virtual std::unique_ptr<CEAFTxnManager> CreateTransactionManager() override;
+   virtual std::unique_ptr<WBFL::EAF::TxnManager> CreateTransactionManager() override;
 };
 
-class PGSEXTCLASS pgsTxnManager : public CEAFTxnManager
+class PGSEXTCLASS pgsTxnManager : public WBFL::EAF::TxnManager
 {
 public:
-   virtual void Execute(std::unique_ptr<CEAFTransaction>&& pTxn) override;
+   virtual void Execute(std::unique_ptr<WBFL::EAF::Transaction>&& pTxn) override;
 };

@@ -36,10 +36,10 @@
 #include "GirderDescGeneralPage.h"
 #include "SpanGdrDetailsBearingsPage.h"
 
-#include <PgsExt\SplicedGirderData.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\SplicedGirderData.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <IFace\ExtendUI.h>
-#include <EAF\EAFMacroTxn.h>
+#include <EAF\MacroTxn.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg
@@ -106,7 +106,7 @@ public:
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsible for deleting this object
-   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
+   std::unique_ptr<WBFL::EAF::Transaction> GetExtensionPageTransaction();
 
    void InitialzePages();
 
@@ -126,7 +126,7 @@ protected:
    void AddAdditionalPropertyPages(bool bGridBasedStrandInput);
 
 
-   CEAFMacroTxn m_Macro;
+   WBFL::EAF::MacroTxn m_Macro;
    std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>> m_ExtensionPages;
    void NotifyExtensionPages();
 

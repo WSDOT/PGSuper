@@ -22,23 +22,19 @@
 
 // DeckShrinkageLossTable.cpp : Implementation of CDeckShrinkageLossTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "DeckShrinkageLossTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+
 #include <PsgLib\SpecLibraryEntry.h>
 #include <psgLib/SpecificationCriteria.h>
+#include <PsgLib\GirderMaterial.h>
 
-#include <PgsExt\GirderMaterial.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CElasticGainDueToDeckShrinkageTable::CElasticGainDueToDeckShrinkageTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CElasticGainDueToDeckShrinkageTable::CElasticGainDueToDeckShrinkageTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -63,7 +59,7 @@ rptRcTable(NumColumns,0)
    strain.SetPrecision(3);
 }
 
-CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
    if (IsNonstructuralDeck(pBridge->GetDeckType()))
@@ -391,7 +387,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    return table;
 }
 
-void CElasticGainDueToDeckShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CElasticGainDueToDeckShrinkageTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)

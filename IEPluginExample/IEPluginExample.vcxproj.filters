@@ -10,7 +10,7 @@
     <ClCompile Include="PGSuperDataImporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PGSuperExporter.cpp">
+    <ClCompile Include="PGSuperDataExporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PGSuperProjectImporter.cpp">
@@ -27,7 +27,7 @@
     <ClInclude Include="PGSuperDataImporter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PGSuperExporter.h">
+    <ClInclude Include="PGSuperDataExporter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PGSuperInterfaces.h">
@@ -56,18 +56,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="IEPluginExample.def" />
-    <None Include="PGSpliceProjectImporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="PGSuperDataImporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="PGSuperExporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="PGSuperProjectImporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

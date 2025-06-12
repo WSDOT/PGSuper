@@ -33,19 +33,16 @@
 #include "PGSuperColors.h"
 #include "BridgeDisplayObjectEvents.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace/PointOfInterest.h>
 
 #include <WBFLGeometry/GeomHelpers.h>
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define TITLE_DISPLAY_LIST       0
 #define PROFILE_DISPLAY_LIST     1
@@ -141,7 +138,7 @@ void CAlignmentProfileView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
-   CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+   auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_ALIGNMENT_PROFILE_CTX,nullptr);
 
    if ( logPoint.x < 0 || logPoint.y < 0 )
@@ -166,7 +163,6 @@ void CAlignmentProfileView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
 
    pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, logPoint.x, logPoint.y, this);
-   delete pMenu;
 }
 
 void CAlignmentProfileView::OnViewSettings() 
@@ -210,8 +206,8 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
    auto display_list = m_pDispMgr->FindDisplayList(PROFILE_DISPLAY_LIST);
    display_list->Clear();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
 
@@ -333,8 +329,8 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
    auto display_list = m_pDispMgr->FindDisplayList(BRIDGE_DISPLAY_LIST);
    display_list->Clear();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IRoadway,pAlignment);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -419,8 +415,8 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
    auto label_display_list = m_pDispMgr->FindDisplayList(LABEL_DISPLAY_LIST);
    label_display_list->Clear();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    // Label Start/End of Bridge
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
@@ -562,8 +558,8 @@ void CAlignmentProfileView::UpdateDrawingScale()
 
 void CAlignmentProfileView::CreateStationLabel(std::shared_ptr<WBFL::DManip::iDisplayList> pDisplayList,Float64 station,LPCTSTR strBaseLabel,UINT textAlign)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
 
@@ -576,8 +572,8 @@ void CAlignmentProfileView::CreateStationLabel(std::shared_ptr<WBFL::DManip::iDi
 
 void CAlignmentProfileView::CreateStationLabel(std::shared_ptr<WBFL::DManip::iDisplayList> pDisplayList,Float64 station,Float64 elevation,LPCTSTR strBaseLabel,UINT textAlign)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 

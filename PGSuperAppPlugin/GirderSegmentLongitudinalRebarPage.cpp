@@ -33,11 +33,6 @@
 
 #include <IFace\BeamFactory.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderSegmentLongitudinalRebarPage property page
@@ -110,8 +105,8 @@ void CGirderSegmentLongitudinalRebarPage::DoDataExchange(CDataExchange* pDX)
          }
 
          // make sure bars are inside of girder - use shape symmetry
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         
+         auto pBroker = EAFGetBroker();
          for ( int i = 0; i < 4; i++ )
          {
             pgsTypes::SegmentZoneType zone = (pgsTypes::SegmentZoneType)i;
@@ -133,8 +128,7 @@ void CGirderSegmentLongitudinalRebarPage::DoDataExchange(CDataExchange* pDX)
             point->Move(testpnt.X(),testpnt.Y());
 
             const GirderLibraryEntry* pGdrEntry = pSegment->GetGirder()->GetGirderLibraryEntry();
-            CComPtr<IBeamFactory> factory;
-            pGdrEntry->GetBeamFactory(&factory);
+            auto factory = pGdrEntry->GetBeamFactory();
 
             CComPtr<IGirderSection> gdrSection;
             factory->CreateGirderSection(pBroker,INVALID_ID,pGdrEntry->GetDimensions(),height,tbf,&gdrSection);

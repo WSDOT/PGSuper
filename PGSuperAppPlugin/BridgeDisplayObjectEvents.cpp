@@ -34,7 +34,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDisplayObjectEvents
 
-CBridgeDisplayObjectEvents::CBridgeDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,std::weak_ptr<WBFL::DManip::iDisplayObject> pDO,CBridgeDisplayObjectEvents::ViewType viewType)
+CBridgeDisplayObjectEvents::CBridgeDisplayObjectEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,std::weak_ptr<WBFL::DManip::iDisplayObject> pDO,CBridgeDisplayObjectEvents::ViewType viewType)
 {
    m_pBroker = pBroker;
    m_pFrame = pFrame;
@@ -117,7 +117,7 @@ bool CBridgeDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDi
    if ( pDO->IsSelected() )
    {
       CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
-      CEAFMenu* pMenu;
+      std::shared_ptr<WBFL::EAF::Menu> pMenu;
       if ( m_ViewType == CBridgeDisplayObjectEvents::Plan )
       {
          const std::map<IDType,IAlignmentPlanViewEventCallback*>& callbacks = pDoc->GetAlignmentPlanViewCallbacks();
@@ -129,7 +129,7 @@ bool CBridgeDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDi
             return false;
          }
 
-         pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+         pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
          std::map<IDType,IAlignmentPlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
          std::map<IDType,IAlignmentPlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
          for ( ; callbackIter != callbackIterEnd; callbackIter++ )
@@ -149,7 +149,7 @@ bool CBridgeDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDi
             return false;
          }
 
-         pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+         pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
          std::map<IDType,IAlignmentProfileViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
          std::map<IDType,IAlignmentProfileViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
          for ( ; callbackIter != callbackIterEnd; callbackIter++ )
@@ -165,8 +165,6 @@ bool CBridgeDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDi
          pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
          bResult = true;
       }
-
-      delete pMenu;
 
       return bResult;
    }

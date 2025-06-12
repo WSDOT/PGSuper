@@ -35,16 +35,11 @@
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ReportNotes.h>
 
-#include <IFace\Tools.h>
-
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <PgsExt\ReportPointOfInterest.h>
 
 #include <WBFLGenericBridge.h>
 #include <WBFLGenericBridgeTools.h>
-
-#include <initguid.h>
-#include <EAF\EAFDisplayUnits.h>
 
 #if defined _NOGRID
 #include <NoGrid.h>
@@ -55,4 +50,4 @@
 #include <afxwin.h>
 
 #include <EAF\EAFUtilities.h>
-#include <EAF\EAFHelp.h>
+#include <EAF\Help.h>

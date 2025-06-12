@@ -33,36 +33,36 @@ class CDistributedLoadDrawStrategyImpl : public iDistributedLoadDrawStrategy, pu
 public:
    CDistributedLoadDrawStrategyImpl();
 
-   virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, CDistributedLoadData load, IndexType loadIndex,
+   virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, CDistributedLoadData load, IndexType loadIndex,
       Float64 loadLength, Float64 spanLength, Float64 maxMagnitude, COLORREF color) override;
 
 
-   virtual void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const override;
-   virtual void DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const override;
-   virtual void DrawHighlight(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, bool bHighlight) const override;
-   virtual WBFL::Geometry::Rect2d GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO) const override;
+   void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const override;
+   void DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const override;
+   void DrawHighlight(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, bool bHighlight) const override;
+   WBFL::Geometry::Rect2d GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO) const override;
 
-   virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, short zDelta, const POINT& point) override;
-   virtual bool OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nChar, UINT nRepCnt, UINT nFlags) override;
-   virtual bool OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, CWnd* pWnd, const POINT& point) override;
-   virtual void OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
-   virtual void OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset) override;
-   virtual void OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
-   virtual void OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
-   virtual void OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
-   virtual void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, short zDelta, const POINT& point) override;
+   bool OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nChar, UINT nRepCnt, UINT nFlags) override;
+   bool OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, CWnd* pWnd, const POINT& point) override;
+   void OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   void OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset) override;
+   void OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   void OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   void OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
 
-   virtual void EditLoad() override;
-   virtual void DeleteLoad() override;
+   void EditLoad() override;
+   void DeleteLoad() override;
 
-   virtual void GetGravityWell(std::shared_ptr<const WBFL::DManip::iDisplayObject> pDO, CRgn* pRgn) override;
+   void GetGravityWell(std::shared_ptr<const WBFL::DManip::iDisplayObject> pDO, CRgn* pRgn) override;
 
 
 public: 
@@ -74,9 +74,11 @@ private:
    void GetWLoadHeight(std::shared_ptr<const WBFL::DManip::iCoordinateMap> pMap, Float64* psx, Float64 *psy) const;
    void GetLLoadHeight(std::shared_ptr<const WBFL::DManip::iCoordinateMap> pMap, long* psx, long* psy) const;
    void GetTLoadHeight(std::shared_ptr<const WBFL::DManip::iCoordinateMap> pMap, long* psx, long* psy) const;
+   std::shared_ptr<WBFL::EAF::Broker> GetBroker() { return m_pBroker; }
+
    CDistributedLoadData m_Load;
    IndexType  m_LoadIndex;
-   IBroker*       m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker>       m_pBroker;
    COLORREF m_Color;
    Float64  m_StartLoc;
    Float64  m_EndLoc;

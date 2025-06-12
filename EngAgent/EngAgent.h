@@ -24,6 +24,8 @@
 
 #include <PgsExt\PgsExt.h>
 
+#include <IFace\Tools.h>
+
 #include <IFace\PrestressForce.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\MomentCapacity.h>

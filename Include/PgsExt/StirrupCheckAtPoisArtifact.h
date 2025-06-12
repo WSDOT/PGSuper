@@ -20,40 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined INCLUDED_PGSEXT_SHEARARTIFACT_H_
-#define INCLUDED_PGSEXT_SHEARARTIFACT_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
-
-#if !defined INCLUDED_SYSTEM_SECTIONVALUE_H_
 #include <System\SectionValue.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_POIARTIFACTKEY_H_
 #include <PgsExt\PoiArtifactKey.h>
-#endif
-
 #include <Materials/Rebar.h>
-
-#include <PgsExt\PointOfInterest.h>
-
+#include <PsgLib\PointOfInterest.h>
 #include <IFace/Bridge.h> // for InterfaceShearWidthDetails
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 
 /*****************************************************************************
@@ -183,8 +157,6 @@ public:
    bool PassedCapacity() const;
    bool Passed() const;
 
-   // GROUP: LIFECYCLE
-
 
 private:
    Float64 m_Fy{0.0};
@@ -220,12 +192,6 @@ private:
    Float64 m_gamma_u{ 0.0 }; // gamma_u
 };
 
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
 /*****************************************************************************
 CLASS 
    pgsVerticalShearArtifact
@@ -243,8 +209,6 @@ LOG
 class PGSEXTCLASS pgsVerticalShearArtifact
 {
 public:
-   // GROUP: DATA MEMBERS
-
    // if the support reaction is compressive then
    // the strength check between the support and the 
    // critical section is not required
@@ -291,23 +255,13 @@ public:
 
    pgsVerticalShearArtifact& operator = (const pgsVerticalShearArtifact& rOther) = default;
 
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-   // GROUP: DEBUG
    #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns <b>true</b> if the class is in a valid state, otherwise returns
-   // <b>false</b>.
    virtual bool AssertValid() const;
 
-   //------------------------------------------------------------------------
-   // Dumps the contents of the class to the given stream.
    virtual void Dump(WBFL::Debug::LogContext& os) const;
    #endif // _DEBUG
 
 private:
-   // GROUP: DATA MEMBERS
    bool m_bIsApplicable{true};
    bool m_bIsStrutAndTieRequired{false};
    bool m_bEndSpacingApplicable{false};
@@ -324,12 +278,6 @@ private:
    Float64 m_AvSprovided{ 0.0 };
    Float64 m_AvSatCS{ 0.0 };
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
 
 /*****************************************************************************
 CLASS 
@@ -353,8 +301,6 @@ public:
    ~pgsHorizontalShearArtifact() = default;
 
    pgsHorizontalShearArtifact& operator = (const pgsHorizontalShearArtifact& rOther) = default;
-
-   // GROUP: OPERATIONS
 
    // Not applicable if there is no composite slab
    bool IsApplicable() const;
@@ -463,22 +409,12 @@ public:
 
    bool   Passed() const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-   // GROUP: DEBUG
    #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns <b>true</b> if the class is in a valid state, otherwise returns
-   // <b>false</b>.
    virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the class to the given stream.
    virtual void Dump(WBFL::Debug::LogContext& os) const;
    #endif // _DEBUG
 
 private:
-   // GROUP: DATA MEMBERS
    bool    m_IsApplicable{false};
    Float64 m_AvfAdditional{ 0.0 };
    Float64 m_SAdditional{ 0.0 };
@@ -525,13 +461,6 @@ private:
    Float64 m_AvsReqd{ 0.0 };
 };
 
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-
 /*****************************************************************************
 CLASS 
    pgsStirrupDetailArtifact
@@ -556,7 +485,6 @@ public:
    pgsStirrupDetailArtifact& operator = (const pgsStirrupDetailArtifact& rOther) = default;
 
 
-   // GROUP: OPERATIONS
    void SetAfter1999(bool val) {m_After1999=val;}
    bool GetAfter1999() const {return m_After1999;}
    void SetFy(Float64 fy) { m_Fy = fy; }
@@ -599,21 +527,12 @@ public:
    bool IsInCriticalSectionZone() const {return m_IsInCritialSectionZone;};
    bool   Passed() const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-   // GROUP: DEBUG
    #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns <b>true</b> if the class is in a valid state, otherwise returns
-   // <b>false</b>.
    virtual bool AssertValid() const;
-   //------------------------------------------------------------------------
-   // Dumps the contents of the class to the given stream.
    virtual void Dump(WBFL::Debug::LogContext& os) const;
    #endif // _DEBUG
 
 private:
-   // GROUP: DATA MEMBERS
    bool m_After1999{true}; // after 1999 spec
    Float64 m_Fy{0.0};
    Float64 m_Fc{ 0.0 };
@@ -632,19 +551,7 @@ private:
    bool m_IsApplicable{false};
    bool m_IsInCritialSectionZone{false};
    Float64 m_Theta{ 0.0 }; // for FWHA UHPC see GS 1.7.2.6
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
 
 /*****************************************************************************
 CLASS 
@@ -688,13 +595,7 @@ public:
    void SetPointOfInterest(const pgsPointOfInterest& poi);
 
 #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns <b>true</b> if the class is in a valid state, otherwise returns
-   // <b>false</b>.
    virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the class to the given stream.
    virtual void Dump(WBFL::Debug::LogContext& os) const;
 #endif // _DEBUG
 
@@ -706,5 +607,3 @@ private:
    pgsStirrupDetailArtifact   m_StirrupDetailArtifact;
    pgsLongReinfShearArtifact  m_LongReinfShearArtifact;
 };
-
-#endif // INCLUDED_PGSEXT_SHEARARTIFACT_H_

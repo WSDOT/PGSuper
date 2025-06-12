@@ -24,20 +24,21 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "GirderSegmentTendonsPage.h"
 #include "GirderSegmentDlg.h"
 
 #include <GenericBridge\Helpers.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
-
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <Materials/PsStrand.h>
 #include <LRFD\StrandPool.h>
@@ -49,11 +50,6 @@
 
 #include "GirderDescDlg.h" // for ReconcileDebonding
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CGirderSegmentTendonsPage dialog
@@ -157,8 +153,8 @@ BOOL CGirderSegmentTendonsPage::OnInitDialog()
 
 void CGirderSegmentTendonsPage::UpdateSectionDepth()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);

@@ -21,15 +21,12 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "ExtensionAgent.h"
+
 #include "MyReportSpecification.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CMyReportSpecification::CMyReportSpecification(const std::_tstring& strReportName,IBroker* pBroker) :
+CMyReportSpecification::CMyReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_Message = "Message not set";

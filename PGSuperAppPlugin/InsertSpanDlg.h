@@ -26,7 +26,7 @@
 //
 
 #include "resource.h"
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <MfcTools\WideDropDownComboBox.h>
 
 /////////////////////////////////////////////////////////////////////////////

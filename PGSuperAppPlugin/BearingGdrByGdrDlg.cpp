@@ -25,13 +25,9 @@
 #include "resource.h"
 #include "BearingGdrByGdrDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNAMIC(CBearingGdrByGdrDlg, CDialog)
@@ -60,8 +56,7 @@ BOOL CBearingGdrByGdrDlg::OnInitDialog()
 {
    CDialog::OnInitDialog();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    m_GirderTabWnd.SubclassDlgItem(IDC_BEARING_GRID, this);

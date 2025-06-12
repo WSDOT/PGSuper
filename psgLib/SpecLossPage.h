@@ -20,14 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_SPECLOSSPAGE_H__FE3DB4E5_D66A_11D2_88FA_006097C68A9C__INCLUDED_)
-#define AFX_SPECLOSSPAGE_H__FE3DB4E5_D66A_11D2_88FA_006097C68A9C__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// SpecLossPage.h : header file
-//
+
+#include "resource.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecLossPage dialog
@@ -79,8 +74,3 @@ protected:
    void EnableTxDOT2013(BOOL bEnable);
    BOOL IsFractionalShippingLoss();
 };
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_SPECLOSSPAGE_H__FE3DB4E5_D66A_11D2_88FA_006097C68A9C__INCLUDED_)

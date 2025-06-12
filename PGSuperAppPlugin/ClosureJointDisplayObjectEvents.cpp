@@ -28,8 +28,10 @@
 #include "PGSuperApp.h"
 #include "ClosureJointDisplayObjectEvents.h"
 #include "PGSpliceDoc.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <DManip/DisplayObject.h>
 #include <DManip/DisplayList.h>
@@ -74,8 +76,8 @@ void CClosureJointDisplayObjectEvents::SelectPrevAdjacent(std::shared_ptr<WBFL::
    if ( m_ClosureKey.girderIndex == 0 )
    {
       // if this is the first girder, wrap around to the previous segment of the last girder
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CGirderGroupData* pGroup = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(m_ClosureKey.groupIndex);
       m_pFrame->SelectSegment( CSegmentKey(m_ClosureKey.groupIndex,pGroup->GetGirderCount()-1,m_ClosureKey.segmentIndex) );
@@ -91,8 +93,8 @@ void CClosureJointDisplayObjectEvents::SelectPrevAdjacent(std::shared_ptr<WBFL::
 
 void CClosureJointDisplayObjectEvents::SelectNextAdjacent(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CGirderGroupData* pGroup = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(m_ClosureKey.groupIndex);
    if ( m_ClosureKey.girderIndex == pGroup->GetGirderCount()-1 )
@@ -203,7 +205,7 @@ bool CClosureJointDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DMani
       auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSpliceDoc* pDoc = (CPGSpliceDoc*)pView->GetDocument();
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->AppendMenu(ID_EDIT_CLOSURE,_T("Edit"),nullptr);
 
       std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
@@ -215,8 +217,6 @@ bool CClosureJointDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DMani
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
-
-      delete pMenu;
 
       return true;
    }

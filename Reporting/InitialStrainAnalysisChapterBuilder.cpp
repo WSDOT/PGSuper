@@ -23,25 +23,21 @@
 #include "StdAfx.h"
 #include <Reporting\InitialStrainAnalysisChapterBuilder.h>
 #include <Reporting\InitialStrainAnalysisReportSpecification.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Intervals.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CInitialStrainAnalysisChapterBuilder::CInitialStrainAnalysisChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CInitialStrainAnalysisChapterBuilder::GetName() const
 {
    return TEXT("Initial Strain Analysis");
@@ -50,8 +46,7 @@ LPCTSTR CInitialStrainAnalysisChapterBuilder::GetName() const
 rptChapter* CInitialStrainAnalysisChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CInitialStrainAnalysisReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrRptSpec->GetBroker();
 
    const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
    IntervalIndexType intervalIdx = pGdrRptSpec->GetInterval();
@@ -124,9 +119,4 @@ rptChapter* CInitialStrainAnalysisChapterBuilder::Build(const std::shared_ptr<co
    } // next i
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CInitialStrainAnalysisChapterBuilder::Clone() const
-{
-   return std::make_unique<CInitialStrainAnalysisChapterBuilder>();
 }

@@ -21,15 +21,12 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "EngAgent.h"
 #include "AlternativeTensileStressCalculator.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -39,9 +36,9 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 pgsAlternativeTensileStressCalculator::pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
-                                                                             IBridge* pBridge,IGirder* pGirder,
-                                         IShapes* pShapes,ISectionProperties* pSectProps, ILongRebarGeometry* pRebarGeom,
-                                         IMaterials* pMaterials,IPointOfInterest* pPoi,bool bLimitBarStress,Float64 fsMax,
+                                                                             std::shared_ptr<IBridge> pBridge,std::shared_ptr<IGirder> pGirder,
+                                         std::shared_ptr<IShapes> pShapes,std::shared_ptr<ISectionProperties> pSectProps, std::shared_ptr<ILongRebarGeometry> pRebarGeom,
+                                         std::shared_ptr<IMaterials> pMaterials,std::shared_ptr<IPointOfInterest> pPoi,bool bLimitBarStress,Float64 fsMax,
                                          bool bGirderStresses) :
 m_pBridge(pBridge),
 m_pGirder(pGirder),
@@ -414,9 +411,8 @@ void pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(const CSegmentKey&
 {
    if ( 0 < ft )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IMaterials,pMaterials);
+      auto broker = EAFGetBroker();
+      GET_IFACE2(broker,IMaterials,pMaterials);
       Float64 lambda = pMaterials->GetSegmentLambda(segmentKey);
 
       // Without rebar

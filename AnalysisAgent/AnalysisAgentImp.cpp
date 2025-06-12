@@ -24,25 +24,27 @@
 #include "stdafx.h"
 #include "AnalysisAgent.h"
 #include "AnalysisAgentImp.h"
+#include "CLSID.h"
 #include "StatusItems.h"
 #include <pgsExt\AnalysisResult.h>
 #include <PGSuperException.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\GirderHandling.h>
+#include <IFace/PointOfInterest.h>
 
 #include <WBFLSTL.h>
 #include <MathEx.h>
 #include <Math\MathUtils.h>
 
-#include <PgsExt\LoadFactors.h>
+#include <PsgLib\LoadFactors.h>
 #include <PgsExt\GirderModelFactory.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderMaterial.h>
-#include <PgsExt\StrandData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderMaterial.h>
+#include <PsgLib\StrandData.h>
+#include <PsgLib\ClosureJointData.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 #include <psgLib/SpecificationCriteria.h>
 #include <psgLib/CreepCriteria.h>
@@ -59,12 +61,6 @@
 // NOTES:
 //
 // The pedestrian live load distribution factor is the pedestrian load.
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // FEM Loading IDs
 const LoadCaseIDType g_lcidGirder           = 1;
@@ -105,7 +101,7 @@ void GetPrestressLoadCaseIDs(pgsTypes::StrandType strandType, LoadCaseIDType* pl
 }
 
 // Common function for creep parameter data
-static std::vector<ICamber::CreepPeriod> GetCreepPeriods(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey, pgsTypes::SupportedDeckType deckType, IIntervals* pIntervals,pgsTypes::PrestressDeflectionDatum* pSupportDatum)
+static std::vector<ICamber::CreepPeriod> GetCreepPeriods(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey, pgsTypes::SupportedDeckType deckType, std::shared_ptr<IIntervals> pIntervals,pgsTypes::PrestressDeflectionDatum* pSupportDatum)
 {
    std::vector<ICamber::CreepPeriod> vCreepPeriods;
 
@@ -204,11 +200,6 @@ UINT CAnalysisAgentImp::DeleteGirderModelManager(LPVOID pParam)
    WATCH(_T("End: DeleteGirderModelManager"));
 
    return 0; // success... returning terminates the thread
-}
-
-HRESULT CAnalysisAgentImp::FinalConstruct()
-{
-   return S_OK;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1198,157 +1189,86 @@ void CAnalysisAgentImp::BuildSlabOffsetDesignModel(const CSegmentKey& segmentKey
 /////////////////////////////////////////////////////////////////////////////
 // IAgent
 //
-STDMETHODIMP CAnalysisAgentImp::SetBroker(IBroker* pBroker)
+bool CAnalysisAgentImp::RegisterInterfaces()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
+   EAF_AGENT_REGISTER_INTERFACES;
 
-   return S_OK;
-}
+   REGISTER_INTERFACE(IProductLoads);
+   REGISTER_INTERFACE(IProductForces);
+   REGISTER_INTERFACE(IProductForces2);
+   REGISTER_INTERFACE(ICombinedForces);
+   REGISTER_INTERFACE(ICombinedForces2);
+   REGISTER_INTERFACE(ILimitStateForces);
+   REGISTER_INTERFACE(ILimitStateForces2);
+   REGISTER_INTERFACE(IExternalLoading);
+   REGISTER_INTERFACE(IPretensionStresses);
+   REGISTER_INTERFACE(ICamber);
+   REGISTER_INTERFACE(IContraflexurePoints);
+   REGISTER_INTERFACE(IContinuity);
+   REGISTER_INTERFACE(IBearingDesign);
+   REGISTER_INTERFACE(IPrecompressedTensileZone);
+   REGISTER_INTERFACE(IReactions);
+   REGISTER_INTERFACE(IDeformedGirderGeometry);
 
-STDMETHODIMP CAnalysisAgentImp::RegInterfaces()
-{
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-
-   pBrokerInit->RegInterface( IID_IProductLoads,             this );
-   pBrokerInit->RegInterface( IID_IProductForces,            this );
-   pBrokerInit->RegInterface( IID_IProductForces2,           this );
-   pBrokerInit->RegInterface( IID_ICombinedForces,           this );
-   pBrokerInit->RegInterface( IID_ICombinedForces2,          this );
-   pBrokerInit->RegInterface( IID_ILimitStateForces,         this );
-   pBrokerInit->RegInterface( IID_ILimitStateForces2,        this );
-   pBrokerInit->RegInterface( IID_IExternalLoading,          this );
-   pBrokerInit->RegInterface( IID_IPretensionStresses,       this );
-   pBrokerInit->RegInterface( IID_ICamber,                   this );
-   pBrokerInit->RegInterface(IID_IContraflexurePoints,       this);
-   pBrokerInit->RegInterface( IID_IContinuity,               this );
-   pBrokerInit->RegInterface( IID_IBearingDesign,            this );
-   pBrokerInit->RegInterface( IID_IPrecompressedTensileZone, this );
-   pBrokerInit->RegInterface( IID_IReactions,                this );
-   pBrokerInit->RegInterface(IID_IDeformedGirderGeometry,    this);
-
-   return S_OK;
+   return true;
 };
 
-STDMETHODIMP CAnalysisAgentImp::Init()
+bool CAnalysisAgentImp::Init()
 {
+   EAF_AGENT_INIT;
    CREATE_LOGFILE("AnalysisAgent");
 
-   EAF_AGENT_INIT;
 
    // Register status callbacks that we want to use
-   m_scidVSRatio = pStatusCenter->RegisterCallback(new pgsVSRatioStatusCallback(m_pBroker));
+   GET_IFACE(IEAFStatusCenter, pStatusCenter);
+   m_scidVSRatio = pStatusCenter->RegisterCallback(std::make_shared<pgsVSRatioStatusCallback>());
 
    m_pSegmentModelManager = std::make_unique<CSegmentModelManager>(LOGGER,m_pBroker);
    m_pGirderModelManager  = std::make_unique<CGirderModelManager>(LOGGER,m_pBroker,m_StatusGroupID);
 
-   return AGENT_S_SECONDPASSINIT;
-}
-
-STDMETHODIMP CAnalysisAgentImp::Init2()
-{
    //
    // Attach to connection points
    //
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
+   m_BridgeDescCookie = REGISTER_EVENT_SINK(IBridgeDescriptionEventSink);
+   m_SpecCookie = REGISTER_EVENT_SINK(ISpecificationEventSink);
+   m_RatingSpecCookie = REGISTER_EVENT_SINK(IRatingSpecificationEventSink);
+   m_LoadModifierCookie = REGISTER_EVENT_SINK(ILoadModifiersEventSink);
+   m_LossParametersCookie = REGISTER_EVENT_SINK(ILossParametersEventSink);
 
-   // Connection point for the bridge description
-   hr = pBrokerInit->FindConnectionPoint( IID_IBridgeDescriptionEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwBridgeDescCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   // Connection point for the specification
-   hr = pBrokerInit->FindConnectionPoint( IID_ISpecificationEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwSpecCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   // Connection point for the rating specification
-   hr = pBrokerInit->FindConnectionPoint( IID_IRatingSpecificationEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwRatingSpecCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   // Connection point for the load modifiers
-   hr = pBrokerInit->FindConnectionPoint( IID_ILoadModifiersEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwLoadModifierCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   // Connection point for the loss parameters
-   hr = pBrokerInit->FindConnectionPoint( IID_ILossParametersEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwLossParametersCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CAnalysisAgentImp::GetClassID(CLSID* pCLSID)
+CLSID CAnalysisAgentImp::GetCLSID() const
 {
-   *pCLSID = CLSID_AnalysisAgent;
-   return S_OK;
+   return CLSID_AnalysisAgent;
 }
 
-STDMETHODIMP CAnalysisAgentImp::Reset()
+bool CAnalysisAgentImp::Reset()
 {
+   EAF_AGENT_RESET;
    LOG("Reset");
    Invalidate(true);
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CAnalysisAgentImp::ShutDown()
+bool CAnalysisAgentImp::ShutDown()
 {
+   EAF_AGENT_SHUTDOWN;
+
    LOG("AnalysisAgent Log Closed");
 
    //
    // Detach to connection points
    //
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
+   UNREGISTER_EVENT_SINK(IBridgeDescriptionEventSink, m_BridgeDescCookie);
+   UNREGISTER_EVENT_SINK(ISpecificationEventSink, m_SpecCookie);
+   UNREGISTER_EVENT_SINK(IRatingSpecificationEventSink, m_RatingSpecCookie);
+   UNREGISTER_EVENT_SINK(ILoadModifiersEventSink, m_LoadModifierCookie);
+   UNREGISTER_EVENT_SINK(ILossParametersEventSink, m_LossParametersCookie);
 
-   hr = pBrokerInit->FindConnectionPoint(IID_IBridgeDescriptionEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwBridgeDescCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the connection point
-
-   hr = pBrokerInit->FindConnectionPoint(IID_ISpecificationEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwSpecCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the connection point
-
-   hr = pBrokerInit->FindConnectionPoint(IID_IRatingSpecificationEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwRatingSpecCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the connection point
-
-   hr = pBrokerInit->FindConnectionPoint(IID_ILoadModifiersEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwLoadModifierCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the connection point
-
-   hr = pBrokerInit->FindConnectionPoint(IID_ILossParametersEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwLossParametersCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the connection point
-
-   EAF_AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;
 
-   return S_OK;
+   return true;
 }
 
 void CAnalysisAgentImp::GetSidewalkLoadFraction(const CSegmentKey& segmentKey,Float64* pSidewalkLoad,Float64* pFraLeft,Float64* pFraRight) const
@@ -6898,10 +6818,8 @@ CREEPCOEFFICIENTDETAILS CAnalysisAgentImp::GetCreepCoefficientDetails(const CSeg
 
        std::_tstring strMsg(_T("V/S Ratio exceeds maximum value per C5.4.2.3.2. Use a different method for estimating creep"));
 
-       pgsVSRatioStatusItem* pStatusItem = new pgsVSRatioStatusItem(segmentKey, m_StatusGroupID, m_scidVSRatio, strMsg.c_str());
-
        GET_IFACE(IEAFStatusCenter, pStatusCenter);
-       pStatusCenter->Add(pStatusItem);
+       pStatusCenter->Add(std::make_shared<pgsVSRatioStatusItem>(segmentKey, m_StatusGroupID, m_scidVSRatio, strMsg.c_str()));
 
        THROW_UNWIND(strMsg.c_str(), -1);
    }
@@ -8162,8 +8080,7 @@ HRESULT CAnalysisAgentImp::OnLossParametersChanged()
 IntervalIndexType GetInterval(const CSegmentKey& segmentKey, pgsTypes::PrestressDeflectionDatum datum)
 {
    IntervalIndexType intervalIdx = INVALID_INDEX;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    switch (datum)
    {

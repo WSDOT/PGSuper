@@ -25,7 +25,7 @@
 // MultiGirderSelectGrid.h : header file
 //
 #include <PGSuperAll.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 
 #if defined _NOGRID
 #include <NoGrid.h>

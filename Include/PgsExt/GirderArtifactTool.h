@@ -48,15 +48,15 @@ LOG
 typedef std::vector<std::_tstring> FailureList;
 typedef FailureList::iterator    FailureListIterator;
 
-void PGSEXTFUNC ListStressFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact,bool referToDetailsReport);
-void PGSEXTFUNC ListMomentCapacityFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls);
-void PGSEXTFUNC ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls);
-void PGSEXTFUNC ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls);
-void PGSEXTFUNC ListStirrupDetailingFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls);
-void PGSEXTFUNC ListDebondingFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact);
-void PGSEXTFUNC ListMinimumDeckReinforcementFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact);
-void PGSEXTFUNC ListSplittingZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact);
-void PGSEXTFUNC ListConfinementZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact);
-void PGSEXTFUNC ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,bool referToDetails);
+void PGSEXTFUNC ListStressFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact, bool referToDetailsReport);
+void PGSEXTFUNC ListMomentCapacityFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact, pgsTypes::LimitState ls);
+void PGSEXTFUNC ListVerticalShearFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact, pgsTypes::LimitState ls);
+void PGSEXTFUNC ListHorizontalShearFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact, pgsTypes::LimitState ls);
+void PGSEXTFUNC ListStirrupDetailingFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact, pgsTypes::LimitState ls);
+void PGSEXTFUNC ListDebondingFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact);
+void PGSEXTFUNC ListMinimumDeckReinforcementFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact);
+void PGSEXTFUNC ListSplittingZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact);
+void PGSEXTFUNC ListConfinementZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact);
+void PGSEXTFUNC ListVariousFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,bool referToDetails);
 
 #endif // INCLUDED_PGSEXT_GIRDERARTIFACTTOOL_H_

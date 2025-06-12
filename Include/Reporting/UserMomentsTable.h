@@ -20,14 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_USERMOMENTSTABLE_H_
-#define INCLUDED_USERMOMENTSTABLE_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
+
 #include "ReportNotes.h"
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -46,65 +49,15 @@ LOG
 class REPORTINGCLASS CUserMomentsTable
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    CUserMomentsTable();
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CUserMomentsTable(const CUserMomentsTable& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CUserMomentsTable();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CUserMomentsTable& operator = (const CUserMomentsTable& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
-                             IEAFDisplayUnits* pDisplayUnits) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CUserMomentsTable& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CUserMomentsTable& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   virtual rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };
 
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
 template <class M,class T>
-rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const T& unitT)
 {
    ColumnIndexType nCols = 4;
    if ( analysisType == pgsTypes::Envelope )
@@ -157,5 +110,3 @@ rptRcTable* CreateUserLoadHeading(LPCTSTR strTitle,bool bPierTable,pgsTypes::Ana
 
    return pTable;
 }
-
-#endif // INCLUDED_UserMOMENTSTABLE_H_

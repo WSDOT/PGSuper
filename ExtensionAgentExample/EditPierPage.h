@@ -22,7 +22,8 @@
 
 #pragma once
 
-interface IEditPierData;
+#include "resource.h"
+class IEditPierData;
 
 // CEditPierPage dialog
 

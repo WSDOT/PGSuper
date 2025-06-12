@@ -23,7 +23,8 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include "resource.h"
+#include <PsgLib\LibraryManager.h>
 #include "ConcreteEntryDlg.h"
 #include "ACIConcretePage.h"
 
@@ -32,11 +33,6 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CACIConcretePage dialog

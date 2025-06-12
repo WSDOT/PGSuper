@@ -23,22 +23,19 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "EditTimelineDlg.h"
 #include "TimelineEventDlg.h"
 #include "TimelineReportDlg.h"
 #include <EAF\EAFDocument.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <Reporting\TimelineManagerReportSpecification.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CEditTimelineDlg dialog
@@ -86,8 +83,8 @@ END_MESSAGE_MAP()
 
 BOOL CEditTimelineDlg::OnInitDialog()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    BOOL bReadOnly = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? FALSE : TRUE);
 
@@ -160,9 +157,9 @@ void CEditTimelineDlg::OnHelp()
 
 void CEditTimelineDlg::OnBnClickedViewTimelineSummary()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IReportManager, pReportMgr);
+   
+   auto pBroker = EAFGetBroker();
+   GET_IFACE2(pBroker, IEAFReportManager, pReportMgr);
    WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Timeline Manager Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);

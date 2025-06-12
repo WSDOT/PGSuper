@@ -30,15 +30,12 @@
 #include <System\Tokenizer.h>
 #include "PGSuperUnits.h"
 #include <Units\Measure.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CAssumedExcessCamberGirderGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -77,8 +74,7 @@ int CAssumedExcessCamberGirderGrid::GetColWidth(ROWCOL nCol)
 void CAssumedExcessCamberGirderGrid::CustomInit()
 {
    // initialize units
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pUnit = &(pDisplayUnits->GetComponentDimUnit());
 

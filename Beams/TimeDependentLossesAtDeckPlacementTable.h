@@ -20,29 +20,23 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// TimeDependentLossesAtDeckPlacementTable.h : Declaration of the CTimeDependentLossesAtDeckPlacementTable
+#pragma once
 
-#ifndef __TIMEDEPENDENTLOSSESATDECKPLACEMENTTABLE_H_
-#define __TIMEDEPENDENTLOSSESATDECKPLACEMENTTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 class CGirderData;
 
-/////////////////////////////////////////////////////////////////////////////
-// CTimeDependentLossesAtDeckPlacementTable
 class CTimeDependentLossesAtDeckPlacementTable : public rptRcTable
 {
 public:
-	static CTimeDependentLossesAtDeckPlacementTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-	void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CTimeDependentLossesAtDeckPlacementTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+	void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CTimeDependentLossesAtDeckPlacementTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CTimeDependentLossesAtDeckPlacementTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );
@@ -55,7 +49,5 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
 
-   const CGirderData* m_pGD;
+   const CGirderData* m_pGD = nullptr;
 };
-
-#endif //__TIMEDEPENDENTLOSSESATDECKPLACEMENTTABLE_H_

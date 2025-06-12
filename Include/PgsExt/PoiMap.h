@@ -23,10 +23,10 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 #include <map>
 
-// Utility class to mape points of interest to model POI IDs.
+// Utility class to map points of interest to model POI IDs.
 // Model POI IDs can be any POI-type ID in any model. This
 class PGSEXTCLASS pgsPoiMap
 {

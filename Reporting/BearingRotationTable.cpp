@@ -1,25 +1,25 @@
-/////////////////////////////////////////////////////////////////////////
-//// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-//// Copyright © 1999-2025  Washington State Department of Transportation
-////                        Bridge and Structures Office
-////
-//// This program is free software; you can redistribute it and/or modify
-//// it under the terms of the Alternate Route Open Source License as 
-//// published by the Washington State Department of Transportation, 
-//// Bridge and Structures Office.
-////
-//// This program is distributed in the hope that it will be useful, but 
-//// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-//// the Alternate Route Open Source License for more details.
-////
-//// You should have received a copy of the Alternate Route Open Source 
-//// License along with this program; if not, write to the Washington 
-//// State Department of Transportation, Bridge and Structures Office, 
-//// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-//// Bridge_Support@wsdot.wa.gov
-/////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2025  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
 #include "StdAfx.h"
 #include <Reporting\BearingRotationTable.h>
 #include <Reporting\ProductMomentsTable.h>
@@ -31,53 +31,10 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-//
-///****************************************************************************
-//CLASS
-//   CProductRotationTable
-//****************************************************************************/
-//
-//
-//////////////////////////// PUBLIC     ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-CBearingRotationTable::CBearingRotationTable()
-{
-}
-
-CBearingRotationTable::CBearingRotationTable(const CBearingRotationTable& rOther)
-{
-    MakeCopy(rOther);
-}
-
-CBearingRotationTable::~CBearingRotationTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CBearingRotationTable& CBearingRotationTable::operator= (const CBearingRotationTable& rOther)
-{
-    if (this != &rOther)
-    {
-        MakeAssignment(rOther);
-    }
-
-    return *this;
-}
+#include <IFace/PointOfInterest.h>
 
 
-
-
-
-
-
-ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey, 
+ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, 
     pgsTypes::AnalysisType analysisType, bool bDesign, bool bUserLoads, ROTATIONDETAILS* pDetails, bool bDetail) const
 {
 
@@ -278,8 +235,8 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
 
 template <class M, class T>
-RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* p_table,
-    bool bDesign, bool bUserLoads, pgsTypes::AnalysisType analysisType, IEAFDisplayUnits* pDisplayUnits, 
+RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptRcTable* p_table,
+    bool bDesign, bool bUserLoads, pgsTypes::AnalysisType analysisType, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, 
     const T& unitT, bool bDetail, ROTATIONDETAILS* pDetails)
 {
     if (bDetail)
@@ -653,9 +610,8 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
 
 
-//======================== OPERATIONS =======================================
-rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
-    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool isFlexural) const
+rptRcTable* CBearingRotationTable::BuildBearingRotationTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
+    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bDetail, bool isFlexural) const
 {
 
     // Build table
@@ -1210,37 +1166,3 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     return p_table;
 
 }
-
-
-
-
-
-
-////======================== ACCESS     =======================================
-////======================== INQUIRY    =======================================
-//
-//////////////////////////// PROTECTED  ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-////======================== OPERATORS  =======================================
-////======================== OPERATIONS =======================================
-void CBearingRotationTable::MakeCopy(const CBearingRotationTable& rOther)
-{
-    // Add copy code here...
-}
-
-void CBearingRotationTable::MakeAssignment(const CBearingRotationTable& rOther)
-{
-    MakeCopy(rOther);
-}
-//
-////======================== ACCESS     =======================================
-////======================== INQUIRY    =======================================
-//
-//////////////////////////// PRIVATE    ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-////======================== OPERATORS  =======================================
-////======================== OPERATIONS =======================================
-////======================== ACCESS     =======================================
-////======================== INQUERY    =======================================

@@ -28,9 +28,12 @@
 #include "PGSuperApp.h"
 #include "PierDisplayObjectEvents.h"
 #include "pgsuperdoc.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\EditByUI.h>
-#include <PgsExt\BridgeDescription2.h>
+
+#include <PsgLib\BridgeDescription2.h>
 
 #include <DManip/DisplayObject.h>
 #include <DManip/DisplayList.h>
@@ -204,11 +207,11 @@ bool CPierDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisp
       auto pView = pDispMgr->GetView();
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_PIER_CONTEXT,nullptr);
 
-      CComPtr<IBroker> pBroker;
-      pDoc->GetBroker(&pBroker);
+      
+      auto pBroker = pDoc->GetBroker();
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       const CPierData2* pPier = pBridgeDesc->GetPier(m_PierIdx);
@@ -278,8 +281,6 @@ bool CPierDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisp
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
-
-      delete pMenu;
 
       return true;
    }

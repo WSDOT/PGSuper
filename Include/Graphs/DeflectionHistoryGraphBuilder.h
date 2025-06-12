@@ -25,13 +25,13 @@
 #include <Graphs/GraphsExp.h>
 #include <EAF\EAFAutoCalcGraphBuilder.h>
 #include <Graphing/GraphXY.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\PointOfInterest.h>
 
 class CDeflectionHistoryGraphController;
 class WBFL::Units::PhysicalConverter;
-interface IIntervals;
-interface ILimitStateForces;
+class IIntervals;
+class ILimitStateForces;
 
 class GRAPHCLASS CDeflectionHistoryGraphBuilder : public CEAFAutoCalcGraphBuilder
 {
@@ -58,7 +58,7 @@ protected:
 
    DECLARE_MESSAGE_MAP()
 
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    WBFL::Units::ScalarData m_Time;
    WBFL::Units::ScalarData m_Interval;
@@ -75,7 +75,7 @@ protected:
    void UpdateYAxis();
    void UpdateGraphTitle(const pgsPointOfInterest& poi);
    void UpdateGraphData(const pgsPointOfInterest& poi);
-   Float64 GetX(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IIntervals* pIntervals);
-   void PlotDeflection(Float64 x,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,IndexType dataSeries,pgsTypes::BridgeAnalysisType bat,ILimitStateForces* pLimitStateForces);
+   Float64 GetX(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,std::shared_ptr<IIntervals> pIntervals);
+   void PlotDeflection(Float64 x,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,IndexType dataSeries,pgsTypes::BridgeAnalysisType bat,std::shared_ptr<ILimitStateForces> pLimitStateForces);
    void AddGraphPoint(IndexType series, Float64 xval, Float64 yval);
 };

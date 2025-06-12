@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "EngAgent.h"
 #include "LoadRater.h"
 #include "Designer2.h"
 
@@ -37,13 +38,7 @@
 #include <future>
 #endif
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pIntervals,
+void special_transform(std::shared_ptr<IBridge> pBridge,std::shared_ptr<IPointOfInterest> pPoi,std::shared_ptr<IIntervals> pIntervals,
                        PoiList::const_iterator poiBeginIter,
                        PoiList::const_iterator poiEndIter,
                        std::vector<Float64>::const_iterator forceBeginIter,
@@ -55,29 +50,25 @@ inline bool AxleHasWeight(AxlePlacement& placement)
    return !IsZero(placement.Weight);
 }
 
-pgsLoadRater::pgsLoadRater(void)
+pgsLoadRater::pgsLoadRater(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID) :
+   m_pBroker(pBroker), m_StatusGroupID(statusGroupID)
 {
    CREATE_LOGFILE("LoadRating");
 }
 
-pgsLoadRater::~pgsLoadRater(void)
+pgsLoadRater::~pgsLoadRater()
 {
    CLOSE_LOGFILE;
 }
 
-void pgsLoadRater::SetBroker(IBroker* pBroker)
-{
-   m_pBroker = pBroker;
-}
-
 pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const
 {
-   GET_IFACE(IRatingSpecification,pRatingSpec);
-   GET_IFACE(IPointOfInterest, pPoi);
-   GET_IFACE(IIntervals, pIntervals);
-   GET_IFACE(ILossParameters, pLossParams);
+   GET_IFACE2(GetBroker(),IRatingSpecification,pRatingSpec);
+   GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
+   GET_IFACE2(GetBroker(),IIntervals, pIntervals);
+   GET_IFACE2(GetBroker(),ILossParameters, pLossParams);
 
-   GET_IFACE(IBridge, pBridge);
+   GET_IFACE2(GetBroker(),IBridge, pBridge);
    auto firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    auto lastGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : girderKey.groupIndex);
 
@@ -142,17 +133,17 @@ pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadR
 
 void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPoi, pgsTypes::LoadRatingType ratingType, VehicleIndexType vehicleIdx, IntervalIndexType loadRatingIntervalIdx, bool bTimeStep, const Moments* pMaxMoments, const Moments* pMinMoments, pgsRatingArtifact& ratingArtifact) const
 {
-   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
-   GET_IFACE(IProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE2(GetBroker(),IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(GetBroker(),IEAFProgress, pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Load rating for moment"));
 
-   GET_IFACE(IRatingSpecification, pRatingSpec);
+   GET_IFACE2(GetBroker(),IRatingSpecification, pRatingSpec);
    Float64 system_factor = pRatingSpec->GetSystemFactorFlexure();
    bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
 
 
-   GET_IFACE(IMomentCapacity, pMomentCapacity);
+   GET_IFACE2(GetBroker(),IMomentCapacity, pMomentCapacity);
    std::array<std::vector<const MOMENTCAPACITYDETAILS*>, 2> vpM{ pMomentCapacity->GetMomentCapacityDetails(loadRatingIntervalIdx, vPoi, true), pMinMoments ? pMomentCapacity->GetMomentCapacityDetails(loadRatingIntervalIdx, vPoi, false) : std::vector<const MOMENTCAPACITYDETAILS*>() };
    std::array<std::vector<const MINMOMENTCAPDETAILS*>, 2> vpMmin{ pMomentCapacity->GetMinMomentCapacityDetails(loadRatingIntervalIdx, vPoi, true), pMinMoments ? pMomentCapacity->GetMinMomentCapacityDetails(loadRatingIntervalIdx, vPoi, false) : std::vector<const MINMOMENTCAPDETAILS*>() };
 
@@ -175,16 +166,16 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
    momentRatingParams.gPS = pRatingSpec->GetSecondaryEffectsFactor(momentRatingParams.limitState);
    momentRatingParams.gLL = pRatingSpec->GetLiveLoadFactor(momentRatingParams.limitState, true);
 
-   GET_IFACE(IProductLoads, pProductLoads);
+   GET_IFACE2(GetBroker(),IProductLoads, pProductLoads);
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
    momentRatingParams.llType = llType;
    
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType, girderKey);
 
-   GET_IFACE(IBridge, pBridge);
+   GET_IFACE2(GetBroker(),IBridge, pBridge);
    momentRatingParams.deckType = pBridge->GetDeckType();
 
-   ASSIGN_IFACE(IProductForces,momentRatingParams.pProductForces);
+   ASSIGN_IFACE2(GetBroker(),IProductForces,momentRatingParams.pProductForces);
    momentRatingParams.pRatingSpec = pRatingSpec;
 
    // get parameters for stress rating that apply to all POI
@@ -200,7 +191,7 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
       stressRatingParams.limitState = ::GetServiceLimitStateType(ratingType);
       ATLASSERT(IsServiceIIILimitState(stressRatingParams.limitState)); // must be one of the Service III limit states
 
-      stressRatingParams.bat = momentRatingParams.pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize); // only doing stress rating for tension so we want to maximize results
+      stressRatingParams.bat = momentRatingParams.pProductForces.lock()->GetBridgeAnalysisType(pgsTypes::Maximize); // only doing stress rating for tension so we want to maximize results
 
       stressRatingParams.gDC = pRatingSpec->GetDeadLoadFactor(stressRatingParams.limitState);
       stressRatingParams.gDW = pRatingSpec->GetWearingSurfaceFactor(stressRatingParams.limitState);
@@ -218,17 +209,17 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
       stressRatingParams.vehicleIdx = vehicleIdx;
       stressRatingParams.strLLNames = strLLNames;
 
-      ASSIGN_IFACE(ICombinedForces, stressRatingParams.pCombinedForces);
-      ASSIGN_IFACE(IPretensionStresses, stressRatingParams.pPrestress);
-      ASSIGN_IFACE(IConcreteStressLimits, stressRatingParams.pLimits);
+      ASSIGN_IFACE2(GetBroker(),ICombinedForces, stressRatingParams.pCombinedForces);
+      ASSIGN_IFACE2(GetBroker(),IPretensionStresses, stressRatingParams.pPrestress);
+      ASSIGN_IFACE2(GetBroker(),IConcreteStressLimits, stressRatingParams.pLimits);
       stressRatingParams.pRatingSpec = pRatingSpec;
       stressRatingParams.pProductForces = momentRatingParams.pProductForces;
       stressRatingParams.pProductLoads = pProductLoads;
    }
 
    // get parameters for yield stress check that apply to all POI
-   ASSIGN_IFACE(IPrecompressedTensileZone, stressRatingParams.pPTZ);
-   bool bIsDeckPrecompressed = stressRatingParams.pPTZ->IsDeckPrecompressed(girderKey);
+   ASSIGN_IFACE2(GetBroker(),IPrecompressedTensileZone, stressRatingParams.pPTZ);
+   bool bIsDeckPrecompressed = stressRatingParams.pPTZ.lock()->IsDeckPrecompressed(girderKey);
    bool bCheckYieldStressEnabled = pRatingSpec->CheckYieldStress(ratingType);
    bool bCheckPositiveMomentYieldStress = true;
    bool bCheckNegativeMomentYieldStress = (bIsDeckPrecompressed ? true : false);
@@ -259,16 +250,16 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
       // checking yield stress option is enabled and we have to check either positive or negative moment cases
       // so we will fill up the parameters structured
 
-      ASSIGN_IFACE(ISectionProperties, yieldingRatingParams.pSectProp);
-      ASSIGN_IFACE(IPointOfInterest, yieldingRatingParams.pPoi);
-      ASSIGN_IFACE(IBridge, yieldingRatingParams.pBridge);
-      ASSIGN_IFACE(IIntervals, yieldingRatingParams.pIntervals);
-      ASSIGN_IFACE(ILongRebarGeometry, yieldingRatingParams.pRebarGeom);
-      ASSIGN_IFACE(IMaterials, yieldingRatingParams.pMaterials);
-      ASSIGN_IFACE(ILiveLoadDistributionFactors, yieldingRatingParams.pLLDF);
-      ASSIGN_IFACE(IStrandGeometry, yieldingRatingParams.pStrandGeometry);
-      ASSIGN_IFACE(ISegmentTendonGeometry, yieldingRatingParams.pSegmentTendonGeometry);
-      ASSIGN_IFACE(IGirderTendonGeometry, yieldingRatingParams.pGirderTendonGeometry);
+      ASSIGN_IFACE2(GetBroker(),ISectionProperties, yieldingRatingParams.pSectProp);
+      ASSIGN_IFACE2(GetBroker(),IPointOfInterest, yieldingRatingParams.pPoi);
+      ASSIGN_IFACE2(GetBroker(),IBridge, yieldingRatingParams.pBridge);
+      ASSIGN_IFACE2(GetBroker(),IIntervals, yieldingRatingParams.pIntervals);
+      ASSIGN_IFACE2(GetBroker(),ILongRebarGeometry, yieldingRatingParams.pRebarGeom);
+      ASSIGN_IFACE2(GetBroker(),IMaterials, yieldingRatingParams.pMaterials);
+      ASSIGN_IFACE2(GetBroker(),ILiveLoadDistributionFactors, yieldingRatingParams.pLLDF);
+      ASSIGN_IFACE2(GetBroker(),IStrandGeometry, yieldingRatingParams.pStrandGeometry);
+      ASSIGN_IFACE2(GetBroker(),ISegmentTendonGeometry, yieldingRatingParams.pSegmentTendonGeometry);
+      ASSIGN_IFACE2(GetBroker(),IGirderTendonGeometry, yieldingRatingParams.pGirderTendonGeometry);
 
 
       yieldingRatingParams.ratingType = ratingType;
@@ -290,15 +281,15 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
       yieldingRatingParams.gPS = pRatingSpec->GetSecondaryEffectsFactor(yieldingRatingParams.limitState);
       yieldingRatingParams.gLL = pRatingSpec->GetLiveLoadFactor(yieldingRatingParams.limitState, true);
 
-      GET_IFACE(ISpecification, pSpec);
-      GET_IFACE(ILibrary, pLibrary);
+      GET_IFACE2(GetBroker(),ISpecification, pSpec);
+      GET_IFACE2(GetBroker(),ILibrary, pLibrary);
       const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
       yieldingRatingParams.K_liveload = prestress_loss_criteria.LiveLoadElasticGain;
 
       yieldingRatingParams.analysisType = pSpec->GetAnalysisType();
 
-      GET_IFACE(ICrackedSection, pCrackedSection);
+      GET_IFACE2(GetBroker(),ICrackedSection, pCrackedSection);
       vpMcr[0] = pMomentCapacity->GetCrackingMomentDetails(loadRatingIntervalIdx, vPoi, true); // positive moments
       vpCrackedSection[0] = pCrackedSection->GetCrackedSectionDetails(vPoi, true);
       if (pMinMoments)
@@ -378,7 +369,7 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
             CString strProgress;
             if (poi.HasGirderCoordinate())
             {
-               GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+               GET_IFACE2(GetBroker(),IEAFDisplayUnits, pDisplayUnits);
                strProgress.Format(_T("Checking for reinforcement yielding %s for %s moment at %s"), moments.strVehicleName.c_str(), bPositiveMoment ? _T("positive") : _T("negative"),
                   ::FormatDimension(poi.GetGirderCoordinate(), pDisplayUnits->GetSpanLengthUnit()));
             }
@@ -437,7 +428,7 @@ void pgsLoadRater::MomentRating(const pgsPointOfInterest& poi, bool bPositiveMom
    Float64 condition_factor = 1.0;
    if (bPositiveMoment)
    {
-      condition_factor = ratingParams.pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
+      condition_factor = ratingParams.pRatingSpec.lock()->GetGirderConditionFactor(poi.GetSegmentKey());
    }
    else
    {
@@ -445,11 +436,11 @@ void pgsLoadRater::MomentRating(const pgsPointOfInterest& poi, bool bPositiveMom
       {
          // there is no deck, or the deck overlay is not a structural element
          // use the condition of the girder
-         condition_factor = ratingParams.pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
+         condition_factor = ratingParams.pRatingSpec.lock()->GetGirderConditionFactor(poi.GetSegmentKey());
       }
       else
       {
-         condition_factor = ratingParams.pRatingSpec->GetDeckConditionFactor();
+         condition_factor = ratingParams.pRatingSpec.lock()->GetDeckConditionFactor();
       }
    }
 
@@ -458,19 +449,19 @@ void pgsLoadRater::MomentRating(const pgsPointOfInterest& poi, bool bPositiveMom
    {
       if (::IsStrengthLimitState(ratingParams.limitState))
       {
-         pgsTypes::BridgeAnalysisType batMin = ratingParams.pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
-         pgsTypes::BridgeAnalysisType batMax = ratingParams.pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
+         pgsTypes::BridgeAnalysisType batMin = ratingParams.pProductForces.lock()->GetBridgeAnalysisType(pgsTypes::Minimize);
+         pgsTypes::BridgeAnalysisType batMax = ratingParams.pProductForces.lock()->GetBridgeAnalysisType(pgsTypes::Maximize);
 
          Float64 Mmin, Mmax, Dummy;
          AxleConfiguration MinAxleConfig, MaxAxleConfig, DummyAxleConfig;
-         ratingParams.pProductForces->GetVehicularLiveLoadMoment(ratingParams.loadRatingIntervalIdx, ratingParams.llType, moments.truck_index, poi, batMin, true, true, &Mmin, &Dummy, &MinAxleConfig, &DummyAxleConfig);
-         ratingParams.pProductForces->GetVehicularLiveLoadMoment(ratingParams.loadRatingIntervalIdx, ratingParams.llType, moments.truck_index, poi, batMax, true, true, &Dummy, &Mmax, &DummyAxleConfig, &MaxAxleConfig);
+         ratingParams.pProductForces.lock()->GetVehicularLiveLoadMoment(ratingParams.loadRatingIntervalIdx, ratingParams.llType, moments.truck_index, poi, batMin, true, true, &Mmin, &Dummy, &MinAxleConfig, &DummyAxleConfig);
+         ratingParams.pProductForces.lock()->GetVehicularLiveLoadMoment(ratingParams.loadRatingIntervalIdx, ratingParams.llType, moments.truck_index, poi, batMax, true, true, &Dummy, &Mmax, &DummyAxleConfig, &MaxAxleConfig);
 
-         gLL = ratingParams.pRatingSpec->GetStrengthLiveLoadFactor(ratingParams.ratingType, bPositiveMoment ? MaxAxleConfig : MinAxleConfig);
+         gLL = ratingParams.pRatingSpec.lock()->GetStrengthLiveLoadFactor(ratingParams.ratingType, bPositiveMoment ? MaxAxleConfig : MinAxleConfig);
       }
       else
       {
-         gLL = ratingParams.pRatingSpec->GetServiceLiveLoadFactor(ratingParams.ratingType);
+         gLL = ratingParams.pRatingSpec.lock()->GetServiceLiveLoadFactor(ratingParams.ratingType);
       }
    }
 
@@ -481,8 +472,8 @@ void pgsLoadRater::MomentRating(const pgsPointOfInterest& poi, bool bPositiveMom
    // is positive. This happens near the simple ends of spans. For example Mr < 0 because we are rating for
    // negative moment and Mmin = min (1.2Mcr and 1.33Mu)... Mcr < 0 because we are looking at negative moment
    // and Mu > 0.... Since we are looking at the negative end of things, Mmin = 1.33Mu. +/- = -... it doesn't
-   // make since for K to be negative... K < 0 indicates that the section is most definate NOT under reinforced.
-   // No adjustment needs to be made for underreinforcement so take K = 1.0
+   // make since for K to be negative... K < 0 indicates that the section is most definitely NOT under reinforced.
+   // No adjustment needs to be made for under reinforcement so take K = 1.0
    Float64 K = (IsZero(ratingParams.pMminDetails->MrMin) ? 1.0 : ratingParams.pMminDetails->Mr / ratingParams.pMminDetails->MrMin); // MBE 6A.5.6
    if (K < 0.0 || 1.0 < K)
    {
@@ -522,9 +513,9 @@ void pgsLoadRater::GetCriticalSectionZones(const CGirderKey& girderKey,pgsTypes:
 {
    pCriticalSections->clear();
 
-   GET_IFACE(IPointOfInterest, pPoi);
-   GET_IFACE(IShearCapacity, pShearCapacity);
-   GET_IFACE(IBridge, pBridge);
+   GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
+   GET_IFACE2(GetBroker(),IShearCapacity, pShearCapacity);
+   GET_IFACE2(GetBroker(),IBridge, pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -609,9 +600,9 @@ ZoneIndexType pgsLoadRater::GetCriticalSectionZone(const pgsPointOfInterest& poi
 
 void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, IntervalIndexType loadRatingIntervalIdx, bool bTimeStep,pgsRatingArtifact& ratingArtifact) const
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE(IProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(GetBroker(),IEAFProgress, pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Load rating for shear"));
 
    pgsTypes::LimitState limitState = ::GetStrengthLimitStateType(ratingType);
@@ -619,10 +610,10 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
    std::vector<CRITSECTDETAILS> criticalSections;
    GetCriticalSectionZones(girderKey, limitState, &criticalSections);
 
-   GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
    PoiList vMyPoi(vPoi);
 
-   GET_IFACE(IBridge, pBridge);
+   GET_IFACE2(GetBroker(),IBridge, pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -655,12 +646,12 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
-   GET_IFACE(IProductForces,pProdForces);
+   GET_IFACE2(GetBroker(),IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType batMin = pProdForces->GetBridgeAnalysisType(pgsTypes::Minimize);
    pgsTypes::BridgeAnalysisType batMax = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
-   GET_IFACE(ICombinedForces2,pCombinedForces);
-   GET_IFACE(IProductForces2,pProductForces);
+   GET_IFACE2(GetBroker(),ICombinedForces2,pCombinedForces);
+   GET_IFACE2(GetBroker(),IProductForces2,pProductForces);
    vDCmin = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDC,vMyPoi,batMin,rtCumulative);
    vDCmax = pCombinedForces->GetShear(loadRatingIntervalIdx,lcDC,vMyPoi,batMax,rtCumulative);
 
@@ -696,7 +687,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
    pCombinedForces->GetCombinedLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vMyPoi, batMax, false, &vUnused, &vPLmax );
    pCombinedForces->GetCombinedLiveLoadShear( loadRatingIntervalIdx, pgsTypes::lltPedestrian, vMyPoi, batMin, false, &vPLmin, &vUnused );
 
-   GET_IFACE(IShearCapacity,pShearCapacity);
+   GET_IFACE2(GetBroker(),IShearCapacity,pShearCapacity);
    std::vector<SHEARCAPACITYDETAILS> vVn = pShearCapacity->GetShearCapacityDetails(limitState,loadRatingIntervalIdx,vMyPoi);
 
    ATLASSERT(vMyPoi.size()     == vDCmax.size());
@@ -712,7 +703,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
    ATLASSERT(vLLIMmin.size() == vLLIMmax.size());
    ATLASSERT(vPLmin.size()   == vPLmax.size());
 
-   GET_IFACE(IRatingSpecification,pRatingSpec);
+   GET_IFACE2(GetBroker(),IRatingSpecification,pRatingSpec);
    Float64 system_factor    = pRatingSpec->GetSystemFactorShear();
    bool bIncludePL = pRatingSpec->IncludePedestrianLiveLoad();
 
@@ -723,7 +714,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
    Float64 gRE = pRatingSpec->GetRelaxationFactor(limitState);
    Float64 gPS = pRatingSpec->GetSecondaryEffectsFactor(limitState);
 
-   GET_IFACE(IProductLoads,pProductLoads);
+   GET_IFACE2(GetBroker(),IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,girderKey);
 
    IndexType nPOI = vMyPoi.size();
@@ -868,8 +859,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
       // horizontal interface shear check
       pgsHorizontalShearArtifact h_artifact;
 
-      pgsDesigner2 designer;
-      designer.SetBroker(m_pBroker);
+      pgsDesigner2 designer(m_pBroker,m_StatusGroupID);
 
       h_artifact.SetApplicability(false);
       if (pBridge->IsCompositeDeck())
@@ -879,7 +869,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
 
          IndexType castingRegionIdx = pPoi->GetDeckCastingRegion(poi);
 
-         GET_IFACE(IMaterials, pMaterials);
+         GET_IFACE2(GetBroker(),IMaterials, pMaterials);
          Float64 fcSlab = pMaterials->GetDeckFc(castingRegionIdx, loadRatingIntervalIdx);
          Float64 fcGirder;
          Float64 E, fy, fu;
@@ -904,21 +894,20 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
 
 void pgsLoadRater::LongitudinalReinforcementForShearRating(const CGirderKey& girderKey, const PoiList& vPoi, pgsTypes::LoadRatingType ratingType, VehicleIndexType vehicleIdx, IntervalIndexType loadRatingIntervalIdx, bool bTimeStep, pgsRatingArtifact& ratingArtifact) const
 {
-   GET_IFACE_NOCHECK(IEAFDisplayUnits, pDisplayUnits);
-   GET_IFACE(IProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE2_NOCHECK(GetBroker(),IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(GetBroker(),IEAFProgress, pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Load rating for longitudinal reinforcement for shear"));
 
    pgsTypes::LimitState limitState = ::GetStrengthLimitStateType(ratingType);
 
-   GET_IFACE(IShearCapacity, pShearCapacity);
+   GET_IFACE2(GetBroker(),IShearCapacity, pShearCapacity);
 
    for(const pgsPointOfInterest& poi : vPoi)
    {
       pgsLongReinfShearArtifact l_artifact;
       SHEARCAPACITYDETAILS scd;
-      pgsDesigner2 designer;
-      designer.SetBroker(m_pBroker);
+      pgsDesigner2 designer(m_pBroker,m_StatusGroupID);
       pShearCapacity->GetShearCapacityDetails(limitState, loadRatingIntervalIdx, poi, nullptr, &scd);
       designer.InitShearCheck(poi.GetSegmentKey(), loadRatingIntervalIdx, limitState, nullptr);
       designer.CheckLongReinfShear(poi, loadRatingIntervalIdx, limitState, scd, nullptr, &l_artifact);
@@ -943,7 +932,7 @@ void pgsLoadRater::StressRating(const pgsPointOfInterest& poi, const StressRatin
       pgsTypes::StressLocation botStressLocation = (i == 0 ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
 
       bool bTopPTZ, bBotPTZ;
-      ratingParams.pPTZ->IsInPrecompressedTensileZone(poi, ratingParams.limitState, topStressLocation, botStressLocation, &bTopPTZ, &bBotPTZ);
+      ratingParams.pPTZ.lock()->IsInPrecompressedTensileZone(poi, ratingParams.limitState, topStressLocation, botStressLocation, &bTopPTZ, &bBotPTZ);
       if (bTopPTZ)
       {
          vStressLocations.push_back(topStressLocation);
@@ -966,15 +955,15 @@ void pgsLoadRater::StressRating(const pgsPointOfInterest& poi, const StressRatin
    for (const auto& stressLocation : vStressLocations)
    {
       Float64 fDummy, fDC, fDW, fCR, fSH, fRE, fPS, fLLIM, fPL;
-      ratingParams.pCombinedForces->GetStress(ratingParams.loadRatingIntervalIdx, lcDC, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fDummy, &fDC);
-      ratingParams.pCombinedForces->GetStress(ratingParams.loadRatingIntervalIdx, lcDWRating, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fDummy, &fDW);
+      ratingParams.pCombinedForces.lock()->GetStress(ratingParams.loadRatingIntervalIdx, lcDC, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fDummy, &fDC);
+      ratingParams.pCombinedForces.lock()->GetStress(ratingParams.loadRatingIntervalIdx, lcDWRating, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fDummy, &fDW);
 
       if (ratingParams.bTimeStep)
       {
-         ratingParams.pCombinedForces->GetStress(ratingParams.loadRatingIntervalIdx, lcCR, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fDummy, &fCR);
-         ratingParams.pCombinedForces->GetStress(ratingParams.loadRatingIntervalIdx, lcSH, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fDummy, &fSH);
-         ratingParams.pCombinedForces->GetStress(ratingParams.loadRatingIntervalIdx, lcRE, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fDummy, &fRE);
-         ratingParams.pCombinedForces->GetStress(ratingParams.loadRatingIntervalIdx, lcPS, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fDummy, &fPS);
+         ratingParams.pCombinedForces.lock()->GetStress(ratingParams.loadRatingIntervalIdx, lcCR, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fDummy, &fCR);
+         ratingParams.pCombinedForces.lock()->GetStress(ratingParams.loadRatingIntervalIdx, lcSH, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fDummy, &fSH);
+         ratingParams.pCombinedForces.lock()->GetStress(ratingParams.loadRatingIntervalIdx, lcRE, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fDummy, &fRE);
+         ratingParams.pCombinedForces.lock()->GetStress(ratingParams.loadRatingIntervalIdx, lcPS, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fDummy, &fPS);
       }
       else
       {
@@ -990,33 +979,33 @@ void pgsLoadRater::StressRating(const pgsPointOfInterest& poi, const StressRatin
 
       if (ratingParams.vehicleIdx == INVALID_INDEX)
       {
-         ratingParams.pProductForces->GetLiveLoadStress(ratingParams.loadRatingIntervalIdx, ratingParams.llType, poi, ratingParams.bat, true, true, stressLocation, stressLocation, &fDummy1, &fDummy2, &fDummy3, &fLLIM, &dummyIndex1, &dummyIndex2, &dummyIndex3, &truckIndex);
+         ratingParams.pProductForces.lock()->GetLiveLoadStress(ratingParams.loadRatingIntervalIdx, ratingParams.llType, poi, ratingParams.bat, true, true, stressLocation, stressLocation, &fDummy1, &fDummy2, &fDummy3, &fLLIM, &dummyIndex1, &dummyIndex2, &dummyIndex3, &truckIndex);
       }
       else
       {
-         ratingParams.pProductForces->GetVehicularLiveLoadStress(ratingParams.loadRatingIntervalIdx, ratingParams.llType, ratingParams.vehicleIdx, poi, ratingParams.bat, true, true, stressLocation, stressLocation, &fDummy1, &fDummy2, &fDummy3, &fLLIM, nullptr, nullptr, nullptr, nullptr);
+         ratingParams.pProductForces.lock()->GetVehicularLiveLoadStress(ratingParams.loadRatingIntervalIdx, ratingParams.llType, ratingParams.vehicleIdx, poi, ratingParams.bat, true, true, stressLocation, stressLocation, &fDummy1, &fDummy2, &fDummy3, &fLLIM, nullptr, nullptr, nullptr, nullptr);
       }
 
       if (ratingParams.bIncludePL)
       {
-         ratingParams.pCombinedForces->GetCombinedLiveLoadStress(ratingParams.loadRatingIntervalIdx, pgsTypes::lltPedestrian, poi, ratingParams.bat, stressLocation, stressLocation, &fDummy, &fDummy2, &fDummy3, &fPL);
+         ratingParams.pCombinedForces.lock()->GetCombinedLiveLoadStress(ratingParams.loadRatingIntervalIdx, pgsTypes::lltPedestrian, poi, ratingParams.bat, stressLocation, stressLocation, &fDummy, &fDummy2, &fDummy3, &fPL);
       }
       else
       {
          fPL = 0;
       }
 
-      Float64 fps = ratingParams.pPrestress->GetStress(ratingParams.loadRatingIntervalIdx, poi, stressLocation, true/*include live load if applicable*/, ratingParams.limitState, ratingParams.vehicleIdx);
+      Float64 fps = ratingParams.pPrestress.lock()->GetStress(ratingParams.loadRatingIntervalIdx, poi, stressLocation, true/*include live load if applicable*/, ratingParams.limitState, ratingParams.vehicleIdx);
 
       Float64 fpt = 0;
       if (ratingParams.bTimeStep)
       {
-         ratingParams.pProductForces->GetStress(ratingParams.loadRatingIntervalIdx, pgsTypes::pftPostTensioning, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fpt, &fDummy);
+         ratingParams.pProductForces.lock()->GetStress(ratingParams.loadRatingIntervalIdx, pgsTypes::pftPostTensioning, poi, ratingParams.bat, rtCumulative, stressLocation, stressLocation, &fpt, &fDummy);
       }
 
       // do this in the loop because the vector of POI can be for multiple segments
-      Float64 condition_factor = ratingParams.pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
-      Float64 fr = ratingParams.pLimits->GetConcreteTensionStressLimit(ratingParams.ratingType, poi, stressLocation);
+      Float64 condition_factor = ratingParams.pRatingSpec.lock()->GetGirderConditionFactor(poi.GetSegmentKey());
+      Float64 fr = ratingParams.pLimits.lock()->GetConcreteTensionStressLimit(ratingParams.ratingType, poi, stressLocation);
 
       VehicleIndexType truck_index = ratingParams.vehicleIdx;
       if (ratingParams.vehicleIdx == INVALID_INDEX)
@@ -1025,7 +1014,7 @@ void pgsLoadRater::StressRating(const pgsPointOfInterest& poi, const StressRatin
       }
 
       std::_tstring strVehicleName = ratingParams.strLLNames[truck_index];
-      Float64 W = ratingParams.pProductLoads->GetVehicleWeight(ratingParams.llType, truck_index);
+      Float64 W = ratingParams.pProductLoads.lock()->GetVehicleWeight(ratingParams.llType, truck_index);
 
       pgsStressRatingArtifact stressArtifact;
       stressArtifact.SetStressLocation(stressLocation);
@@ -1064,25 +1053,25 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    // Create artifacts
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   DuctIndexType nSegmentDucts = ratingParams.pSegmentTendonGeometry->GetDuctCount(segmentKey);
-   DuctIndexType nGirderDucts = ratingParams.pGirderTendonGeometry->GetDuctCount(segmentKey);
+   DuctIndexType nSegmentDucts = ratingParams.pSegmentTendonGeometry.lock()->GetDuctCount(segmentKey);
+   DuctIndexType nGirderDucts = ratingParams.pGirderTendonGeometry.lock()->GetDuctCount(segmentKey);
 
    CClosureKey closureKey;
-   bool bIsInClosureJoint = ratingParams.pPoi->IsInClosureJoint(poi, &closureKey);
-   bool bIsOnSegment = ratingParams.pPoi->IsOnSegment(poi);
-   bool bIsOnGirder = ratingParams.pPoi->IsOnGirder(poi);
+   bool bIsInClosureJoint = ratingParams.pPoi.lock()->IsInClosureJoint(poi, &closureKey);
+   bool bIsOnSegment = ratingParams.pPoi.lock()->IsOnSegment(poi);
+   bool bIsOnGirder = ratingParams.pPoi.lock()->IsOnGirder(poi);
 
-   IntervalIndexType releaseIntervalIdx = ratingParams.pIntervals->GetPrestressReleaseInterval(segmentKey);
-   Float64 Hg = ratingParams.pSectProp->GetHg(releaseIntervalIdx, poi);
-   Float64 ts = ratingParams.pBridge->GetStructuralSlabDepth(poi);
+   IntervalIndexType releaseIntervalIdx = ratingParams.pIntervals.lock()->GetPrestressReleaseInterval(segmentKey);
+   Float64 Hg = ratingParams.pSectProp.lock()->GetHg(releaseIntervalIdx, poi);
+   Float64 ts = ratingParams.pBridge.lock()->GetStructuralSlabDepth(poi);
    if (!bIsOnGirder || bIsInClosureJoint)
    {
-      Hg = ratingParams.pSectProp->GetHg(ratingParams.loadRatingIntervalIdx, poi);
+      Hg = ratingParams.pSectProp.lock()->GetHg(ratingParams.loadRatingIntervalIdx, poi);
       Hg -= ts;
    }
 
    // Get material properties
-   Float64 Eg = ratingParams.pMaterials->GetSegmentEc(segmentKey, ratingParams.loadRatingIntervalIdx);
+   Float64 Eg = ratingParams.pMaterials.lock()->GetSegmentEc(segmentKey, ratingParams.loadRatingIntervalIdx);
 
    Float64 Eb, Eps, EptSegment, EptGirder; // mod E of rebar, strand, tendon
    Float64 fyb, fyps, fyptSegment, fyptGirder; // yield strength of bar, strand, tendon
@@ -1093,28 +1082,28 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
       // extreme tension rebar is going to be in the girder
       if (bIsInClosureJoint)
       {
-         ratingParams.pMaterials->GetClosureJointLongitudinalRebarProperties(closureKey, &Eb, &fyb, &fu);
+         ratingParams.pMaterials.lock()->GetClosureJointLongitudinalRebarProperties(closureKey, &Eb, &fyb, &fu);
       }
       else
       {
-         ratingParams.pMaterials->GetSegmentLongitudinalRebarProperties(segmentKey, &Eb, &fyb, &fu);
+         ratingParams.pMaterials.lock()->GetSegmentLongitudinalRebarProperties(segmentKey, &Eb, &fyb, &fu);
       }
    }
    else
    {
       // extreme tension rebar is going to be in the deck
-      ratingParams.pMaterials->GetDeckRebarProperties(&Eb, &fyb, &fu);
+      ratingParams.pMaterials.lock()->GetDeckRebarProperties(&Eb, &fyb, &fu);
    }
 
    // just getting material properties so assuming straight strands is fine
-   Eps = ratingParams.pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
-   fyps = ratingParams.pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetYieldStrength();
+   Eps = ratingParams.pMaterials.lock()->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
+   fyps = ratingParams.pMaterials.lock()->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetYieldStrength();
 
    // NOTE: it is ok to use segmentKey here because it promotes to a girder key
-   EptSegment = ratingParams.pMaterials->GetSegmentTendonMaterial(segmentKey)->GetE();
-   fyptSegment = ratingParams.pMaterials->GetSegmentTendonMaterial(segmentKey)->GetYieldStrength();
-   EptGirder = ratingParams.pMaterials->GetGirderTendonMaterial(segmentKey)->GetE();
-   fyptGirder = ratingParams.pMaterials->GetGirderTendonMaterial(segmentKey)->GetYieldStrength();
+   EptSegment = ratingParams.pMaterials.lock()->GetSegmentTendonMaterial(segmentKey)->GetE();
+   fyptSegment = ratingParams.pMaterials.lock()->GetSegmentTendonMaterial(segmentKey)->GetYieldStrength();
+   EptGirder = ratingParams.pMaterials.lock()->GetGirderTendonMaterial(segmentKey)->GetE();
+   fyptGirder = ratingParams.pMaterials.lock()->GetGirderTendonMaterial(segmentKey)->GetYieldStrength();
 
 
    // Get distance to reinforcement from extreme compression face
@@ -1131,7 +1120,7 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    {
       // extreme tension rebar is going to be in the girder, furthest from the top of the girder
       CComPtr<IRebarSection> rebarSection;
-      ratingParams.pRebarGeom->GetRebars(poi, &rebarSection);
+      ratingParams.pRebarGeom.lock()->GetRebars(poi, &rebarSection);
 
       IndexType count;
       rebarSection->get_Count(&count);
@@ -1163,11 +1152,11 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
       // extreme tension rebar is going to be in the deck
       Float64 As;
       Float64 Y; // distance from top of girder to rebar
-      ratingParams.pRebarGeom->GetDeckReinforcing(poi, pgsTypes::drmTop, pgsTypes::drbAll, pgsTypes::drcAll, false, &As, &Y);
+      ratingParams.pRebarGeom.lock()->GetDeckReinforcing(poi, pgsTypes::drmTop, pgsTypes::drbAll, pgsTypes::drcAll, false, &As, &Y);
       if (IsZero(As))
       {
          // no top mat, try bottom mat
-         ratingParams.pRebarGeom->GetDeckReinforcing(poi, pgsTypes::drmBottom, pgsTypes::drbAll, pgsTypes::drcAll, false, &As, &Y);
+         ratingParams.pRebarGeom.lock()->GetDeckReinforcing(poi, pgsTypes::drmBottom, pgsTypes::drbAll, pgsTypes::drcAll, false, &As, &Y);
       }
 
       db = Hg + Y;
@@ -1187,7 +1176,7 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
       {
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)j;
          CComPtr<IPoint2dCollection> strandPoints;
-         ratingParams.pStrandGeometry->GetStrandPositions(poi, strandType, &strandPoints);
+         ratingParams.pStrandGeometry.lock()->GetStrandPositions(poi, strandType, &strandPoints);
          IndexType nStrands;
          strandPoints->get_Count(&nStrands);
          if (0 < nStrands)
@@ -1235,10 +1224,10 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
 
       for (DuctIndexType theDuctIdx = 0; theDuctIdx < nSegmentDucts; theDuctIdx++)
       {
-         if (ratingParams.pSegmentTendonGeometry->IsOnDuct(poi))
+         if (ratingParams.pSegmentTendonGeometry.lock()->IsOnDuct(poi))
          {
             CComPtr<IPoint2d> pnt;
-            ratingParams.pSegmentTendonGeometry->GetSegmentDuctPoint(poi, theDuctIdx, &pnt);
+            ratingParams.pSegmentTendonGeometry.lock()->GetSegmentDuctPoint(poi, theDuctIdx, &pnt);
             Float64 y;
             pnt->get_Y(&y);
             ATLASSERT(y < 0);
@@ -1286,10 +1275,10 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
 
       for (DuctIndexType theDuctIdx = 0; theDuctIdx < nGirderDucts; theDuctIdx++)
       {
-         if (ratingParams.pGirderTendonGeometry->IsOnDuct(poi, theDuctIdx))
+         if (ratingParams.pGirderTendonGeometry.lock()->IsOnDuct(poi, theDuctIdx))
          {
             CComPtr<IPoint2d> pnt;
-            ratingParams.pGirderTendonGeometry->GetGirderDuctPoint(poi, theDuctIdx, &pnt);
+            ratingParams.pGirderTendonGeometry.lock()->GetGirderDuctPoint(poi, theDuctIdx, &pnt);
             Float64 y;
             pnt->get_Y(&y);
             ATLASSERT(y < 0);
@@ -1329,7 +1318,7 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    Float64 LLIM = moments.LLIM;
    if (ratingParams.ratingType == pgsTypes::lrPermit_Special) // if it is any of the special permit types
    {
-      // The live load distribution factor used for special permits is one loaded lane without multiple presense factor.
+      // The live load distribution factor used for special permits is one loaded lane without multiple presence factor.
       // This is the Fatigue LLDF. See MBE 6A.4.5.4.2b and C6A.5.4.2.2b.
       // However, when evaluating the reinforcement yielding in the Service I limit state (the thing this function does)
       // the controlling of one loaded lane and two or more loaded lanes live load distribution factors is to be used.
@@ -1341,8 +1330,8 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
       Float64 gpM_Fatigue, gnM_Fatigue;
 
 
-      ratingParams.pLLDF->GetDistributionFactors(poi, pgsTypes::FatigueI, &gpM_Fatigue, &gnM_Fatigue, &gV);
-      ratingParams.pLLDF->GetDistributionFactors(poi, pgsTypes::ServiceI_PermitSpecial, &gpM_Service, &gnM_Service, &gV);
+      ratingParams.pLLDF.lock()->GetDistributionFactors(poi, pgsTypes::FatigueI, &gpM_Fatigue, &gnM_Fatigue, &gV);
+      ratingParams.pLLDF.lock()->GetDistributionFactors(poi, pgsTypes::ServiceI_PermitSpecial, &gpM_Service, &gnM_Service, &gV);
 
       if (bPositiveMoment)
       {
@@ -1359,7 +1348,7 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    {
       ATLASSERT(ratingParams.ratingType == pgsTypes::lrPermit_Routine);
       Float64 gpM, gnM, gV;
-      GET_IFACE(ILiveLoadDistributionFactors, pLLDF);
+      GET_IFACE2(GetBroker(),ILiveLoadDistributionFactors, pLLDF);
       pLLDF->GetDistributionFactors(poi, pgsTypes::ServiceI_PermitRoutine, &gpM, &gnM, &gV);
       gM = (bPositiveMoment ? gpM : gnM);
    }
@@ -1367,11 +1356,11 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    Float64 gLL = ratingParams.gLL;
    if (gLL < 0)
    {
-      GET_IFACE(IRatingSpecification, pRatingSpec);
+      GET_IFACE2(GetBroker(),IRatingSpecification, pRatingSpec);
       if (::IsStrengthLimitState(ratingParams.limitState))
       {
          // need to compute gLL based on axle weights
-         GET_IFACE(IProductForces, pProductForces);
+         GET_IFACE2(GetBroker(),IProductForces, pProductForces);
          Float64 fMinTop, fMinBot, fMaxTop, fMaxBot, fDummyTop, fDummyBot;
          AxleConfiguration MinAxleConfigTop, MinAxleConfigBot, MaxAxleConfigTop, MaxAxleConfigBot, DummyAxleConfigTop, DummyAxleConfigBot;
          if (ratingParams.analysisType == pgsTypes::Envelope)
@@ -1408,16 +1397,16 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    Float64 fb = 0;
    if (bRebar)
    {
-      Float64 I = ratingParams.pSectProp->GetIxx(ratingParams.loadRatingIntervalIdx, poi);
+      Float64 I = ratingParams.pSectProp.lock()->GetIxx(ratingParams.loadRatingIntervalIdx, poi);
       Float64 y;
       if (bPositiveMoment)
       {
-         Float64 Ytg = ratingParams.pSectProp->GetY(ratingParams.loadRatingIntervalIdx, poi, pgsTypes::TopGirder);
+         Float64 Ytg = ratingParams.pSectProp.lock()->GetY(ratingParams.loadRatingIntervalIdx, poi, pgsTypes::TopGirder);
          y = db - Ytg;
       }
       else
       {
-         Float64 Ybg = ratingParams.pSectProp->GetY(ratingParams.loadRatingIntervalIdx, poi, pgsTypes::BottomGirder);
+         Float64 Ybg = ratingParams.pSectProp.lock()->GetY(ratingParams.loadRatingIntervalIdx, poi, pgsTypes::BottomGirder);
          y = db - Ybg;
       }
 
@@ -1432,10 +1421,10 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
 
       if (!IsZero(ratingParams.K_liveload))
       {
-         GET_IFACE(IPretensionForce, pPrestressForce);
+         GET_IFACE2(GetBroker(),IPretensionForce, pPrestressForce);
          fps = pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, ratingParams.loadRatingIntervalIdx, pgsTypes::End);
 
-         GET_IFACE(ILosses, pLosses);
+         GET_IFACE2(GetBroker(),ILosses, pLosses);
          const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi, ratingParams.loadRatingIntervalIdx);
 
          Float64 llGain = 0;
@@ -1445,8 +1434,8 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
          }
          else
          {
-            Float64 ep = ratingParams.pStrandGeometry->GetEccentricity(ratingParams.loadRatingIntervalIdx, poi, pgsTypes::Permanent).Y();
-            Float64 Ixx = ratingParams.pSectProp->GetIxx(ratingParams.loadRatingIntervalIdx, poi);
+            Float64 ep = ratingParams.pStrandGeometry.lock()->GetEccentricity(ratingParams.loadRatingIntervalIdx, poi, pgsTypes::Permanent).Y();
+            Float64 Ixx = ratingParams.pSectProp.lock()->GetIxx(ratingParams.loadRatingIntervalIdx, poi);
             llGain = LLIM*ep / Ixx;
          }
          llGain *= ratingParams.K_liveload;
@@ -1458,7 +1447,7 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    Float64 fptSegment = 0;
    if (bSegmentTendons)
    {
-      GET_IFACE(IPosttensionForce, pPTForce);
+      GET_IFACE2(GetBroker(),IPosttensionForce, pPTForce);
       bool bIncludeMinLiveLoad = !bPositiveMoment;
       bool bIncludeMaxLiveLoad = bPositiveMoment;
       fptSegment = pPTForce->GetSegmentTendonStress(poi, ratingParams.loadRatingIntervalIdx, pgsTypes::End, segmentTendonIdx, bIncludeMinLiveLoad, bIncludeMaxLiveLoad);
@@ -1467,7 +1456,7 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
    Float64 fptGirder = 0;
    if (bGirderTendons)
    {
-      GET_IFACE(IPosttensionForce, pPTForce);
+      GET_IFACE2(GetBroker(),IPosttensionForce, pPTForce);
       bool bIncludeMinLiveLoad = !bPositiveMoment;
       bool bIncludeMaxLiveLoad = bPositiveMoment;
       fptGirder = pPTForce->GetGirderTendonStress(poi, ratingParams.loadRatingIntervalIdx, pgsTypes::End, girderTendonIdx, bIncludeMinLiveLoad, bIncludeMaxLiveLoad);
@@ -1525,13 +1514,13 @@ void pgsLoadRater::CheckReinforcementYielding(const pgsPointOfInterest& poi, boo
 
 void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingType ratingType, VehicleIndexType vehicleIdx, const PoiList& vPoi, bool bTimeStep, Moments* pMaxMoments, Moments* pMinMoments) const
 {
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   GET_IFACE2(GetBroker(),ILibrary,pLib);
+   GET_IFACE2(GetBroker(),ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
    bool bIncludeNoncompositeMoments = moment_capacity_criteria.bIncludeNoncompositeMomentsForNegMomentDesign;
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType constructionLoadIntervalIdx     = pIntervals->GetConstructionLoadInterval();
    IntervalIndexType castDiaphragmIntervalIdx        = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castShearKeyIntervalIdx         = pIntervals->GetCastShearKeyInterval();
@@ -1547,12 +1536,12 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingT
    std::vector<Float64> vUnused;
    std::vector<VehicleIndexType> vUnusedIndex;
 
-   GET_IFACE(IProductForces,pProdForces);
+   GET_IFACE2(GetBroker(),IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType batMin = pProdForces->GetBridgeAnalysisType(pgsTypes::Minimize);
    pgsTypes::BridgeAnalysisType batMax = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
-   GET_IFACE(ICombinedForces2,pCombinedForces);
-   GET_IFACE(IProductForces2,pProductForces);
+   GET_IFACE2(GetBroker(),ICombinedForces2,pCombinedForces);
+   GET_IFACE2(GetBroker(),IProductForces2,pProductForces);
    int n = (pMinMoments && bIncludeNoncompositeMoments ? 2 : 1);
    for (int i = 0; i < n; i++)
    {
@@ -1610,7 +1599,7 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingT
       // negative moment resisted by the deck.
       //
       // Special load processing is required
-      GET_IFACE(IBridge,pBridge);
+      GET_IFACE2(GetBroker(),IBridge,pBridge);
 
       std::vector<Float64> vConstruction;
       std::vector<Float64> vSlab;
@@ -1632,7 +1621,7 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingT
       bool bFutureOverlay = pBridge->HasOverlay() && pBridge->IsFutureOverlay();
 
       // Get all the product load responses
-      GET_IFACE(IProductForces2,pProductForces);
+      GET_IFACE2(GetBroker(),IProductForces2,pProductForces);
 
       if (constructionLoadIntervalIdx == INVALID_INDEX)
       {
@@ -1720,7 +1709,7 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingT
 
       pMinMoments->vPS.resize(vPoi.size(),0);
 
-      GET_IFACE(IPointOfInterest,pPoi);
+      GET_IFACE2(GetBroker(),IPointOfInterest,pPoi);
       special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vConstruction.cbegin(), pMinMoments->vDC.begin(), pMinMoments->vDC.begin());
       special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vSlab.cbegin(), pMinMoments->vDC.begin(), pMinMoments->vDC.begin());
       special_transform(pBridge,pPoi,pIntervals,vPoi.cbegin(),vPoi.cend(),vSlabPanel.cbegin(), pMinMoments->vDC.begin(), pMinMoments->vDC.begin());
@@ -1792,7 +1781,7 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingT
 #endif
 }
 
-void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pIntervals,
+void special_transform(std::shared_ptr<IBridge> pBridge,std::shared_ptr<IPointOfInterest> pPoi,std::shared_ptr<IIntervals> pIntervals,
                        PoiList::const_iterator poiBeginIter,
                        PoiList::const_iterator poiEndIter,
                        std::vector<Float64>::const_iterator forceBeginIter,

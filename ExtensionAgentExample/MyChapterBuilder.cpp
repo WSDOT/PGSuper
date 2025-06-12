@@ -25,11 +25,6 @@
 #include "MyChapterBuilder.h"
 #include "MyReportSpecification.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CMyChapterBuilder::CMyChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -53,9 +48,4 @@ rptChapter* CMyChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting
    *p << pSpec->GetMessage() << rptNewLine;
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMyChapterBuilder::Clone() const
-{
-   return std::make_unique<CMyChapterBuilder>();
 }

@@ -26,25 +26,22 @@
 #include "Reporting.h"
 #include "SelectPointOfInterestDlg.h"
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CSelectPointOfInterestDlg dialog
 
 IMPLEMENT_DYNAMIC(CSelectPointOfInterestDlg, CDialog)
 
-CSelectPointOfInterestDlg::CSelectPointOfInterestDlg(IBroker* pBroker,std::shared_ptr<CPointOfInterestReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,PoiAttributeType poiReferenceAttribute,CWnd* pParent)
+CSelectPointOfInterestDlg::CSelectPointOfInterestDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CPointOfInterestReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,PoiAttributeType poiReferenceAttribute,CWnd* pParent)
 	: CDialog(CSelectPointOfInterestDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pRptSpec(pRptSpec)

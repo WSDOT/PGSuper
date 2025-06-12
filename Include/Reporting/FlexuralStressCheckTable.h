@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class pgsGirderArtifact;
 class pgsSegmentArtifact;
 struct StressCheckTask;
@@ -53,36 +53,36 @@ public:
 
    CFlexuralStressCheckTable& operator = (const CFlexuralStressCheckTable& rOther);
 
-   virtual void Build(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses ) const;
+   virtual void Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task, bool bGirderStresses ) const;
 
    //------------------------------------------------------------------------
    // Builds the stress table and notes
-   virtual void Build(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses ) const;
+   virtual void Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task, bool bGirderStresses ) const;
 
    //------------------------------------------------------------------------
    // Builds the notes above stress table
-   void BuildNotes(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
+   void BuildNotes(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
 
    //------------------------------------------------------------------------
    // Builds the table only
-   void BuildTable(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
+   void BuildTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
 
 protected:
    void MakeCopy(const CFlexuralStressCheckTable& rOther);
    void MakeAssignment(const CFlexuralStressCheckTable& rOther);
 
 
-   void BuildSectionHeading(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
+   void BuildSectionHeading(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
 
-   void BuildStressLimitInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
+   void BuildStressLimitInformation(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task, bool bGirderStresses) const;
 
-   void BuildGirderStressLimitInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, IEAFDisplayUnits* pDisplayUnits,const StressCheckTask& task) const;
+   void BuildGirderStressLimitInformation(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, SegmentIndexType segIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const StressCheckTask& task) const;
 
-   void BuildDeckStressLimitInformation(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
+   void BuildDeckStressLimitInformation(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task) const;
 
-   void BuildSegmentStressLimitInformation(rptParagraph* pPara, IBroker* pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
+   void BuildSegmentStressLimitInformation(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task) const;
 
-   void BuildClosureJointStressLimitInformation(rptParagraph* pPara, IBroker* pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
+   void BuildClosureJointStressLimitInformation(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsSegmentArtifact* pSegmentArtifact, IndexType artifactIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task) const;
 };
 
 #endif // INCLUDED_FLEXURALSTRESSCHECKTABLE_H_

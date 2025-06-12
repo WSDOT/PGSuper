@@ -26,7 +26,7 @@
 
 #include <System\Date.h>
 
-class CPGSuperAppPluginApp : public CWinApp
+class CPGSuperPluginAppApp : public CWinApp
 {
 public:
 
@@ -41,4 +41,4 @@ public:
 	DECLARE_MESSAGE_MAP()
 };
 
-extern class CPGSuperAppPluginApp theApp;
+extern class CPGSuperPluginAppApp theApp;

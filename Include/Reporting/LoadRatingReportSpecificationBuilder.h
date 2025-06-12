@@ -26,7 +26,7 @@
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <ReportManager\ReportManager.h>
-#include <WBFLCore.h>
+
 
 /////////////////// Full load rating report ///////////////////
 
@@ -34,7 +34,7 @@ class REPORTINGCLASS CLoadRatingReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CLoadRatingReportSpecificationBuilder(IBroker* pBroker);
+   CLoadRatingReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CLoadRatingReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
@@ -47,7 +47,7 @@ class REPORTINGCLASS CLoadRatingSummaryReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CLoadRatingSummaryReportSpecificationBuilder(IBroker* pBroker);
+   CLoadRatingSummaryReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CLoadRatingSummaryReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
@@ -78,7 +78,7 @@ class REPORTINGCLASS CGirderLoadRatingReportSpecification :
    public CLoadRatingReportSpecificationBase, public CGirderReportSpecification
 {
 public:
-   CGirderLoadRatingReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, const CGirderKey& gdrKey, bool bReportForAllPoi);
+   CGirderLoadRatingReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& gdrKey, bool bReportForAllPoi);
    ~CGirderLoadRatingReportSpecification(void);
 
    std::vector<CGirderKey> GetGirderKeys() const override;
@@ -94,7 +94,7 @@ class REPORTINGCLASS CGirderLineLoadRatingReportSpecification :
    public CLoadRatingReportSpecificationBase, public CGirderLineReportSpecification
 {
 public:
-   CGirderLineLoadRatingReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, GirderIndexType gdrIdx, bool bReportForAllPoi);
+   CGirderLineLoadRatingReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, GirderIndexType gdrIdx, bool bReportForAllPoi);
    ~CGirderLineLoadRatingReportSpecification(void);
 
    std::vector<CGirderKey> GetGirderKeys() const override;
@@ -110,7 +110,7 @@ class REPORTINGCLASS CMultiGirderLoadRatingReportSpecification :
    public CLoadRatingReportSpecificationBase, public CMultiGirderReportSpecification
 {
 public:
-   CMultiGirderLoadRatingReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, const std::vector<CGirderKey>& gdrKeys, bool bReportForAllPoi);
+   CMultiGirderLoadRatingReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& gdrKeys, bool bReportForAllPoi);
    ~CMultiGirderLoadRatingReportSpecification(void);
 
    bool IsSingleGirderLineReport() const;

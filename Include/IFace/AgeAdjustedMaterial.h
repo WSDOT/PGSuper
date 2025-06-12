@@ -25,7 +25,7 @@
 #include <WBFLGenericBridge.h>
 
 interface IStages;
-interface IMaterials;
+class IMaterials;
 
 /*****************************************************************************
 INTERFACE
@@ -53,9 +53,9 @@ DEFINE_GUID(IID_IAgeAdjustedMaterial,
 struct __declspec(uuid("{4D1CA7C0-1991-421c-91FA-0BA7E22E1563}")) IAgeAdjustedMaterial;
 interface IAgeAdjustedMaterial : IMaterial
 {
-   STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,IMaterials* pMaterials) = 0;
-   STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,IMaterials* pMaterials) = 0;
-   STDMETHOD(InitDeck)(IndexType deckCastingRegionIdx,IMaterials* pMaterials) = 0;
-   STDMETHOD(InitLongitudinalJoint)(const CSegmentKey& segmentKey, IMaterials* pMaterials) = 0;
+   STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,std::shared_ptr<IMaterials> pMaterials) = 0;
+   STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,std::shared_ptr<IMaterials> pMaterials) = 0;
+   STDMETHOD(InitDeck)(IndexType deckCastingRegionIdx,std::shared_ptr<IMaterials> pMaterials) = 0;
+   STDMETHOD(InitLongitudinalJoint)(const CSegmentKey& segmentKey, std::shared_ptr<IMaterials> pMaterials) = 0;
 };
 

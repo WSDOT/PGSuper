@@ -20,19 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_POINTLOADDRAWSTRATEGY_H_
-#define INCLUDED_POINTLOADDRAWSTRATEGY_H_
+#pragma once
 
-#include "IFace\Bridge.h"
-#include "pgsExt\PointLoadData.h"
+#include <IFace\Bridge.h>
+#include <PsgLib\PointLoadData.h>
 #include <DManip/PointDisplayObject.h>
-
-interface IBroker;
 
 class iPointLoadDrawStrategy
 {
 public:
-  virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CPointLoadData& load, IndexType loadIndex, Float64 spanLength, Float64 maxMagnitude, COLORREF color) = 0;
+  virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPointLoadData& load, IndexType loadIndex, Float64 spanLength, Float64 maxMagnitude, COLORREF color) = 0;
 };
-
-#endif // INCLUDED_POINTLOADDRAWSTRATEGY_H_

@@ -24,23 +24,30 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "ExtensionAgentExample_i.h"
 #include "dllmain.h"
 
 #include <initguid.h>
+#include "CLSID.h"
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
 #include <IFace\Tools.h>
 #include <IFace\EditByUI.h>
-#include <EAF\EAFUIIntegration.h>
-#include <EAF\EAFStatusCenter.h>
-#include <EAF\EAFDisplayUnits.h>
-#include <WBFLCore_i.c>
-#include <IReportManager.h>
-#include <IFace\ExtendUI.h>
-#include <IGraphManager.h>
+#include <EAF/EAFUIIntegration.h>
+#include <EAF/EAFStatusCenter.h>
+#include <EAF/EAFDisplayUnits.h>
+#include <EAF/EAFReportManager.h>
+#include <EAF/EAFGraphManager.h>
 
-CExtensionAgentExampleModule _AtlModule;
+#include <IFace\ExtendUI.h>
+
+#include "ExampleExtensionAgent.h"
+#include <EAF\ComponentModule.h>
+
+WBFL::EAF::ComponentModule Module_;
+
+EAF_BEGIN_OBJECT_MAP(ObjectMap)
+   EAF_OBJECT_ENTRY(CLSID_ExampleExtensionAgent, CExampleExtensionAgent)
+EAF_END_OBJECT_MAP()
 
 class CExtensionAgentExampleApp : public CWinApp
 {
@@ -60,10 +67,12 @@ CExtensionAgentExampleApp theApp;
 
 BOOL CExtensionAgentExampleApp::InitInstance()
 {
+   Module_.Init(ObjectMap);
 	return CWinApp::InitInstance();
 }
 
 int CExtensionAgentExampleApp::ExitInstance()
 {
+   Module_.Term();
 	return CWinApp::ExitInstance();
 }

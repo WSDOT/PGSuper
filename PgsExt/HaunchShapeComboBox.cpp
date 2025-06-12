@@ -27,12 +27,6 @@
 #include "resource.h"
 #include <PgsExt\HaunchShapeComboBox.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 inline CString HaunchAsString(pgsTypes::HaunchShapeType type)
 {
    if (type == pgsTypes::hsSquare)

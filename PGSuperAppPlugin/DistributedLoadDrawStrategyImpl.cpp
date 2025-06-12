@@ -23,7 +23,10 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "DistributedLoadDrawStrategyImpl.h"
+
+#include <IFace/Tools.h>
 #include <IFace\EditByUI.h> 
+
 #include <MathEx.h>
 
 #include <DManip/PointDisplayObject.h>
@@ -47,7 +50,7 @@ CDistributedLoadDrawStrategyImpl::CDistributedLoadDrawStrategyImpl()
 }
 
 
-void CDistributedLoadDrawStrategyImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, CDistributedLoadData load, IndexType loadIndex, 
+void CDistributedLoadDrawStrategyImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, CDistributedLoadData load, IndexType loadIndex, 
                                                        Float64 loadLength, Float64 spanLength, Float64 maxMagnitude, COLORREF color)
 {
    m_Load = load;

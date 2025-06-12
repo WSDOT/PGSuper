@@ -2,20 +2,16 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "LinearDuctDlg.h"
 #include "SplicedGirderDescDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 
 #include <EAF\EAFDocument.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 static Float64 gs_Millimeter = WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Millimeter);
 
@@ -47,8 +43,8 @@ void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuct
 
    pDX->PrepareCtrl(IDC_POINT_GRID);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 Lg = pBridge->GetGirderLength(girderKey);

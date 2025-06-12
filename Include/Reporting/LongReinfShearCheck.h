@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class pgsGirderArtifact;
 
 /*****************************************************************************
@@ -51,15 +51,15 @@ public:
 
    /// @brief Builds the check report for design limit states
    void Build(rptChapter* pChapter,
-              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
+              std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
               IntervalIndexType intervalIdx,pgsTypes::LimitState ls,
-              IEAFDisplayUnits* pDisplayUnits) const;
+              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
 
    /// @brief Builds the check report for rating limit states
    void Build(rptChapter* pChapter,
-              IBroker* pBroker,const CGirderKey& girderKey,
+              std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
               pgsTypes::LimitState ls,
-              IEAFDisplayUnits* pDisplayUnits) const;
+              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
 };

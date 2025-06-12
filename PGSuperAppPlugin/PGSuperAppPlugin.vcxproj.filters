@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="PGSuperAppPlugin_i.c" />
     <ClCompile Include="AboutDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -578,7 +577,7 @@
     <ClCompile Include="PGSImportPluginDocTemplateBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PGSpliceAppPlugin.cpp">
+    <ClCompile Include="PGSplicePluginApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PGSpliceCommandLineInfo.cpp">
@@ -593,22 +592,22 @@
     <ClCompile Include="PGSpliceImportPluginDocTemplate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PGSpliceProjectImporterAppPlugin.cpp">
+    <ClCompile Include="PGSpliceProjectImporterPluginApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PGSpliceProjectImporterMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PGSProjectImporterAppPluginBase.cpp">
+    <ClCompile Include="PGSProjectImporterPluginAppBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PGSProjectImporterMgrBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PGSuperAppPlugin.cpp">
+    <ClCompile Include="PGSuperPluginApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PGSuperBaseAppPlugin.cpp">
+    <ClCompile Include="PGSPluginAppBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PGSuperCalculationSheet.cpp">
@@ -638,7 +637,7 @@
     <ClCompile Include="PGSuperPluginMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PGSuperProjectImporterAppPlugin.cpp">
+    <ClCompile Include="PGSuperProjectImporterPluginApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PGSuperProjectImporterMgr.cpp">
@@ -859,7 +858,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PGSuperAppPlugin_i.h" />
     <ClInclude Include="AboutDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1521,7 +1519,7 @@
     <ClInclude Include="PGSImportPluginDocTemplateBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PGSpliceAppPlugin.h">
+    <ClInclude Include="PGSplicePluginApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PGSpliceCommandLineInfo.h">
@@ -1536,22 +1534,22 @@
     <ClInclude Include="PGSpliceImportPluginDocTemplate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PGSpliceProjectImporterAppPlugin.h">
+    <ClInclude Include="PGSpliceProjectImporterPluginApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PGSpliceProjectImporterMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PGSProjectImporterAppPluginBase.h">
+    <ClInclude Include="PGSProjectImporterPluginAppBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PGSProjectImporterMgrBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PGSuperAppPlugin.h">
+    <ClInclude Include="PGSuperPluginApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PGSuperBaseAppPlugin.h">
+    <ClInclude Include="PGSPluginAppBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PGSuperCalculationSheet.h">
@@ -1581,7 +1579,7 @@
     <ClInclude Include="PGSuperPluginMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PGSuperProjectImporterAppPlugin.h">
+    <ClInclude Include="PGSuperProjectImporterPluginApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PGSuperProjectImporterMgr.h">
@@ -1818,6 +1816,12 @@
     <ClInclude Include="FillHaunchDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CLSID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Plugins\PGSuperIEPlugin.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bss.ico">
@@ -2011,9 +2015,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="PGSuperAppPlugin.idl" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\PGSplice.tip" />
     <None Include="..\PGSuper.tip" />
     <None Include="PGSuperAppPlugin.def" />
@@ -2098,9 +2099,6 @@
     <None Include="res\MatchCast_BrgAlongNormal.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\PGSpliceComponentInfo.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\PGSpliceAppPluginImpl.rgs">
       <Filter>Resource Files</Filter>
     </None>
@@ -2111,9 +2109,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\PGSuperAppPluginImpl.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\PGSuperComponentInfo.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\PGSuperProjectImporterAppPlugin.rgs">

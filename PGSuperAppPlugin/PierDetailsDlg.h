@@ -37,10 +37,10 @@
 #include "ClosureJointGeometryPage.h"
 #include "GirderSegmentSpacingPage.h"
 #include "PierDetailsBearingsPage.h"
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "EditPier.h"
 #include <IFace\ExtendUI.h>
-#include <EAF\EAFMacroTxn.h>
+#include <EAF\MacroTxn.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierDetailsDlg
@@ -71,7 +71,7 @@ public:
 public:
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
-   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
+   std::unique_ptr<WBFL::EAF::Transaction> GetExtensionPageTransaction();
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -125,7 +125,7 @@ private:
    CClosureJointGeometryPage  m_ClosureJointGeometryPage; // Boundary condition and bent geometry
    CGirderSegmentSpacingPage  m_GirderSegmentSpacingPage; // girder spacing
 
-   CEAFMacroTxn m_Macro;
+   WBFL::EAF::MacroTxn m_Macro;
    std::vector<std::pair<IEditPierCallback*,CPropertyPage*>> m_ExtensionPages;
    std::vector<EditBridgeExtension> m_BridgeExtensionPages;
    void NotifyExtensionPages();

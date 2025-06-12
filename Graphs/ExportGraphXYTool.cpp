@@ -29,11 +29,6 @@
 #include <Graphing\GraphXY.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // utility functions
 static bool DoesFileExist(const CString& filename)

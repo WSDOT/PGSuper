@@ -27,11 +27,12 @@
 #include "resource.h"
 #include "ActivityGrid.h"
 
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 
-#include <PgsExt\TimelineEvent.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\TimelineEvent.h>
+#include <PsgLib\Helpers.h>
 
 #include "TimelineEventDlg.h"
 #include "ConstructSegmentsDlg.h"
@@ -45,11 +46,6 @@
 #include "CastLongitudinalJointsDlg.h"
 #include "GeometryControlDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define CONSTRUCT_SEGMENTS    0
 #define ERECT_PIERS           1
@@ -154,8 +150,7 @@ void CActivityGrid::CustomInit(BOOL bReadOnly)
 
 void CActivityGrid::Refresh()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
 
    CTimelineEventDlg* pParent = (CTimelineEventDlg*)GetParent();
@@ -329,8 +324,7 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (ActivityKeyType)style.GetItemDataPtr() == CAST_DECK )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
       pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
 

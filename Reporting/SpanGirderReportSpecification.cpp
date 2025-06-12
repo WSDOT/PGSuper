@@ -22,16 +22,14 @@
 
 #include "stdafx.h"
 #include <Reporting\SpanGirderReportSpecification.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 CSpanReportHint::CSpanReportHint()
@@ -199,7 +197,7 @@ int CGirderReportHint::IsMyGirder(const std::shared_ptr<const WBFL::Reporting::R
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-CSpanReportSpecification::CSpanReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,SpanIndexType spanIdx) :
+CSpanReportSpecification::CSpanReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker>pBroker,SpanIndexType spanIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetSpan(spanIdx);
@@ -245,7 +243,7 @@ SpanIndexType CSpanReportSpecification::GetSpan() const
 
 bool CSpanReportSpecification::IsValid() const
 {
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    if ( nSpans <= m_Span )
    {
@@ -259,7 +257,7 @@ bool CSpanReportSpecification::IsValid() const
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CGirderReportSpecification::CGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const CGirderKey& girderKey) :
+CGirderReportSpecification::CGirderReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker>pBroker,const CGirderKey& girderKey) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_GirderKey = girderKey;
@@ -285,7 +283,7 @@ std::_tstring CGirderReportSpecification::GetReportContextString() const
    GroupIndexType grpIdx  = m_GirderKey.groupIndex;
    GirderIndexType gdrIdx = m_GirderKey.girderIndex;
 
-   GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE2(GetBroker(),IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
    CString msg;
@@ -355,7 +353,7 @@ const CGirderKey& CGirderReportSpecification::GetGirderKey() const
 
 bool CGirderReportSpecification::IsValid() const
 {
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    if (nGroups <= m_GirderKey.groupIndex && m_GirderKey.groupIndex != ALL_GROUPS)
@@ -389,7 +387,7 @@ bool CGirderReportSpecification::IsValid() const
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CSegmentReportSpecification::CSegmentReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, const CSegmentKey& segmentKey) :
+CSegmentReportSpecification::CSegmentReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey) :
    CBrokerReportSpecification(strReportName, pBroker)
 {
    m_SegmentKey = segmentKey;
@@ -412,7 +410,7 @@ std::_tstring CSegmentReportSpecification::GetReportTitle() const
 
 std::_tstring CSegmentReportSpecification::GetReportContextString() const
 {
-   GET_IFACE(IDocumentType, pDocType);
+   GET_IFACE2(GetBroker(),IDocumentType, pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
    CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
    ATLASSERT(bIsPGSuper ? m_SegmentKey.segmentIndex == 0 : true);
@@ -472,7 +470,7 @@ const CSegmentKey& CSegmentReportSpecification::GetSegmentKey() const
 
 bool CSegmentReportSpecification::IsValid() const
 {
-   GET_IFACE(IBridge, pBridge);
+   GET_IFACE2(GetBroker(),IBridge, pBridge);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    if (nGroups <= m_SegmentKey.groupIndex)
@@ -496,7 +494,7 @@ bool CSegmentReportSpecification::IsValid() const
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CGirderLineReportSpecification::CGirderLineReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,GirderIndexType gdrIdx) :
+CGirderLineReportSpecification::CGirderLineReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker,GirderIndexType gdrIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_GirderIdx = gdrIdx;
@@ -541,7 +539,7 @@ CGirderKey CGirderLineReportSpecification::GetGirderKey() const
 
 bool CGirderLineReportSpecification::IsValid() const
 {
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
    GirderIndexType nGirders = 0;
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -561,7 +559,7 @@ bool CGirderLineReportSpecification::IsValid() const
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-CMultiGirderReportSpecification::CMultiGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys) :
+CMultiGirderReportSpecification::CMultiGirderReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys) :
 CBrokerReportSpecification(strReportName,pBroker),
 m_GirderKeys(girderKeys)
 {
@@ -582,7 +580,7 @@ std::_tstring CMultiGirderReportSpecification::GetReportTitle() const
    return GetReportName() + _T(" - ") + GetReportContextString();
 }
 
-// comparator to sort girderkeys
+// comparator to sort girder keys
 struct gkeyComparer
 {
    bool operator() (CGirderKey i, CGirderKey j)
@@ -600,7 +598,7 @@ struct gkeyComparer
 
 std::_tstring CMultiGirderReportSpecification::GetReportContextString() const
 {
-   GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE2(GetBroker(),IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
    // sort so that keys are grouped by span
@@ -663,7 +661,7 @@ bool CMultiGirderReportSpecification::IsMyGirder(const CGirderKey& girderKey) co
 
 bool CMultiGirderReportSpecification::IsValid() const
 {
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    std::vector<CGirderKey>::const_iterator iter(m_GirderKeys.begin());
    std::vector<CGirderKey>::const_iterator end(m_GirderKeys.end());
@@ -689,7 +687,7 @@ bool CMultiGirderReportSpecification::IsValid() const
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-CMultiViewSpanGirderReportSpecification::CMultiViewSpanGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker, const std::vector<CGirderKey>& girderKeys) :
+CMultiViewSpanGirderReportSpecification::CMultiViewSpanGirderReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetGirderKeys(girderKeys);
@@ -734,7 +732,7 @@ int CMultiViewSpanGirderReportSpecification::IsMyGirder(const CGirderKey& girder
 
 bool CMultiViewSpanGirderReportSpecification::IsValid() const
 {
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
    std::vector<CGirderKey>::const_iterator iter(m_GirderKeys.begin());
@@ -763,7 +761,7 @@ bool CMultiViewSpanGirderReportSpecification::IsValid() const
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CPointOfInterestReportSpecification::CPointOfInterestReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi) :
+CPointOfInterestReportSpecification::CPointOfInterestReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_POI = poi;
@@ -786,7 +784,7 @@ std::_tstring CPointOfInterestReportSpecification::GetReportTitle() const
 
 std::_tstring CPointOfInterestReportSpecification::GetReportContextString() const
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
 
    INIT_UV_PROTOTYPE(rptPointOfInterest, rptPOI, pDisplayUnits->GetSpanLengthUnit(), true);
    rptPOI.SetValue(POI_SPAN,m_POI);

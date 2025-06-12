@@ -27,24 +27,18 @@
 #include <Reporting\MultiGirderReportDlg.h>
 #include "..\Documentation\PGSuper.hh"
 
-#include <initguid.h>
 #include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CMultiGirderReportDlg dialog
 
 IMPLEMENT_DYNAMIC(CMultiGirderReportDlg, CDialog)
 
-CMultiGirderReportDlg::CMultiGirderReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CMultiGirderReportDlg::CMultiGirderReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
    m_pBroker = pBroker;

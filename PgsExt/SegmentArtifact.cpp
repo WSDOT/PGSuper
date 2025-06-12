@@ -23,14 +23,11 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\SegmentArtifact.h>
 #include <EAF\EAFUtilities.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Intervals.h>
 #include <IFace\PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 pgsSegmentArtifact::pgsSegmentArtifact(const CSegmentKey& segmentKey) :
 m_SegmentKey(segmentKey)
@@ -214,22 +211,22 @@ pgsSegmentStabilityArtifact* pgsSegmentArtifact::GetSegmentStabilityArtifact()
    return &m_StabilityArtifact;
 }
 
-void pgsSegmentArtifact::SetLiftingCheckArtifact(const WBFL::Stability::LiftingCheckArtifact* artifact)
+void pgsSegmentArtifact::SetLiftingCheckArtifact(std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> artifact)
 {
    m_pLiftingCheckArtifact = artifact;
 }
 
-const WBFL::Stability::LiftingCheckArtifact* pgsSegmentArtifact::GetLiftingCheckArtifact() const
+std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> pgsSegmentArtifact::GetLiftingCheckArtifact() const
 {
    return m_pLiftingCheckArtifact;
 }
 
-void pgsSegmentArtifact::SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact* artifact)
+void pgsSegmentArtifact::SetHaulingAnalysisArtifact(std::shared_ptr<const pgsHaulingAnalysisArtifact> artifact)
 {
    m_pHaulingAnalysisArtifact = artifact;
 }
 
-const pgsHaulingAnalysisArtifact* pgsSegmentArtifact::GetHaulingAnalysisArtifact() const
+std::shared_ptr<const pgsHaulingAnalysisArtifact> pgsSegmentArtifact::GetHaulingAnalysisArtifact() const
 {
    return m_pHaulingAnalysisArtifact;
 }
@@ -298,8 +295,7 @@ bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(const StressCheckTask& 
       return false;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // sometimes there aren't any artifacts so this doesn't get used
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
@@ -330,8 +326,7 @@ bool pgsSegmentArtifact::WasSegmentWithRebarAllowableStressUsed(const StressChec
       return false;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
@@ -361,8 +356,7 @@ bool pgsSegmentArtifact::WasClosureJointWithRebarAllowableStressUsed(const Stres
       return false;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
@@ -418,8 +412,7 @@ bool pgsSegmentArtifact::IsWithRebarAllowableStressApplicable(const StressCheckT
    }
 
    ATLASSERT(attribute == 0 || attribute == POI_CLOSURE);
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
@@ -450,8 +443,7 @@ bool pgsSegmentArtifact::IsSegmentWithRebarAllowableStressApplicable(const Stres
       return false;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
@@ -481,8 +473,7 @@ bool pgsSegmentArtifact::IsClosureJointWithRebarAllowableStressApplicable(const 
       return false;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
@@ -694,8 +685,7 @@ bool pgsSegmentArtifact::DidPrincipalTensionStressPass() const
 
 Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(const StressCheckTask& task) const
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    Float64 fc_reqd = 0;
@@ -742,8 +732,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(const StressCheck
 
 Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(const StressCheckTask& task) const
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    Float64 fc_reqd = 0;
@@ -827,8 +816,7 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(const StressCheckTas
 
 Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -905,8 +893,7 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength() const
 {
    Float64 fc_reqd = 0;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -959,8 +946,7 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength() const
 {
    Float64 fc_reqd = 0;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -1006,8 +992,7 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
 {
    Float64 fc_reqd = 0;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(m_SegmentKey);
 

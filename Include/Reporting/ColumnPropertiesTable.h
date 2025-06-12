@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class REPORTINGCLASS CColumnPropertiesTable
 {
@@ -37,7 +37,7 @@ public:
 
    CColumnPropertiesTable& operator = (const CColumnPropertiesTable& rOther);
 
-   virtual rptRcTable* Build(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
+   virtual rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
 protected:
    void MakeCopy(const CColumnPropertiesTable& rOther);

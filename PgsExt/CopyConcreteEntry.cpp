@@ -29,19 +29,11 @@
 #include "CopyConcreteEntry.h"
 #include "..\Documentation\PGSuper.hh"
 
-#include <PsgLib\ConcreteLibraryEntry.h>
-
 
 #include <AgentTools.h>
 #include <IFace\Project.h>
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocument.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyConcreteEntry dialog
@@ -49,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 
 CCopyConcreteEntry::CCopyConcreteEntry(bool isPrestressed, CWnd* pParent /*=nullptr*/)
 	: CDialog(CCopyConcreteEntry::IDD, pParent),
-   m_IsPrestressed(isPrestressed) ,
+   m_IsPrestressed(isPrestressed),
    m_ConcreteEntry(nullptr)
 {
 	//{{AFX_DATA_INIT(CCopyConcreteEntry)
@@ -69,11 +61,10 @@ void CCopyConcreteEntry::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
 
       GET_IFACE2(pBroker,ILibrary,pLib);
-      m_ConcreteEntry = pLib->GetConcreteEntry(m_Concrete);
+      //m_ConcreteEntry = pLib->GetConcreteEntry(m_Concrete);
    }
 }
 
@@ -89,8 +80,7 @@ END_MESSAGE_MAP()
 
 BOOL CCopyConcreteEntry::OnInitDialog() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames);
    std::vector<std::_tstring> names;

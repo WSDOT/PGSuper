@@ -20,35 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_MOMENTCAPACITY_H_
-#define INCLUDED_IFACE_MOMENTCAPACITY_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#if !defined INCLUDED_WBFLTYPES_H_
-#include <WbflTypes.h>
-#endif
-
-#if !defined INCLUDED_PGSUPERTYPES_H_
 #include <PGSuperTypes.h>
-#endif
-
-#if !defined INCLUDED_DETAILS_H_
 #include <Details.h>
-#endif
 
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
 class pgsPointOfInterest;
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 INTERFACE
@@ -62,8 +39,9 @@ DESCRIPTION
 // {B376BD5E-7FF7-11d2-885C-006097C68A9C}
 DEFINE_GUID(IID_IMomentCapacity, 
 0xb376bd5e, 0x7ff7, 0x11d2, 0x88, 0x5c, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface IMomentCapacity : IUnknown
+class IMomentCapacity
 {
+public:
    virtual Float64 GetMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment) const = 0;
    virtual std::vector<Float64> GetMomentCapacity(IntervalIndexType intervalIdx,const PoiList& vPoi,bool bPositiveMoment) const = 0;
    
@@ -84,6 +62,4 @@ interface IMomentCapacity : IUnknown
    virtual std::vector<Float64> GetCrackingMoment(IntervalIndexType intervalIdx,const PoiList& vPoi,bool bPositiveMoment) const = 0;
    virtual std::vector<Float64> GetMinMomentCapacity(IntervalIndexType intervalIdx,const PoiList& vPoi,bool bPositiveMoment) const = 0;
 };
-
-#endif // INCLUDED_IFACE_MOMENTCAPACITY_H_
 

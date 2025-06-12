@@ -30,35 +30,15 @@
 
 struct SHEARDEFORMATIONDETAILS;
 struct TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS;
-interface IIntervals;
-interface IMaterials;
+class IIntervals;
+class IMaterials;
 
-
-/*****************************************************************************
-CLASS 
-   CBearingTimeStepDetailsChapterBuilder
-
-DESCRIPTION
-   Chapter builder for reporting details of bearing time-step analysis calculations
-   at a specified POI
-*****************************************************************************/
 
 class REPORTINGCLASS CBearingTimeStepDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CBearingTimeStepDetailsChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    LPCTSTR GetName() const override;   
-
-   //------------------------------------------------------------------------
    rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-protected:
-   // Prevent accidental copying and assignment
-   CBearingTimeStepDetailsChapterBuilder(const CBearingTimeStepDetailsChapterBuilder&) = delete;
-   CBearingTimeStepDetailsChapterBuilder& operator=(const CBearingTimeStepDetailsChapterBuilder&) = delete;
 };

@@ -28,28 +28,22 @@
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include "..\Documentation\PGSuper.hh"
 
-#include <initguid.h>
 #include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <EAF\EAFDocument.h>
 
 #include <MFCTools\AutoRegistry.h>
-#include "..\PGSuperAppPlugin\PGSuperBaseAppPlugin.h"
+#include "..\PGSuperAppPlugin\PGSPluginAppBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CLoadRatingReportDlg dialog
 
 IMPLEMENT_DYNAMIC(CLoadRatingReportDlg, CDialog)
 
-CLoadRatingReportDlg::CLoadRatingReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CLoadRatingReportDlg::CLoadRatingReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
    m_GirderLine = 0;
@@ -399,9 +393,8 @@ void CLoadRatingReportDlg::LoadSettings()
    // loads last settings from the registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
@@ -422,9 +415,8 @@ void CLoadRatingReportDlg::SaveSettings()
    // save settings to registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);

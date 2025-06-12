@@ -23,8 +23,6 @@
 #pragma once
 
 #include <DManip/DisplayObjectEvents.h>
-interface IBroker;
-
 
 /////////////////////////////////////////////////////////////////////////////
 // CInplaceEditDisplayObjectEvents command target
@@ -32,7 +30,7 @@ interface IBroker;
 class CInplaceEditDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents
 {
 public:
-	CInplaceEditDisplayObjectEvents(IBroker* pDoc);
+	CInplaceEditDisplayObjectEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker);
 
    virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
    virtual bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
@@ -55,5 +53,5 @@ protected:
    virtual void Handle_OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) { /* do nothing */ };
 
 protected:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 };

@@ -26,14 +26,15 @@
 
 #include "TexasIBNSParagraphBuilder.h"
 
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\GirderData.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\GirderData.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 #include <psgLib\GirderLibraryEntry.h>
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\AnalysisResults.h>
@@ -42,22 +43,18 @@
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /// Inline functions
 
 
-static void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,
+static void WriteGirderScheduleTable(rptParagraph* p, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                      const std::vector<CSegmentKey>& segments,  const std::vector<txcwStrandLayoutType>& strandLayoutVec,
                                      ColumnIndexType startIdx, ColumnIndexType endIdx,
-                                     IStrandGeometry* pStrandGeometry, ISegmentData* pSegmentData, IPointOfInterest* pPointOfInterest,
-                                     const CBridgeDescription2* pBridgeDesc, IArtifact* pIArtifact, ILiveLoadDistributionFactors* pDistFact,
-                                     IMaterials* pMaterial, IMomentCapacity* pMomentCapacity,
+                                     std::shared_ptr<IStrandGeometry> pStrandGeometry, std::shared_ptr<ISegmentData> pSegmentData, std::shared_ptr<IPointOfInterest> pPointOfInterest,
+                                     const CBridgeDescription2* pBridgeDesc, std::shared_ptr<IArtifact> pIArtifact, std::shared_ptr<ILiveLoadDistributionFactors> pDistFact,
+                                     std::shared_ptr<IMaterials> pMaterial, std::shared_ptr<IMomentCapacity> pMomentCapacity,
                                      bool bUnitsSI, bool areAnyTempStrandsInTable, 
                                      bool areAnyHarpedStrandsInTable, bool areAnyDebondingInTable);
 
@@ -67,11 +64,11 @@ static void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisp
 CLASS	TxDOTIBNSDebondWriter
 ****************************************************************************/
 
-void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits, const std::_tstring& optionalName)
+void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& optionalName)
 {
    *pPara<<rptNewLine; // make some space
 
-   StrandIndexType nss = m_pStrandGeometry->GetStrandCount(m_SegmentKey,pgsTypes::Straight);
+   StrandIndexType nss = m_pStrandGeometry.lock()->GetStrandCount(m_SegmentKey,pgsTypes::Straight);
    bool is_optional = optionalName.size() > 0;
 
    // see if we have an error condition - don't build table if so
@@ -159,12 +156,12 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker
 
          pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
 
-         std::vector<StrandIndexType> vss  = m_pStrandGeometry->GetStrandsInRow(poi,0,pgsTypes::Straight);
+         std::vector<StrandIndexType> vss  = m_pStrandGeometry.lock()->GetStrandsInRow(poi,0,pgsTypes::Straight);
          ATLASSERT(vss.size()>0);
 
          // get y of any strand in row
          CComPtr<IPoint2dCollection> coords;
-         m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Straight, &coords);
+         m_pStrandGeometry.lock()->GetStrandPositions(poi, pgsTypes::Straight, &coords);
 
          GET_IFACE2(pBroker,ISectionProperties,pSectProp);
          GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -268,8 +265,8 @@ CTexasIBNSParagraphBuilder::CTexasIBNSParagraphBuilder()
 //======================== OPERATIONS =======================================
 
 /*--------------------------------------------------------------------*/
-rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vector<CSegmentKey>& segmentKeys,
-                                                IEAFDisplayUnits* pDisplayUnits, Uint16 level, bool& rbEjectPage) const
+rptParagraph* CTexasIBNSParagraphBuilder::Build(std::shared_ptr<WBFL::EAF::Broker>	pBroker, const std::vector<CSegmentKey>& segmentKeys,
+                                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level, bool& rbEjectPage) const
 {
    rbEjectPage = true; // we can just fit this and the geometry table on a page if there is no additional data
 
@@ -470,7 +467,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
    return p;
 }
 
-void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, IBroker* pBroker, const CSegmentKey& segmentKey, IEAFDisplayUnits* pDisplayUnits) const
+void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
 
@@ -490,12 +487,12 @@ void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, IBroker* 
    tx_writer.WriteDebondData(pPara, pBroker, pDisplayUnits, std::_tstring());
 }
 
-void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,
+void WriteGirderScheduleTable(rptParagraph* p, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                               const std::vector<CSegmentKey>& segmentKeys, const std::vector<txcwStrandLayoutType>& strandLayoutVec,
                               ColumnIndexType startIdx, ColumnIndexType endIdx,
-                              IStrandGeometry* pStrandGeometry, ISegmentData* pSegmentData, IPointOfInterest* pPointOfInterest,
-                              const CBridgeDescription2* pBridgeDesc, IArtifact* pIArtifact, ILiveLoadDistributionFactors* pDistFact,
-                              IMaterials* pMaterial, IMomentCapacity* pMomentCapacity,
+                              std::shared_ptr<IStrandGeometry> pStrandGeometry, std::shared_ptr<ISegmentData> pSegmentData, std::shared_ptr<IPointOfInterest> pPointOfInterest,
+                              const CBridgeDescription2* pBridgeDesc, std::shared_ptr<IArtifact> pIArtifact, std::shared_ptr<ILiveLoadDistributionFactors> pDistFact,
+                              std::shared_ptr<IMaterials> pMaterial, std::shared_ptr<IMomentCapacity> pMomentCapacity,
                               bool bUnitsSI, bool areAnyTempStrandsInTable, 
                               bool areAnyHarpedStrandsInTable, bool areAnyDebondingInTable)
 {

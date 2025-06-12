@@ -19,32 +19,15 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
-//
-// 
-#ifndef INCLUDED_PGSEXT_TxDOTOPTIONALDESIGNDATA_H_
-#define INCLUDED_PGSEXT_TxDOTOPTIONALDESIGNDATA_H_
 
-// SYSTEM INCLUDES
-//
-#include <WBFLCore.h>
+#pragma once
 
-#if !defined INCLUDED_STRDATA_H_
+
 #include <StrData.h>
-#endif
-// PROJECT INCLUDES
-//
 #include "TxDOTOptionalDesignGirderData.h"
 
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
 class CTxDOTOptionalDesignData;
 class pgsGirderArtifact;
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 INTERFACE
@@ -58,9 +41,9 @@ DESCRIPTION
 // {9454556F-E6F9-4c1c-BE34-6BF9027003D6}
 DEFINE_GUID(IID_IGetTogaData, 
 0x9454556f, 0xe6f9, 0x4c1c, 0xbe, 0x34, 0x6b, 0xf9, 0x2, 0x70, 0x3, 0xd6);
-struct __declspec(uuid("{9454556F-E6F9-4c1c-BE34-6BF9027003D6}")) IGetTogaData;
-interface IGetTogaData : IUnknown
+class __declspec(uuid("{9454556F-E6F9-4c1c-BE34-6BF9027003D6}")) IGetTogaData
 {
+public:
    virtual const CTxDOTOptionalDesignData* GetTogaData() = 0;
 };
 
@@ -77,9 +60,9 @@ DESCRIPTION
 // {0D8A01DE-304F-48df-9650-EA797D059BF4}
 DEFINE_GUID(IID_IGetTogaResults, 
 0xd8a01de, 0x304f, 0x48df, 0x96, 0x50, 0xea, 0x79, 0x7d, 0x5, 0x9b, 0xf4);
-struct __declspec(uuid("{0D8A01DE-304F-48df-9650-EA797D059BF4}")) IGetTogaResults;
-interface IGetTogaResults : IUnknown
+class __declspec(uuid("{0D8A01DE-304F-48df-9650-EA797D059BF4}")) IGetTogaResults
 {
+public:
    // Values from "original design" configuration
    virtual void GetControllingTensileStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart) = 0;
    virtual void GetControllingCompressiveStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart) = 0;
@@ -118,6 +101,9 @@ class CTxDOTOptionalDesignData
 {
    friend CTxDOTOptionalDesignGirderData;
 public:
+   CTxDOTOptionalDesignData();
+   ~CTxDOTOptionalDesignData();
+
    // Data
    // First, Template Data
    void SetGirderEntryName(const CString& value);
@@ -219,67 +205,20 @@ public:
    CTxDOTOptionalDesignGirderData* GetPrecasterDesignGirderData();
    const CTxDOTOptionalDesignGirderData* GetPrecasterDesignGirderData() const;
 
-   // GROUP: LIFECYCLE
-
    // Let our observers listen
    void Attach(ITxDataObserver* pObserver);
    void Detach(ITxDataObserver* pObserver);
 
-   //------------------------------------------------------------------------
-   // Default constructor
-   CTxDOTOptionalDesignData();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CTxDOTOptionalDesignData(const CTxDOTOptionalDesignData& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   ~CTxDOTOptionalDesignData();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CTxDOTOptionalDesignData& operator = (const CTxDOTOptionalDesignData& rOther);
-
-   //------------------------------------------------------------------------
    // Resets all the input to default values.
    void ResetData();
 
-   //------------------------------------------------------------------------
    // Resets all number of strand input to zero
    void ResetStrandNoData();
 
-   ////------------------------------------------------------------------------
-   //bool operator==(const CTxDOTOptionalDesignData& rOther) const;
-
-   ////------------------------------------------------------------------------
-   //bool operator!=(const CTxDOTOptionalDesignData& rOther) const;
-
-   // GROUP: OPERATIONS
-
-	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
-	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CTxDOTOptionalDesignData& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CTxDOTOptionalDesignData& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+	HRESULT Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress);
+	HRESULT Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress> pProgress);
 
 private:
-   // GROUP: DATA MEMBERS
    CString m_GirderEntryName;
    CString m_LeftConnectionEntryName;
    CString m_RightConnectionEntryName;
@@ -324,23 +263,6 @@ private:
    // our observers
    std::set<ITxDataObserver*> m_pObservers;
 
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
    void FireChanged(ITxDataObserver::ChangeType change);
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-
-#endif // INCLUDED_PGSEXT_TxDOTOPTIONALDESIGNDATA_H_
-

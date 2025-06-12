@@ -25,21 +25,6 @@
 #include "PGSuperComponentInfo.h"
 #include <MFCTools\VersionInfo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-HRESULT CPGSuperComponentInfo::FinalConstruct()
-{
-   return S_OK;
-}
-
-void CPGSuperComponentInfo::FinalRelease()
-{
-}
-
 BOOL CPGSuperComponentInfo::Init(CPGSuperDoc* pDoc)
 {
    return TRUE;

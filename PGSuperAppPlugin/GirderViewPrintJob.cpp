@@ -37,11 +37,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -50,7 +45,7 @@ static char THIS_FILE[]=__FILE__;
 CGirderViewPrintJob::CGirderViewPrintJob(CGirderModelElevationView* pev,
    CGirderModelSectionView* psv,
    CGirderModelChildFrame* pframe,
-   IBroker* pBroker)
+   std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    ATLASSERT(pev != 0);
    ATLASSERT(psv != 0);

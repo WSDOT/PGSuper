@@ -20,11 +20,10 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PROJECTAGENT_H_
-#define INCLUDED_PROJECTAGENT_H_
+#pragma once
+
+#include <IFace\Tools.h>
 
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\VersionInfo.h>
-
-#endif // INCLUDED_PROJECTAGENT_H_

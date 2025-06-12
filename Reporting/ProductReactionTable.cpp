@@ -30,46 +30,15 @@
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 
-#include <PgsExt\PierData2.h>
+#include <PsgLib\PierData2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CProductReactionTable::CProductReactionTable()
 {
 }
 
-CProductReactionTable::CProductReactionTable(const CProductReactionTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CProductReactionTable::~CProductReactionTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CProductReactionTable& CProductReactionTable::operator= (const CProductReactionTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+rptRcTable* CProductReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
                                          ReactionTableType tableType, bool bIncludeImpact,bool bDesign,bool bRating,bool bIndicateControllingLoad,
-                                         IEAFDisplayUnits* pDisplayUnits) const
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -1072,32 +1041,3 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
 
    return p_table;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CProductReactionTable::MakeCopy(const CProductReactionTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CProductReactionTable::MakeAssignment(const CProductReactionTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

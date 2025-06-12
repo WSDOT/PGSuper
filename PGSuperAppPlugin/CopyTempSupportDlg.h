@@ -42,7 +42,7 @@ class CCopyTempSupportDlg : public CDialog
 {
 // Construction
 public:
-	CCopyTempSupportDlg(IBroker* pBroker, const std::map<IDType,ICopyTemporarySupportPropertiesCallback*>&  pCopyTempSupportPropertiesCallbacks, IDType selectedID, CWnd* pParent = nullptr);   // standard constructor
+	CCopyTempSupportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::map<IDType,ICopyTemporarySupportPropertiesCallback*>&  pCopyTempSupportPropertiesCallbacks, IDType selectedID, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CCopyTempSupportDlg)
@@ -95,7 +95,7 @@ protected:
 
    void OnFromTempSupportChangedNoUpdate();
 
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    const std::map<IDType, ICopyTemporarySupportPropertiesCallback*> m_CopyTempSupportPropertiesCallbacks;
    std::set<IDType> m_SelectedIDs; 
 

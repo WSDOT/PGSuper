@@ -29,22 +29,18 @@
 
 #include <PgsExt\SegmentRelatedStatusItem.h>
 
+#include <IFace/Tools.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFUIIntegration.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // inline functions to determine whether to print status center items
-bool DoPrintStatusItem(CEAFStatusItem* pItem, const CGirderKey& girderKey,SegmentIndexType nSegments)
+bool DoPrintStatusItem(std::shared_ptr<WBFL::EAF::StatusItem> pItem, const CGirderKey& girderKey,SegmentIndexType nSegments)
 {
-   pgsSegmentRelatedStatusItem* pSegmentStatusItem = dynamic_cast<pgsSegmentRelatedStatusItem*>(pItem);
+   auto pSegmentStatusItem = std::dynamic_pointer_cast<pgsSegmentRelatedStatusItem>(pItem);
    if (pSegmentStatusItem != nullptr)
    {
       if ( nSegments == ALL_SEGMENTS )
@@ -68,11 +64,11 @@ bool DoPrintStatusItem(CEAFStatusItem* pItem, const CGirderKey& girderKey,Segmen
    return false;
 }
 
-bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, IndexType nItems, const CGirderKey& girderKey,SegmentIndexType nSegments)
+bool DoPrintStatusCenter(std::shared_ptr<IEAFStatusCenter> pStatusCenter, IndexType nItems, const CGirderKey& girderKey,SegmentIndexType nSegments)
 {
    for ( IndexType i = 0; i < nItems; i++ )
    {
-      CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
+      auto pItem = pStatusCenter->GetByIndex(i);
 
       if (DoPrintStatusItem(pItem, girderKey, nSegments))
       {
@@ -83,7 +79,7 @@ bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, IndexType nItems, cons
    return false;
 }
 
-inline bool IsDifferentNumberOfGirdersPerSpan(IBridge* pBridge)
+inline bool IsDifferentNumberOfGirdersPerSpan(std::shared_ptr<IBridge> pBridge)
 {
    GroupIndexType ngrps = pBridge->GetGirderGroupCount();
    GirderIndexType ngdrs = pBridge->GetGirderCount(0);
@@ -97,7 +93,7 @@ inline bool IsDifferentNumberOfGirdersPerSpan(IBridge* pBridge)
 }
 
 
-CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion, bool bPageBreakAfter) :
+CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion, bool bPageBreakAfter) :
 WBFL::Reporting::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion),
@@ -130,6 +126,8 @@ bool CPGSuperTitlePageBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::Rep
 
 rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
 {
+   auto broker = m_pBroker.lock();
+
    // Create a title page for the report
    rptChapter* pTitlePage = new rptChapter;
 
@@ -209,7 +207,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
    pPara = new rptParagraph;
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
-   GET_IFACE(IVersionInfo,pVerInfo);
+   GET_IFACE2(broker,IVersionInfo,pVerInfo);
    *pPara << pVerInfo->GetVersionString() << rptNewLine;
 
    const std::_tstring& strImage = rptStyleManager::GetReportCoverImage();
@@ -226,8 +224,8 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
       *pPara << rptNewLine << rptNewLine;
    }
 
-   GET_IFACE(IProjectProperties,pProps);
-   GET_IFACE(IEAFDocument,pDocument);
+   GET_IFACE2(broker,IProjectProperties,pProps);
+   GET_IFACE2(broker,IEAFDocument,pDocument);
 
    rptParagraph* pPara3 = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pTitlePage << pPara3;
@@ -280,7 +278,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
    }
 
    *p << _T("Configuration") << rptNewLine;
-   p = CLibraryUsageParagraph().Build(m_pBroker);
+   p = CLibraryUsageParagraph().Build(broker);
    *pTitlePage << p;
 
    // girder seed data comparison
@@ -288,7 +286,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
    {
       if ( girderKey.groupIndex != INVALID_INDEX )
       {
-         p = CGirderSeedDataComparisonParagraph().Build(m_pBroker,girderKey);
+         p = CGirderSeedDataComparisonParagraph().Build(broker,girderKey);
 
          if (p != nullptr)
          {
@@ -302,7 +300,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
    *pTitlePage << p;
    *p << _T("Analysis Controls") << rptNewLine;
 
-   GET_IFACE(ISpecification, pSpec);
+   GET_IFACE2(broker,ISpecification, pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    p = new rptParagraph();
@@ -324,7 +322,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
    }
    *p << rptNewLine;
 
-   GET_IFACE(ISectionProperties, pSectProps);
+   GET_IFACE2(broker, ISectionProperties, pSectProps);
    if (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross)
    {
       *p << _T("Section Properties: Gross") << rptNewLine;
@@ -334,11 +332,11 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
       *p << _T("Section Properties: Transformed") << rptNewLine;
    }
 
-   GET_IFACE(ILossParameters, pLossParams);
+   GET_IFACE2(broker, ILossParameters, pLossParams);
    *p << _T("Losses: ") << pLossParams->GetLossMethodDescription() << rptNewLine;
 
 
-   GET_IFACE_NOCHECK(IBridge, pBridge);
+   GET_IFACE2_NOCHECK(broker, IBridge, pBridge);
    if (girderKey.girderIndex != INVALID_INDEX && IsDifferentNumberOfGirdersPerSpan(pBridge) )
    {
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -479,9 +477,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
    // Status Center Items
    if ( bGirderReport )
    {
-      GET_IFACE(IBridge,pBridge);
+      GET_IFACE2(broker, IBridge,pBridge);
       
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      GET_IFACE2(broker, IEAFStatusCenter,pStatusCenter);
       IndexType nItems = pStatusCenter->Count();
 
       GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -511,19 +509,19 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
             CString strSeverityType[] = { _T("Information"), _T("Warning"), _T("Error") };
             for ( IndexType i = 0; i < nItems; i++ )
             {
-               CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
+               auto pItem = pStatusCenter->GetByIndex(i);
                
                if ( DoPrintStatusItem(pItem, thisGirderKey, nSegments) )
                {
-                  eafTypes::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
+                  WBFL::EAF::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
 
                   // Set text and cell background
                   rptRiStyle::FontColor colors[] = {rptRiStyle::LightGreen, rptRiStyle::Yellow, rptRiStyle::Red };
-                  rptRiStyle::FontColor color = colors[severity];
+                  rptRiStyle::FontColor color = colors[+severity];
                   (*pTable)(row, 0) << new rptRcBgColor(color);
                   (*pTable)(row, 0).SetFillBackGroundColor(color);
 
-                  (*pTable)(row,0) << strSeverityType[severity];
+                  (*pTable)(row,0) << strSeverityType[+severity];
                   (*pTable)(row++,1) << pItem->GetDescription();
                }
             }

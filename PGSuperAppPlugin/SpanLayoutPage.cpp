@@ -32,16 +32,12 @@
 #include "EditHaunchDlg.h"
 #include "Utilities.h"
 
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
-
 #include <EAF\EAFDisplayUnits.h>
+
 #include <MFCTools\CustomDDX.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanLayoutPage property page
@@ -62,8 +58,8 @@ CSpanLayoutPage::~CSpanLayoutPage()
 
 void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	CPropertyPage::DoDataExchange(pDX);
@@ -153,8 +149,8 @@ void CSpanLayoutPage::UpdateHaunchAndCamberControls()
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ISpecification,pSpec);
 
@@ -326,8 +322,8 @@ void CSpanLayoutPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();

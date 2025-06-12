@@ -22,5 +22,7 @@
 
 #pragma once
 
-DEFINE_GUID(CLSID_EngAgent, 0x73922319, 0x9243, 0x4974, 0xBA, 0x54, 0xCF, 0x22, 0x59, 0x3E, 0xC9, 0xC4);
-struct __declspec(uuid("{73922319-9243-4974-BA54-CF22593EC9C4}")) EngAgent;
+// {73922319-9243-4974-BA54-CF22593EC9C4}
+DEFINE_GUID(CLSID_EngAgent, 
+   0x73922319, 0x9243, 0x4974, 0xBA, 0x54, 0xCF, 0x22, 0x59, 0x3E, 0xC9, 0xC4);
+//struct __declspec(uuid("{73922319-9243-4974-BA54-CF22593EC9C4}")) EngAgent;

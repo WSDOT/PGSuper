@@ -24,20 +24,15 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "SpecDesignPage.h"
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
-#include <psgLib/PrestressLossCriteria.h>
+#include <PsgLib/PrestressLossCriteria.h>
 
 #include "SpecMainSheet.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecDesignPage dialog
@@ -98,7 +93,7 @@ BOOL CSpecDesignPage::OnInitDialog()
 	
    // set statics for strand slope
    CString sl05, sl06, sl07;
-   if (pApp->GetUnitsMode() == eafTypes::umSI)
+   if (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI)
    {
       VERIFY(sl05.LoadString(IDS_SLOPE_O5_SI));
       VERIFY(sl06.LoadString(IDS_SLOPE_O6_SI));

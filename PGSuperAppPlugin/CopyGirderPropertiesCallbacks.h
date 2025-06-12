@@ -23,28 +23,28 @@
 #pragma once
 
 #include <IFace\ExtendUI.h>
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 #include <PgsExt\MacroTxn.h>
 #include <PsgLib\ShearData.h>
-#include <PgsExt\LongitudinalRebarData.h>
-#include <PgsExt\StrandData.h>
-#include <PgsExt\HandlingData.h>
-#include <PgsExt\GirderMaterial.h>
-#include <PgsExt\PTData.h>
-#include <PgsExt\SegmentPTData.h>
+#include <PsgLib\LongitudinalRebarData.h>
+#include <PsgLib\StrandData.h>
+#include <PsgLib\HandlingData.h>
+#include <PsgLib\GirderMaterial.h>
+#include <PsgLib\PTData.h>
+#include <PsgLib\SegmentPTData.h>
 
 class rptParagraph;
 
 // Class to copy "all" properties. Note that it doesn't exactly do this. It is meant to copy the girder type
 // and clear out data for subsequent copy girder properties transactions
-class txnCopyGirderAllProperties :  public CEAFTransaction
+class txnCopyGirderAllProperties :  public WBFL::EAF::Transaction
 {
 public:
    txnCopyGirderAllProperties(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
    virtual ~txnCopyGirderAllProperties();
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const { return true; }
    virtual bool IsRepeatable() const { return false; }
@@ -56,14 +56,14 @@ private:
    std::vector<std::_tstring> m_strOldNames;
 };
 
-class txnCopyGirderStirrups :  public CEAFTransaction
+class txnCopyGirderStirrups :  public WBFL::EAF::Transaction
 {
 public:
    txnCopyGirderStirrups(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
    virtual ~txnCopyGirderStirrups();
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const { return true; }
    virtual bool IsRepeatable() const { return false; }
@@ -74,14 +74,14 @@ private:
    std::vector<CShearData2> m_OldShearData;
 };
 
-class txnCopyGirderPrestressing :  public CEAFTransaction
+class txnCopyGirderPrestressing :  public WBFL::EAF::Transaction
 {
 public:
    txnCopyGirderPrestressing(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
    virtual ~txnCopyGirderPrestressing();
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const { return true; }
    virtual bool IsRepeatable() const { return false; }
@@ -94,14 +94,14 @@ private:
    std::vector<CPTData> m_OldPTData;
 };
 
-class txnCopyGirderHandling :  public CEAFTransaction
+class txnCopyGirderHandling :  public WBFL::EAF::Transaction
 {
 public:
    txnCopyGirderHandling(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
    virtual ~txnCopyGirderHandling();
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const { return true; }
    virtual bool IsRepeatable() const { return false; }
@@ -112,14 +112,14 @@ private:
    std::vector<CHandlingData> m_OldHandlingData;
 };
 
-class txnCopyGirderMaterial :  public CEAFTransaction
+class txnCopyGirderMaterial :  public WBFL::EAF::Transaction
 {
 public:
    txnCopyGirderMaterial(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
    virtual ~txnCopyGirderMaterial();
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const { return true; }
    virtual bool IsRepeatable() const { return false; }
@@ -130,14 +130,14 @@ private:
    std::vector<CGirderMaterial> m_OldMaterialData;
 };
 
-class txnCopyGirderRebar :  public CEAFTransaction
+class txnCopyGirderRebar :  public WBFL::EAF::Transaction
 {
 public:
    txnCopyGirderRebar(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys);
    virtual ~txnCopyGirderRebar();
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const { return true; }
    virtual bool IsRepeatable() const { return false; }
@@ -157,7 +157,7 @@ public:
    CCopyGirderAllProperties();
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
    virtual UINT GetGirderEditorTabIndex() override;
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
@@ -168,7 +168,7 @@ public:
    CCopyGirderStirrups();
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
    virtual UINT GetGirderEditorTabIndex() override;
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
@@ -179,7 +179,7 @@ public:
    CCopyGirderPrestressing();
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
    virtual UINT GetGirderEditorTabIndex() override;
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
@@ -190,7 +190,7 @@ public:
    CCopyGirderHandling();
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
    virtual UINT GetGirderEditorTabIndex() override;
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
@@ -201,7 +201,7 @@ public:
    CCopyGirderMaterial();
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
    virtual UINT GetGirderEditorTabIndex() override;
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
@@ -212,7 +212,7 @@ public:
    CCopyGirderRebar();
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
    virtual UINT GetGirderEditorTabIndex() override;
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };

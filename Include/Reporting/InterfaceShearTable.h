@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class pgsGirderArtifact;
 
 /*****************************************************************************
@@ -54,9 +54,9 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the table.
-   virtual void Build(IBroker* pBroker, rptChapter* pChapter,
+   virtual void Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const pgsGirderArtifact* pGirderArtifact,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       IntervalIndexType intervalIdx,
                       pgsTypes::LimitState ls) const;
 

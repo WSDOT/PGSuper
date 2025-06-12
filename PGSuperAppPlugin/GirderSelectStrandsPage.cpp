@@ -28,9 +28,10 @@
 #include "GirderSelectStrandsPage.h"
 #include <WBFLGenericBridgeTools.h>
 
-#include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Project.h>
 
@@ -38,11 +39,6 @@
 #include "PGSuperColors.h"
 #include "PGSuperUIUtil.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 #define BORDER 7
 
 // Utility functions
@@ -104,8 +100,8 @@ void CGirderSelectStrandsPage::DoDataExchange(CDataExchange* pDX)
 {
    CPropertyPage::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_Check(pDX, IDC_CHECK_SYMM, m_bSymmetricDebond);
@@ -387,8 +383,8 @@ void CGirderSelectStrandsPage::OnSize(UINT nType, int cx, int cy)
 
 void CGirderSelectStrandsPage::OnPaint() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // Make sure we have up to date grid data
@@ -407,8 +403,7 @@ void CGirderSelectStrandsPage::OnPaint()
    pWnd->UpdateWindow();
 
    // Get girder shape
-   CComPtr<IBeamFactory> factory;
-   m_pGdrEntry->GetBeamFactory(&factory);
+   auto factory = m_pGdrEntry->GetBeamFactory();
 
    GirderLibraryEntry::Dimensions dimensions = m_pGdrEntry->GetDimensions();
 
@@ -471,8 +466,8 @@ void CGirderSelectStrandsPage::OnPaint()
 
    CComPtr<IStrandMover> strand_mover;
    factory->CreateStrandMover(dimensions, -1,
-                              IBeamFactory::BeamTop, 0.0, IBeamFactory::BeamBottom, 0.0,
-                              IBeamFactory::BeamTop, 0.0, IBeamFactory::BeamBottom, 0.0, 
+                              PGS::Beams::BeamFactory::BeamFace::Top, 0.0, PGS::Beams::BeamFactory::BeamFace::Bottom, 0.0,
+                              PGS::Beams::BeamFactory::BeamFace::Top, 0.0, PGS::Beams::BeamFactory::BeamFace::Bottom, 0.0, 
                               end_incr, hp_incr, &strand_mover);
 
    auto strand_bounds = ComputeStrandBounds(strand_mover, absol_end_offset, absol_hp_offset);
@@ -1023,8 +1018,8 @@ void CGirderSelectStrandsPage::OnCbnSelchangeComboViewloc()
 
 void CGirderSelectStrandsPage::UpdateStrandAdjustments()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // adjustment of harped strands at ends
@@ -1043,8 +1038,8 @@ void CGirderSelectStrandsPage::UpdateStrandAdjustments()
       // We can vertically adjust harped strands
       ShowHarpedAdjustmentControls(TRUE, areHarpedStraight);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
@@ -1225,8 +1220,8 @@ void CGirderSelectStrandsPage::EnableHarpedEndAdjustmentControls(BOOL enable)
 
 void CGirderSelectStrandsPage::OnCbnSelchangeHarpEndCb()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
@@ -1249,8 +1244,8 @@ void CGirderSelectStrandsPage::OnCbnSelchangeHarpEndCb()
 
 void CGirderSelectStrandsPage::OnCbnSelchangeHarpHpCb()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
@@ -1397,8 +1392,8 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
    {
       // Compute pjack and fill in value
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // Get the edit control value and save it as the last user input force
@@ -1428,8 +1423,8 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
    else if (nStrands == 0)
    {
       // zero out pjack
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 jack=0.0;
@@ -1440,8 +1435,8 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
 
 Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2( pBroker, IPretensionForce, pPSForce );
 
 

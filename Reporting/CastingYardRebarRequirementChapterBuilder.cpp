@@ -28,36 +28,20 @@
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace/Limits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/****************************************************************************
-CLASS
-   CCastingYardRebarRequirementChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CCastingYardRebarRequirementChapterBuilder::CCastingYardRebarRequirementChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CCastingYardRebarRequirementChapterBuilder::GetName() const
 {
    return TEXT("Reinforcement Requirements for Tension Limits");
@@ -66,8 +50,7 @@ LPCTSTR CCastingYardRebarRequirementChapterBuilder::GetName() const
 rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -213,13 +196,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_
    return pChapter;
 }
 
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder>CCastingYardRebarRequirementChapterBuilder::Clone() const
-{
-   return std::make_unique<CCastingYardRebarRequirementChapterBuilder>();
-}
-
-void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, bool bSimpleTable) const
+void CCastingYardRebarRequirementChapterBuilder::BuildTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, bool bSimpleTable) const
 {
    pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
    pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
@@ -245,7 +222,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
    (*pPara) << _T("** minimum area of sufficiently bonded reinforcement needed to use the alternative tensile stress limit") << rptNewLine;
 }
 
-void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bSimpleTable) const
+void CCastingYardRebarRequirementChapterBuilder::BuildTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptParagraph* pPara,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bSimpleTable) const
 {
    pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
    pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
@@ -269,7 +246,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
    (*pPara) << _T("** minimum area of sufficiently bonded reinforcement needed to use the alternative tensile stress limit") << rptNewLine;
 }
 
-void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,IntervalIndexType intervalIdx, bool bSimpleTable) const
+void CCastingYardRebarRequirementChapterBuilder::BuildTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptParagraph* pPara,const CGirderKey& girderKey,IntervalIndexType intervalIdx, bool bSimpleTable) const
 {
    pgsTypes::StressLocation botLocation = pgsTypes::BottomDeck;
    pgsTypes::StressLocation topLocation = pgsTypes::TopDeck;
@@ -297,7 +274,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rpt
    (*pPara) << _T("** minimum area of sufficiently bonded reinforcement needed to use the alternative tensile stress limit") << rptNewLine;
 }
 
-rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(IBroker* pBroker, const CGirderKey& girderKey, bool bSimpleTable, pgsTypes::StressLocation topLocation, pgsTypes::StressLocation botLocation, IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, bool bSimpleTable, pgsTypes::StressLocation topLocation, pgsTypes::StressLocation botLocation, IntervalIndexType intervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    CString strTitle;
@@ -381,7 +358,7 @@ rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(IBroker* pBr
    return pTable;
 }
 
-void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptRcTable* pTable,bool bSimpleTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
+void CCastingYardRebarRequirementChapterBuilder::FillTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,bool bSimpleTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 

@@ -26,7 +26,7 @@
 #include "resource.h"
 #include "afxwin.h"
 #include "afxcmn.h"
-#include <WBFLCore.h>
+
 #include <PgsExt\ReportPointOfInterest.h>
 #include <Reporting\CrackedSectionReportSpecification.h>
 
@@ -37,7 +37,7 @@ class CSelectCrackedSectionDlg : public CDialog
 	DECLARE_DYNAMIC(CSelectCrackedSectionDlg)
 
 public:
-	CSelectCrackedSectionDlg(IBroker* pBroker,std::shared_ptr<CCrackedSectionReportSpecification>& pRptSpec,CWnd* pParent = nullptr);   // standard constructor
+	CSelectCrackedSectionDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CCrackedSectionReportSpecification>& pRptSpec,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CSelectCrackedSectionDlg();
 
 // Dialog Data
@@ -58,7 +58,7 @@ public:
    pgsPointOfInterest GetPOI();
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    std::shared_ptr<CCrackedSectionReportSpecification> m_pRptSpec;
 
    PoiList m_vPOI;

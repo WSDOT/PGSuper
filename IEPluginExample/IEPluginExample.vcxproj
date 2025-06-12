@@ -185,7 +185,7 @@
     <ClCompile Include="IEPluginExample.cpp" />
     <ClCompile Include="PGSpliceProjectImporter.cpp" />
     <ClCompile Include="PGSuperDataImporter.cpp" />
-    <ClCompile Include="PGSuperExporter.cpp" />
+    <ClCompile Include="PGSuperDataExporter.cpp" />
     <ClCompile Include="PGSuperProjectImporter.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -194,10 +194,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="IEPluginExample.def" />
-    <None Include="PGSpliceProjectImporter.rgs" />
-    <None Include="PGSuperDataImporter.rgs" />
-    <None Include="PGSuperExporter.rgs" />
-    <None Include="PGSuperProjectImporter.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="IEPluginExample.rc">
@@ -209,7 +205,7 @@
     <ClInclude Include="IEPluginExample.h" />
     <ClInclude Include="PGSpliceProjectImporter.h" />
     <ClInclude Include="PGSuperDataImporter.h" />
-    <ClInclude Include="PGSuperExporter.h" />
+    <ClInclude Include="PGSuperDataExporter.h" />
     <ClInclude Include="PGSuperInterfaces.h" />
     <ClInclude Include="PGSuperProjectImporter.h" />
     <ClInclude Include="Resource.h" />
@@ -220,9 +216,11 @@
     <Image Include="importer.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Beams\Beams.vcxproj">
+      <Project>{3dbe87d2-ceed-457b-b345-7748084d947d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

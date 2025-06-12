@@ -29,18 +29,14 @@
 
 #include "LLDFFillDlg.h"
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFDocument.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // functions for ordering distribution factor method
 inline int GetIntForDfMethod(pgsTypes::DistributionFactorMethod method)
@@ -333,13 +329,13 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
          GET_IFACE(IBridgeDescription,pIBridgeDesc);
          GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
          GET_IFACE_NOCHECK(ILiveLoads,pLiveLoads);
-         GET_IFACE(IProgress,pProgress);
+         GET_IFACE(IEAFProgress,pProgress);
          GET_IFACE(IEvents, pEvents);
 
          pEvents->HoldEvents(); // don't fire any changed events until all changes are done
 
          // This can take some time.
-         CEAFAutoProgress ap(pProgress,0);
+         WBFL::EAF::AutoProgress ap(pProgress,0);
          pProgress->UpdateMessage(_T("Computing Distribution Factors..."));
 
          // save old method

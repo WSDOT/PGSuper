@@ -25,19 +25,16 @@
 #include <Reporting\ReportNotes.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\TimelineEvent.h>
+#include <PsgLib\TimelineEvent.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <IFace/PointOfInterest.h>
 
 /****************************************************************************
 CLASS
@@ -73,8 +70,8 @@ CCastingYardStressTable& CCastingYardStressTable::operator= (const CCastingYardS
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,PoiAttributeType poiRefAttribute,LPCTSTR strTableTitle,
-                                            IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CCastingYardStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,PoiAttributeType poiRefAttribute,LPCTSTR strTableTitle,
+                                            std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );

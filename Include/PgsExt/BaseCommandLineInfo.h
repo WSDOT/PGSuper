@@ -48,13 +48,15 @@ LOG
 class PGSEXTCLASS CPGSBaseCommandLineInfo : public CEAFCommandLineInfo
 {
 public:
-   //// Different types of Analysis/Design and level of detail (Ext==exteneded) for TxDOT CAD reports
+   //// Different types of Analysis/Design and level of detail (Ext==extended) for TxDOT CAD reports
    //enum TxRunType {txrDesign, txrAnalysis, TxrDistributionFactors};
    //enum TxFType {txfNormal, txfExtended, txfTest};
 
-
    CPGSBaseCommandLineInfo();
    virtual ~CPGSBaseCommandLineInfo();
+
+   CPGSBaseCommandLineInfo(const CPGSBaseCommandLineInfo&) = default;
+   CPGSBaseCommandLineInfo& operator=(const CPGSBaseCommandLineInfo&) = default;
 
    // derive new version to parse new commands
    virtual void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast) override;
@@ -72,10 +74,6 @@ public:
    Uint32 m_Count; // parameter number
 
 private:
-   // Prevent accidental copying and assignment
-   CPGSBaseCommandLineInfo(const CPGSBaseCommandLineInfo&) = delete;
-   CPGSBaseCommandLineInfo& operator=(const CPGSBaseCommandLineInfo&) = delete;
-
    virtual LPCTSTR GetAppName() const = 0;
 };
 
@@ -85,6 +83,8 @@ class PGSEXTCLASS CPGSProjectImporterBaseCommandLineInfo : public CEAFCommandLin
 public:
    CPGSProjectImporterBaseCommandLineInfo();
    virtual ~CPGSProjectImporterBaseCommandLineInfo();
+   CPGSProjectImporterBaseCommandLineInfo(const CPGSProjectImporterBaseCommandLineInfo&) = default;
+   CPGSProjectImporterBaseCommandLineInfo& operator=(const CPGSProjectImporterBaseCommandLineInfo&) = default;
 
    // derive new version to parse new commands
    virtual void ParseParam(LPCTSTR lpszParam, BOOL bFlag, BOOL bLast) override;
@@ -98,9 +98,6 @@ public:
    Uint32 m_Count; // parameter number
 
 private:
-   // Prevent accidental copying and assignment
-   CPGSProjectImporterBaseCommandLineInfo(const CPGSProjectImporterBaseCommandLineInfo&) = delete;
-   CPGSProjectImporterBaseCommandLineInfo& operator=(const CPGSProjectImporterBaseCommandLineInfo&) = delete;
 
    virtual LPCTSTR GetAppName() const = 0;
 };

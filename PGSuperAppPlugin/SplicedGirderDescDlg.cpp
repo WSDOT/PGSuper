@@ -27,12 +27,8 @@
 #include "resource.h"
 #include "PGSuperDocBase.h"
 #include "SplicedGirderDescDlg.h"
+#include <IFace/Tools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define IDC_CHECKBOX 100
 
@@ -44,8 +40,8 @@ IMPLEMENT_DYNAMIC(CSplicedGirderDescDlg, CPropertySheet)
 CSplicedGirderDescDlg::CSplicedGirderDescDlg(const CGirderKey& girderKey,CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(_T(""), pParentWnd, iSelectPage)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -126,7 +122,7 @@ void CSplicedGirderDescDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-std::unique_ptr<CEAFTransaction> CSplicedGirderDescDlg::GetExtensionPageTransaction()
+std::unique_ptr<WBFL::EAF::Transaction> CSplicedGirderDescDlg::GetExtensionPageTransaction()
 {
    if (0 < m_Macro.GetTxnCount())
    {
@@ -206,8 +202,8 @@ LRESULT CSplicedGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 // CSplicedGirderGeneralPage
 //void CGirderDescDlg::DoUpdate()
 //{
-//   CComPtr<IBroker> pBroker;
-//   EAFGetBroker(&pBroker);
+//   
+//   auto pBroker = EAFGetBroker();
 //
 //   GET_IFACE2(pBroker,IShear,pShear);
 //   GET_IFACE2(pBroker,ILongitudinalRebar,pLongitudinaRebar);

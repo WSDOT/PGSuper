@@ -24,9 +24,10 @@
 #include <Reporting\LoadRatingDetailsChapterBuilder.h>
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
-
 #include <IFace\Bridge.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\DistributionFactors.h>
@@ -34,21 +35,11 @@
 
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 inline pgsTypes::LimitState GetLimitState(pgsTypes::LoadRatingType ratingType) { return (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI); }
 
-
-/****************************************************************************
-CLASS
-   CLoadRatingDetailsChapterBuilder
-****************************************************************************/
 
 CLoadRatingDetailsChapterBuilder::CLoadRatingDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -63,8 +54,7 @@ LPCTSTR CLoadRatingDetailsChapterBuilder::GetName() const
 rptChapter* CLoadRatingDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    auto pLrGirderRptSpec = std::dynamic_pointer_cast<const CLoadRatingReportSpecificationBase>(pRptSpec);
    if (!pLrGirderRptSpec)
@@ -94,12 +84,7 @@ rptChapter* CLoadRatingDetailsChapterBuilder::Build(const std::shared_ptr<const 
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CLoadRatingDetailsChapterBuilder>();
-}
-
-void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool bSplicedGirder) const
+void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool bSplicedGirder) const
 {
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
@@ -203,7 +188,7 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,bool bPositiveMoment,const std::vector<const pgsRatingArtifact*>& RatingArtifacts,bool bSplicedGirder) const
+void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,bool bPositiveMoment,const std::vector<const pgsRatingArtifact*>& RatingArtifacts,bool bSplicedGirder) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -368,7 +353,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<const pgsRatingArtifact*>& RatingArtifacts,bool bSplicedGirder) const
+void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<const pgsRatingArtifact*>& RatingArtifacts,bool bSplicedGirder) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -512,7 +497,7 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,I
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<const pgsRatingArtifact*>& RatingArtifacts,bool bSplicedGirder) const
+void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<const pgsRatingArtifact*>& RatingArtifacts,bool bSplicedGirder) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -671,7 +656,7 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,bool bPositiveMoment,const std::vector<const pgsRatingArtifact*>& RatingArtifacts,bool bSplicedGirder) const
+void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,bool bPositiveMoment,const std::vector<const pgsRatingArtifact*>& RatingArtifacts,bool bSplicedGirder) const
 {
    bool isData = false;
    for (auto pRatingArtifact : RatingArtifacts)
@@ -923,7 +908,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    }
 }
 
-void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<const pgsRatingArtifact*>& RatingArtifacts,const std::vector<CGirderKey>& girderKeys) const
+void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<const pgsRatingArtifact*>& RatingArtifacts,const std::vector<CGirderKey>& girderKeys) const
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 

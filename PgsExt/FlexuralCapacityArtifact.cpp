@@ -23,18 +23,6 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\FlexuralCapacityArtifact.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   pgsFlexuralCapacityArtifact
-****************************************************************************/
-
-
 pgsFlexuralCapacityArtifact::pgsFlexuralCapacityArtifact(bool bPositiveMoment)
 {
    m_bPositiveMoment = bPositiveMoment;
@@ -43,26 +31,6 @@ pgsFlexuralCapacityArtifact::pgsFlexuralCapacityArtifact(bool bPositiveMoment)
    m_Mu = 0;
    m_Mr = 0;
    m_MrMin = 0;
-}
-
-pgsFlexuralCapacityArtifact::pgsFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsFlexuralCapacityArtifact::~pgsFlexuralCapacityArtifact()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsFlexuralCapacityArtifact& pgsFlexuralCapacityArtifact::operator=(const pgsFlexuralCapacityArtifact& rOther)
-{
-   if ( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 void pgsFlexuralCapacityArtifact::SetPointOfInterest(const pgsPointOfInterest& poi)
@@ -172,20 +140,4 @@ bool pgsFlexuralCapacityArtifact::Passed() const
    }
 
    return true;
-}
-
-void pgsFlexuralCapacityArtifact::MakeCopy(const pgsFlexuralCapacityArtifact& rOther)
-{
-   m_Poi    = rOther.m_Poi;
-   m_cde    = rOther.m_cde;
-   m_cdeMax = rOther.m_cdeMax;
-   m_MrMin  = rOther.m_MrMin;
-   m_Mu     = rOther.m_Mu;
-   m_Mr     = rOther.m_Mr;
-   m_bPositiveMoment = rOther.m_bPositiveMoment;
-}
-
-void pgsFlexuralCapacityArtifact::MakeAssignment(const pgsFlexuralCapacityArtifact& rOther)
-{
-   MakeCopy( rOther );
 }

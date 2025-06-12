@@ -30,17 +30,14 @@
 #include <System\Tokenizer.h>
 #include "PGSuperUnits.h"
 #include <Units\Measure.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#include <PgsExt\ClosureJointData.h>
-#include <PgsExt\HaunchDepthInputConversionTool.h>
+#include <PsgLib\ClosureJointData.h>
 
+#include <IFace/Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 const ROWCOL _STARTCOL = 1;
 
@@ -75,8 +72,8 @@ END_MESSAGE_MAP()
 void CHaunchBearingGrid::CustomInit()
 {
    // initialize units
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pUnit = &(pDisplayUnits->GetComponentDimUnit());
 
@@ -164,8 +161,8 @@ void CHaunchBearingGrid::DoDataExchange(CDataExchange*pDX)
 
 void CHaunchBearingGrid::FillGrid()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GetParam()->EnableUndo(FALSE);
@@ -184,25 +181,24 @@ void CHaunchBearingGrid::FillGrid()
    const CBridgeDescription2* pBridgeOrig = pParent->GetBridgeDesc();
 
    // Convert current haunch data if needed
-   HaunchDepthInputConversionTool conversionTool(pBridgeOrig,pBroker,false);
-   auto convPair = conversionTool.ConvertToSlabOffsetInput(pgsTypes::sotBearingLine);
-   const CBridgeDescription2* pBridge = &convPair.second;
+   GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+   auto bridge = pBridgeDesc->ConvertHaunchToSlabOffsetInput(*pBridgeOrig, pgsTypes::sotBearingLine).second;
 
    // get all the piers and temporary supports where slab offset is defined
    std::vector<std::pair<const CPierData2*, const CTemporarySupportData*>> vSupports;
-   PierIndexType nPiers = pBridge->GetPierCount();
+   PierIndexType nPiers = bridge.GetPierCount();
    for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
    {
-      const CPierData2* pPier = pBridge->GetPier(pierIdx);
+      const CPierData2* pPier = bridge.GetPier(pierIdx);
       if (pPier->HasSlabOffset())
       {
          vSupports.emplace_back(pPier, nullptr);
       }
    }
-   SupportIndexType nTS = pBridge->GetTemporarySupportCount();
+   SupportIndexType nTS = bridge.GetTemporarySupportCount();
    for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
    {
-      const CTemporarySupportData* pTS = pBridge->GetTemporarySupport(tsIdx);
+      const CTemporarySupportData* pTS = bridge.GetTemporarySupport(tsIdx);
       if (pTS->GetClosureJoint(0))
       {
          vSupports.emplace_back(nullptr, pTS);
@@ -224,7 +220,7 @@ void CHaunchBearingGrid::FillGrid()
          auto* pPier = support.first;
          auto pierIdx = pPier->GetIndex();
          std::array<Float64, 2> slabOffset;
-         pPier->GetSlabOffset(&slabOffset[pgsTypes::Back], &slabOffset[pgsTypes::Ahead],pBridge->GetSlabOffsetType() == pgsTypes::sotSegment ? true : false);
+         pPier->GetSlabOffset(&slabOffset[pgsTypes::Back], &slabOffset[pgsTypes::Ahead],bridge.GetSlabOffsetType() == pgsTypes::sotSegment ? true : false);
          CString strSupport;
          strSupport.Format(_T("%s"), LABEL_PIER_EX(pPier->IsAbutment(),pierIdx));
          if (pPier->IsAbutment())

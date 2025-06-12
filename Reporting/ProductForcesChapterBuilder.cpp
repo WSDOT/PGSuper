@@ -26,21 +26,14 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\TimelineManager.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CProductForcesChapterBuilder::CProductForcesChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CProductForcesChapterBuilder::GetName() const
 {
 #pragma Reminder("UPDATE")
@@ -64,11 +57,11 @@ rptChapter* CProductForcesChapterBuilder::Build(const std::shared_ptr<const WBFL
 
    CGirderReportSpecification* pGdrRptSpec      = std::dynamic_pointer_cast<CGirderReportSpecification*>(pRptSpec);
    CSegmentReportSpecification* pSegmentRptSpec = std::dynamic_pointer_cast<CSegmentReportSpecification*>(pRptSpec);
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    if ( pGdrRptSpec )
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
    else
-      pSegmentRptSpec->GetBroker(&pBroker);
+      pBroker = pSegmentRptSpec->GetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits, pDisplayUnits );
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -193,9 +186,4 @@ rptChapter* CProductForcesChapterBuilder::Build(const std::shared_ptr<const WBFL
 
    return pChapter;
 */
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CProductForcesChapterBuilder::Clone() const
-{
-   return std::make_unique<CProductForcesChapterBuilder>();
 }

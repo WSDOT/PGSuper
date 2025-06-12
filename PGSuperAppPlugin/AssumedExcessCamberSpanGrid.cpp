@@ -30,14 +30,11 @@
 #include <System\Tokenizer.h>
 #include "PGSuperUnits.h"
 #include <Units\Measure.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CAssumedExcessCamberSpanGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -85,8 +82,7 @@ int CAssumedExcessCamberSpanGrid::GetColWidth(ROWCOL nCol)
 void CAssumedExcessCamberSpanGrid::CustomInit()
 {
    // initialize units
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pUnit = &(pDisplayUnits->GetComponentDimUnit());
 
@@ -228,8 +224,7 @@ void CAssumedExcessCamberSpanGrid::GetGridData(CDataExchange* pDX)
    CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)(GetParent()->GetParent());
    CBridgeDescription2* pBridge = pParent->GetBridgeDesc();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    ROWCOL nRows = GetRowCount();

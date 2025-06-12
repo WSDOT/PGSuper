@@ -20,17 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_DESIGNER2_H_
-#define INCLUDED_DESIGNER2_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_DETAILS_H_
 #include <Details.h>
-#endif
 
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
@@ -43,15 +35,8 @@
 #include "DesignCodes.h"
 #include "LoadRater.h" // friend so it can access some private functions
 
-// LOCAL INCLUDES
-//
+class IConcreteStressLimits;
 
-// FORWARD DECLARATIONS
-//
-interface IBroker;
-interface IConcreteStressLimits;
-
-// MISCELLANEOUS
 //
 // utilty struct for shear design
 struct ShearDesignAvs
@@ -68,7 +53,7 @@ class StrandDesignController
 {
    static const Int16 MaxDCRS = 3; // Only allow this many decreases from from/to the same state
 public:
-   StrandDesignController(pgsStrandDesignTool& designTool):
+   StrandDesignController(std::shared_ptr<pgsStrandDesignTool> designTool):
       m_StrandDesignTool(designTool)
    {
       Init(0);
@@ -156,7 +141,7 @@ public:
             {
                // We are bifurcating. Let's try to resolve.
                // First see if there is room between current and previous to set a new strand
-               StrandIndexType nxtn = m_StrandDesignTool.GetNextNumPermanentStrands(nsCurrent);
+               StrandIndexType nxtn = m_StrandDesignTool->GetNextNumPermanentStrands(nsCurrent);
                if (nxtn < m_CurrentState.m_NsCurrent)
                {
                   // We still have decrease, just not as much as before - call ourself
@@ -254,7 +239,7 @@ private:
    typedef DContainer::iterator DIterator;
 
    DContainer m_Decreases;
-   pgsStrandDesignTool& m_StrandDesignTool;
+   std::shared_ptr<pgsStrandDesignTool> m_StrandDesignTool;
 };
 
 
@@ -331,39 +316,22 @@ LOG
 class pgsDesigner2 : LongReinfShearChecker
 {
 public:
-   // GROUP: LIFECYCLE
+   pgsDesigner2(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
 
-   //------------------------------------------------------------------------
-   // Default constructor
-   pgsDesigner2();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
    pgsDesigner2(const pgsDesigner2& rOther);
 
-   //------------------------------------------------------------------------
-   // Destructor
    virtual ~pgsDesigner2();
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
    pgsDesigner2& operator = (const pgsDesigner2& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
-   void SetBroker(IBroker* pBroker);
-   void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
    // Creates a girder check artifact.
    const pgsGirderArtifact* Check(const CGirderKey& girderKey) const;
 
    // Creates a lifting analysis artifact
-   const WBFL::Stability::LiftingCheckArtifact* CheckLifting(const CSegmentKey& segmentKey) const;
+   std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> CheckLifting(const CSegmentKey& segmentKey) const;
 
    // Creates a hauling analysis artifact
-   const pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey) const;
+   std::shared_ptr<const pgsHaulingAnalysisArtifact> CheckHauling(const CSegmentKey& segmentKey) const;
 
    pgsGirderDesignArtifact Design(const CGirderKey& girderKey,const std::vector<arDesignOptions>& DesOptionsColl) const;
 
@@ -376,10 +344,10 @@ public:
    const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey) const;
 
    // Returns a lifting analysis artifact if the segment was already checked, otherwise returns nullptr
-   const WBFL::Stability::LiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const;
+   std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const;
 
-   // Returns a nauling analysis artifact if the segment was already checked, otherwise returns nullptr
-   const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const;
+   // Returns a hauling analysis artifact if the segment was already checked, otherwise returns nullptr
+   std::shared_ptr<const pgsHaulingAnalysisArtifact> GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const;
 
    void GetPrincipalWebStressPointsOfInterest(const CSegmentKey& segmentKey, IntervalIndexType interval, PoiList* pPoiList) const;
 
@@ -393,23 +361,24 @@ protected:
 
 private:
    mutable std::map<CGirderKey,std::shared_ptr<pgsGirderArtifact>> m_CheckArtifacts;
-   mutable std::map<CSegmentKey,WBFL::Stability::LiftingCheckArtifact> m_LiftingCheckArtifacts;
-   mutable std::map<CSegmentKey,const pgsHaulingAnalysisArtifact*> m_HaulingAnalysisArtifacts;
+   mutable std::map<CSegmentKey,std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>> m_LiftingCheckArtifacts;
+   mutable std::map<CSegmentKey,std::shared_ptr<const pgsHaulingAnalysisArtifact>> m_HaulingAnalysisArtifacts;
 
-   const pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) const;
+   std::shared_ptr<const pgsHaulingAnalysisArtifact> CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) const;
 
    mutable std::vector<StressCheckTask> m_StressCheckTasks;
    void ConfigureStressCheckTasks(const CSegmentKey& segmentKey) const;
 
-   // GROUP: DATA MEMBERS
-   IBroker* m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
    StatusGroupIDType m_StatusGroupID;
 
    // ID of the status callbacks we have registered
    StatusCallbackIDType m_scidLiveLoad;
    StatusCallbackIDType m_scidBridgeDescriptionError;
 
-   mutable pgsStrandDesignTool m_StrandDesignTool;
+   mutable std::shared_ptr<pgsStrandDesignTool> m_StrandDesignTool;
    mutable pgsShearDesignTool  m_ShearDesignTool;
    mutable pgsDesignCodes      m_DesignerOutcome;
 
@@ -437,10 +406,6 @@ private:
 
    mutable bool m_bShippingDesignIgnoreConfigurationLimits; // ignores unequal cantilevers and clear span requires
 
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
    void CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact) const;
    void CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact) const;
    void CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandStressArtifact* pArtifact) const;
@@ -466,33 +431,33 @@ private:
    void CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirderArtifact* pGdrArtifact) const;
 
    // Initialize the design artifact with a first guess of the design variables
-   void DesignMidZone(bool bUseCurrentStrands, const arDesignOptions& options,IProgress* pProgress) const;
-   void DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress* pProgress) const;
-   void DesignSlabOffset(IProgress* pProgress) const;
-   void DesignMidZoneFinalConcrete(IProgress* pProgress) const;
-   void DesignMidZoneAtRelease(const arDesignOptions& options, IProgress* pProgress) const;
-   void DesignEndZone(bool firstTime, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress) const;
-   void DesignForShipping(IProgress* pProgress) const;
+   void DesignMidZone(bool bUseCurrentStrands, const arDesignOptions& options,std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignMidZoneInitialStrands(bool bUseCurrentStrands,std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignSlabOffset(std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignMidZoneFinalConcrete(std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignMidZoneAtRelease(const arDesignOptions& options, std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignEndZone(bool firstTime, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact,std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignForShipping(std::shared_ptr<IEAFProgress> pProgress) const;
    bool CheckShippingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config) const;
 
-   void DesignEndZoneHarping(arDesignOptions options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress) const;
-   void DesignForLiftingHarping(const arDesignOptions& options, bool bAdjustingAfterShipping,IProgress* pProgress) const;
-   void DesignEndZoneHarpingAdjustment(const arDesignOptions& options, IProgress* pProgress) const;
+   void DesignEndZoneHarping(arDesignOptions options, pgsSegmentDesignArtifact& artifact,std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignForLiftingHarping(const arDesignOptions& options, bool bAdjustingAfterShipping,std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignEndZoneHarpingAdjustment(const arDesignOptions& options, std::shared_ptr<IEAFProgress> pProgress) const;
    void GetControllingHarpedEccentricity(IntervalIndexType interval, const GDRCONFIG& config, pgsPointOfInterest* pTopPoi, pgsPointOfInterest* pBotPoi,
-                                         Float64* pEccTens, Float64* pEccComp, Float64* pFeTop, Float64* pFeBot, IProgress* pProgress) const;
+                                         Float64* pEccTens, Float64* pEccComp, Float64* pFeTop, Float64* pFeBot, std::shared_ptr<IEAFProgress> pProgress) const;
    bool CheckLiftingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config) const;
 
-   void DesignEndZoneDebonding(bool firstPass, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const;
-   std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, IProgress* pProgress) const;
-   std::vector<DebondLevelType> DesignDebondingForLifting(HANDLINGCONFIG& liftConfig, IProgress* pProgress) const;
-   std::vector<DebondLevelType> DesignEndZoneReleaseDebonding(IProgress* pProgress,bool bAbortOnFail = true) const;
+   void DesignEndZoneDebonding(bool firstPass, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact, std::shared_ptr<IEAFProgress> pProgress) const;
+   std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, std::shared_ptr<IEAFProgress> pProgress) const;
+   std::vector<DebondLevelType> DesignDebondingForLifting(HANDLINGCONFIG& liftConfig, std::shared_ptr<IEAFProgress> pProgress) const;
+   std::vector<DebondLevelType> DesignEndZoneReleaseDebonding(std::shared_ptr<IEAFProgress> pProgress,bool bAbortOnFail = true) const;
 
-   void DesignEndZoneReleaseStrength(IProgress* pProgress) const;
+   void DesignEndZoneReleaseStrength(std::shared_ptr<IEAFProgress> pProgress) const;
    void DesignConcreteRelease(Float64 topStress, Float64 botStress) const;
 
-   void RefineDesignForAllowableStress(IProgress* pProgress) const;
-   void RefineDesignForAllowableStress(const StressCheckTask& task,IProgress* pProgress) const;
-   void RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,IProgress* pProgress) const;
+   void RefineDesignForAllowableStress(std::shared_ptr<IEAFProgress> pProgress) const;
+   void RefineDesignForAllowableStress(const StressCheckTask& task,std::shared_ptr<IEAFProgress> pProgress) const;
+   void RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,std::shared_ptr<IEAFProgress> pProgress) const;
    pgsPointOfInterest GetControllingFinalMidZonePoi(const CSegmentKey& segmentKey) const;
 
    // Shear design
@@ -538,9 +503,6 @@ private:
 
    void CheckConfinement(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig, pgsConfinementCheckArtifact* pArtifact) const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
    DECLARE_LOGFILE;
 
    bool CollapseZoneData(CShearZoneData zoneData[MAX_ZONES], ZoneIndexType numZones) const;
@@ -554,13 +516,5 @@ private:
 
    friend pgsLoadRater;
 
-   void DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem,const WBFL::Stability::LiftingCheckArtifact& artifact,WBFL::Debug::LogContext& os) const;
+   void DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem,std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> artifact,WBFL::Debug::LogContext& os) const;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_DESIGNER2_H_

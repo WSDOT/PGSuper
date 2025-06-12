@@ -30,7 +30,7 @@ class REPORTINGCLASS CTimelineManagerReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CTimelineManagerReportSpecificationBuilder(IBroker* pBroker);
+   CTimelineManagerReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    ~CTimelineManagerReportSpecificationBuilder(void);
    
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;

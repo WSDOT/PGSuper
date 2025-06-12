@@ -29,7 +29,7 @@ class REPORTINGCLASS CPrincipalWebStressDetailsReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CPrincipalWebStressDetailsReportSpecificationBuilder(IBroker* pBroker);
+   CPrincipalWebStressDetailsReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    ~CPrincipalWebStressDetailsReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;

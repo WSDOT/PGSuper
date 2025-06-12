@@ -29,7 +29,7 @@
 // LLDFGrid.h : header file
 //
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 // local data structures for lldfs
 // TRICKY: Order must be same as grid columns

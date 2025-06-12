@@ -22,36 +22,28 @@
 
 #include "StdAfx.h"
 
-/****************************************************************************
-CLASS
-   CSpecCheckSummaryChapterBuilder
-****************************************************************************/
-
 #include <Reporting\SpecCheckSummaryChapterBuilder.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderArtifactTool.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <psgLib/LimitsCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
-
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <IFace\DocumentType.h>
+#include <IFace/PointOfInterest.h>
 
 #include <Lrfd/BDSManager.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 CSpecCheckSummaryChapterBuilder::CSpecCheckSummaryChapterBuilder(bool referToDetailsReport,bool bSelect):
@@ -60,8 +52,6 @@ m_ReferToDetailsReport(referToDetailsReport)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CSpecCheckSummaryChapterBuilder::GetName() const
 {
    return TEXT("Specification Check Summary");
@@ -75,8 +65,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const W
    {
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pGirderRptSpec,level);
 
-      CComPtr<IBroker> pBroker;
-      pGirderRptSpec->GetBroker(&pBroker);
+      auto pBroker = pGirderRptSpec->GetBroker();
       const CGirderKey& girderKey( pGirderRptSpec->GetGirderKey() );
 
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
@@ -98,13 +87,12 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const W
       // Give progress window a progress meter
       bool bMultiGirderReport = (1 < girderKeys.size() ? true : false);
 
-      CComPtr<IBroker> pBroker;
-      pMultiGirderRptSpec->GetBroker(&pBroker);
+      auto pBroker = pMultiGirderRptSpec->GetBroker();
 
-      GET_IFACE2(pBroker,IProgress,pProgress);
+      GET_IFACE2(pBroker,IEAFProgress,pProgress);
       DWORD mask = bMultiGirderReport ? PW_ALL|PW_NOCANCEL : PW_ALL|PW_NOGAUGE|PW_NOCANCEL;
 
-      CEAFAutoProgress ap(pProgress,0,mask); 
+      WBFL::EAF::AutoProgress ap(pProgress,0,mask); 
 
       if (bMultiGirderReport)
       {
@@ -145,8 +133,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const W
 rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level, const pgsGirderArtifact* pGirderArtifact) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -155,7 +142,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(const std::shared_ptr<const
    return pChapter;
 }
 
-void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact) const
+void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -239,7 +226,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
    const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
 
    GET_IFACE2_NOCHECK(pBroker,IStirrupGeometry,pStirrupGeom);
-   if ( limits_criteria.bCheckStirrupSpacingCompatibility && !pStirrupGeom->AreStirrupZoneLengthsCombatible(girderKey) )
+   if ( limits_criteria.bCheckStirrupSpacingCompatibility && !pStirrupGeom->AreStirrupZoneLengthsCompatible(girderKey) )
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
@@ -316,9 +303,4 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
          }
       }
    }
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSpecCheckSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CSpecCheckSummaryChapterBuilder>(m_ReferToDetailsReport);
 }

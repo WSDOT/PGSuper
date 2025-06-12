@@ -37,7 +37,7 @@
 #include <numeric>
 #endif
 
-#include <PgsExt\Keys.h> // goes with GDRCONFIG
+#include <PsgLib\Keys.h> // goes with GDRCONFIG
 static long g_Ncopies = 0; // keeps track of the number of times GDRCONFIG is copied
 
 #include <Materials/Rebar.h>

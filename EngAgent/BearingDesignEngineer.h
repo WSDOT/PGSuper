@@ -23,7 +23,7 @@
 #pragma once
 
 #include <Details.h>
-#include <PgsExt\GirderGroupData.h>
+#include <PsgLib\GirderGroupData.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\BearingDesignParameters.h>
 #include <EngTools\Bearing.h>
@@ -34,11 +34,8 @@
 class pgsBearingDesignEngineer
 {
 public:
-   pgsBearingDesignEngineer() = default;
-   pgsBearingDesignEngineer(IBroker* pBroker);
+   pgsBearingDesignEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    pgsBearingDesignEngineer(const pgsBearingDesignEngineer& other) = default;
-
-   void SetBroker(IBroker* pBroker);
 
    Float64 BearingSkewFactor(const ReactionLocation& reactionLocation, bool isFlexural) const;
 
@@ -68,7 +65,6 @@ public:
    void CheckBearing(WBFL::EngTools::Bearing* brg, WBFL::EngTools::BearingLoads* brg_loads, WBFL::EngTools::BearingCalculator* brg_calc) const;
 
 private:
-   IBroker* m_pBroker;
-
-
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
 };

@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "resource.h"
 #include "TemporarySupportDlg.h"
 #include "TemporarySupportLayoutPage.h"
@@ -33,21 +33,16 @@
 #include "EditHaunchDlg.h"
 #include "Utilities.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
-
-#include <PgsExt\BridgeDescription2.h>
-
 #include <IFace\Project.h>
+
+#include <PsgLib\BridgeDescription2.h>
 
 #include <EAF\EAFDocument.h>
 
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // free fuction to determine if a temp support can possibly have haunch input
 static bool CanHaveHaunchInput(CTemporarySupportData* pTS)
@@ -88,8 +83,8 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_BACK_SLAB_OFFSET, m_wndSlabOffset[pgsTypes::Back]);
    DDX_Control(pDX, IDC_AHEAD_SLAB_OFFSET, m_wndSlabOffset[pgsTypes::Ahead]);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
@@ -459,8 +454,8 @@ void CTemporarySupportLayoutPage::OnHelp()
 void CTemporarySupportLayoutPage::UpdateHaunchAndCamberControls()
 {
    // Function takes bridge data and puts into dialog controls
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
@@ -637,8 +632,8 @@ void CTemporarySupportLayoutPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
          haunchInputLocationType == pgsTypes::hilSame4AllGirders && 
          (haunchInputDistributionType == pgsTypes::hidUniform || haunchInputDistributionType == pgsTypes::hidAtEnds))
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         
+         auto pBroker = EAFGetBroker();
          GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
          const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();

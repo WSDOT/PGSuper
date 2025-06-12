@@ -50,6 +50,8 @@
 
 #include <MathEx.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
@@ -66,37 +68,22 @@
 #include <psgLib/EndZoneCriteria.h>
 #include <psgLib/SlabOffsetCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-void write_splitting_zone_check(IBroker* pBroker,
+void write_splitting_zone_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                const pgsGirderArtifact* pGirderArtifact,
                                rptChapter* pChapter);
 
-static void write_confinement_check(IBroker* pBroker,
-                                    IEAFDisplayUnits* pDisplayUnits,
+static void write_confinement_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                     const pgsGirderArtifact* pGirderArtifact,
                                     rptChapter* pChapter);
 
-/****************************************************************************
-CLASS
-   CSpecCheckChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CSpecCheckChapterBuilder::CSpecCheckChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CSpecCheckChapterBuilder::GetName() const
 {
    return TEXT("Specification Checks");
@@ -110,8 +97,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
 
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey = pGirderRptSpec->GetGirderKey();
 
    GET_IFACE2(pBroker,IDocumentType,pDocType);
@@ -558,40 +544,16 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSpecCheckChapterBuilder::Clone() const
-{
-   return std::make_unique<CSpecCheckChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-void write_splitting_zone_check(IBroker* pBroker,
+void write_splitting_zone_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                const pgsGirderArtifact* pGirderArtifact,
                                rptChapter* pChapter)
 {
    GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
-   pSplittingChecks->ReportSplittingChecks(pBroker, pGirderArtifact, pChapter);
+   pSplittingChecks->ReportSplittingChecks(pGirderArtifact, pChapter);
 }
 
-void write_confinement_check(IBroker* pBroker,
-                             IEAFDisplayUnits* pDisplayUnits,
+void write_confinement_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const pgsGirderArtifact* pGirderArtifact,
                              rptChapter* pChapter)
 {

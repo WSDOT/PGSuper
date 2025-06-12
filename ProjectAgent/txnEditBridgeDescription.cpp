@@ -21,19 +21,13 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "ProjectAgent.h"
 #include "txnEditBridgeDescription.h"
 
 #include <IFace\Project.h>
+#include <EAF\EAFUtilities.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-txnEditBridgeDescription::txnEditBridgeDescription(IBroker* pBroker,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc) :
-m_pBroker(pBroker)
+txnEditBridgeDescription::txnEditBridgeDescription(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc)
 {
    m_BridgeDesc[0] = oldBridgeDesc;
    m_BridgeDesc[1] = newBridgeDesc;
@@ -56,17 +50,18 @@ void txnEditBridgeDescription::Undo()
 
 void txnEditBridgeDescription::Execute(int i)
 {
-   GET_IFACE(IEvents, pEvents);
+   auto broker = EAFGetBroker();
+   GET_IFACE2(broker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   GET_IFACE(IBridgeDescription,pBridgeDesc);
+   GET_IFACE2(broker,IBridgeDescription,pBridgeDesc);
    pBridgeDesc->SetBridgeDescription( m_BridgeDesc[i] );
 }
 
-std::unique_ptr<CEAFTransaction> txnEditBridgeDescription::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditBridgeDescription::CreateClone() const
 {
-   return std::make_unique<txnEditBridgeDescription>(m_pBroker,m_BridgeDesc[0],m_BridgeDesc[1]);
+   return std::make_unique<txnEditBridgeDescription>(m_BridgeDesc[0],m_BridgeDesc[1]);
 }
 
 std::_tstring txnEditBridgeDescription::Name() const

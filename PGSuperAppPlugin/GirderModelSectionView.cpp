@@ -36,17 +36,19 @@
 #include "GMDisplayMgrEventsImpl.h"
 #include "GirderDisplayObjectEvents.h"
 #include "DisplayObjectFactory.h"
+
 #include <IFace\Bridge.h>
 #include <IFace\DrawBridgeSettings.h>
 #include <IFace\Intervals.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
+#include <IFace/PointOfInterest.h>
 
 #include <WBFLGenericBridgeTools.h>
 #include <WBFLGeometry/GeomHelpers.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\DeckDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\DeckDescription2.h>
 
 #define SOCKET_TL   0 // top left (top left of girder or slab)
 #define SOCKET_TC   1 // top center (on CL of non-composite girder)
@@ -235,8 +237,8 @@ void CGirderModelSectionView::UpdateDisplayObjects()
    }
 
    // Grab hold of the broker so we can pass it as a parameter
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    if (!pPoi->IsOnSegment(poi))
@@ -300,7 +302,7 @@ void CGirderModelSectionView::UpdateDisplayObjects()
    SetMappingMode(WBFL::DManip::MapMode::Isotropic);
 }
 
-void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi)
 {
    auto pDL = m_pDispMgr->FindDisplayList(PROPERTIES_LIST);
    ATLASSERT(pDL);
@@ -410,7 +412,7 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
    }
 }
 
-void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi)
 {
    auto pDL = m_pDispMgr->FindDisplayList(SECTION_LIST);
    ATLASSERT(pDL);
@@ -621,7 +623,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    CreateLineDisplayObject(pDL, pntTop, pntBottom, BLACK, WBFL::DManip::LineStyleType::Centerline);
 }
 
-void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi)
 {
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -722,7 +724,7 @@ void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* p
    pDL->AddDisplayObject(doPnt);
 }
 
-void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi)
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
@@ -868,7 +870,7 @@ std::shared_ptr<WBFL::DManip::iDisplayObject> CGirderModelSectionView::GetDuctDi
    return compDO;
 }
 
-void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi)
 {
    // The outlines of the ducts are drawn as part of the girder cross section
    // This method adds the text labels to the ducts
@@ -924,7 +926,7 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker*
    }
 }
 
-void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -964,7 +966,7 @@ void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBr
    }
 }
 
-void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi)
 {
    auto pDL = m_pDispMgr->FindDisplayList(STRAND_CG_LIST);
    ATLASSERT(pDL);
@@ -1035,7 +1037,7 @@ void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBro
    pDL->AddDisplayObject(doPnt);
 }
 
-void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi)
 {
    auto pDL = m_pDispMgr->FindDisplayList(CG_LIST);
    ATLASSERT(pDL);
@@ -1107,7 +1109,7 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* 
    pDL->AddDisplayObject(doPnt);
 }
 
-void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -1759,8 +1761,8 @@ void CGirderModelSectionView::OnSize(UINT nType, int cx, int cy)
       UINT settings = pDoc->GetGirderEditorSettings();
 
       // Grab hold of the broker so we can pass it as a parameter
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
       // build the dimension lines
       if ( settings & IDG_SV_SHOW_DIMENSIONS )

@@ -20,18 +20,15 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PSGLIB_AUTOLIB_H_
-#define INCLUDED_PSGLIB_AUTOLIB_H_
+#pragma once
 
 #if !defined (BUILDPSGLIBLIB)
 
 #define PSGLIB_AUTOLIBNAME "PGSuperLibrary.lib"
 
-#pragma comment(lib,PSGLIB_AUTOLIBNAME)
+#pragma comment(lib,PSGLIB_AUTOLIBNAME )
 #if defined AUTOLIB
-#pragma message("Linking with " PSGLIB_AUTOLIBNAME )
+#pragma message("Linking with " PSGLIB_AUTOLIBNAME  )
 #endif
 
 #endif // BUILDPSGLIBLIB
-
-#endif // INCLUDED_PSGLIB_AUTOLIB_H_

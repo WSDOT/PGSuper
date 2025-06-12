@@ -19,13 +19,8 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
 #pragma once
-
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
 
 #include <IFace\Artifact.h>
 #include <IFace\PointOfInterest.h>
@@ -33,14 +28,7 @@
 #include <psgLib\GirderLibraryEntry.h>
 #include <psgLib/EndZoneCriteria.h>
 
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-interface IBroker;
 class StirrupZoneIter;
-
 
 class PoiIsOutsideOfBearings
 {
@@ -86,7 +74,6 @@ private:
 };
 
 
-// MISCELLANEOUS
 // Virtual class for checking long reinf for shear - we need this from Designer2,
 // but don't need the whole enchilada
 class LongReinfShearChecker
@@ -127,13 +114,9 @@ public:
       sdDesignFailedFromShearStress  // Shear stress exceeded 0.18f'c. Tool will compute required f'c
    };
 
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    pgsShearDesignTool(SHARED_LOGFILE lf);
    
-   void Initialize(IBroker* pBroker, const LongReinfShearChecker* pLongShearChecker, 
+   void Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, const LongReinfShearChecker* pLongShearChecker,
                    StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact, 
                    Float64 startConfinementZl, Float64 endConfinementZl,
                    bool bPermit, bool bDesignFromScratch);
@@ -180,11 +163,6 @@ private:
    // Check and design longitudinal reinforcement for shear
    ShearDesignOutcome DesignLongReinfShear() const;
 
-   // GROUP: OPERATIONS
-
-   // ACCESS
-   //////////
-
    GDRCONFIG GetSegmentConfiguration() const;
 
    const CSegmentKey& GetSegmentKey() const;
@@ -201,6 +179,7 @@ private:
    IndexType GetNumAvailableBarSpacings() const;
    Float64 GetAvailableBarSpacing(IndexType index) const;
    void GetMinZoneLength(Uint32* pSpacings, Float64* pLength) const;
+
 public:
    bool GetIsCompositeDeck() const;
    bool GetIsTopFlangeRoughened() const;
@@ -212,31 +191,14 @@ public:
    // way to deal with this is to tighten stirrup spacing at the ends of the girder
    void SetLongShearCapacityRequiresStirrupTightening(bool req);
    bool GetLongShearCapacityRequiresStirrupTightening() const;
+
 private:
-   // GROUP: INQUIRY
    void DumpDesignParameters();
 
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-   // GROUP: DATA MEMBERS
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-
 private:
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
 
-   IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
 
    pgsSegmentDesignArtifact* m_pArtifact;
@@ -316,7 +278,7 @@ private:
 
    // Points of interest to be used for design
    // Note that the following block of vectors are the same size, and in the same order as, 
-   // m_DesignPois. This allows quick storage and retreival in poi order
+   // m_DesignPois. This allows quick storage and retrieval in poi order
    // -------------------------------------------
    mutable PoiList m_DesignPois; // sorted along girder
 
@@ -377,7 +339,7 @@ private:
    // determine if a location is in confinement zone
    bool IsLocationInConfinementZone(Float64 distFromStart) const;
 
-   // utility to get closeby poi for a location
+   // utility to get close by poi for a location
    IndexType GetPoiIdxForLocation(Float64 location) const;
 
    // Av/S required for splitting
@@ -398,12 +360,4 @@ private:
 
 private:
 	DECLARE_SHARED_LOGFILE;
-
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-

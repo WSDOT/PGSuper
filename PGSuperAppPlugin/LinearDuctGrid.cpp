@@ -26,15 +26,12 @@
 #include "stdafx.h"
 #include "LinearDuctGrid.h"
 #include "LinearDuctDlg.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CLinearDuctGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -80,8 +77,8 @@ void CLinearDuctGrid::CustomInit(CLinearDuctGridCallback* pCallback)
 {
    m_pCallback = pCallback;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Initialize the grid. For CWnd based grids this call is // 
@@ -156,8 +153,8 @@ void CLinearDuctGrid::CustomInit(CLinearDuctGridCallback* pCallback)
 
 void CLinearDuctGrid::SetMeasurementType(CLinearDuctGeometry::MeasurementType mt)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridge, pBridge);
 
    CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
@@ -291,8 +288,8 @@ void CLinearDuctGrid::DeletePoint()
 
 void CLinearDuctGrid::FillRow(ROWCOL row,Float64 location,Float64 offset,CLinearDuctGeometry::OffsetType offsetType)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strLocation;
@@ -318,8 +315,8 @@ void CLinearDuctGrid::FillRow(ROWCOL row,Float64 location,Float64 offset,CLinear
 
 void CLinearDuctGrid::GetPoint(ROWCOL row,Float64* pLocation,Float64* pOffset,CLinearDuctGeometry::OffsetType* pOffsetType)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    *pLocation = _tstof(GetCellValue(row,nLocationCol));
@@ -342,8 +339,8 @@ void CLinearDuctGrid::SetRowStyle(ROWCOL nRow)
    CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
    CLinearDuctGeometry::MeasurementType measurementType = pParent->GetMeasurementType();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strUnits;
    strUnits.Format(_T("%s\n%s"),pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str(),_T("%"));
@@ -462,8 +459,8 @@ BOOL CLinearDuctGrid::UpdateLastRow()
    CLinearDuctDlg* pParent = (CLinearDuctDlg*)GetParent();
    ATLASSERT(pParent->GetMeasurementType() == CLinearDuctGeometry::FromPrevious);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridge, pBridge);
 
    const CGirderKey& girderKey = pParent->GetGirderKey();

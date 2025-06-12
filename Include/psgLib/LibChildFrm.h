@@ -28,7 +28,7 @@
 #endif // _MSC_VER >= 1000
 // MyChildFrame.h : header file
 //
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 #include <PsgLib\LibraryEditorChildFrm.h>
 

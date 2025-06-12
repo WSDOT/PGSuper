@@ -40,10 +40,10 @@ public:
 
 private:
    rptRcTable* BuildTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
-                           IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc, GirderIndexType girderIndex) const;
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IBridgeDescription> pIBridgeDesc, GirderIndexType girderIndex) const;
 
    rptRcTable* BuildGirderEdgeTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
-                           IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const;
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IBridgeDescription> pIBridgeDesc,GirderIndexType girderIndex) const;
 
    CBearingSeatElevationsChapterBuilderBase();
    TableType m_TableType;
@@ -59,7 +59,6 @@ public:
    ~CBearingSeatElevationsChapterBuilder2(void);
 
    virtual LPCTSTR GetName() const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 };
 
 // Specialized class for bearing deduct chapter
@@ -72,5 +71,4 @@ public:
    ~CBearingDeductChapterBuilder(void);
 
    virtual LPCTSTR GetName() const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 };

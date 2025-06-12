@@ -23,11 +23,6 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\ThreadManager.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
    
 // predicate object used to check if a thread is done executing
 class CThreadChecker

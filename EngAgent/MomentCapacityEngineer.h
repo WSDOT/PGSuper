@@ -20,31 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_MOMENTCAPENG_H_
-#define INCLUDED_MOMENTCAPENG_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
 #include <Details.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Bridge.h>
 
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-interface IBroker;
 interface IGeneralSection;
 interface IPoint2d;
 interface ISize2d;
 interface IStressStrain;
-
-// MISCELLANEOUS
-//
+namespace WBFL { namespace EAF { class Broker; }; };
 
 /*****************************************************************************
 CLASS 
@@ -63,22 +49,13 @@ LOG
 class pgsMomentCapacityEngineer
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
-   pgsMomentCapacityEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID);
-
-   //------------------------------------------------------------------------
-   // Destructor
+   pgsMomentCapacityEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
    ~pgsMomentCapacityEngineer();
 
-   // can't copy or assign because default isn't sufficient and we
-   // haven't written explicit versions yet
    pgsMomentCapacityEngineer(const pgsMomentCapacityEngineer& other) = delete;
    pgsMomentCapacityEngineer& operator=(const pgsMomentCapacityEngineer& other) = delete;
 
-   void SetBroker(IBroker* pBroker);
+   void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
    Float64 GetMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const GDRCONFIG* pConfig = nullptr) const;
@@ -116,24 +93,13 @@ private:
 
    void ModelShape(IGeneralSection* pSection, IShape* pShape, IStressStrain* pMaterial, IPlane3d* pInitialStrain,VARIANT_BOOL bIsVoid) const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 #if defined _DEBUG_SECTION_DUMP
    void DumpSection(const pgsPointOfInterest& poi,IGeneralSection* section, std::map<StrandIndexType,Float64> ssBondFactors,std::map<StrandIndexType,Float64> hsBondFactors,bool bPositiveMoment) const;
 #endif // _DEBUG_SECTION_DUMP
 
 private:
-   // GROUP: DATA MEMBERS
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidMomentCapacity;
 
@@ -161,15 +127,10 @@ private:
    };
    mutable std::set<StrandMaterial> m_StrandMaterial;
 
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-
-   // GROUP: ACCESS
    class pgsBondTool
    {
    public:
-      pgsBondTool(IBroker* pBroker,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr);
+      pgsBondTool(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr);
 
       const pgsPointOfInterest& GetPOI() const { return m_Poi; }
 
@@ -180,10 +141,7 @@ private:
       bool IsDebonded(StrandIndexType strandIdx,pgsTypes::StrandType strandType) const;
       
    private:
-
-      IBroker* m_pBroker;
-      CComPtr<IPretensionForce> m_pPrestressForce;
-      CComPtr<IStrandGeometry> m_pStrandGeometry;
+      std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
       pgsPointOfInterest m_Poi;
       pgsPointOfInterest m_PoiMidSpan;
@@ -193,7 +151,6 @@ private:
       bool m_bNearMidSpan;
    };
 
-   // GROUP: OPERATIONS
    // This can all be virtual methods so they can be overridden by specialized engineers
    void CreateStrandMaterial(const CSegmentKey& segmentKey, pgsBondTool& bondTool, pgsTypes::StrandType strandType,StrandIndexType strandIdx,Float64 initialStrain,bool* pbDevelopmentLengthReducedStress,IStressStrain** ppSS) const;
    void CreateSegmentTendonMaterial(const CSegmentKey& segmentKey, IStressStrain** ppSS) const;
@@ -222,8 +179,6 @@ private:
    void GetGirderInitialStrain(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const GDRCONFIG* pConfig, IPlane3d** ppInitialStrian) const;
    void GetDeckInitialStrain(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 Dslab,Float64 Dhaunch, bool bPositiveMoment, IPlane3d** ppInitialStrian) const;
    void BuildCapacityProblem(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, pgsBondTool& bondTool, bool bPositiveMoment, IGeneralSection** ppProblem, IPoint2d** pntCompression, Float64* pec, Float64* pdt, IndexType* pGdrIdx,IndexType* pDeckIdx,IndexType* pExtremeTensionLayerIndex, Float64* pH, Float64* pHaunch,bool* pbDevelopmentLengthReducedStress) const;
-
-   // GROUP: INQUIRY
 
    pgsPointOfInterest GetEquivalentPointOfInterest(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const;
 
@@ -269,11 +224,3 @@ private:
    private:
    DECLARE_LOGFILE;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_MOMENTCAPENG_H_

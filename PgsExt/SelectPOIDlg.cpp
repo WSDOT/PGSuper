@@ -26,20 +26,19 @@
 #include "resource.h"
 #include "SelectPOIDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <EAF\EAFDisplayUnits.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
+
+#include <PgsExt/ReportPointOfInterest.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CSelectPOIDlg dialog
 
@@ -98,8 +97,7 @@ END_MESSAGE_MAP()
 
 BOOL CSelectPOIDlg::OnInitDialog()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker, IBridge, pBridge );
    m_GirderKey = m_InitialPOI.GetSegmentKey();
@@ -168,9 +166,7 @@ void CSelectPOIDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 
 void CSelectPOIDlg::UpdateGirderComboBox(GroupIndexType groupIdx)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridge, pBridge );
 
    CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
@@ -193,10 +189,8 @@ void CSelectPOIDlg::UpdateGirderComboBox(GroupIndexType groupIdx)
 
 void CSelectPOIDlg::UpdateSliderLabel()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto broker = EAFGetBroker();
+   GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
    CString strLabel;
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());
@@ -233,8 +227,7 @@ void CSelectPOIDlg::FillIntervalCtrl()
 {
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(m_GirderKey,0));
@@ -253,8 +246,7 @@ void CSelectPOIDlg::FillIntervalCtrl()
 
 void CSelectPOIDlg::UpdatePOI()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    m_vPOI.clear();

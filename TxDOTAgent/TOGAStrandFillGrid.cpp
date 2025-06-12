@@ -31,14 +31,10 @@
 
 #include <system\tokenizer.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 #define TYPE_COL         1
@@ -127,8 +123,7 @@ void CTOGAStrandFillGrid::CustomInit(CTOGAGirderSelectStrandsDlg* pParent, const
    SetMergeCellsMode(gxnMergeDelayEval);
    SetFrozenCols(2,2); // column 2 is frozen and is a row header column (keeps Select column from scrolling)
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Make string for max debond length
@@ -393,8 +388,7 @@ void CTOGAStrandFillGrid::FillGrid()
          if ( bIsDebonded )
          {
             // strand is debonded
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
+            auto pBroker = EAFGetBroker();
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             SetStyleRange(CGXRange(row,DEBOND_VAL_COL), CGXStyle()
@@ -525,13 +519,12 @@ bool CTOGAStrandFillGrid::UpdateData(bool doCheckData)
             bool st = WBFL::System::Tokenizer::ParseDouble(strval, &leftDebond);
             if(!st && doCheckData)
             {
-               AfxMessageBox( _T("Debond length is not a number - must be a postive number"), MB_ICONEXCLAMATION);
+               AfxMessageBox( _T("Debond length is not a number - must be a positive number"), MB_ICONEXCLAMATION);
                this->SetCurrentCell(nRow,DEBOND_VAL_COL,GX_SCROLLINVIEW|GX_DISPLAYEDITWND);
                return false;
             }
 
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
+            auto pBroker = EAFGetBroker();
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             leftDebond  = WBFL::Units::ConvertToSysUnits(leftDebond,  pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);

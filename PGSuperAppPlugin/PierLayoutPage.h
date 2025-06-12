@@ -30,7 +30,7 @@
 //
 
 #include "resource.h"
-#include <PgsExt\PierData2.h>
+#include <PsgLib\PierData2.h>
 #include "ColumnLayoutGrid.h"
 #include <PgsExt\ColumnFixityComboBox.h>
 

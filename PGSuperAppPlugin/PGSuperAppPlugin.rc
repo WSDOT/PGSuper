@@ -14,7 +14,8 @@
 #include <EAF\EAFResources.h>
 #if !defined _NOGRID
 #include "grid\gxresrc.h"
-#endif
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -53,8 +54,6 @@ END
 
 3 TEXTINCLUDE 
 BEGIN
-    "1 TYPELIB ""PGSuperAppPlugin.tlb""\r\n"
-    "\0"
     "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
     "#define _AFX_NO_OLE_RESOURCES\r\n"
     "#define _AFX_NO_TRACKER_RESOURCES\r\n"
@@ -74,26 +73,6 @@ BEGIN
 END
 
 #endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// REGISTRY
-//
-
-IDR_PGSUPERAPPPLUGIN    REGISTRY                "PGSuperAppPlugin.rgs"
-
-IDR_PGSUPERAPPPLUGINIMPL REGISTRY                "res\\PGSuperAppPluginImpl.rgs"
-
-IDR_PGSPLICEAPPPLUGINIMPL REGISTRY                "res\\PGSpliceAppPluginImpl.rgs"
-
-IDR_PGSUPERCOMPONENTINFO REGISTRY                "res\\PGSuperComponentInfo.rgs"
-
-IDR_PGSPLICECOMPONENTINFO REGISTRY                "res\\PGSpliceComponentInfo.rgs"
-
-IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSuperProjectImporterAppPlugin.rgs"
-
-IDR_PGSPLICEPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSpliceProjectImporterAppPlugin.rgs"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -3969,7 +3948,7 @@ BEGIN
             VALUE "FileVersion", "8.1.0.1"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2025, Washington State Department of Transportation, All Rights Reserved"
-            VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
+            VALUE "OriginalFilename", "PGSuperPluginApp.DLL"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "8.1.0.1"
         END
@@ -5439,16 +5418,3 @@ END
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
-
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-1 TYPELIB "PGSuperAppPlugin.tlb"
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
-

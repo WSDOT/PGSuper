@@ -22,18 +22,15 @@
 #include "StdAfx.h"
 #include "Reporting\TemporarySupportElevationDetailsChapterBuilder.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\GirderGroupData.h>
-#include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\GirderGroupData.h>
+#include <PsgLib\BridgeDescription2.h>
+
 
 CTemporarySupportElevationDetailsChapterBuilder::CTemporarySupportElevationDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -45,16 +42,10 @@ LPCTSTR CTemporarySupportElevationDetailsChapterBuilder::GetName() const
    return _T("Temporary Support Elevation Details");
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTemporarySupportElevationDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CTemporarySupportElevationDetailsChapterBuilder>();
-}
-
 rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

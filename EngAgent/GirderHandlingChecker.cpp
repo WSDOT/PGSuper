@@ -21,9 +21,9 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-
+#include "EngAgent.h"
 #include <IFace\PointOfInterest.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\AnalysisResults.h>
@@ -44,72 +44,31 @@
 #include "StatusItems.h"
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
-/****************************************************************************
-CLASS
-   pgsGirderHandlingChecker
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-
-//======================== LIFECYCLE  =======================================
-pgsGirderHandlingChecker::pgsGirderHandlingChecker(IBroker* pBroker,StatusGroupIDType statusGroupID)
+pgsGirderHandlingChecker::pgsGirderHandlingChecker(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 }
 
-pgsGirderHandlingChecker::~pgsGirderHandlingChecker()
+std::unique_ptr<pgsGirderHaulingChecker> pgsGirderHandlingChecker::CreateGirderHaulingChecker()
 {
-}
-
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-
-pgsGirderHaulingChecker* pgsGirderHandlingChecker::CreateGirderHaulingChecker()
-{
-   GET_IFACE(ISegmentHaulingSpecCriteria,pSpec);
+   GET_IFACE2(GetBroker(),ISegmentHaulingSpecCriteria,pSpec);
 
    pgsTypes::HaulingAnalysisMethod method = pSpec->GetHaulingAnalysisMethod();
 
    if (method==pgsTypes::HaulingAnalysisMethod::WSDOT)
    {
-      return new pgsWsdotGirderHaulingChecker(m_pBroker, m_StatusGroupID);
+      return std::make_unique<pgsWsdotGirderHaulingChecker>(m_pBroker, m_StatusGroupID);
    }
    else
    {
-      return new pgsKdotGirderHaulingChecker(m_pBroker, m_StatusGroupID);
+      return std::make_unique<pgsKdotGirderHaulingChecker>(m_pBroker, m_StatusGroupID);
    }
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-
-void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFactory* pGirderModelFactory,
+void pgsGirderHandlingChecker::ComputeMoments(std::weak_ptr<WBFL::EAF::Broker> pBroker, pgsGirderModelFactory* pGirderModelFactory,
                                               const CSegmentKey& segmentKey,
                                               IntervalIndexType intervalIdx,
                                               Float64 leftOH,Float64 glen,Float64 rightOH,
@@ -169,11 +128,11 @@ void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFa
 /*
 void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const pgsPointOfInterest& poi,Float64 ftu,Float64 ftd,Float64 fbu,Float64 fbd,Float64* pY,Float64* pA,Float64* pT,Float64* pAs)
 {
-    GET_IFACE(IGirder,pGirder);
-    GET_IFACE(ISectProp2,pSectProps);
-    GET_IFACE(IBridgeMaterial,pMaterial);
+    GET_IFACE2(GetBroker(),IGirder,pGirder);
+    GET_IFACE2(GetBroker(),ISectProp2,pSectProps);
+    GET_IFACE2(GetBroker(),IBridgeMaterial,pMaterial);
 
-    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+    GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
     bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    SpanIndexType span  = poi.GetSpan();

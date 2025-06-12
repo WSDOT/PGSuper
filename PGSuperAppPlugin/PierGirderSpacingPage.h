@@ -32,9 +32,9 @@
 #include "resource.h"
 #include "GirderSpacingGrid.h"
 
-#include <PgsExt\PierData2.h>
-#include <PgsExt\SpanData2.h>
-#include <PgsExt\GirderGroupData.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\SpanData2.h>
+#include <PsgLib\GirderGroupData.h>
 
 class CPierDetailsDlg;
 

@@ -27,40 +27,26 @@
 #include <Reporting\NetGirderPropertiesTable.h>
 #include <Reporting\ColumnPropertiesTable.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace/Limits.h>
+#include <IFace/PointOfInterest.h>
 
+#include <psgLib/TrafficBarrierEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CSectPropChapterBuilder
-****************************************************************************/
-
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CSectPropChapterBuilder::CSectPropChapterBuilder(bool bSelect,bool simplifiedVersion) :
 CPGSuperChapterBuilder(bSelect),
 m_SimplifiedVersion(simplifiedVersion)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CSectPropChapterBuilder::GetName() const
 {
    return TEXT("Section Properties");
@@ -72,16 +58,16 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
    auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    std::vector<CGirderKey> girderKeys;
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKeys.push_back(pGdrRptSpec->GetGirderKey());
    }
    else if ( pGdrLineRptSpec)
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       GET_IFACE2(pBroker,IBridge,pBridge);
 
       CGirderKey girderKey = pGdrLineRptSpec->GetGirderKey();
@@ -89,7 +75,7 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    }
    else if ( pMultiGirderRptSpec)
    {
-      pMultiGirderRptSpec->GetBroker(&pBroker);
+      pBroker = pMultiGirderRptSpec->GetBroker();
       girderKeys = pMultiGirderRptSpec->GetGirderKeys();
    }
    else
@@ -394,9 +380,4 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    (*pPara) << CColumnPropertiesTable().Build(pBroker,pDisplayUnits) << rptNewLine;
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSectPropChapterBuilder::Clone() const
-{
-   return std::make_unique<CSectPropChapterBuilder> ();
 }

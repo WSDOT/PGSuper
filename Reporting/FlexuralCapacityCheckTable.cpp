@@ -28,10 +28,13 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\FlexuralStressArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <psgLib/SpecificationCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
 #include <IFace\MomentCapacity.h>
@@ -39,11 +42,6 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -79,8 +77,8 @@ CFlexuralCapacityCheckTable& CFlexuralCapacityCheckTable::operator= (const CFlex
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                                               IEAFDisplayUnits* pDisplayUnits,
+rptRcTable* CFlexuralCapacityCheckTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                IntervalIndexType intervalIdx,
                                                pgsTypes::LimitState ls,bool bPositiveMoment,bool* pbOverReinforced) const
 {

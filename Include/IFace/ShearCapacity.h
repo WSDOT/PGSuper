@@ -20,35 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_SHEARCAPACITY_H_
-#define INCLUDED_IFACE_SHEARCAPACITY_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#if !defined INCLUDED_WBFLTYPES_H_
-#include <WbflTypes.h>
-#endif
-
-#if !defined INCLUDED_PGSUPERTYPES_H_
 #include <PGSuperTypes.h>
-#endif
-
-#if !defined INCLUDED_DETAILS_H_
 #include <Details.h>
-#endif
 
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
 class pgsPointOfInterest;
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 INTERFACE
@@ -62,8 +39,9 @@ DESCRIPTION
 // {D8882B20-9127-11d2-9DA0-00609710E6CE}
 DEFINE_GUID(IID_IShearCapacity, 
 0xd8882b20, 0x9127, 0x11d2, 0x9d, 0xa0, 0x0, 0x60, 0x97, 0x10, 0xe6, 0xce);
-interface IShearCapacity : IUnknown
+class IShearCapacity
 {
+public:
    virtual pgsTypes::FaceType GetFlexuralTensionSide(pgsTypes::LimitState limitState,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual std::vector<Float64> GetShearCapacity(pgsTypes::LimitState ls, IntervalIndexType intervalIdx,const PoiList& vPoi) const = 0;
@@ -89,6 +67,3 @@ interface IShearCapacity : IUnknown
    // clears details of critical section computations made during design
    virtual void ClearDesignCriticalSections() const = 0;
 };
-
-#endif // INCLUDED_IFACE_SHEARCAPACITY_H_
-

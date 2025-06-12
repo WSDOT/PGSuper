@@ -24,6 +24,8 @@
 #include <Reporting\GirderDetailingCheck.h>
 #include <Reporting\StirrupDetailingCheckTable.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
@@ -33,12 +35,9 @@
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
 
 #include <psgLib/LimitsCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
+#include <psglib/ShearData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -81,8 +80,8 @@ CGirderDetailingCheck& CGirderDetailingCheck::operator= (const CGirderDetailingC
 
 //======================== OPERATIONS =======================================
 void CGirderDetailingCheck::Build(rptChapter* pChapter,
-                              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
 #pragma Reminder("UPDATE: Use chapter levels instead of m_BasicVersion")
    if (!m_BasicVersion)
@@ -196,8 +195,8 @@ void CGirderDetailingCheck::MakeAssignment(const CGirderDetailingCheck& rOther)
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
 void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
-                              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -304,8 +303,8 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
 
 
 void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
-                              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2_NOCHECK(pBroker,IStirrupGeometry,pStirrupGeometry); // not always used
 

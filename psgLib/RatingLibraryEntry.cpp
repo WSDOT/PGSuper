@@ -21,24 +21,19 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <psgLib\RatingLibraryEntry.h>
+#include <PsgLib\RatingLibraryEntry.h>
 #include "resource.h"
 #include "RatingDialog.h"
 
 #include <Units\Units.h>
 
 #include <EAF\EAFApp.h>
-#include <psgLib\LibraryEntryDifferenceItem.h>
+#include <PsgLib\DifferenceItem.h>
 
 #include <boost\algorithm\string\replace.hpp>
 
 #include <EAF/EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define CURRENT_VERSION 4.0
 
@@ -2799,12 +2794,12 @@ bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
 bool RatingLibraryEntry::IsEqual(const RatingLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
+   std::vector<std::unique_ptr<PGS::Library::DifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -2814,13 +2809,13 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<s
    if ( m_Description != rOther.m_Description )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Description"),m_Description.c_str(),rOther.m_Description.c_str()));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Description"),m_Description.c_str(),rOther.m_Description.c_str()));
    }
 
    if (m_bUseCurrentSpecification != rOther.m_bUseCurrentSpecification || m_SpecificationVersion != rOther.m_SpecificationVersion)
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Rating Criteria Basis"), WBFL::LRFD::MBEManager::GetEditionAsString(m_SpecificationVersion), WBFL::LRFD::MBEManager::GetEditionAsString(rOther.m_SpecificationVersion)));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Rating Criteria Basis"), WBFL::LRFD::MBEManager::GetEditionAsString(m_SpecificationVersion), WBFL::LRFD::MBEManager::GetEditionAsString(rOther.m_SpecificationVersion)));
    }
 
    if ( WBFL::LRFD::MBEManager::GetEdition() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims)
@@ -2834,7 +2829,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<s
             RETURN_ON_DIFFERENCE;
             CString str;
             str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetLoadRatingType(ratingType));
-            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(str,_T(""),_T("")));
+            vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(str,_T(""),_T("")));
          }
       }
 
@@ -2846,7 +2841,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<s
             RETURN_ON_DIFFERENCE;
             CString str;
             str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetSpecialPermitType(permitType));
-            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(str,_T(""),_T("")));
+            vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(str,_T(""),_T("")));
          }
       }
    }
@@ -2861,7 +2856,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<s
             RETURN_ON_DIFFERENCE;
             CString str;
             str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetLoadRatingType(ratingType));
-            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(str,_T(""),_T("")));
+            vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(str,_T(""),_T("")));
          }
       }
 
@@ -2873,7 +2868,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<s
             RETURN_ON_DIFFERENCE;
             CString str;
             str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetSpecialPermitType(permitType));
-            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(str,_T(""),_T("")));
+            vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(str,_T(""),_T("")));
          }
       }
    }
@@ -2881,7 +2876,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<s
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;
@@ -2981,9 +2976,9 @@ const CLiveLoadFactorModel2& RatingLibraryEntry::GetLiveLoadFactorModel2(pgsType
    return m_SpecialPermitLiveLoadFactorModels2[permitType];
 }
 
-void write_load_factors(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, LPCTSTR lpszName, const CLiveLoadFactorModel& model);
+void write_load_factors(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, LPCTSTR lpszName, const CLiveLoadFactorModel& model);
 
-void RatingLibraryEntry::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void RatingLibraryEntry::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -3012,7 +3007,7 @@ void RatingLibraryEntry::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplay
    write_load_factors(pChapter, pDisplayUnits, _T("Permit - Special - Multiple Trip, mixed with traffic"), GetLiveLoadFactorModel(pgsTypes::ptMultipleTripWithTraffic));
 }
 
-void write_load_factors(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, LPCTSTR lpszName, const CLiveLoadFactorModel& model)
+void write_load_factors(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, LPCTSTR lpszName, const CLiveLoadFactorModel& model)
 {
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
 

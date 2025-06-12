@@ -20,11 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib/LimitStateConcreteStrengthCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/LimitStateConcreteStrengthCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
-bool LimitStateConcreteStrengthCriteria::Compare(const LimitStateConcreteStrengthCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool LimitStateConcreteStrengthCriteria::Compare(const LimitStateConcreteStrengthCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -33,14 +33,14 @@ bool LimitStateConcreteStrengthCriteria::Compare(const LimitStateConcreteStrengt
       !::IsEqual(SlowCuringConcreteStrengthFactor, other.SlowCuringConcreteStrengthFactor))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Concrete Strength for Limit State Evaluations are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Concrete Strength for Limit State Evaluations are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void LimitStateConcreteStrengthCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void LimitStateConcreteStrengthCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());

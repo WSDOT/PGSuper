@@ -36,18 +36,14 @@
 #include "PGSuperDoc.h"
 #include "Utilities.h"
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\ClosureJointData.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 inline CString GetHaunchInputLocationTypeAsString(pgsTypes::HaunchInputLocationType locType,pgsTypes::HaunchLayoutType layoutType,bool bIsPGSuper)
 {
@@ -179,8 +175,7 @@ END_MESSAGE_MAP()
 
 BOOL CEditHaunchByHaunchDlg::OnInitDialog()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
@@ -308,8 +303,7 @@ BOOL CEditHaunchByHaunchDlg::OnInitDialog()
 
 void CEditHaunchByHaunchDlg::UpdateGroupBox()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString unitag = pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str();
 
@@ -527,8 +521,7 @@ void CEditHaunchByHaunchDlg::OnHaunchInputDistributionTypeChanged()
 
    UpdateActiveControls();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
    UpdateLocationTypeControl(bIsPGSuper);
@@ -542,8 +535,7 @@ void CEditHaunchByHaunchDlg::OnHaunchLayoutTypeChanged()
 
    UpdateActiveControls();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
    UpdateLocationTypeControl(bIsPGSuper);

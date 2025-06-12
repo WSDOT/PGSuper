@@ -27,14 +27,11 @@
 #include "PGSuperApp.h"
 #include "HorizontalAlignmentPage.h"
 #include "AlignmentDescriptionDlg.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CHorizontalAlignmentPage property page
@@ -61,7 +58,7 @@ CHorizontalAlignmentPage::~CHorizontalAlignmentPage()
 {
 }
 
-IBroker* CHorizontalAlignmentPage::GetBroker()
+std::shared_ptr<WBFL::EAF::Broker> CHorizontalAlignmentPage::GetBroker()
 {
    CAlignmentDescriptionDlg* pParent = (CAlignmentDescriptionDlg*)GetParent();
    return pParent->m_pBroker;

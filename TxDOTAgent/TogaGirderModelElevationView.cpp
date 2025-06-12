@@ -28,14 +28,16 @@
 
 #include "PGSuperColors.h"
 
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DrawBridgeSettings.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include "TogaDisplayObjectFactory.h"
 #include "TogaSupportDrawStrategyImpl.h"
@@ -239,7 +241,7 @@ void CTogaGirderModelElevationView::UpdateDisplayObjects()
    CSegmentKey segmentKey(span,girder,0);
 
    // Grab hold of the broker so we can pass it as a parameter
-   CComPtr<IBroker> pBroker = pDoc->GetUpdatedBroker();
+   auto pBroker = pDoc->GetUpdatedBroker();
 
    UINT settings = pDoc->GetGirderEditorSettings();
 
@@ -408,7 +410,7 @@ void CTogaGirderModelElevationView::OnViewSettings()
 	((CTxDOTOptionalDesignDoc*)GetDocument())->EditGirderViewSettings(VS_GIRDER_ELEVATION);
 }
 
-void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    // get the display list and clear out any old display objects
    auto pDL =  m_pDispMgr->FindDisplayList(GDR_LIST);
@@ -567,7 +569,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    ///////////////////////////////////////////////////////////////////////////////////////////
 }
 
-void CTogaGirderModelElevationView::BuildSupportDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelElevationView::BuildSupportDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(SUPPORT_LIST);
    ATLASSERT(pDL);
@@ -617,7 +619,7 @@ void CTogaGirderModelElevationView::BuildSupportDisplayObjects(CTxDOTOptionalDes
    pDL->AddDisplayObject(ptDispObj);
 }
 
-void CTogaGirderModelElevationView::BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelElevationView::BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(STRAND_LIST);
    ATLASSERT(pDL);
@@ -714,7 +716,7 @@ void CTogaGirderModelElevationView::BuildStrandDisplayObjects(CTxDOTOptionalDesi
    }
 }
 
-void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(STRAND_CG_LIST);
    ATLASSERT(pDL);
@@ -784,7 +786,7 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
    }
 }
 
-void CTogaGirderModelElevationView::BuildRebarDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey)
+void CTogaGirderModelElevationView::BuildRebarDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(REBAR_LIST);
    ATLASSERT(pDL);
@@ -844,7 +846,7 @@ void CTogaGirderModelElevationView::BuildRebarDisplayObjects(CTxDOTOptionalDesig
    }
 }
 
-void CTogaGirderModelElevationView::BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelElevationView::BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(DIMLINE_LIST);
    ATLASSERT(pDL);
@@ -915,7 +917,7 @@ void CTogaGirderModelElevationView::BuildDimensionDisplayObjects(CTxDOTOptionalD
    }
 }
 
-void CTogaGirderModelElevationView::BuildSectionCutDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelElevationView::BuildSectionCutDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto factory = m_pDispMgr->GetDisplayObjectFactory(0);
 
@@ -938,7 +940,7 @@ void CTogaGirderModelElevationView::BuildSectionCutDisplayObjects(CTxDOTOptional
    pDL->AddDisplayObject(disp_obj);
 }
 
-void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(STIRRUP_LIST);
    ATLASSERT(pDL);
@@ -1141,8 +1143,7 @@ std::shared_ptr<WBFL::DManip::DimensionLine> CTogaGirderModelElevationView::Buil
    auto textBlock = WBFL::DManip::TextBlock::Create();
 
    // Format the dimension text
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strDimension = FormatDimension(dimension,pDisplayUnits->GetSpanLengthUnit());
 

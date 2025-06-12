@@ -30,17 +30,11 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\ReportOptions.h>
-
+#include <IFace/PointOfInterest.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
-
 #include <IFace\Intervals.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 std::_tstring LiveLoadPrefix(pgsTypes::LiveLoadType llType)
 {
@@ -90,7 +84,7 @@ std::_tstring LiveLoadPrefix(pgsTypes::LiveLoadType llType)
    return strPrefix;
 }
 
-void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,bool bDesign,bool bRating)
+void LiveLoadTableFooter(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptParagraph* pPara,const CGirderKey& girderKey,bool bDesign,bool bRating)
 {
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames;
@@ -205,7 +199,7 @@ void LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& 
    }
 }
 
-ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,bool bSlabShrinkage,
+ColumnIndexType GetProductLoadTableColumnCount(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,bool bSlabShrinkage,
                                                bool* pbSegments,bool *pbConstruction,bool* pbDeck,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbLongitudinalJoint,bool* pbPedLoading,bool* pbPermit,bool* pbContinuousBeforeDeckCasting,GroupIndexType* pStartGroup,GroupIndexType* pEndGroup)
 {
    ColumnIndexType nCols = 4; // location, girder, diaphragm, and traffic barrier
@@ -409,43 +403,14 @@ ColumnIndexType GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey
    return nCols;
 }
 
-/****************************************************************************
-CLASS
-   CProductMomentsTable
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CProductMomentsTable::CProductMomentsTable()
 {
 }
 
-CProductMomentsTable::CProductMomentsTable(const CProductMomentsTable& rOther)
-{
-   MakeCopy(rOther);
-}
 
-CProductMomentsTable::~CProductMomentsTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CProductMomentsTable& CProductMomentsTable::operator= (const CProductMomentsTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-
-//======================== OPERATIONS =======================================
-rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                                        bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CProductMomentsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+                                        bool bDesign,bool bRating,bool bIndicateControllingLoad,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -992,14 +957,3 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
 
    return p_table;
 }
-
-void CProductMomentsTable::MakeCopy(const CProductMomentsTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CProductMomentsTable::MakeAssignment(const CProductMomentsTable& rOther)
-{
-   MakeCopy( rOther );
-}
-

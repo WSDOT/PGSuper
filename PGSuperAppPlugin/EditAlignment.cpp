@@ -23,12 +23,8 @@
 #include "stdafx.h"
 #include "EditAlignment.h"
 #include "PGSuperDoc.h"
+#include <IFace/Tools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditAlignment::txnEditAlignment(const AlignmentData2& oldAlignmentData,   const AlignmentData2& newAlignmentData,
                                    const ProfileData2& oldProfileData,       const ProfileData2& newProfileData,
@@ -62,8 +58,8 @@ void txnEditAlignment::Undo()
 
 void txnEditAlignment::Execute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IRoadwayData,pAlignment);
    GET_IFACE2(pBroker,IEvents, pEvents);
@@ -76,7 +72,7 @@ void txnEditAlignment::Execute(int i)
    pAlignment->SetRoadwaySectionData(m_SectionData[i]);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditAlignment::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditAlignment::CreateClone() const
 {
    return std::make_unique<txnEditAlignment>(m_AlignmentData[0], m_AlignmentData[1],
                                m_ProfileData[0],   m_ProfileData[1],

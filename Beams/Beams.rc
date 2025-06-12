@@ -140,89 +140,8 @@ PCIDECKEDBULBTEE        METAFILE                "res\\PCIDeckedBulbTee.emf"
 // REGISTRY
 //
 
-IDR_IBEAMFACTORY        REGISTRY                "IBeamFactory.rgs"
-
-IDR_UBEAMFACTORY        REGISTRY                "UBeamFactory.rgs"
-
-IDR_UBEAM2FACTORY       REGISTRY                "UBeam2Factory.rgs"
-
-IDR_NUBEAMFACTORY       REGISTRY                "NUBeamFactory.rgs"
-
-IDR_BULBTEEFACTORY      REGISTRY                "BulbTeeFactory.rgs"
-
-IDR_MULTIWEBFACTORY     REGISTRY                "MultiWebFactory.rgs"
-
-IDR_MULTIWEB2FACTORY    REGISTRY                "MultiWeb2Factory.rgs"
-
-IDR_DOUBLETEEFACTORY    REGISTRY                "DoubleTeeFactory.rgs"
-
-IDR_VOIDEDSLABFACTORY   REGISTRY                "VoidedSlabFactory.rgs"
-
-IDR_VOIDEDSLAB2FACTORY  REGISTRY                "VoidedSlabFactory2.rgs"
-
-IDR_BOXBEAMFACTORY      REGISTRY                "BoxBeamFactory.rgs"
-
-IDR_BOXBEAMFACTORY2     REGISTRY                "BoxBeamFactory2.rgs"
-
-IDR_TXDOTDOUBLETFACTORY REGISTRY                "TxDotDoubleTFactory.rgs"
-
-IDR_TAPEREDIBEAMFACTORY REGISTRY                "TaperedIBeamFactory.rgs"
-
-IDR_DECKEDSLABBEAMFACTORY REGISTRY                "DeckedSlabBeamFactory.rgs"
-
 IDR_STRANDMOVERIMPL     REGISTRY                "StrandMoverImpl.rgs"
-
-IDR_IBEAMFAMILY         REGISTRY                "IBeamFamily.rgs"
-
-IDR_UBEAMFAMILY         REGISTRY                "UBeamFamily.rgs"
-
-IDR_BOXBEAMFAMILY       REGISTRY                "BoxBeamFamily.rgs"
-
-IDR_DECKBULBTEEBEAMFAMILY REGISTRY                "BulbTeeFamily.rgs"
-
-IDR_DOUBLETEEBEAMFAMILY REGISTRY                "DoubleTeeFamily.rgs"
-
-IDR_RIBBEDBEAMFAMILY    REGISTRY                "MultiWebFamily.rgs"
-
-IDR_SLABBEAMFAMILY      REGISTRY                "VoidedSlabFamily.rgs"
-
-IDR_DECKEDSLABBEAMFAMILY REGISTRY                "DeckedSlabBeamFamily.rgs"
-
-IDR_PSBEAMLOSSENGINEER  REGISTRY                "PsBeamLossEngineer.rgs"
-
-IDR_TIMESTEPLOSSENGINEER REGISTRY                "TimeStepLossEngineer.rgs"
-
-IDR_IBEAMDISTFACTORENGINEER REGISTRY                "IBeamDistFactorEngineer.rgs"
-
-IDR_BOXBEAMDISTFACTORENGINEER REGISTRY                "BoxBeamDistFactorEngineer.rgs"
-
-IDR_BULBTEEDISTFACTORENGINEER REGISTRY                "BulbTeeDistFactorEngineer.rgs"
-
-IDR_MULTIWEBDISTFACTORENGINEER REGISTRY                "MultiWebDistFactorEngineer.rgs"
-
-IDR_UBEAMDISTFACTORENGINEER REGISTRY                "UBeamDistFactorEngineer.rgs"
-
-IDR_VOIDEDSLABDISTFACTORENGINEER REGISTRY                "VoidedSlabDistFactorEngineer.rgs"
-
-IDR_VOIDEDSLAB2DISTFACTORENGINEER REGISTRY                "VoidedSlab2DistFactorEngineer.rgs"
-
-IDR_TXDOTSPREADSLABBEAMDISTFACTORENGINEER REGISTRY                "TxDOTSpreadSlabBeamDistFactorEngineer.rgs"
-
-IDR_SPLICEDIBEAMFAMILY  REGISTRY                "SplicedIBeamFamily.rgs"
-
-IDR_SPLICEDUBEAMFAMILY  REGISTRY                "SplicedUBeamFamily.rgs"
-
-IDR_SPLICEDIBEAMFACTORY REGISTRY                "SplicedIBeamFactory.rgs"
-
-IDR_SPLICEDUBEAMFACTORY REGISTRY                "SplicedUBeamFactory.rgs"
-
-IDR_SPLICEDNUBEAMFACTORY REGISTRY                "SplicedNUBeamFactory.rgs"
-
 IDR_AGE_ADJUSTED_MATERIAL REGISTRY                "AgeAdjustedMaterial.rgs"
-
-IDR_NUDECKEDBULBTEEFACTORY REGISTRY                "NUDeckedBulbTeeFactory.rgs"
-
-IDR_PCIDECKEDBULBTEEFACTORY REGISTRY                "PCIDeckedBulbTeeFactory.rgs"
 
 
 /////////////////////////////////////////////////////////////////////////////

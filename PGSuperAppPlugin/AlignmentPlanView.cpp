@@ -29,23 +29,19 @@
 #include "AlignmentPlanView.h"
 #include "AlignmentProfileView.h"
 #include "PGSuperDocBase.h"
-#include <IFace\DrawBridgeSettings.h>
 #include "PGSuperColors.h"
 #include "AlignmentDisplayObjectEvents.h"
 #include "BridgeDisplayObjectEvents.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace\DrawBridgeSettings.h>
 
 #include <DManip/PolyLineDisplayObjectImpl.h>
 #include <WBFLGeometry/GeomHelpers.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define TITLE_DISPLAY_LIST       0
 #define ALIGNMENT_DISPLAY_LIST   1
@@ -141,7 +137,7 @@ void CAlignmentPlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
-   CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+   auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_ALIGNMENT_PLAN_CTX,nullptr);
 
    if ( logPoint.x < 0 || logPoint.y < 0 )
@@ -166,7 +162,6 @@ void CAlignmentPlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
 
    pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, logPoint.x, logPoint.y, this);
-   delete pMenu;
 }
 
 void CAlignmentPlanView::OnViewSettings() 
@@ -215,8 +210,8 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
    auto display_list = m_pDispMgr->FindDisplayList(ALIGNMENT_DISPLAY_LIST);
    display_list->Clear();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IRoadway,pRoadway);
    GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
@@ -382,8 +377,8 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
    // Build the deck shape
    CComPtr<IShape> shape;
    CComPtr<IPoint2d> pntShape;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    if (deckType == pgsTypes::sdtNone)
@@ -501,8 +496,8 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
    auto label_display_list = m_pDispMgr->FindDisplayList(LABEL_DISPLAY_LIST);
    label_display_list->Clear();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    // Label Start and End of Bridge
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
@@ -607,8 +602,8 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
 
 void CAlignmentPlanView::CreateStationLabel(std::shared_ptr<WBFL::DManip::iDisplayList> pDisplayList,Float64 station,LPCTSTR strBaseLabel,long angle,UINT textAlign)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IRoadway,pRoadway);
@@ -651,8 +646,8 @@ void CAlignmentPlanView::CreateStationLabel(std::shared_ptr<WBFL::DManip::iDispl
 
 void CAlignmentPlanView::BuildNorthArrowDisplayObjects()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    auto display_list = m_pDispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST);
    display_list->Clear();

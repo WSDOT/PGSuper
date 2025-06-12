@@ -27,46 +27,47 @@
 #include "Reporting.h"
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 #include <initguid.h>
 // Put an include statement here for every interface used in this agent.
-// The #include "initguid.h" statement above will cause the IID's to be
+// The #include <initguid.h> statement above will cause the IID's to be
 // resolved in this DLL
-#include <IFace\Project.h>
-#include <IFace\Bridge.h>
-#include <IFace\Alignment.h>
-
-#include <IFace\AnalysisResults.h>
-#include <IFace\PrestressForce.h>
-#include <IFace\Artifact.h>
-#include <IFace\DistributionFactors.h>
-#include <IFace\MomentCapacity.h>
-#include <IFace\ShearCapacity.h>
-#include <IFace\Constructability.h>
-#include <IFace\TransverseReinforcementSpec.h>
-#include <IFace\PrecastIGirderDetailsSpec.h>
-#include <IFace\VersionInfo.h>
-#include <IFace\PointOfInterest.h>
-#include <IFace\GirderHandling.h>
+#include <IFace/Project.h>
+#include <IFace/Bridge.h>
+#include <IFace/Alignment.h>
+#include <IFace/DocumentType.h>
+#include <IFace/Intervals.h>
+#include <IFace/ReportOptions.h>
+#include <IFace/AnalysisResults.h>
+#include <IFace/PrestressForce.h>
+#include <IFace/Artifact.h>
+#include <IFace/DistributionFactors.h>
+#include <IFace/MomentCapacity.h>
+#include <IFace/ShearCapacity.h>
+#include <IFace/Constructability.h>
+#include <IFace/TransverseReinforcementSpec.h>
+#include <IFace/PrecastIGirderDetailsSpec.h>
+#include <IFace/VersionInfo.h>
+#include <IFace/PointOfInterest.h>
+#include <IFace/GirderHandling.h>
 #include <IFace/Limits.h>
-#include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\StatusCenter.h>
-#include <IFace\Selection.h>
-#include <IFace\RatingSpecification.h>
-#include <IFace\CrackedSection.h>
-#include <EAF\EAFUIIntegration.h>
-#include <EAF\EAFDisplayUnits.h>
-#include <IFace\SplittingChecks.h>
+#include <IFace/GirderHandlingSpecCriteria.h>
+#include <IFace/Selection.h>
+#include <IFace/RatingSpecification.h>
+#include <IFace/CrackedSection.h>
+#include <IFace/BearingDesignParameters.h>
+#include <IFace/PrincipalWebStress.h>
+#include <IFace/ResistanceFactors.h>
+#include <IFace/SplittingChecks.h>
+#include <EAF/EAFProgress.h>
+#include <EAF/EAFStatusCenter.h>
+#include <EAF/EAFUIIntegration.h>
+#include <EAF/EAFDisplayUnits.h>
 
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>
-#include <WBFLCore_i.c>
+
 #include <WBFLGenericBridge_i.c>
 #include <WBFLGenericBridgeTools_i.c>
 

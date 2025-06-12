@@ -33,34 +33,34 @@ public:
    CBridgeSectionCutDisplayImpl() = default;
    virtual ~CBridgeSectionCutDisplayImpl() = default;
 
-   virtual void SetColor(COLORREF color) override;
-   virtual void Init(CBridgeModelViewChildFrame* pFrame, std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IRoadway* pRoadway, IBridge* pBridge, iCutLocation* pCutLoc) override;
+   void SetColor(COLORREF color) override;
+   void Init(CBridgeModelViewChildFrame* pFrame, std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::weak_ptr<IRoadway> pRoadway, std::weak_ptr<IBridge> pBridge, iCutLocation* pCutLoc) override;
 
-   virtual void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const override;
-   virtual void DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const override;
-   virtual void DrawHighlight(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, bool bHighlight) const override;
-   virtual WBFL::Geometry::Rect2d GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO) const override;
+   void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const override;
+   void DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const override;
+   void DrawHighlight(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, bool bHighlight) const override;
+   WBFL::Geometry::Rect2d GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO) const override;
 
-   virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
-   virtual bool OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, short zDelta, const POINT& point) override;
-   virtual bool OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nChar, UINT nRepCnt, UINT nFlags) override;
-   virtual bool OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, CWnd* pWnd, const POINT& point) override;
-   virtual void OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
-   virtual void OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset) override;
-   virtual void OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
-   virtual void OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
-   virtual void OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
-   virtual void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   bool OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, short zDelta, const POINT& point) override;
+   bool OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nChar, UINT nRepCnt, UINT nFlags) override;
+   bool OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, CWnd* pWnd, const POINT& point) override;
+   void OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   void OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset) override;
+   void OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   void OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   void OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
 
-   virtual UINT Format() override;
-   virtual bool PrepareForDrag(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, std::shared_ptr<WBFL::DManip::iDragDataSink> pSink) override;
-   virtual void OnDrop(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, std::shared_ptr<WBFL::DManip::iDragDataSource> pSource) override;
+   UINT Format() override;
+   bool PrepareForDrag(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, std::shared_ptr<WBFL::DManip::iDragDataSink> pSink) override;
+   void OnDrop(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, std::shared_ptr<WBFL::DManip::iDragDataSource> pSource) override;
 
     // Note from George Shepherd: ClassWizard looks for these comments:
     // Generated OLE dispatch map functions
@@ -78,8 +78,8 @@ private:
    void GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, Float64 position, Float64* top, Float64* left, Float64* right, Float64* bottom) const;
 
    COLORREF           m_Color = RGB(0, 0, 220);
-   IBridge*           m_pBridge = nullptr;
-   IRoadway*          m_pRoadway = nullptr;
+   std::weak_ptr<IBridge>           m_pBridge; // stored interface pointers must be weak to avoid circular references
+   std::weak_ptr<IRoadway>          m_pRoadway;
    iCutLocation*      m_pCutLocation = nullptr;
    CBridgeModelViewChildFrame* m_pFrame = nullptr;
    

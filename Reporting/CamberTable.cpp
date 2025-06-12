@@ -26,76 +26,23 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
+#include <psgLib/SpecLibraryEntry.h>
 #include <psgLib/CreepCriteria.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/****************************************************************************
-CLASS
-   CCamberTable
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CCamberTable::CCamberTable()
 {
 }
 
-CCamberTable::CCamberTable(const CCamberTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CCamberTable::~CCamberTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CCamberTable& CCamberTable::operator= (const CCamberTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CCamberTable::MakeCopy(const CCamberTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CCamberTable::MakeAssignment(const CCamberTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-void CCamberTable::GetPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,PoiList* pvPoiRelease,PoiList* pvPoiStorage,PoiList* pvPoiErected) const
+void CCamberTable::GetPointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,PoiList* pvPoiRelease,PoiList* pvPoiStorage,PoiList* pvPoiErected) const
 {
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    pPoi->GetPointsOfInterest( segmentKey,POI_RELEASED_SEGMENT | POI_TENTH_POINTS, pvPoiRelease);
@@ -134,21 +81,9 @@ void CCamberTable::GetPointsOfInterest(IBroker* pBroker,const CSegmentKey& segme
    ATLASSERT(pvPoiRelease->size() == pvPoiStorage->size() && pvPoiStorage->size() == pvPoiErected->size());
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-void CCamberTable::Build_Deck(IBroker* pBroker, const CSegmentKey& segmentKey,
+void CCamberTable::Build_Deck(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
-   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
@@ -162,9 +97,9 @@ void CCamberTable::Build_Deck(IBroker* pBroker, const CSegmentKey& segmentKey,
    }
 }
 
-void CCamberTable::Build_NoDeck(IBroker* pBroker, const CSegmentKey& segmentKey,
+void CCamberTable::Build_NoDeck(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
-   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
@@ -178,9 +113,9 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker, const CSegmentKey& segmentKey,
    }
 }
 
-void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
+void CCamberTable::Build_Deck_Y(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint,bool bConstruction, bool bOverlay, bool bDeckPanels,
-   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
@@ -576,9 +511,9 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    *pTable3 = table3;
 }
 
-void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey,
+void CCamberTable::Build_Deck_XY(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
-   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
@@ -1098,9 +1033,9 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    *pTable3 = table3;
 }
 
-void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
+void CCamberTable::Build_NoDeck_Y(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
-   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
@@ -1512,9 +1447,9 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    *pTable3 = table3;
 }
 
-void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKey,
+void CCamberTable::Build_NoDeck_XY(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
                                             bool bTempStrands, bool bSidewalk, bool bShearKey,bool bLongitudinalJoint,bool bConstruction, bool bOverlay,
-                                            IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
+                                            std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
                                             rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );

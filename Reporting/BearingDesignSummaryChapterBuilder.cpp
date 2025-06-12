@@ -35,6 +35,7 @@
 #include <Reporting\CombinedReactionTable.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
@@ -43,31 +44,14 @@
 #include <IFace\Intervals.h>
 #include <IFace\DistributionFactors.h>
 
-#include <PgsExt\PierData2.h>
+#include <PsgLib\PierData2.h>
 #include <Reporting/BearingShearDeformationTable.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CBearingDesignParametersChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CBearingDesignSummaryChapterBuilder::CBearingDesignSummaryChapterBuilder(bool bSelect) :
     CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CBearingDesignSummaryChapterBuilder::GetName() const
 {
     return TEXT("Bearing Design Summary");
@@ -76,8 +60,7 @@ LPCTSTR CBearingDesignSummaryChapterBuilder::GetName() const
 rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
     auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-    CComPtr<IBroker> pBroker;
-    pGirderRptSpec->GetBroker(&pBroker);
+    auto pBroker = pGirderRptSpec->GetBroker();
     const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
 
@@ -153,9 +136,4 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     *p << _T("-Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine << rptNewLine;
 
     return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder>CBearingDesignSummaryChapterBuilder::Clone() const
-{
-    return std::make_unique<CBearingDesignSummaryChapterBuilder>();
 }

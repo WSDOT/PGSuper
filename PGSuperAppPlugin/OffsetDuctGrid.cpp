@@ -26,14 +26,11 @@
 #include "stdafx.h"
 #include "OffsetDuctGrid.h"
 #include "OffsetDuctDlg.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(COffsetDuctGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -61,8 +58,8 @@ void COffsetDuctGrid::CustomInit(COffsetDuctGridCallback* pCallback)
 {
    m_pCallback = pCallback;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Initialize the grid. For CWnd based grids this call is // 
@@ -134,8 +131,8 @@ void COffsetDuctGrid::CustomInit(COffsetDuctGridCallback* pCallback)
 
 COffsetDuctGeometry COffsetDuctGrid::GetData()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    COffsetDuctGeometry ductGeometry;
@@ -197,8 +194,8 @@ void COffsetDuctGrid::AddPoint()
 
 void COffsetDuctGrid::FillRow(ROWCOL row,Float64 distance,Float64 offset)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strDist;

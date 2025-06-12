@@ -35,11 +35,6 @@
 #include "PGSuperColors.h"
 #include "PGSuperUIUtil.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 #define BORDER 7
@@ -215,8 +210,7 @@ void CTOGAGirderSelectStrandsDlg::OnSize(UINT nType, int cx, int cy)
 
 void CTOGAGirderSelectStrandsDlg::OnPaint() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    // Make sure we have up to date grid data
    m_Grid.UpdateData(false);
@@ -234,8 +228,7 @@ void CTOGAGirderSelectStrandsDlg::OnPaint()
    pWnd->UpdateWindow();
 
    // Get girder shape
-   CComPtr<IBeamFactory> factory;
-   m_pGdrEntry->GetBeamFactory(&factory);
+   auto factory = m_pGdrEntry->GetBeamFactory();
 
    GirderLibraryEntry::Dimensions dimensions = m_pGdrEntry->GetDimensions();
 

@@ -25,32 +25,32 @@
 
 #include <IFace\Artifact.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Constructability.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
-#include <PgsExt\BridgeDescription2.h>
 
+#include <PsgLib\BridgeDescription2.h>
+#include <psgLib/GirderLibraryEntry.h>
+#include <PsgLib/SpecLibraryEntry.h>
 #include <psgLib/BottomFlangeClearanceCriteria.h>
 #include <psgLib/SlabOffsetCriteria.h>
 #include <psgLib/CreepCriteria.h>
 #include <psgLib/LimitsCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // return true if more than a single span report so we can add columns for span/girder
-bool ConstrNeedSpanCols(const std::vector<CGirderKey>& girderList, IBridge* pBridge)
+bool ConstrNeedSpanCols(const std::vector<CGirderKey>& girderList, std::shared_ptr<IBridge> pBridge)
 {
    bool doNeed = 1 < girderList.size();
    if (!doNeed)
@@ -105,7 +105,7 @@ CConstructabilityCheckTable& CConstructabilityCheckTable::operator= (const CCons
 
 
 //======================== OPERATIONS =======================================
-void CConstructabilityCheckTable::BuildSlabOffsetTable(rptChapter* pChapter,IBroker* pBroker,const std::vector<CGirderKey>& girderList,IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildSlabOffsetTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderList,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -118,10 +118,10 @@ void CConstructabilityCheckTable::BuildSlabOffsetTable(rptChapter* pChapter,IBro
    // Give progress window a progress meter if needed
    bool bMultiGirderReport = (1 < girderList.size() ? true : false);
 
-   GET_IFACE2(pBroker,IProgress,pProgress);
+   GET_IFACE2(pBroker,IEAFProgress,pProgress);
    DWORD mask = bMultiGirderReport ? PW_ALL|PW_NOCANCEL : PW_ALL|PW_NOGAUGE|PW_NOCANCEL;
 
-   CEAFAutoProgress ap(pProgress,0,mask); 
+   WBFL::EAF::AutoProgress ap(pProgress,0,mask); 
 
    if (bMultiGirderReport)
    {
@@ -167,7 +167,7 @@ void CConstructabilityCheckTable::BuildSlabOffsetTable(rptChapter* pChapter,IBro
    }
 }
 
-void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter, IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IArtifact, pIArtifact);
    GET_IFACE2_NOCHECK(pBroker, IGirderHaunch, pGdrHaunch);
@@ -348,7 +348,7 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
    }
 }
 
-void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter,IBroker* pBroker,const std::vector<CGirderKey>& girderList,IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderList,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2_NOCHECK(pBroker,IGirderHaunch,pGdrHaunch);
@@ -519,7 +519,7 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
    }
 }
 
-void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
@@ -621,7 +621,7 @@ void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter
    }
 }
 
-void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2_NOCHECK(pBroker,IArtifact,pIArtifact);
    GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
@@ -731,7 +731,7 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,I
    }
 }
 
-void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
@@ -870,7 +870,7 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
    }
 }
 
-void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
@@ -883,7 +883,7 @@ void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,IBroker*
    }
 }
 
-void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bIsApplicable = false;
@@ -988,7 +988,7 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
    } // next segment
 }
 
-void CConstructabilityCheckTable::BuildPrecamberCheck(rptChapter* pChapter, IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildPrecamberCheck(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IArtifact, pIArtifact);
    GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
@@ -1084,7 +1084,7 @@ void CConstructabilityCheckTable::BuildPrecamberCheck(rptChapter* pChapter, IBro
    }
 }
 
-void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, ILibrary, pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -1213,7 +1213,7 @@ void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pC
    }
 }
 
-void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapter, IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IArtifact, pIArtifact);
    GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
@@ -1342,7 +1342,7 @@ void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapt
    }
 }
 
-void CConstructabilityCheckTable::BuildMinimumHaunchCheck(rptChapter* pChapter,IBroker* pBroker,const std::vector<CGirderKey>& girderList,IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildMinimumHaunchCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderList,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
    GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
@@ -1472,7 +1472,7 @@ void CConstructabilityCheckTable::BuildMinimumHaunchCheck(rptChapter* pChapter,I
    }
 }
 
-void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,ICamber,pCamber);
 
@@ -1745,7 +1745,7 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,I
    }
 }
 
-void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits) const
+void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IProductForces, pProductForces);
    GET_IFACE2(pBroker,ILimitStateForces,pLSForces);

@@ -25,23 +25,21 @@
 #include "stdafx.h"
 #include "PGSuperApp.h"
 #include "EditPointLoadDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"
 
 #include <System\Tokenizer.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "TimelineEventDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditPointLoadDlg dialog
@@ -58,7 +56,7 @@ CEditPointLoadDlg::CEditPointLoadDlg(const CPointLoadData& load,const CTimelineM
 
 	//{{AFX_DATA_INIT(CEditPointLoadDlg)
 	//}}AFX_DATA_INIT
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 }
 
 

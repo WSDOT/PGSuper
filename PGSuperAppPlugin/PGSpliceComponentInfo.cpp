@@ -21,7 +21,6 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin_i.h"
 #include "PGSpliceComponentInfo.h"
 #include "resource.h"
 #include <EAF\EAFApp.h>
@@ -29,22 +28,6 @@
 #include <EAF\EAFDocument.h>
 #include "AboutDlg.h"
 #include "PGSpliceDoc.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-HRESULT CPGSpliceComponentInfo::FinalConstruct()
-{
-   return S_OK;
-}
-
-void CPGSpliceComponentInfo::FinalRelease()
-{
-}
 
 BOOL CPGSpliceComponentInfo::Init(CEAFApp* pApp)
 {

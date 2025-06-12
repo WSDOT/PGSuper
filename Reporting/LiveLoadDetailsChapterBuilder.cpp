@@ -24,6 +24,7 @@
 #include <Reporting\LiveLoadDetailsChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
@@ -34,11 +35,6 @@
 #include <psgLib/LiveLoadLibraryEntry.h>
 #include <psgLib/LiveLoadCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 void ReportPedestrian(ILiveLoads::PedestrianLoadApplicationType pedType, rptParagraph* pPara)
 {
@@ -60,11 +56,6 @@ void ReportPedestrian(ILiveLoads::PedestrianLoadApplicationType pedType, rptPara
    }
 }
 
-/****************************************************************************
-CLASS
-   CLiveLoadDetailsChapterBuilder
-****************************************************************************/
-
 CLiveLoadDetailsChapterBuilder::CLiveLoadDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -80,8 +71,7 @@ LPCTSTR CLiveLoadDetailsChapterBuilder::GetName() const
 rptChapter* CLiveLoadDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -408,7 +398,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(const std::shared_ptr<const WB
    return pChapter;
 }
 
-void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstring& load_name, rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits)
+void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::_tstring& load_name, rptParagraph* pPara,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         dim,         pDisplayUnits->GetSpanLengthUnit(),       false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,          force,       pDisplayUnits->GetGeneralForceUnit(),     false );
@@ -558,9 +548,4 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
          }
       }
    }
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLiveLoadDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CLiveLoadDetailsChapterBuilder>(m_bDesign,m_bRating);
 }

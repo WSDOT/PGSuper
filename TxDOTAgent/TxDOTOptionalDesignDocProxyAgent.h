@@ -22,21 +22,21 @@
 
 #pragma once
 
-#include "CLSID.h"
+#include <EAF\Agent.h>
 
-#include <EAF\EAFInterfaceCache.h>
 
 #include <IFace\UpdateTemplates.h>
 #include <IFace\Selection.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\DocumentType.h>
+#include <IFace/PointOfInterest.h>
+
 #include "TxDOTOptionalDesignData.h"
 
 #include <pgsExt\GirderArtifact.h>
 
 
 class CTxDOTOptionalDesignDoc;
-struct IBroker;
 
 // {4C58E3C0-6BEC-44bc-AF29-35596951BCBB}
 DEFINE_GUID(CLSID_TxDOTOptionalDesignDocProxyAgent, 
@@ -61,10 +61,7 @@ LOG
    rdp : 02.21.2010 : Turned into txdot optional design agent
 *****************************************************************************/
 
-class CTxDOTOptionalDesignDocProxyAgent :
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CTxDOTOptionalDesignDocProxyAgent,&CLSID_TxDOTOptionalDesignDocProxyAgent>,
-   public IAgentEx,
+class CTxDOTOptionalDesignDocProxyAgent : public WBFL::EAF::Agent,
    public IUpdateTemplates,
    public ISelection,
    public IDocumentType,
@@ -74,95 +71,81 @@ class CTxDOTOptionalDesignDocProxyAgent :
    public ITxDataObserver
 {
 public:
-   CTxDOTOptionalDesignDocProxyAgent();
+   CTxDOTOptionalDesignDocProxyAgent(CTxDOTOptionalDesignDoc* pDoc);
    ~CTxDOTOptionalDesignDocProxyAgent();
 
-BEGIN_COM_MAP(CTxDOTOptionalDesignDocProxyAgent)
-   COM_INTERFACE_ENTRY(IAgent)
-   COM_INTERFACE_ENTRY(IAgentEx)
-   COM_INTERFACE_ENTRY(IUpdateTemplates)
-   COM_INTERFACE_ENTRY(ISelection)
-   COM_INTERFACE_ENTRY(IDocumentType)
-   COM_INTERFACE_ENTRY(IVersionInfo)
-   COM_INTERFACE_ENTRY(IGetTogaData)
-   COM_INTERFACE_ENTRY(IGetTogaResults)
-END_COM_MAP()
-
-   void SetDocument(CTxDOTOptionalDesignDoc* pDoc);
-
-// IAgentEx
+// Agent
 public:
-   STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker) override;
-	STDMETHOD(RegInterfaces)() override;
-	STDMETHOD(Init)() override;
-	STDMETHOD(Init2)() override;
-	STDMETHOD(Reset)() override;
-	STDMETHOD(ShutDown)() override;
-   STDMETHOD(GetClassID)(CLSID* pCLSID) override;
+   std::_tstring GetName() const override { return _T("TOGO DocProxy Agent"); }
+   bool RegisterInterfaces() override;
+   bool Init() override;
+   bool Reset() override;
+   bool ShutDown() override;
+   CLSID GetCLSID() const override;
 
 // IUpdateTemplates
 public:
-   virtual bool UpdatingTemplates() override;
+   bool UpdatingTemplates() override;
 
    // ISelection
 public:
-   virtual CSelection GetSelection() override;
-   virtual void ClearSelection() override;
-   virtual PierIndexType GetSelectedPier() override;
-   virtual SpanIndexType GetSelectedSpan() override;
-   virtual CGirderKey GetSelectedGirder() override;
-   virtual CSegmentKey GetSelectedSegment() override;
-   virtual CClosureKey GetSelectedClosureJoint() override;
-   virtual SupportIDType GetSelectedTemporarySupport() override;
-   virtual bool IsDeckSelected() override;
-   virtual bool IsAlignmentSelected() override;
-   virtual bool IsRailingSystemSelected(pgsTypes::TrafficBarrierOrientation orientation) override;
-   virtual void SelectPier(PierIndexType pierIdx) override;
-   virtual void SelectSpan(SpanIndexType spanIdx) override;
-   virtual void SelectGirder(const CGirderKey& girderKey) override;
-   virtual void SelectSegment(const CSegmentKey& segmentKey) override;
-   virtual void SelectClosureJoint(const CClosureKey& closureKey) override;
-   virtual void SelectTemporarySupport(SupportIDType tsID) override;
-   virtual void SelectDeck() override;
-   virtual void SelectAlignment() override;
-   virtual void SelectRailingSystem(pgsTypes::TrafficBarrierOrientation orientation) override;
-   virtual Float64 GetSectionCutStation() override;
+   CSelection GetSelection() override;
+   void ClearSelection() override;
+   PierIndexType GetSelectedPier() override;
+   SpanIndexType GetSelectedSpan() override;
+   CGirderKey GetSelectedGirder() override;
+   CSegmentKey GetSelectedSegment() override;
+   CClosureKey GetSelectedClosureJoint() override;
+   SupportIDType GetSelectedTemporarySupport() override;
+   bool IsDeckSelected() override;
+   bool IsAlignmentSelected() override;
+   bool IsRailingSystemSelected(pgsTypes::TrafficBarrierOrientation orientation) override;
+   void SelectPier(PierIndexType pierIdx) override;
+   void SelectSpan(SpanIndexType spanIdx) override;
+   void SelectGirder(const CGirderKey& girderKey) override;
+   void SelectSegment(const CSegmentKey& segmentKey) override;
+   void SelectClosureJoint(const CClosureKey& closureKey) override;
+   void SelectTemporarySupport(SupportIDType tsID) override;
+   void SelectDeck() override;
+   void SelectAlignment() override;
+   void SelectRailingSystem(pgsTypes::TrafficBarrierOrientation orientation) override;
+   Float64 GetSectionCutStation() override;
 
 // IDocumentType
 public:
-   virtual bool IsPGSuperDocument() const override { return true; }
-   virtual bool IsPGSpliceDocument() const override { return false; }
+   bool IsPGSuperDocument() const override { return true; }
+   bool IsPGSpliceDocument() const override { return false; }
 
 // IVersionInfo
 public:
-   virtual CString GetVersionString(bool bIncludeBuildNumber = false) override;
-   virtual CString GetVersion(bool bIncludeBuildNumber = false) override;
+   CString GetVersionString(bool bIncludeBuildNumber = false) override;
+   CString GetVersion(bool bIncludeBuildNumber = false) override;
 
 // IGetTogaData
-   virtual const CTxDOTOptionalDesignData* GetTogaData() override;
+   const CTxDOTOptionalDesignData* GetTogaData() override;
 
 // IGetTogaResults
-   virtual void GetControllingTensileStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart) override;
-   virtual void GetControllingCompressiveStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart) override;
+   void GetControllingTensileStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart) override;
+   void GetControllingCompressiveStress(Float64* pStress, Float64* pStressFactor, Float64* pDistFromStart) override;
 
-   virtual Float64 GetUltimateMomentCapacity() override;
-   virtual Float64 GetMaximumCamber() override;
+   Float64 GetUltimateMomentCapacity() override;
+   Float64 GetMaximumCamber() override;
 
-   virtual Float64 GetRequiredUltimateMoment() override;
-   virtual Float64 GetRequiredFc() override;
-   virtual Float64 GetRequiredFci() override;
+   Float64 GetRequiredUltimateMoment() override;
+   Float64 GetRequiredFc() override;
+   Float64 GetRequiredFci() override;
 
-   virtual const pgsGirderArtifact* GetFabricatorDesignArtifact() override;
-   virtual Float64 GetFabricatorMaximumCamber() override;
+   const pgsGirderArtifact* GetFabricatorDesignArtifact() override;
+   Float64 GetFabricatorMaximumCamber() override;
 
-   virtual bool ShearPassed() override;
+   bool ShearPassed() override;
 
 // ITxDataObserver
-   virtual void OnTxDotDataChanged(int change) override;
+   void OnTxDotDataChanged(int change) override;
 
 
 private:
-   DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
    CTxDOTOptionalDesignDoc* m_pTxDOTOptionalDesignDoc;
 
@@ -191,6 +174,6 @@ private:
    bool m_ShearPassed;
 
    void Validate();
-   void CheckShear(IPointOfInterest* pPoi);
+   void CheckShear(std::shared_ptr<IPointOfInterest> pPoi);
 };
 

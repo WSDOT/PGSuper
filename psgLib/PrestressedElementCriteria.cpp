@@ -20,11 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib/PrestressedElementCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/PrestressedElementCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
-bool PrestressedElementCriteria::Compare(const PrestressedElementCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool PrestressedElementCriteria::Compare(const PrestressedElementCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -35,14 +35,14 @@ bool PrestressedElementCriteria::Compare(const PrestressedElementCriteria& other
       TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses != other.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Stress Limits for Temporary Stresses are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Stress Limits for Temporary Stresses are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if(!IsEqual(MaxCoverToUseHigherTensionStressLimit, other.MaxCoverToUseHigherTensionStressLimit))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Cover Limits for Temporary Stresses are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Cover Limits for Temporary Stresses are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -63,14 +63,14 @@ bool PrestressedElementCriteria::Compare(const PrestressedElementCriteria& other
       TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses != other.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Stress Limits at Service Limit State are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Stress Limits at Service Limit State are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (!::IsEqual(CompressionStressCoefficient_Fatigue, other.CompressionStressCoefficient_Fatigue))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Allowable Concrete Stress at Fatigue Limit State are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Allowable Concrete Stress at Fatigue Limit State are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -99,14 +99,14 @@ bool PrestressedElementCriteria::Compare(const PrestressedElementCriteria& other
       (bCheckTemporaryStresses == true && (!bTempStrandRemovalStresses || !bDeckPlacementStresses)))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Stress Limits for Temporary Loading Conditions are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Stress Limits for Temporary Loading Conditions are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void PrestressedElementCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void PrestressedElementCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
 

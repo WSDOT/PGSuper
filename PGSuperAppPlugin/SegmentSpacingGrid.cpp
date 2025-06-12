@@ -31,17 +31,14 @@
 
 #include "PGSuperDoc.h"
 #include "PGSuperUnits.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CSegmentSpacingGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -169,8 +166,8 @@ void CSegmentSpacingGrid::UpdateGrid()
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    pgsTypes::SupportedBeamSpacing spacingType = m_pSpacing->GetBridgeDescription()->GetGirderSpacingType();
@@ -251,9 +248,9 @@ void CSegmentSpacingGrid::UpdateGrid()
       for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
       {
          const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(gdrIdx)->GetGirderLibraryEntry();
-         const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
-         CComPtr<IBeamFactory> factory;
-         pGdrEntry->GetBeamFactory(&factory);
+         const auto& dimensions = pGdrEntry->GetDimensions();
+         auto factory = pGdrEntry->GetBeamFactory();
+
 
          // save spacing range to local class data
          Float64 minGS, maxGS;
@@ -554,8 +551,8 @@ BOOL CSegmentSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       }
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    if ( IsGirderSpacing(spacingType) )
@@ -590,8 +587,8 @@ BOOL CSegmentSpacingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
 
    if ( nRow == 1 && 1 <= nCol )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 

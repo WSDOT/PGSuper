@@ -26,21 +26,6 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CProjectCriteriaChapterBuilder
-
-   Project Criteria Details Chapter Builder.
-
-
-DESCRIPTION
-   Reports the details of the project criteria
-
-LOG
-   rdp : 08.18.1999 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CProjectCriteriaChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
@@ -48,12 +33,7 @@ public:
 
    virtual LPCTSTR GetName() const override;
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 private:
    bool m_bRating;
-
-   // Prevent accidental copying and assignment
-   CProjectCriteriaChapterBuilder(const CProjectCriteriaChapterBuilder&) = delete;
-   CProjectCriteriaChapterBuilder& operator=(const CProjectCriteriaChapterBuilder&) = delete;
 };

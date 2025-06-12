@@ -21,10 +21,11 @@
 ///////////////////////////////////////////////////////////////////////
 // CTogaDirectFillDlg dialog
 
+#pragma once
+
 #include "TxDOTOptionalDesignGirderData.h"
 #include "TxDOTOptionalDesignBrokerRetreiver.h"
-
-#pragma once
+#include <PsgLib/GirderLibraryEntry.h>
 
 class CTogaDirectFillDlg : public CDialog
 {

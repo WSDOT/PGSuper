@@ -27,22 +27,19 @@ CLASS
 
 #include "stdafx.h"
 #include "PGSuperCalculationSheet.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\DocumentType.h>
 
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-PGSuperCalculationSheet::PGSuperCalculationSheet(IBroker* pBroker) :
+PGSuperCalculationSheet::PGSuperCalculationSheet(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 WsdotCalculationSheet()
 {
    ATLASSERT(pBroker!=0);
@@ -61,10 +58,9 @@ WsdotCalculationSheet()
 
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pDocTemplate = (CEAFDocTemplate*)pDoc->GetDocTemplate();
-   CComPtr<IEAFAppPlugin> appPlugin;
-   pDocTemplate->GetPlugin(&appPlugin);
+   auto pluginApp = pDocTemplate->GetPluginApp();
    CString strBottomTitle;
-   strBottomTitle.Format(_T("%s™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),appPlugin->GetName(),pVerInfo->GetVersion(true),WBFL::System::Date().Year());
+   strBottomTitle.Format(_T("%s™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),pluginApp->GetName(),pVerInfo->GetVersion(true),WBFL::System::Date().Year());
 
    SetTitle(strBottomTitle);
 

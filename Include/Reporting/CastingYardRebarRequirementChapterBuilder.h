@@ -20,84 +20,25 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_CASTINGYARDREBARREQUIREMENTCHAPTERBUILDER_H_
-#define INCLUDED_CASTINGYARDREBARREQUIREMENTCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
 
-/*****************************************************************************
-CLASS 
-   CCastingYardRebarRequirementChapterBuilder
-
-   Reports the details for computing the required amount of tension rebar
-   so that the alternative tension stress limit can be used.
-
-
-DESCRIPTION
-   Reports the details for computing the required amount of tension rebar
-   so that the alternative tension stress limit can be used.
-
-LOG
-   rab : 05.04.2006 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CCastingYardRebarRequirementChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CCastingYardRebarRequirementChapterBuilder(bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CCastingYardRebarRequirementChapterBuilder(const CCastingYardRebarRequirementChapterBuilder&) = delete;
-   CCastingYardRebarRequirementChapterBuilder& operator=(const CCastingYardRebarRequirementChapterBuilder&) = delete;
-
-   void BuildTable(IBroker* pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,bool bSimpleTable) const;
-   void BuildTable(IBroker* pBroker,rptParagraph* pPara,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bSimpleTable) const;
-   void BuildTable(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,IntervalIndexType intervalIdx, bool bSimpleTable) const;
-   rptRcTable* CreateTable(IBroker* pBroker,const CGirderKey& girderKey,bool bSimpleTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,IEAFDisplayUnits* pDisplayUnits) const;
-   void FillTable(IBroker* pBroker,rptRcTable* pTable,bool bSimpleTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   void BuildTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,bool bSimpleTable) const;
+   void BuildTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptParagraph* pPara,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bSimpleTable) const;
+   void BuildTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptParagraph* pPara,const CGirderKey& girderKey,IntervalIndexType intervalIdx, bool bSimpleTable) const;
+   rptRcTable* CreateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,bool bSimpleTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void FillTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,bool bSimpleTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_CASTINGYARDREBARREQUIREMENTCHAPTERBUILDER_H_

@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// psgLib.cpp : Defines the initialization routines for the DLL.
+// PsgLib.cpp : Defines the initialization routines for the DLL.
 //
 
 #include "stdafx.h"
@@ -30,11 +30,12 @@
 
 #include "CLSID.h"
 
-#include <psgLib\psgLib.h>
-#include <psgLib\StructuredLoad.h>
-#include <psgLib\LibraryEntryDifferenceItem.h>
+#include <PsgLib\PsgLib.h>
+#include <PsgLib\StructuredLoad.h>
+#include <PsgLib\DifferenceItem.h>
 #include "LibraryEntryConflict.h"
 
+#include <WBFLCOGO_i.c>
 #include <WBFLGeometry_i.c>
 #include <WBFLTools_i.c>
 #include <Plugins\Beams.h>
@@ -44,7 +45,7 @@
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 #include <Plugins\BeamFamilyCLSID.h>
-#include "LibraryAppPlugin.h"
+#include "LibraryPluginApp.h"
 
 #include <BridgeLinkCATID.h>
 
@@ -61,44 +62,13 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <EAF\ComponentModule.h>
 
+WBFL::EAF::ComponentModule Module_;
 
-//
-//	Note!
-//
-//		If this DLL is dynamically linked against the MFC
-//		DLLs, any functions exported from this DLL which
-//		call into MFC must have the AFX_MANAGE_STATE macro
-//		added at the very beginning of the function.
-//
-//		For example:
-//
-//		extern "C" BOOL PASCAL EXPORT ExportedFunction()
-//		{
-//			AFX_MANAGE_STATE(AfxGetStaticModuleState());
-//			// normal function body here
-//		}
-//
-//		It is very important that this macro appear in each
-//		function, prior to any calls into MFC.  This means that
-//		it must appear as the first statement within the 
-//		function, even before any object variable declarations
-//		as their constructors may generate calls into the MFC
-//		DLL.
-//
-//		Please see MFC Technical Notes 33 and 58 for additional
-//		details.
-//
-
-/////////////////////////////////////////////////////////////////////////////
-// CPsgLibApp
-// See psgLib.cpp for the implementation of this class
-//
+EAF_BEGIN_OBJECT_MAP(ObjectMap)
+EAF_OBJECT_ENTRY(CLSID_LibraryAppPlugin, CLibraryPluginApp)
+EAF_END_OBJECT_MAP()
 
 class CPsgLibApp : public CWinApp
 {
@@ -151,13 +121,13 @@ CPsgLibApp theApp;
 
 BOOL CPsgLibApp::InitInstance()
 {
+   Module_.Init(ObjectMap);
+
    // enable use of activeX controls
    AfxEnableControlContainer();
 
    // This call will initialize the grid library
 	GXInit();
-
-   WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSLibrary Editor Components"),CATID_PGSuperLibraryManagerPlugin);
 
    return CWinApp::InitInstance();
 }
@@ -167,6 +137,7 @@ BOOL CPsgLibApp::InitInstance()
 
 int CPsgLibApp::ExitInstance() 
 {
+   Module_.Term();
    GXForceTerminate();
 	return CWinApp::ExitInstance();
 }
@@ -207,7 +178,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
          pproject = projectLib.LookupEntry(name.c_str());
          ATLASSERT(pproject!=0);
 
-         std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
+         std::vector<std::unique_ptr<PGS::Library::DifferenceItem>> vDifferences;
          bool bMustRename = false;
          bool bSame = (bForceUpdate ? pmaster->IsEqual(*pproject) : pmaster->Compare(*pproject,vDifferences,bMustRename));
          if (!bSame)
@@ -217,7 +188,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
             {
                // the library entry was lazy and didn't specify the exact nature of the conflict.
                // provide something to show in the conflict resolution dialog
-               vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Unspecified conflicts"),_T(""),_T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Unspecified conflicts"),_T(""),_T("")));
             }
 
             LibConflictOutcome res;
@@ -435,7 +406,7 @@ void psglibCreateLibNameEnum( std::vector<std::_tstring>* pNames, const WBFL::Li
    prjLib.KeyList( *pNames );
 }
 
-LibConflictOutcome psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bMustRename,std::_tstring* pNewName)
+LibConflictOutcome psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool bMustRename,std::_tstring* pNewName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -533,7 +504,7 @@ HRESULT pgslibReadProjectDocHeader(LPCTSTR lpszRootNodeName,IStructuredLoad* pSt
    return S_OK;
 }
 
-HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode* pUnitsMode)
+HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,WBFL::EAF::UnitMode* pUnitsMode)
 {
    USES_CONVERSION;
 
@@ -569,17 +540,17 @@ HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode*
 
    if (str==_T("US"))
    {
-      *pUnitsMode = eafTypes::umUS;
+      *pUnitsMode = WBFL::EAF::UnitMode::US;
    }
    else
    {
-      *pUnitsMode = eafTypes::umSI;
+      *pUnitsMode = WBFL::EAF::UnitMode::SI;
    }
 
    return S_OK;
 }
 
-HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode, bool bIsMasterLibrary)
+HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,WBFL::EAF::UnitMode* pUnitMode, bool bIsMasterLibrary)
 {
    CComPtr<IStructuredLoad> pStrLoad;
    pStrLoad.CoCreateInstance(CLSID_StructuredLoad);
@@ -604,7 +575,7 @@ HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafType
    return S_OK;
 }
 
-HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode, bool bIsMasterLibrary)
+HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,WBFL::EAF::UnitMode* pUnitMode, bool bIsMasterLibrary)
 {
    try
    {
@@ -666,54 +637,4 @@ HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,e
    }
 
    return S_OK;
-}
-
-// Used to determine whether the DLL can be unloaded by OLE
-STDAPI DllCanUnloadNow(void)
-{
-    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-    return (AfxDllCanUnloadNow()==S_OK && _AtlModule.GetLockCount()==0) ? S_OK : S_FALSE;
-}
-
-// Returns a class factory to create an object of the requested type
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-    return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
-}
-
-HRESULT RegisterComponents(bool bRegister)
-{
-   HRESULT hr = S_OK;
-
-   // Need to register the library application plugin with the PGSuperAppPlugin category
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_LibraryAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   return S_OK;
-}
-
-
-// DllRegisterServer - Adds entries to the system registry
-STDAPI DllRegisterServer(void)
-{
-    // registers object, typelib and all interfaces in typelib
-    HRESULT hr = _AtlModule.DllRegisterServer();
-
-    hr = RegisterComponents(true);
-
-
-   return S_OK;
-}
-
-
-// DllUnregisterServer - Removes entries from the system registry
-STDAPI DllUnregisterServer(void)
-{
-   HRESULT hr = _AtlModule.DllUnregisterServer();
-   hr = RegisterComponents(false);
-
-   return hr;
 }

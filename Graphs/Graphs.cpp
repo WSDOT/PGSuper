@@ -27,18 +27,13 @@
 #include "Graphs.h"
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 #include <initguid.h>
+
 // Put an include statement here for every interface used in this agent.
-// The #include "initguid.h" statement above will cause the IID's to be
+// The #include <initguid.h> statement above will cause the IID's to be
 // resolved in this DLL
-#include <WBFLCore_i.c>
 
 //
 //TODO: If this DLL is dynamically linked against the MFC DLLs,
@@ -70,11 +65,6 @@ static char THIS_FILE[] = __FILE__;
 BEGIN_MESSAGE_MAP(CGraphingApp, CWinApp)
 END_MESSAGE_MAP()
 
-CComModule _Module;
-
-BEGIN_OBJECT_MAP(ObjectMap)
-END_OBJECT_MAP()
-
 // CGraphingApp construction
 
 CGraphingApp::CGraphingApp()
@@ -93,12 +83,10 @@ CGraphingApp theApp;
 
 BOOL CGraphingApp::InitInstance()
 {
-   _Module.Init(ObjectMap, m_hInstance);
    return CWinApp::InitInstance();
 }
 
 int CGraphingApp::ExitInstance()
 {
-   _Module.Term();
    return CWinApp::ExitInstance();
 }

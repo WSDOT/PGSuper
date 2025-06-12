@@ -32,15 +32,11 @@
 #include <Units\Measure.h>
 #include <CoordGeom/Station.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 void DDV_DeckPointGrid(CDataExchange* pDX,int nIDC,CBridgeDescDeckPointGrid* pGrid)
 {
@@ -163,8 +159,7 @@ BOOL CBridgeDescDeckPointGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
    if ( nCol == 1 )
    {
       // Validation station... 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 station_value = -99999999;
@@ -233,8 +228,7 @@ void CBridgeDescDeckPointGrid::CustomInit()
 
    SetMergeCellsMode(gxnMergeDelayEval);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	GetParam( )->EnableUndo(FALSE);
@@ -328,8 +322,7 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
       .SetValue(_T(""))
       );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),point.Station);
 
@@ -367,8 +360,7 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
 
 void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Station
@@ -642,8 +634,7 @@ void CBridgeDescDeckPointGrid::Enable(BOOL bEnable)
 
 BOOL CBridgeDescDeckPointGrid::Validate()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
@@ -690,7 +681,7 @@ BOOL CBridgeDescDeckPointGrid::Validate()
    return TRUE;
 }
 
-BOOL CBridgeDescDeckPointGrid::ValidatePoint(CDeckPoint& point,IEAFDisplayUnits* pDisplayUnits)
+BOOL CBridgeDescDeckPointGrid::ValidatePoint(CDeckPoint& point,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    Float64 left = -1*point.LeftEdge; // make left value a real offset
    Float64 right = point.RightEdge;

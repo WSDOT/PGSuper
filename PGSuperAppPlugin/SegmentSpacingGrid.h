@@ -29,7 +29,7 @@
 // SegmentSpacingGrid.h : header file
 //
 
-#include <PgsExt\TemporarySupportData.h>
+#include <PsgLib\TemporarySupportData.h>
 
 class CSegmentSpacingGrid;
 

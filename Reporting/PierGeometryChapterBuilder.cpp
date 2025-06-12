@@ -24,39 +24,24 @@
 #include <Reporting\PierGeometryChapterBuilder.h>
 #include <Reporting\BridgeDescChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
-
 #include <IFace\Project.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CPierGeometryChapterBuilder
-****************************************************************************/
+void pier_geometry(std::shared_ptr<WBFL::EAF::Broker>pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-
-void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CPierGeometryChapterBuilder::CPierGeometryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CPierGeometryChapterBuilder::GetName() const
 {
    return TEXT("Pier Geometry");
@@ -65,8 +50,7 @@ LPCTSTR CPierGeometryChapterBuilder::GetName() const
 rptChapter* CPierGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
@@ -77,30 +61,7 @@ rptChapter* CPierGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL:
 }
 
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPierGeometryChapterBuilder::Clone() const
-{
-   return std::make_unique<CPierGeometryChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void pier_geometry(std::shared_ptr<WBFL::EAF::Broker>pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    USES_CONVERSION;
 

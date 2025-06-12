@@ -24,19 +24,16 @@
 #include "PGSuperApp.h"
 #include "PGSImportPluginDocTemplateBase.h"
 #include "SelectItemDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 class CMyTemplateItem : public CEAFTemplateItem
 {
 public:
-   CMyTemplateItem(CEAFDocTemplate* pDocTemplate,LPCTSTR name,LPCTSTR path,HICON hIcon,IPGSProjectImporter* pImporter) :
+   CMyTemplateItem(CEAFDocTemplate* pDocTemplate,LPCTSTR name,LPCTSTR path,HICON hIcon,std::shared_ptr<PGS::IProjectImporter> pImporter) :
       CEAFTemplateItem(pDocTemplate,name,path,hIcon)
       {
          m_Importer = pImporter;
@@ -48,7 +45,7 @@ public:
       return pClone;
    }
 
-   CComPtr<IPGSProjectImporter> m_Importer;
+   std::shared_ptr<PGS::IProjectImporter> m_Importer;
    DECLARE_DYNAMIC(CMyTemplateItem)
 };
 
@@ -58,7 +55,7 @@ IMPLEMENT_DYNAMIC(CMyTemplateItem,CEAFTemplateItem)
 IMPLEMENT_DYNAMIC(CPGSImportPluginDocTemplateBase,CEAFDocTemplate)
 
 CPGSImportPluginDocTemplateBase::CPGSImportPluginDocTemplateBase(UINT nIDResource,
-                                                                 IEAFCommandCallback* pCallback,
+                                                                 std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
   																                 CRuntimeClass* pDocClass,
   																                 CRuntimeClass* pFrameClass,
  																                 CRuntimeClass* pViewClass,
@@ -112,9 +109,7 @@ BOOL CPGSImportPluginDocTemplateBase::DoOpenDocumentFile(LPCTSTR lpszPathName,BO
 	}
 
    // Hold the UI events (release in CPGSuperDoc::OnCreateFinalize)
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
-   ATLASSERT(broker != nullptr);
+   auto broker = EAFGetBroker();
    GET_IFACE2(broker,IEvents,pEvents);
    GET_IFACE2(broker,IUIEvents,pUIEvents);
    pEvents->HoldEvents();
@@ -184,15 +179,12 @@ CPGSProjectImporterMgrBase* CPGSImportPluginDocTemplateBase::GetProjectImporterM
       IndexType nImporters = m_pProjectImporterMgr->GetImporterCount();
       for ( IndexType idx = 0; idx < nImporters; idx++ )
       {
-         CComPtr<IPGSProjectImporter> importer;
-         m_pProjectImporterMgr->GetImporter(idx,&importer);
+         auto importer = m_pProjectImporterMgr->GetImporter(idx);
 
-         CComBSTR bstrText;
-         importer->GetItemText(&bstrText);
+         auto strText = importer->GetItemText();
+         HICON hIcon = importer->GetIcon();
 
-         HICON hIcon;
-         importer->GetIcon(&hIcon);
-         m_TemplateGroup.AddItem( new CMyTemplateItem((CEAFDocTemplate*)this,OLE2T(bstrText),nullptr,hIcon,importer) );
+         m_TemplateGroup.AddItem( new CMyTemplateItem((CEAFDocTemplate*)this,strText,nullptr,hIcon,importer) );
       }
    }
 
@@ -208,8 +200,7 @@ CEAFTemplateItem* CPGSImportPluginDocTemplateBase::GetTemplateItem(const CLSID& 
       if (pItem->IsKindOf(RUNTIME_CLASS(CMyTemplateItem)))
       {
          CMyTemplateItem* pMyItem = (CMyTemplateItem*)pItem;
-         CLSID itemCLSID;
-         pMyItem->m_Importer->GetCLSID(&itemCLSID);
+         CLSID itemCLSID = pMyItem->m_Importer->GetCLSID();
          if (clsid == itemCLSID)
          {
             return pItem;

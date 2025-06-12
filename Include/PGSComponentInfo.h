@@ -22,16 +22,12 @@
 
 #pragma once
 
-// {EEA46351-7884-47e2-ADD8-5FD35BF51ABE}
-DEFINE_GUID(IID_IPGSuperComponentInfo, 
-0xeea46351, 0x7884, 0x47e2, 0xad, 0xd8, 0x5f, 0xd3, 0x5b, 0xf5, 0x1a, 0xbe);
-struct __declspec(uuid("{EEA46351-7884-47e2-ADD8-5FD35BF51ABE}")) IPGSuperComponentInfo;// for __uuidof
-
 class CPGSuperDoc;
 
 /// @brief Interface that returns information about PGSuper components
-interface IPGSuperComponentInfo : IUnknown
+class IPGSuperComponentInfo
 {
+public:
    /// @brief Called by the application framework to initialize this object.
    /// This is a good place to validate license keys for 3rd party components
    /// @return Returns TRUE if the component is successfully initialized
@@ -56,16 +52,12 @@ interface IPGSuperComponentInfo : IUnknown
    virtual void OnMoreInfo() const = 0;
 };
 
-// {4D566A4F-289C-4e73-B47C-6A4CC7905BA9}
-DEFINE_GUID(IID_IPGSpliceComponentInfo, 
-0x4d566a4f, 0x289c, 0x4e73, 0xb4, 0x7c, 0x6a, 0x4c, 0xc7, 0x90, 0x5b, 0xa9);
-struct __declspec(uuid("{4D566A4F-289C-4e73-B47C-6A4CC7905BA9}")) IPGSpliceComponentInfo;// for __uuidof
-
 class CPGSpliceDoc;
 
 /// @brief Interface that returns information about PGSplice components
-interface IPGSpliceComponentInfo : IUnknown
+class IPGSpliceComponentInfo
 {
+public:
    /// @brief Called by the application framework to initialize this object.
    /// This is a good place to validate license keys for 3rd party components
    /// @return Returns TRUE if the component is successfully initialized

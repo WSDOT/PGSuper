@@ -29,55 +29,55 @@
 // PROJECT INCLUDES
 //
 
-#include <psgLib\ISupportIcon.h>
+#include <PsgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 
-#include <psgLib/RefactoredSpecLibraryParameters.h>
+#include <PsgLib/RefactoredSpecLibraryParameters.h>
 
 #include <System\SubjectT.h>
 
 #include <type_traits>
 
-#include <psgLib/SpecificationCriteria.h>
-#include <psgLib/ThermalMovementCriteria.h>
-#include <psgLib/SectionPropertiesCriteria.h>
-#include <psgLib/HoldDownCriteria.h>
-#include <psgLib/StrandSlopeCriteria.h>
-#include <psgLib/PlantHandlingCriteria.h>
-#include <psgLib/EndZoneCriteria.h>
-#include <psgLib/SlabOffsetCriteria.h>
-#include <psgLib/LiveLoadDeflectionCriteria.h>
-#include <psgLib/BottomFlangeClearanceCriteria.h>
-#include <psgLib/GirderInclinationCriteria.h>
-#include <psgLib/PrincipalTensionStressCriteria.h>
-#include <psgLib/BearingCriteria.h>
-#include <psgLib/LiveLoadCriteria.h>
-#include <psgLib/LiveLoadDistributionCriteria.h>
-#include <psgLib/DuctSizeCriteria.h>
-#include <psgLib/TransferLengthCriteria.h>
-#include <psgLib/StrandStressCriteria.h>
-#include <psgLib/TendonStressCriteria.h>
-#include <psgLib/DeadLoadDistributionCriteria.h>
-#include <psgLib/HaunchCriteria.h>
-#include <psgLib/CreepCriteria.h>
-#include <psgLib/InterfaceShearCriteria.h>
-#include <psgLib/ShearCapacityCriteria.h>
-#include <psgLib/MomentCapacityCriteria.h>
-#include <psgLib/LiftingCriteria.h>
-#include <psgLib/HaulingCriteria.h>
-#include <psgLib/LimitsCriteria.h>
-#include <psgLib/ClosureJointCriteria.h>
-#include <psgLib/LimitStateConcreteStrengthCriteria.h>
-#include <psgLib/HarpedStrandDesignCriteria.h>
-#include <psgLib/PrestressedElementCriteria.h>
-#include <psgLib/PrestressLossCriteria.h>
+#include <PsgLib/SpecificationCriteria.h>
+#include <PsgLib/ThermalMovementCriteria.h>
+#include <PsgLib/SectionPropertiesCriteria.h>
+#include <PsgLib/HoldDownCriteria.h>
+#include <PsgLib/StrandSlopeCriteria.h>
+#include <PsgLib/PlantHandlingCriteria.h>
+#include <PsgLib/EndZoneCriteria.h>
+#include <PsgLib/SlabOffsetCriteria.h>
+#include <PsgLib/LiveLoadDeflectionCriteria.h>
+#include <PsgLib/BottomFlangeClearanceCriteria.h>
+#include <PsgLib/GirderInclinationCriteria.h>
+#include <PsgLib/PrincipalTensionStressCriteria.h>
+#include <PsgLib/BearingCriteria.h>
+#include <PsgLib/LiveLoadCriteria.h>
+#include <PsgLib/LiveLoadDistributionCriteria.h>
+#include <PsgLib/DuctSizeCriteria.h>
+#include <PsgLib/TransferLengthCriteria.h>
+#include <PsgLib/StrandStressCriteria.h>
+#include <PsgLib/TendonStressCriteria.h>
+#include <PsgLib/DeadLoadDistributionCriteria.h>
+#include <PsgLib/HaunchCriteria.h>
+#include <PsgLib/CreepCriteria.h>
+#include <PsgLib/InterfaceShearCriteria.h>
+#include <PsgLib/ShearCapacityCriteria.h>
+#include <PsgLib/MomentCapacityCriteria.h>
+#include <PsgLib/LiftingCriteria.h>
+#include <PsgLib/HaulingCriteria.h>
+#include <PsgLib/LimitsCriteria.h>
+#include <PsgLib/ClosureJointCriteria.h>
+#include <PsgLib/LimitStateConcreteStrengthCriteria.h>
+#include <PsgLib/HarpedStrandDesignCriteria.h>
+#include <PsgLib/PrestressedElementCriteria.h>
+#include <PsgLib/PrestressLossCriteria.h>
 
 // LOCAL INCLUDES
 //
 
 // FORWARD DECLARATIONS
 //
-class pgsLibraryEntryDifferenceItem;
+namespace PGS {namespace Library{class DifferenceItem;};};
 class CSpecMainSheet;
 
 
@@ -121,7 +121,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const SpecLibraryEntryImpl* pOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+   bool Compare(const SpecLibraryEntryImpl* pOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
 
    //////////////////////////////////////
    //
@@ -294,7 +294,7 @@ public:
    const BearingCriteria& GetBearingCriteria() const;
    void SetBearingCriteria(const BearingCriteria& criteria);
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    ////////////////////////////////////////
    //

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 
 #define CAD_SUCCESS  0
 #define CAD_FAIL    -1
@@ -37,9 +37,10 @@ DESCRIPTION
 // {8D0B5EB4-B255-4fba-8ADB-4DB2E3A6B1D5}
 DEFINE_GUID(IID_ITestFileExport, 
 0x8d0b5eb4, 0xb255, 0x4fba, 0x8a, 0xdb, 0x4d, 0xb2, 0xe3, 0xa6, 0xb1, 0xd5);
-interface ITestFileExport : IUnknown
+class ITestFileExport
 {
-   virtual int WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey, bool designSucceeded) = 0;
-   virtual int WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey) = 0;
+public:
+   virtual int WriteCADDataToFile (FILE *fp, const CSegmentKey& segmentKey, bool designSucceeded) = 0;
+   virtual int WriteDistributionFactorsToFile (FILE *fp, const CSegmentKey& segmentKey) = 0;
 };
 

@@ -25,13 +25,6 @@
 #include "BridgeModelViewControllerImp.h"
 #include "BridgePlanView.h"
 
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#define new DEBUG_NEW
-#endif
-
 CBridgeModelViewController::CBridgeModelViewController()
 {
    m_pFrame = nullptr;

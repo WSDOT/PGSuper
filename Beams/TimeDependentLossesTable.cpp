@@ -22,18 +22,14 @@
 
 // TimeDependentLossesTable.cpp : Implementation of CTimeDependentLossesTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "TimeDependentLossesTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CTimeDependentLossesTable::CTimeDependentLossesTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CTimeDependentLossesTable::CTimeDependentLossesTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -53,7 +49,7 @@ rptRcTable(NumColumns,0)
    scalar.SetPrecision(2);
 }
 
-CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -91,7 +87,7 @@ CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* p
    return table;
 }
 
-void CTimeDependentLossesTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTimeDependentLossesTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
    (*this)(row+rowOffset,1) << stress.SetValue(pDetails->pLosses->TimeDependentLossesBeforeDeck());

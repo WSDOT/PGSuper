@@ -25,18 +25,15 @@
 
 #include "TxDOTOptionalDesignUtilities.h"
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\DebondUtil.h>
 #include <PsgLib\GirderLibraryEntry.h>
-#include <PgsExt\BridgeDescription2.h>
+
+#include <IFace\Tools.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // local function
@@ -109,7 +106,7 @@ BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry,
    return TRUE;
 }
 
-OptionalDesignHarpedFillUtil::StrandRowSet OptionalDesignHarpedFillUtil::GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi)
+OptionalDesignHarpedFillUtil::StrandRowSet OptionalDesignHarpedFillUtil::GetStrandRowSet(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi)
 {
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
    GET_IFACE2(pBroker,IGirder,pGirder);
@@ -373,7 +370,7 @@ std::list<ColumnIndexType> ComputeTableCols(const std::vector<CGirderKey>& girde
 }
 
 
-StrandIndexType GetNumRaisedStraightStrands(IBroker* pBroker, const CSegmentKey& segmentKey)
+StrandIndexType GetNumRaisedStraightStrands(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
 	GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
@@ -416,7 +413,7 @@ StrandIndexType GetNumRaisedStraightStrands(IBroker* pBroker, const CSegmentKey&
    return numRaisedStraightStrands;
 }
 
-bool IsIBeam(IBroker * pBroker, const CGirderKey & girderKey)
+bool IsIBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey & girderKey)
 {
    // IGirders are treated differently than others
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
@@ -425,7 +422,7 @@ bool IsIBeam(IBroker * pBroker, const CGirderKey & girderKey)
    return girderFamily == _T("I-Beam");
 }
 
-bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, pgsTypes::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker)
+bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, pgsTypes::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
 
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
@@ -545,7 +542,7 @@ bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, pgsTypes::Str
    }
 }
 
-txcwStrandLayoutType GetStrandLayoutType(IBroker* pBroker, const CGirderKey& girderKey)
+txcwStrandLayoutType GetStrandLayoutType(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey)
 {
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
 

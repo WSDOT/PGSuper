@@ -25,20 +25,16 @@
 
 #include "stdafx.h"
 #include "PGSuperDoc.h"
-#include <EAF\EAFDisplayUnits.h>
 #include "BridgeDescLongRebarGrid.h"
 #include "BridgeDescLongitudinalRebar.h"
 #include <system\tokenizer.h>
 
 #include <LRFD\RebarPool.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
+#include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CGirderDescLongRebarGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -190,8 +186,7 @@ void CGirderDescLongRebarGrid::OnUpdateEditRemoverows(CCmdUI* pCmdUI)
 
 void CGirderDescLongRebarGrid::CustomInit()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 // Initialize the grid. For CWnd based grids this call is // 
@@ -674,8 +669,7 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
 	      Insertrow();
       }
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // fill grid
@@ -752,8 +746,7 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
 
 bool CGirderDescLongRebarGrid::GetRebarData(CLongitudinalRebarData* pRebarData)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // not used if grid is empty
 
    pRebarData->RebarRows.clear();

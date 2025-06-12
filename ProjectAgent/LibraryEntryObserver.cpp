@@ -22,21 +22,15 @@
 
 #include "StdAfx.h"
 #include "LibraryEntryObserver.h"
+#include <EAF/EAFStatusCenter.h>
 #include "ProjectAgent.h"
 #include "CLSID.h"
 #include "ProjectAgentImp.h"
-#include <IFace\StatusCenter.h>
 #include <EAF\EAFUIIntegration.h>
 #include <algorithm>
 
 #if defined _USE_MULTITHREADING
 #include <future>
-#endif
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
 #endif
 
 /****************************************************************************
@@ -369,20 +363,3 @@ void pgsLibraryEntryObserver::ClearStatusItems()
    pStatusCenter->RemoveByStatusGroupID(m_pAgent->m_StatusGroupID);
 }
 
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

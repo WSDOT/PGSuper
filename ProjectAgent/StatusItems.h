@@ -32,16 +32,16 @@ class pgsRebarStrengthStatusItem : public pgsSegmentRelatedStatusItem
 public:
    enum Type { Longitudinal, Transverse, Deck };
    pgsRebarStrengthStatusItem(const CSegmentKey& segmentKey,Type type,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    CSegmentKey m_SegmentKey;
    Type m_Type;
 };
 
-class pgsRebarStrengthStatusCallback : public iStatusCallback
+class pgsRebarStrengthStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
    pgsRebarStrengthStatusCallback();
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 };

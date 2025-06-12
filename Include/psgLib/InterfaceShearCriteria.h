@@ -23,12 +23,13 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
-interface IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
+class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
+namespace PGS {namespace Library{class DifferenceItem;};};
+
 
 struct PSGLIBCLASS InterfaceShearCriteria
 {
@@ -36,9 +37,9 @@ struct PSGLIBCLASS InterfaceShearCriteria
    Float64 MaxInterfaceShearConnectorSpacing = WBFL::Units::ConvertToSysUnits(48.0, WBFL::Units::Measure::Inch);
    bool bUseDeckWeightForPc = true; ///< Deck is used for the permanent net compressive force normal to the shear plane. if true, Pc for LRFD5.7.4.3 is computed otherwise it is taken as 0.0.
 
-   bool Compare(const InterfaceShearCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const InterfaceShearCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);

@@ -27,6 +27,7 @@
 #endif // _MSC_VER > 1000
 
 #include "Plugins\PGSuperIEPlugin.h"
+#include <boost/dll/import.hpp>
 
 class CPGSuperPluginMgrBase
 {
@@ -37,49 +38,50 @@ public:
    void UnloadPlugins();
    IndexType GetImporterCount();
    IndexType GetExporterCount();
-   void GetImporter(IndexType key,bool bByIndex,IPGSDataImporter** ppImporter);
-   void GetExporter(IndexType key,bool bByIndex,IPGSDataExporter** ppExporter);
+   std::shared_ptr<PGS::IDataImporter> GetImporter(IndexType key, bool bByIndex) const;
+   std::shared_ptr<PGS::IDataExporter> GetExporter(IndexType key, bool bByIndex) const;
    UINT GetImporterCommand(IndexType idx);
    UINT GetExporterCommand(IndexType idx);
    const CBitmap* GetImporterBitmap(IndexType idx);
    const CBitmap* GetExporterBitmap(IndexType idx);
    void LoadDocumentationMaps();
-   eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL);
+   std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID);
 
 protected:
    virtual CATID GetImporterCATID() = 0;
    virtual CATID GetExporterCATID() = 0;
 
 private:
-   template <class T> 
+   template <class T>
    struct Record
-   { UINT commandID; CBitmap Bitmap; CComPtr<T> Plugin; 
-   Record() {}
-   Record(const Record& other) 
    {
-      Bitmap.Detach();
+      UINT commandID; CBitmap Bitmap; std::shared_ptr<T> Plugin;
+      Record() {}
+      Record(const Record& other)
+      {
+         Bitmap.Detach();
 
-      CBitmap* pBmp = const_cast<CBitmap*>(&(other.Bitmap));
-      Bitmap.Attach(pBmp->Detach());
+         CBitmap* pBmp = const_cast<CBitmap*>(&(other.Bitmap));
+         Bitmap.Attach(pBmp->Detach());
 
-      commandID = other.commandID;
-      Plugin = other.Plugin;
-   }
-   Record& operator=(const Record& other)
-   {
-      Bitmap.Detach();
+         commandID = other.commandID;
+         Plugin = other.Plugin;
+      }
+      Record& operator=(const Record& other)
+      {
+         Bitmap.Detach();
 
-      CBitmap* pBmp = const_cast<CBitmap*>(&(other.Bitmap));
-      Bitmap.Attach(pBmp->Detach());
+         CBitmap* pBmp = const_cast<CBitmap*>(&(other.Bitmap));
+         Bitmap.Attach(pBmp->Detach());
 
-      commandID = other.commandID;
-      Plugin = other.Plugin;
-      return *this;
-   }
+         commandID = other.commandID;
+         Plugin = other.Plugin;
+         return *this;
+      }
    };
 
-   typedef Record<IPGSDataImporter> ImporterRecord;
-   typedef Record<IPGSDataExporter> ExporterRecord;
+   typedef Record<PGS::IDataImporter> ImporterRecord;
+   typedef Record<PGS::IDataExporter> ExporterRecord;
 
    std::vector<ImporterRecord> m_ImporterPlugins;
    std::vector<ExporterRecord> m_ExporterPlugins;

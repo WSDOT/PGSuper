@@ -27,16 +27,11 @@
 #include "PGSuperApp.h"
 #include "SpanDetailsDlg.h"
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <EAF\EAFDocument.h>
 #include "PGSuperDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanDetailsDlg
@@ -275,7 +270,7 @@ void CSpanDetailsDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-std::unique_ptr<CEAFTransaction> CSpanDetailsDlg::GetExtensionPageTransaction()
+std::unique_ptr<WBFL::EAF::Transaction> CSpanDetailsDlg::GetExtensionPageTransaction()
 {
    if (0 < m_Macro.GetTxnCount())
    {

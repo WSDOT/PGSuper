@@ -23,17 +23,20 @@
 #include "stdafx.h"
 #include "PGSuperApp.h"
 #include "InplacePierStationEditEvents.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFTxnManager.h>
-#include <PgsExt\BridgeDescription2.h>
+
+#include <EAF\TxnManager.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "MovePierDlg.h"
 #include "EditPierStation.h"
 
 #include <DManip/EditableStationTextBlock.h>
 
-CInplacePierStationEditEvents::CInplacePierStationEditEvents(IBroker* pBroker,PierIndexType pierIdx) :
+CInplacePierStationEditEvents::CInplacePierStationEditEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker,PierIndexType pierIdx) :
 CInplaceEditDisplayObjectEvents(pBroker), m_PierIdx(pierIdx)
 {
 }
@@ -80,7 +83,7 @@ void CInplacePierStationEditEvents::Handle_OnChanged(std::shared_ptr<WBFL::DMani
       if ( !IsEqual(old_station,new_station) )
       {
          std::unique_ptr<txnEditPierStation> pTxn(std::make_unique<txnEditPierStation>(m_PierIdx,old_station,new_station,dlg.m_Option));
-         CEAFTxnManager::GetInstance().Execute(std::move(pTxn));
+         WBFL::EAF::TxnManager::GetInstance().Execute(std::move(pTxn));
       }
    }
 }

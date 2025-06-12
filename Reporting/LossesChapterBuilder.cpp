@@ -23,30 +23,17 @@
 #include "StdAfx.h"
 #include <Reporting\LossesChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CLossesChapterBuilder
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CLossesChapterBuilder::CLossesChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CLossesChapterBuilder::GetName() const
 {
    return TEXT("Prestress Loss Details");
@@ -55,8 +42,7 @@ LPCTSTR CLossesChapterBuilder::GetName() const
 rptChapter* CLossesChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec  = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrRptSpec->GetBroker();
    const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -73,9 +59,4 @@ rptChapter* CLossesChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLossesChapterBuilder::Clone() const
-{
-   return std::make_unique<CLossesChapterBuilder>();
 }

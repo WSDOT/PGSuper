@@ -23,9 +23,9 @@
 #ifndef INCLUDED_EDITSPANLENGTH_H_
 #define INCLUDED_EDITSPANLENGTH_H_
 
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 
-class txnEditSpanLength : public CEAFTransaction
+class txnEditSpanLength : public WBFL::EAF::Transaction
 {
 public:
    txnEditSpanLength(SpanIndexType spanIdx,Float64 oldSpanLength,Float64 newSpanLength);
@@ -34,7 +34,7 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction>CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const;
    virtual bool IsRepeatable() const;

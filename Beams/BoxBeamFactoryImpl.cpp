@@ -22,15 +22,16 @@
 
 // BoxBeamFactory.cpp : Implementation of CBoxBeamFactoryImpl
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 
 #include <Plugins\BeamFamilyCLSID.h>
 
 #include "BoxBeamFactoryImpl.h"
 #include "BoxBeamDistFactorEngineer.h"
-#include "UBeamDistFactorEngineer.h"
-#include "PsBeamLossEngineer.h"
-#include "TimeStepLossEngineer.h"
+#include <Beams/UBeamDistFactorEngineer.h>
+#include <Beams/PsBeamLossEngineer.h>
+#include <Beams/TimeStepLossEngineer.h>
 #include "StrandMoverImpl.h"
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
@@ -39,29 +40,23 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <PgsExt\BridgeDescription2.h>
 #include <IFace\Intervals.h>
+#include <EAF/EAFStatusCenter.h>
 
-#include <IFace\StatusCenter.h>
 #include <PgsExt\StatusItem.h>
+#include <PgsExt/PoiMgr.h>
 
 #include <Beams\Helper.h>
 
+#include <PsgLib\BridgeDescription2.h>
 #include <psgLib/SectionPropertiesCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
+#include <psgLib/GirderLibraryEntry.h>
+
+using namespace PGS::Beams;
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CBoxBeamFactoryImpl
-
-void CBoxBeamFactoryImpl::CreateGirderSection(IBroker* pBroker, StatusItemIDType statusID, const IBeamFactory::Dimensions& dimensions, Float64 overallHeight, Float64 bottomFlangeHeight, IGirderSection** ppSection) const
+void BoxBeamFactoryImpl::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const BeamFactory::Dimensions& dimensions, Float64 overallHeight, Float64 bottomFlangeHeight, IGirderSection** ppSection) const
 {
    CComPtr<IBoxBeamSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_BoxBeamSection);
@@ -73,7 +68,7 @@ void CBoxBeamFactoryImpl::CreateGirderSection(IBroker* pBroker, StatusItemIDType
    gdrSection.QueryInterface(ppSection);
 }
 
-void CBoxBeamFactoryImpl::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
+void BoxBeamFactoryImpl::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<IBoxBeamEndBlockSegment> segment;
    HRESULT hr = segment.CoCreateInstance(CLSID_BoxBeamEndBlockSegment);
@@ -125,12 +120,12 @@ void CBoxBeamFactoryImpl::CreateSegment(IBroker* pBroker,StatusItemIDType status
    ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CBoxBeamFactoryImpl::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+void BoxBeamFactoryImpl::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    // do nothing... all the configuration was done in CreateSegment
 }
 
-void CBoxBeamFactoryImpl::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias,IShape** ppShape) const
+void BoxBeamFactoryImpl::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias,IShape** ppShape) const
 {
    // also, no need to create girder section, can just create the shape
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
@@ -154,7 +149,7 @@ void CBoxBeamFactoryImpl::CreateSegmentShape(IBroker* pBroker, const CPrecastSeg
    beam.QueryInterface(ppShape);
 }
 
-Float64 CBoxBeamFactoryImpl::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 BoxBeamFactoryImpl::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -165,7 +160,7 @@ Float64 CBoxBeamFactoryImpl::GetSegmentHeight(IBroker* pBroker, const CPrecastSe
    return H1 + H2 + H3;
 }
 
-void CBoxBeamFactoryImpl::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
+void BoxBeamFactoryImpl::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -204,9 +199,8 @@ void CBoxBeamFactoryImpl::LayoutSectionChangePointsOfInterest(IBroker* pBroker,c
    }
 }
 
-void CBoxBeamFactoryImpl::CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType statusID,const pgsTypes::SupportedBeamSpacing* pSpacingType,
-                                               const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,
-                                               IDistFactorEngineer** ppEng) const
+std::unique_ptr<DistFactorEngineer> BoxBeamFactoryImpl::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,
+                                               const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -217,73 +211,55 @@ void CBoxBeamFactoryImpl::CreateDistFactorEngineer(IBroker* pBroker,StatusItemID
 
    if ( deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNone )
    {
-      CComObject<CBoxBeamDistFactorEngineer>* pEngineer;
-      CComObject<CBoxBeamDistFactorEngineer>::CreateInstance(&pEngineer);
-      pEngineer->SetBroker(pBroker,statusID);
-      (*ppEng) = pEngineer;
-      (*ppEng)->AddRef();
+      return std::make_unique<BoxBeamDistFactorEngineer>(pBroker, statusGroupID);
    }
    else
    {
       // this is a type b section... type b's are the same as type c's which are U-beams
       ATLASSERT( deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP );
-
-      CComObject<CUBeamDistFactorEngineer>* pEngineer;
-      CComObject<CUBeamDistFactorEngineer>::CreateInstance(&pEngineer);
-      pEngineer->Init(true, false); // this is a type b cross section
-      pEngineer->SetBroker(pBroker,statusID);
-      (*ppEng) = pEngineer;
-      (*ppEng)->AddRef();
+      return std::make_unique<UBeamDistFactorEngineer>(pBroker, statusGroupID);
    }
+   return nullptr;
 }
 
-void CBoxBeamFactoryImpl::CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+std::unique_ptr<PsLossEngineerBase> BoxBeamFactoryImpl::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      CComObject<CTimeStepLossEngineer>* pEngineer;
-      CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
-      pEngineer->SetBroker(pBroker,statusGroupID);
-      (*ppEng) = pEngineer;
-      (*ppEng)->AddRef();
+      return std::make_unique<TimeStepLossEngineer>(pBroker,statusGroupID);
    }
    else
    {
-       CComObject<CPsBeamLossEngineer>* pEngineer;
-       CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-       pEngineer->Init(BoxBeam);
-       pEngineer->SetBroker(pBroker,statusGroupID);
-       (*ppEng) = pEngineer;
-       (*ppEng)->AddRef();
+      return std::make_unique<PsBeamLossEngineer>(PsBeamLossEngineer::BeamType::BoxBeam,pBroker,statusGroupID);
    }
 }
 
-const std::vector<std::_tstring>& CBoxBeamFactoryImpl::GetDimensionNames() const
+const std::vector<std::_tstring>& BoxBeamFactoryImpl::GetDimensionNames() const
 {
    return m_DimNames;
 }
 
-const std::vector<Float64>& CBoxBeamFactoryImpl::GetDefaultDimensions() const
+const std::vector<Float64>& BoxBeamFactoryImpl::GetDefaultDimensions() const
 {
    return m_DefaultDims;
 }
 
-const std::vector<const WBFL::Units::Length*>& CBoxBeamFactoryImpl::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& BoxBeamFactoryImpl::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CBoxBeamFactoryImpl::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
+bool BoxBeamFactoryImpl::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
    return IsZero(endBlockLength) ? true : false;
 }
 
-bool CBoxBeamFactoryImpl::IsPrismatic(const CSegmentKey& segmentKey) const
+bool BoxBeamFactoryImpl::IsPrismatic(const CSegmentKey& segmentKey) const
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
+
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -293,48 +269,32 @@ bool CBoxBeamFactoryImpl::IsPrismatic(const CSegmentKey& segmentKey) const
    return IsPrismatic(dimensions);
 }
 
-bool CBoxBeamFactoryImpl::IsSymmetric(const CSegmentKey& segmentKey) const
+bool BoxBeamFactoryImpl::IsSymmetric(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-std::_tstring CBoxBeamFactoryImpl::GetName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
-CLSID CBoxBeamFactoryImpl::GetFamilyCLSID() const
+CLSID BoxBeamFactoryImpl::GetFamilyCLSID() const
 {
    return CLSID_BoxBeamFamily;
 }
 
-std::_tstring CBoxBeamFactoryImpl::GetGirderFamilyName() const
-{
-   USES_CONVERSION;
-   LPOLESTR pszUserType;
-   OleRegGetUserType(GetFamilyCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   return std::_tstring( OLE2T(pszUserType) );
-}
-
-std::_tstring CBoxBeamFactoryImpl::GetPublisher() const
+std::_tstring BoxBeamFactoryImpl::GetPublisher() const
 {
    return std::_tstring(_T("WSDOT"));
 }
 
-std::_tstring CBoxBeamFactoryImpl::GetPublisherContactInformation() const
+std::_tstring BoxBeamFactoryImpl::GetPublisherContactInformation() const
 {
    return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
-HINSTANCE CBoxBeamFactoryImpl::GetResourceInstance() const
+HINSTANCE BoxBeamFactoryImpl::GetResourceInstance() const
 {
    return _Module.GetResourceInstance();
 }
 
-Float64 CBoxBeamFactoryImpl::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const
+Float64 BoxBeamFactoryImpl::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
    for ( const auto& dim : dimensions)
    {
@@ -348,7 +308,7 @@ Float64 CBoxBeamFactoryImpl::GetDimension(const IBeamFactory::Dimensions& dimens
    return -99999;
 }
 
-pgsTypes::SupportedDeckTypes CBoxBeamFactoryImpl::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
+pgsTypes::SupportedDeckTypes BoxBeamFactoryImpl::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
 {
    pgsTypes::SupportedDeckTypes sdt;
    switch( sbs )
@@ -372,7 +332,7 @@ pgsTypes::SupportedDeckTypes CBoxBeamFactoryImpl::GetSupportedDeckTypes(pgsTypes
    return sdt;
 }
 
-pgsTypes::SupportedBeamSpacings CBoxBeamFactoryImpl::GetSupportedBeamSpacings() const
+pgsTypes::SupportedBeamSpacings BoxBeamFactoryImpl::GetSupportedBeamSpacings() const
 {
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsUniform);
@@ -383,14 +343,14 @@ pgsTypes::SupportedBeamSpacings CBoxBeamFactoryImpl::GetSupportedBeamSpacings() 
    return sbs;
 }
 
-bool CBoxBeamFactoryImpl::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
+bool BoxBeamFactoryImpl::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::SupportedBeamSpacings sbs = GetSupportedBeamSpacings();
    auto found = std::find(sbs.cbegin(), sbs.cend(),spacingType);
    return found == sbs.end() ? false : true;
 }
 
-bool CBoxBeamFactoryImpl::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool BoxBeamFactoryImpl::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    if (spacingType == pgsTypes::sbsUniform)
    {
@@ -411,7 +371,7 @@ bool CBoxBeamFactoryImpl::ConvertBeamSpacing(const IBeamFactory::Dimensions& dim
    return false;
 }
 
-pgsTypes::WorkPointLocations CBoxBeamFactoryImpl::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+pgsTypes::WorkPointLocations BoxBeamFactoryImpl::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::WorkPointLocations wpls;
    wpls.push_back(pgsTypes::wplTopGirder);
@@ -420,30 +380,30 @@ pgsTypes::WorkPointLocations CBoxBeamFactoryImpl::GetSupportedWorkPointLocations
    return wpls;
 }
 
-bool CBoxBeamFactoryImpl::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType,pgsTypes::WorkPointLocation wpType) const
+bool BoxBeamFactoryImpl::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType,pgsTypes::WorkPointLocation wpType) const
 {
    pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
    auto found = std::find(sbs.cbegin(), sbs.cend(),wpType);
    return found == sbs.end() ? false : true;
 }
 
-std::vector<pgsTypes::GirderOrientationType> CBoxBeamFactoryImpl::GetSupportedGirderOrientation() const
+std::vector<pgsTypes::GirderOrientationType> BoxBeamFactoryImpl::GetSupportedGirderOrientation() const
 {
    std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb,pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced};
    return types;
 }
 
-bool CBoxBeamFactoryImpl::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+bool BoxBeamFactoryImpl::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return true;
 }
 
-pgsTypes::GirderOrientationType CBoxBeamFactoryImpl::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+pgsTypes::GirderOrientationType BoxBeamFactoryImpl::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return orientation;
 }
 
-pgsTypes::SupportedDiaphragmTypes CBoxBeamFactoryImpl::GetSupportedDiaphragms() const
+pgsTypes::SupportedDiaphragmTypes BoxBeamFactoryImpl::GetSupportedDiaphragms() const
 {
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
    diaphragmTypes.push_back(pgsTypes::dtPrecast);
@@ -451,7 +411,7 @@ pgsTypes::SupportedDiaphragmTypes CBoxBeamFactoryImpl::GetSupportedDiaphragms() 
    return diaphragmTypes;
 }
 
-pgsTypes::SupportedDiaphragmLocationTypes CBoxBeamFactoryImpl::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
+pgsTypes::SupportedDiaphragmLocationTypes BoxBeamFactoryImpl::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
 {
    pgsTypes::SupportedDiaphragmLocationTypes locations;
    switch(type)
@@ -471,13 +431,13 @@ pgsTypes::SupportedDiaphragmLocationTypes CBoxBeamFactoryImpl::GetSupportedDiaph
    return locations;
 }
 
-WebIndexType CBoxBeamFactoryImpl::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
+WebIndexType BoxBeamFactoryImpl::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    return 2;
 }
 
 
-Float64 CBoxBeamFactoryImpl::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 BoxBeamFactoryImpl::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 H1 = GetDimension(dimensions,_T("H1"));
    Float64 H2 = GetDimension(dimensions,_T("H2"));
@@ -486,7 +446,7 @@ Float64 CBoxBeamFactoryImpl::GetBeamHeight(const IBeamFactory::Dimensions& dimen
    return H1 + H2 + H3;
 }
 
-std::_tstring CBoxBeamFactoryImpl::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring BoxBeamFactoryImpl::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
    switch(deckType)
@@ -515,7 +475,7 @@ std::_tstring CBoxBeamFactoryImpl::GetSlabDimensionsImage(pgsTypes::SupportedDec
    return strImage;
 }
 
-std::_tstring CBoxBeamFactoryImpl::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring BoxBeamFactoryImpl::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
    switch(deckType)
@@ -541,7 +501,7 @@ std::_tstring CBoxBeamFactoryImpl::GetPositiveMomentCapacitySchematicImage(pgsTy
    return strImage;
 }
 
-std::_tstring CBoxBeamFactoryImpl::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring BoxBeamFactoryImpl::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
    switch(deckType)
@@ -567,7 +527,7 @@ std::_tstring CBoxBeamFactoryImpl::GetNegativeMomentCapacitySchematicImage(pgsTy
    return strImage;
 }
 
-std::_tstring CBoxBeamFactoryImpl::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring BoxBeamFactoryImpl::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
    switch(deckType)
@@ -593,7 +553,7 @@ std::_tstring CBoxBeamFactoryImpl::GetShearDimensionsSchematicImage(pgsTypes::Su
    return strImage;
 }
 
-std::_tstring CBoxBeamFactoryImpl::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring BoxBeamFactoryImpl::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -638,7 +598,7 @@ std::_tstring CBoxBeamFactoryImpl::GetInteriorGirderEffectiveFlangeWidthImage(IB
    return strImage;
 }
 
-std::_tstring CBoxBeamFactoryImpl::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring BoxBeamFactoryImpl::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -683,22 +643,22 @@ std::_tstring CBoxBeamFactoryImpl::GetExteriorGirderEffectiveFlangeWidthImage(IB
    return strImage;
 }
 
-bool CBoxBeamFactoryImpl::HasTopFlangeThickening() const
+bool BoxBeamFactoryImpl::HasTopFlangeThickening() const
 {
    return false;
 }
 
-bool CBoxBeamFactoryImpl::CanPrecamber() const
+bool BoxBeamFactoryImpl::CanPrecamber() const
 {
    return false;
 }
 
-GirderIndexType CBoxBeamFactoryImpl::GetMinimumBeamCount() const
+GirderIndexType BoxBeamFactoryImpl::GetMinimumBeamCount() const
 {
    return 1;
 }
 
-void CBoxBeamFactoryImpl::DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
+void BoxBeamFactoryImpl::DimensionBeam(const BeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
 {
    // Hook point is at bottom center of bounding box.
    // Adjust hook point so top center of bounding box is at (0,0)
@@ -710,7 +670,7 @@ void CBoxBeamFactoryImpl::DimensionBeam(const IBeamFactory::Dimensions& dimensio
    hookPt->Offset(0, -Hg);
 }
 
-void CBoxBeamFactoryImpl::ConfigureGirderShape(const CPrecastSegmentData* pSegment,const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
+void BoxBeamFactoryImpl::ConfigureGirderShape(const CPrecastSegmentData* pSegment,const BeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
 {
    DimensionBeam(dimensions, pBeam);
 

@@ -31,7 +31,7 @@ class CMomentLoadDrawStrategyImpl : public iMomentLoadDrawStrategy, public WBFL:
 public:
    CMomentLoadDrawStrategyImpl();
 
-   virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, CMomentLoadData load, IndexType loadIndex,
+   virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, CMomentLoadData load, IndexType loadIndex,
       Float64 spanLength, Float64 maxMagnitude, COLORREF color) override;
 
    virtual void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const override;
@@ -71,7 +71,7 @@ private:
    void GetTSymbolSize(std::shared_ptr<const WBFL::DManip::iCoordinateMap> pMap, Uint32* pd) const;
    CMomentLoadData m_Load;
    IndexType m_LoadIndex;
-   IBroker*       m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker>       m_pBroker;
    COLORREF m_Color;
    Float64  m_MaxMagnitude;
    Float64  m_SpanLength;

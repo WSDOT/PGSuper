@@ -20,76 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_TEXASSTRESSCHECKSCHAPTERBUILDER_H_
-#define INCLUDED_TEXASSTRESSCHECKSCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporter\Chapter.h>
 #include <ReportManager\ReportManager.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-interface IEAFDisplayUnits;
-
-/*****************************************************************************
-CLASS 
-   CTexasStressChecksChapterBuilder
-
-   Chapter builder TxDOT stress cheks
-
-
-DESCRIPTION
-   Chapter builder TxDOT stress cheks
-
-LOG
-   rdp : 06.15.2006 : Created file
-*****************************************************************************/
-
 class CTexasStressChecksChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CTexasStressChecksChapterBuilder(bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CTexasStressChecksChapterBuilder(const CTexasStressChecksChapterBuilder&) = delete;
-   CTexasStressChecksChapterBuilder& operator=(const CTexasStressChecksChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_SPECCHECKCHAPTERBUILDER_H_

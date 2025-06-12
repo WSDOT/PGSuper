@@ -34,7 +34,7 @@ protected:
 	CMyView();           // protected constructor used by dynamic creation
 	virtual ~CMyView();
 
-   IEAFCommandCallback* m_pAgentCallback; // callback interface for the extension agent
+   std::shared_ptr<WBFL::EAF::ICommandCallback> m_pCallback; // callback interface for the extension agent
    // use this for adding commands that are to be routed to the agent
 
 public:

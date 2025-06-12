@@ -27,8 +27,10 @@
 #include "EditBearingDlg.h"
 #include "SpanDetailsDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
+
 #include "PGSuperUnits.h"
 
 // SpanGdrDetailsBearingsPage.cpp : implementation file
@@ -184,8 +186,8 @@ BOOL CSpanGdrDetailsBearingsPage::OnInitDialog()
 
 void CSpanGdrDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_MetaFileStatic(pDX, IDC_BEARING, m_Bearing, _T("BEARINGDIMENSIONS"), _T("Metafile"), EMF_FIT);

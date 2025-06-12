@@ -29,13 +29,10 @@
 #include <System\Tokenizer.h>
 #include "PGSuperUnits.h"
 #include <Units\Measure.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -252,8 +249,7 @@ int CBearingPierGrid::GetColWidth(ROWCOL nCol)
 void CBearingPierGrid::CustomInit()
 {
    // initialize units
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pCompUnit = &(pDisplayUnits->GetComponentDimUnit());
 

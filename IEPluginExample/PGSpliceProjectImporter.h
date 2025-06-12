@@ -20,41 +20,23 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// PGSpliceProjectImporter.h : Declaration of the CPGSpliceProjectImporter
-
 #pragma once
 
 #include <Plugins\PGSuperIEPlugin.h>
-#include "resource.h"       // main symbols
+#include <EAF/ComponentObject.h>
 
-/////////////////////////////////////////////////////////////////////////////
-// CPGSpliceProjectImporter
-class ATL_NO_VTABLE CPGSpliceProjectImporter : 
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CPGSpliceProjectImporter, &CLSID_PGSpliceProjectImporter>,
-   public IPGSProjectImporter
+class CPGSpliceProjectImporter : public WBFL::EAF::ComponentObject,
+   public PGS::IProjectImporter
 {
 public:
-	CPGSpliceProjectImporter()
-	{
-	}
-
-   HRESULT FinalConstruct();
+   CPGSpliceProjectImporter();
 
    CBitmap m_Bitmap;
 
-DECLARE_REGISTRY_RESOURCEID(IDR_PGSPLICEPROJECTIMPORTER)
-
-DECLARE_PROTECT_FINAL_CONSTRUCT()
-
-BEGIN_COM_MAP(CPGSpliceProjectImporter)
-	COM_INTERFACE_ENTRY(IPGSProjectImporter)
-END_COM_MAP()
-
-// IPGSProjectImporter
+// IProjectImporter
 public:
-   STDMETHOD(GetItemText)(/*[out,retval]*/BSTR*  bstrText) const override;
-   STDMETHOD(GetIcon)(/*[out]*/HICON* phIcon) const override;
-   STDMETHOD(Import)(/*[in]*/IBroker* pBroker) override;
-   STDMETHOD(GetCLSID)(CLSID* pCLSID) const override;
+   CString GetItemText() const override;
+   HICON GetIcon() const override;
+   HRESULT Import(std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
+   CLSID GetCLSID() const override;
 };

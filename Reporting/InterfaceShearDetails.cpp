@@ -28,6 +28,8 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\RatingArtifact.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
@@ -42,18 +44,13 @@
 
 #include <LRFD\ConcreteUtil.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
    CInterfaceShearDetails
 ****************************************************************************/
 
-CInterfaceShearDetails::CInterfaceShearDetails(IEAFDisplayUnits* pDisplayUnits)
+CInterfaceShearDetails::CInterfaceShearDetails(std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    DEFINE_UV_PROTOTYPE(location, pDisplayUnits->GetSpanLengthUnit(), false);
    DEFINE_UV_PROTOTYPE(shear, pDisplayUnits->GetGeneralForceUnit(), false);
@@ -72,9 +69,9 @@ CInterfaceShearDetails::~CInterfaceShearDetails()
 {
 }
 
-void CInterfaceShearDetails::Build(IBroker* pBroker, rptChapter* pChapter,
+void CInterfaceShearDetails::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
    const CGirderKey& girderKey,
-   IEAFDisplayUnits* pDisplayUnits,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    IntervalIndexType intervalIdx,
    pgsTypes::LimitState ls)
 {
@@ -119,7 +116,7 @@ void CInterfaceShearDetails::Build(IBroker* pBroker, rptChapter* pChapter,
    }
 }
 
-void CInterfaceShearDetails::BuildDesign( IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls)
+void CInterfaceShearDetails::BuildDesign( std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IArtifact,pIArtifact);
@@ -254,7 +251,7 @@ void CInterfaceShearDetails::BuildDesign( IBroker* pBroker, rptChapter* pChapter
    } // next segment
 }
 
-void CInterfaceShearDetails::BuildRating(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls)
+void CInterfaceShearDetails::BuildRating(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls)
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IArtifact, pIArtifact);
@@ -347,7 +344,7 @@ void CInterfaceShearDetails::BuildRating(IBroker* pBroker, rptChapter* pChapter,
    } // next rating
 }
 
-rptRcTable* CInterfaceShearDetails::CreateVuiTable(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits)
+rptRcTable* CInterfaceShearDetails::CreateVuiTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
    m_bDeckPanels = false;
@@ -462,7 +459,7 @@ void CInterfaceShearDetails::FillVuiTable(rptRcTable* pTable,RowIndexType row,co
    (*pTable)(row, col++) << stress.SetValue(pArtifact->GetVsAvg());
 }
 
-rptRcTable* CInterfaceShearDetails::CreateAvfTable(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+rptRcTable* CInterfaceShearDetails::CreateAvfTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -512,7 +509,7 @@ void CInterfaceShearDetails::FillAvfTable(rptRcTable* pTable,RowIndexType row,co
    (*pTable)(row, col++) << AvS.SetValue(pArtifact->GetAvOverS());
 }
 
-rptRcTable* CInterfaceShearDetails::CreateVniTable(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey, bool bIsUHPC,const std::vector<std::pair<SegmentIndexType,const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts)
+rptRcTable* CInterfaceShearDetails::CreateVniTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& girderKey, bool bIsUHPC,const std::vector<std::pair<SegmentIndexType,const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts)
 {
    Float64 fy_max = WBFL::Units::ConvertToSysUnits(60.0, WBFL::Units::Measure::KSI); // LRFD 5.7.4.2 (pre2017: 2013 5.8.4.1)
 
@@ -716,7 +713,7 @@ void CInterfaceShearDetails::FillVniTable(rptRcTable* pTable,RowIndexType row,co
 
 }
 
-rptRcTable* CInterfaceShearDetails::CreateMinAvfTable(rptChapter* pChapter,IBridge* pBridge,IEAFDisplayUnits* pDisplayUnits,bool bIsRoughened,bool doAllStirrupsEngageDeck,bool bIsUHPC)
+rptRcTable* CInterfaceShearDetails::CreateMinAvfTable(rptChapter* pChapter,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bIsRoughened,bool doAllStirrupsEngageDeck,bool bIsUHPC)
 {
    // Next, fill table for min Avf
 
@@ -830,7 +827,7 @@ rptRcTable* CInterfaceShearDetails::CreateMinAvfTable(rptChapter* pChapter,IBrid
    return table;
 }
 
-void CInterfaceShearDetails::FillMinAvfTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact,Float64 llss,IEAFDisplayUnits* pDisplayUnits, bool bIsUHPC)
+void CInterfaceShearDetails::FillMinAvfTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact,Float64 llss,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bIsUHPC)
 {
    // Don't report values in vui and capacity table for poi's in end zone outside of CSS
    if (!pArtifact->IsApplicable())

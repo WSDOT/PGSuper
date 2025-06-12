@@ -20,14 +20,13 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PRODUCTREACTIONTABLE_H_
-#define INCLUDED_PRODUCTREACTIONTABLE_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -46,65 +45,10 @@ LOG
 class REPORTINGCLASS CProductReactionTable
 {
 public:
-   // This class serves dual duty. It can report pier reactions or girder bearing reactions.
-   // The two are identical except for the title and the interfaces they use to get responses
-
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    CProductReactionTable();
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CProductReactionTable(const CProductReactionTable& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CProductReactionTable();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CProductReactionTable& operator = (const CProductReactionTable& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+   virtual rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
                              ReactionTableType type, bool bIncludedImpact, bool bDesign,bool bRating,bool bIndicateControllingLoad,
-                             IEAFDisplayUnits* pDisplayUnits) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CProductReactionTable& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CProductReactionTable& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_PRODUCTREACTIONTABLE_H_

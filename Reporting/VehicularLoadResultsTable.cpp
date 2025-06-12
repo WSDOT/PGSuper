@@ -26,17 +26,15 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -72,8 +70,8 @@ CVehicularLoadResultsTable& CVehicularLoadResultsTable::operator= (const CVehicu
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LiveLoadType llType,const std::_tstring& strLLName,VehicleIndexType vehicleIdx, pgsTypes::AnalysisType analysisType,
-                                              bool bReportTruckConfig,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CVehicularLoadResultsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::LiveLoadType llType,const std::_tstring& strLLName,VehicleIndexType vehicleIdx, pgsTypes::AnalysisType analysisType,
+                                              bool bReportTruckConfig,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -372,7 +370,7 @@ void CVehicularLoadResultsTable::MakeAssignment(const CVehicularLoadResultsTable
    MakeCopy( rOther );
 }
 
-void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,RowIndexType row,ColumnIndexType col,IEAFDisplayUnits* pDisplayUnits)
+void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,RowIndexType row,ColumnIndexType col,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    if ( config.size() == 0 )
    {

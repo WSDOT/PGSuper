@@ -28,7 +28,7 @@
 #include "PGSuperDocBase.h"
 
 #include <DManip/DisplayObjectEvents.h>
-interface IBroker;
+
 class CBridgeModelViewChildFrame;
 
 #define DECK_ID (INVALID_ID-2)
@@ -39,7 +39,7 @@ class CBridgeModelViewChildFrame;
 class CBridgePlanViewSlabDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents
 {
 public:
-	CBridgePlanViewSlabDisplayObjectEvents(CPGSDocBase* pDoc, IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected);
+	CBridgePlanViewSlabDisplayObjectEvents(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected);
 
    virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
    virtual bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
@@ -59,7 +59,7 @@ public:
    virtual void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
    CPGSDocBase* m_pDoc;
    PierIndexType m_nPiers;
@@ -80,7 +80,7 @@ private:
 class CBridgeSectionViewSlabDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents
 {
 public:
-	CBridgeSectionViewSlabDisplayObjectEvents(CPGSDocBase* pDoc, IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected);
+	CBridgeSectionViewSlabDisplayObjectEvents(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected);
 
    virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
    virtual bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
@@ -100,7 +100,7 @@ public:
    virtual void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
    CPGSDocBase* m_pDoc;
 

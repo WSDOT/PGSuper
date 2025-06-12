@@ -20,76 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_EFFFLANGEWIDTHDETAILSCHAPTERBUILDER_H_
-#define INCLUDED_EFFFLANGEWIDTHDETAILSCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CEffFlangeWidthDetailsChapterBuilder
-
-   Effective Flange Width Details Chapter Builder.
-
-
-DESCRIPTION
-   Effective Flange Width Details Chapter Builder.
-
-LOG
-   rab : 10.09.2001 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CEffFlangeWidthDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CEffFlangeWidthDetailsChapterBuilder(bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CEffFlangeWidthDetailsChapterBuilder(const CEffFlangeWidthDetailsChapterBuilder&) = delete;
-   CEffFlangeWidthDetailsChapterBuilder& operator=(const CEffFlangeWidthDetailsChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_EFFFLANGEWIDTHDETAILSCHAPTERBUILDER_H_

@@ -23,29 +23,24 @@
 //
 
 #include "stdafx.h"
-#include "Reporting.h"
 #include "BearingTimeStepDetailsDlg.h"
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Intervals.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CBearingTimeStepDetailsDlg dialog
 
 IMPLEMENT_DYNAMIC(CBearingTimeStepDetailsDlg, CDialog)
 
-CBearingTimeStepDetailsDlg::CBearingTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CBearingTimeStepDetailsReportSpecification>& pRptSpec,
+CBearingTimeStepDetailsDlg::CBearingTimeStepDetailsDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CBearingTimeStepDetailsReportSpecification>& pRptSpec,
     const ReactionLocation& initialReactionLocation,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CBearingTimeStepDetailsDlg::IDD, pParent)
    , m_SliderPos(0)

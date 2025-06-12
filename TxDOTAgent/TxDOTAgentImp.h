@@ -23,31 +23,23 @@
 // TxDOTAgentImp.h : Declaration of the CTxDOTAgentImp
 
 #pragma once
-#include "resource.h"       // main symbols
+#include <EAF\Agent.h>
 
 #include "CLSID.h"
 
-#include <EAF\EAFInterfaceCache.h>
+
 #include <EAF\EAFUIIntegration.h>
 
+#include <IFace\Tools.h>
 #include <IFace\TestFileExport.h>
 
 #include <PgsExt\GirderDesignArtifact.h>
 #include "TxDOTCommandLineInfo.h"
 
 
-#if defined(_WIN32_WCE) && !defined(_CE_DCOM) && !defined(_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA)
-#error "Single-threaded COM objects are not properly supported on Windows CE platform, such as the Windows Mobile platforms that do not include full DCOM support. Define _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA to force ATL to support creating single-thread COM object's and allow use of it's single-threaded COM object implementations. The threading model in your rgs file was set to 'Free' as that is the only threading model supported in non DCOM Windows CE platforms."
-#endif
-
-
-
 // CTxDOTAgentImp
 
-class ATL_NO_VTABLE CTxDOTAgentImp :
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CTxDOTAgentImp, &CLSID_TxDOTAgent>,
-	public IAgentEx,
+class CTxDOTAgentImp : public WBFL::EAF::Agent,
    public IEAFProcessCommandLine
 {
 public:
@@ -55,51 +47,25 @@ public:
 	{
 	}
 
-DECLARE_REGISTRY_RESOURCEID(IDR_TXDOTAGENTIMP)
-
-DECLARE_NOT_AGGREGATABLE(CTxDOTAgentImp)
-
-BEGIN_COM_MAP(CTxDOTAgentImp)
-	COM_INTERFACE_ENTRY(IAgentEx)
-   COM_INTERFACE_ENTRY(IEAFProcessCommandLine)
-END_COM_MAP()
-
-
-
-	DECLARE_PROTECT_FINAL_CONSTRUCT()
-
-	HRESULT FinalConstruct()
-	{
-		return S_OK;
-	}
-
-	void FinalRelease()
-	{
-	}
-
-// IAgentEx
+// Agent
 public:
-	STDMETHOD(SetBroker)(IBroker* pBroker) override;
-	STDMETHOD(RegInterfaces)() override;
-	STDMETHOD(Init)() override;
-	STDMETHOD(Reset)() override;
-	STDMETHOD(ShutDown)() override;
-   STDMETHOD(Init2)() override;
-   STDMETHOD(GetClassID)(CLSID* pCLSID) override;
+   std::_tstring GetName() const override { return _T("TxDOTAgent"); }
+   bool RegisterInterfaces() override;
+   bool Init() override;
+   bool Reset() override;
+   bool ShutDown() override;
+   CLSID GetCLSID() const override;
 
 
 // IEAFProcessCommandLine
 public:
-   virtual BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo) override;
+   BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo) override;
 
 protected:
    void ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo);
    bool DoTOGAReport(const CString& outputFileName, const CTxDOTCommandLineInfo& txInfo);
 
 private:
-
-   DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
    DECLARE_LOGFILE;
 };
-
-OBJECT_ENTRY_AUTO(__uuidof(TxDOTAgent), CTxDOTAgentImp)

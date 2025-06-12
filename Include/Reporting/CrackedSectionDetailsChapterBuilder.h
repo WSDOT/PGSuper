@@ -26,34 +26,11 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CCrackedSectionDetailsChapterBuilder
-
-DESCRIPTION
-   Builds the Cracked Section Analysis Details chapter
-
-LOG
-   rab : 01.08.2010 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CCrackedSectionDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CCrackedSectionDetailsChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-private:
-   // Prevent accidental copying and assignment
-   CCrackedSectionDetailsChapterBuilder(const CCrackedSectionDetailsChapterBuilder&) = delete;
-   CCrackedSectionDetailsChapterBuilder& operator=(const CCrackedSectionDetailsChapterBuilder&) = delete;
 };

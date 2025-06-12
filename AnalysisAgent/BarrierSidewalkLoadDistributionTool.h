@@ -19,51 +19,23 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
 #pragma once
 
-// SYSTEM INCLUDES
-//
 #include <array>
 
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-interface IBroker;
-interface IBridgeDescription;
-interface IBridge;
-interface IGirder;
-interface IBarriers;
-
-// MISCELLANEOUS
-
-/*****************************************************************************
-CLASS 
-   pgsBarrierSidewalkLoadDistributionTool
-
-   Encapsulates the geometry computations for distributin of barrier and sidewalk loads
-   for a given span
+class IBridgeDescription;
+class IBridge;
+class IGirder;
+class IBarriers;
 
 
-DESCRIPTION
-   Encapsulates the geometry computations for distributin of barrier and sidewalk loads
-   for a given span
-
-LOG
-   rdp : 1.12.2012 : Created file 
-*****************************************************************************/
-
+/// @brief  Encapsulates the geometry computations for distributin of barrier and sidewalk loads for a given span
 class pgsBarrierSidewalkLoadDistributionTool 
 {
 public:
-   // GROUP: LIFECYCLE
-   //------------------------------------------------------------------------
-   // Default constructor
-   pgsBarrierSidewalkLoadDistributionTool(SHARED_LOGFILE lf,IBridgeDescription* pBridgeDesc, IBridge* pBridge, IGirder* pGirder, IBarriers* pBarriers);
+   pgsBarrierSidewalkLoadDistributionTool(SHARED_LOGFILE lf,std::weak_ptr<IBridgeDescription> pBridgeDesc, std::weak_ptr<IBridge> pBridge, std::weak_ptr<IGirder> pGirder, std::weak_ptr<IBarriers> pBarriers);
+   ~pgsBarrierSidewalkLoadDistributionTool() = default;
 
    void Initialize(GroupIndexType grpIdx, SegmentIndexType segIdx, pgsTypes::TrafficBarrierDistribution distType, GirderIndexType nMaxDistributed);
 
@@ -79,7 +51,6 @@ private:
                     RightExteriorBarrier, RightSidewalk, RightInteriorBarrier,
                     BarrSwSize};
 
-   // GROUP: OPERATIONS
    void Compute();
    void BuildGeometryModel();
    void ComputeBarrierLoadDistribution(pgsTypes::TrafficBarrierOrientation orientation, Float64 BrOffset, BarrSwType barrswType, bool oppositeExists);
@@ -88,29 +59,7 @@ private:
    bool DistributeSidewalkLoadUnderSw(pgsTypes::TrafficBarrierOrientation orientation, Float64 extEdgeOffset, Float64 intEdgeOffset, BarrSwType barrswType);
    void DistributeBSWLoadToNNearest(pgsTypes::TrafficBarrierOrientation orientation, Float64 bSwOffset, BarrSwType barrswType);
 
-   // ACCESS
-   //////////
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-   // GROUP: DATA MEMBERS
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // Local Data
    GroupIndexType m_GroupIdx;
    SegmentIndexType m_SegmentIdx;
    pgsTypes::TrafficBarrierDistribution m_DistType;
@@ -119,10 +68,10 @@ private:
    bool m_DidCompute;
 
    // Weak reference to interface pointers
-   IBridgeDescription* m_pIBridgeDesc;
-   IBridge* m_pIBridge;
-   IGirder* m_pIGirder;
-   IBarriers* m_pIBarriers;
+   std::weak_ptr<IBridgeDescription> m_pIBridgeDesc;
+   std::weak_ptr<IBridge> m_pIBridge;
+   std::weak_ptr<IGirder> m_pIGirder;
+   std::weak_ptr<IBarriers> m_pIBarriers;
 
    /////////////////////////////////////////////////////////////////////////////////////////////
    // The data structures below store the number of load fractions that go to each girder in a 
@@ -186,10 +135,3 @@ private:
 	DECLARE_SHARED_LOGFILE;
 
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-

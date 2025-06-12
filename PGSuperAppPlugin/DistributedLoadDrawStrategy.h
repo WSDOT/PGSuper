@@ -23,11 +23,11 @@
 #pragma once
 
 #include <IFace\Bridge.h>
-#include <PgsExt\DistributedLoadData.h>
+#include <PsgLib\DistributedLoadData.h>
 
 class iDistributedLoadDrawStrategy
 {
 public:
-  virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, CDistributedLoadData load, IndexType loadIndex, 
+  virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, CDistributedLoadData load, IndexType loadIndex, 
                         Float64 loadLength, Float64 spanLength, Float64 maxMagnitude, COLORREF color) = 0;
 };

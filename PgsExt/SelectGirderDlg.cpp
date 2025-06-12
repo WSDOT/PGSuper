@@ -25,16 +25,14 @@
 #include <PgsExt\PgsExtLib.h>
 #include "resource.h"
 #include "SelectGirderDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLIb\GirderLabel.h>
+
 
 // CSelectGirderDlg dialog
 
@@ -69,8 +67,7 @@ BOOL CSelectGirderDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
 	GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc ); 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -115,8 +112,7 @@ BOOL CSelectGirderDlg::OnInitDialog()
 
 void CSelectGirderDlg::OnGroupChanged() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
 	GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc ); 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();

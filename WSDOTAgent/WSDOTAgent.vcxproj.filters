@@ -57,12 +57,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="WSDOTAgent.def" />
-    <None Include="PGSpliceComponentInfo.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="PGSuperComponentInfo.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="WSDOTAgent.rgs">
       <Filter>Resource Files</Filter>
     </None>

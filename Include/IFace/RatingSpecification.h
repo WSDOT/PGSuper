@@ -40,8 +40,9 @@ DESCRIPTION
 // {10198680-3270-4adb-A768-A6C01069D9C0}
 DEFINE_GUID(IID_IRatingSpecification, 
 0x10198680, 0x3270, 0x4adb, 0xa7, 0x68, 0xa6, 0xc0, 0x10, 0x69, 0xd9, 0xc0);
-interface IRatingSpecification : IUnknown
+class IRatingSpecification
 {
+public:
    // returns true if any one of the rating types is enabled
    virtual bool IsRatingEnabled() const = 0;
 
@@ -145,7 +146,8 @@ DESCRIPTION
 // {D100AF07-38DA-4baa-8726-F1EE9A52D037}
 DEFINE_GUID(IID_IRatingSpecificationEventSink, 
 0xd100af07, 0x38da, 0x4baa, 0x87, 0x26, 0xf1, 0xee, 0x9a, 0x52, 0xd0, 0x37);
-interface __declspec(uuid("{D100AF07-38DA-4baa-8726-F1EE9A52D037}")) IRatingSpecificationEventSink : IUnknown
+class __declspec(uuid("{D100AF07-38DA-4baa-8726-F1EE9A52D037}")) IRatingSpecificationEventSink
 {
+public:
    virtual HRESULT OnRatingSpecificationChanged() = 0;
 };

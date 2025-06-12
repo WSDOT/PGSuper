@@ -31,8 +31,8 @@
 
 #include <PsgLib\ISupportLibraryManager.h>
 #include <PsgLib\LibraryManager.h>
-#include <IReportManager.h>
-#include <IGraphManager.h>
+#include <EAF/EAFReportManager.h>
+#include <EAF/EAFGraphManager.h>
 
 #include <PgsExt\TxnManager.h>
 
@@ -132,16 +132,16 @@ protected: // create from serialization only
 
 // CBrokerDocument over-rides
 protected:
-   virtual BOOL Init() override;
-   virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit) override; 
-   virtual void OnChangedFavoriteReports(BOOL bIsFavorites, BOOL bFromMenu) override;
-   virtual void ShowCustomReportHelp(eafTypes::CustomReportHelp helpType) override;
-   virtual void ShowCustomReportDefinitionHelp() override;
+   BOOL Init() override;
+   std::pair<bool,WBFL::EAF::AgentErrors> LoadSpecialAgents() override; 
+   void OnChangedFavoriteReports(BOOL bIsFavorites, BOOL bFromMenu) override;
+   void ShowCustomReportHelp(WBFL::EAF::CustomReportHelp helpType) override;
+   void ShowCustomReportDefinitionHelp() override;
 
 // CEAFAutoCalcDocMixin over-rides
 public:
-   virtual bool IsAutoCalcEnabled() const override;
-   virtual void EnableAutoCalc(bool bEnable) override;
+   bool IsAutoCalcEnabled() const override;
+   void EnableAutoCalc(bool bEnable) override;
 
 // Operations
 public:
@@ -168,11 +168,11 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CPGSDocBase)
-	public:
-	virtual BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName) override;
-   virtual void OnCloseDocument() override;
-   virtual BOOL DoSave(LPCTSTR lpszPathName, BOOL bReplace = TRUE) override;
-	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
+public:
+	BOOL OnNewDocumentFromTemplate(LPCTSTR lpszPathName) override;
+   void OnCloseDocument() override;
+   BOOL DoSave(LPCTSTR lpszPathName, BOOL bReplace = TRUE) override;
+	BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
 	//}}AFX_VIRTUAL
 
    void UpdateProjectCriteriaIndicator();
@@ -181,15 +181,15 @@ public:
    void OnLoadsLldf(pgsTypes::DistributionFactorMethod method,WBFL::LRFD::RangeOfApplicabilityAction roaAction);
    void OnLiveLoads();
 
-   virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const override;
-   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const override;
+   BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const override;
+   BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const override;
 
 // Implementation
 public:
 	virtual ~CPGSDocBase();
 #ifdef _DEBUG
-	virtual void AssertValid() const override;
-	virtual void Dump(CDumpContext& dc) const override;
+	void AssertValid() const override;
+	void Dump(CDumpContext& dc) const override;
 #endif
 
    IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback);
@@ -257,9 +257,9 @@ public:
    const std::map<IDType, IEditLoadRatingOptionsCallback*>& GetEditLoadRatingOptionsCallbacks();
 
    // ISupportLibraryManager
-   virtual IndexType GetNumberOfLibraryManagers() const override;
-   virtual WBFL::Library::LibraryManager* GetLibraryManager(IndexType num) override;
-   virtual WBFL::Library::LibraryManager* GetTargetLibraryManager() override;
+   IndexType GetNumberOfLibraryManagers() const override;
+   WBFL::Library::LibraryManager* GetLibraryManager(IndexType num) override;
+   WBFL::Library::LibraryManager* GetTargetLibraryManager() override;
 
    bool EditBridgeDescription(int nPage);
    bool EditAlignmentDescription(int nPage);
@@ -334,16 +334,16 @@ public:
 
 protected:
    // Override default behavior
-   virtual void ResetUIHints(bool bPrompt = TRUE) override;
+   void ResetUIHints(bool bPrompt = TRUE) override;
 
    // called when the UI Hints have been reset
-   virtual void OnUIHintsReset() override;
+   void OnUIHintsReset() override;
 
 
    bool ShowProjectPropertiesOnNewProject();
    void ShowProjectPropertiesOnNewProject(bool bShow);
 
-   CPGSuperDocProxyAgent* m_pPGSuperDocProxyAgent;
+   std::shared_ptr<CPGSuperDocProxyAgent> m_pPGSuperDocProxyAgent;
 
    bool m_bSelectingGirder;
    bool m_bSelectingSegment;
@@ -416,61 +416,59 @@ protected:
    StatusCallbackIDType m_scidInformationalError;
    StatusGroupIDType m_StatusGroupID;
 
-   virtual void LoadToolbarState() override;
-   virtual void SaveToolbarState() override;
+   void LoadToolbarState() override;
+   void SaveToolbarState() override;
 
-   virtual void OnCreateInitialize() override;
-   virtual void OnCreateFinalize() override;
+   void OnCreateInitialize() override;
+   void OnCreateFinalize() override;
 
    virtual LPCTSTR GetTemplateExtension() = 0;
    virtual CATID GetComponentInfoCategoryID() = 0;
 
-   virtual BOOL OnOpenDocument(LPCTSTR lpszPathName) override;
-   virtual BOOL OpenTheDocument(LPCTSTR lpszPathName) override;
+   BOOL OnOpenDocument(LPCTSTR lpszPathName) override;
+   BOOL OpenTheDocument(LPCTSTR lpszPathName) override;
 
-   virtual void HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName ) override;
-   virtual void HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName ) override;
+   void HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName ) override;
+   void HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName ) override;
 
-   virtual HRESULT ConvertTheDocument(LPCTSTR lpszPathName, CString* realFileName) override;
-   virtual void HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName ) override;
+   HRESULT ConvertTheDocument(LPCTSTR lpszPathName, CString* realFileName) override;
+   void HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName ) override;
 
-   virtual CString GetRootNodeName() override;
-   virtual Float64 GetRootNodeVersion() override;
+   CString GetRootNodeName() override;
+   Float64 GetRootNodeVersion() override;
 
-   virtual HRESULT LoadTheDocument(IStructuredLoad* pStrLoad) override;
-   virtual HRESULT WriteTheDocument(IStructuredSave* pStrSave) override;
+   HRESULT LoadTheDocument(IStructuredLoad* pStrLoad) override;
+   HRESULT WriteTheDocument(IStructuredSave* pStrSave) override;
 
-   virtual void OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup) override;
-   virtual void OnErrorRenamingSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBackup) override;
+   void OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup) override;
+   void OnErrorRenamingSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBackup) override;
 
-   virtual void LoadDocumentSettings() override;
-   virtual void SaveDocumentSettings() override;
+   void LoadDocumentSettings() override;
+   void SaveDocumentSettings() override;
 
-   virtual void LoadDocumentationMap() override;
-   virtual CString GetDocumentationRootLocation() override;
-   virtual eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL) override;
+   void LoadDocumentationMap() override;
+   CString GetDocumentationRootLocation() override;
+   std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID) override;
 
-   virtual void OnLogFileOpened() override; // called when the log file is first opened
+   void BrokerShutDown() override;
+   void OnStatusChanged() override;
 
-   virtual void BrokerShutDown() override;
-   virtual void OnStatusChanged() override;
+   BOOL CreateBroker() override;
+   HINSTANCE GetResourceInstance() override;
 
-   virtual BOOL CreateBroker() override;
-   virtual HINSTANCE GetResourceInstance() override;
-
-   BOOL UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir);
+   BOOL UpdateTemplates(std::shared_ptr<IEAFProgress> pProgress,LPCTSTR lpszDir);
    virtual void ModifyTemplate(LPCTSTR strTemplate); 
 
-   virtual CString GetToolbarSectionName() override;
+   CString GetToolbarSectionName() override;
 
-   virtual void CreateReportView(IndexType rptIdx,BOOL bPrompt) override;
-   virtual void CreateGraphView(IndexType graphIdx) override;
+   void CreateReportView(IndexType rptIdx,BOOL bPrompt) override;
+   void CreateGraphView(IndexType graphIdx) override;
 
-   virtual void DeleteContents() override;
+   void DeleteContents() override;
 
    virtual CATID GetBeamFamilyCategoryID() = 0;
 
-   virtual BOOL LoadAgents() override;
+   BOOL LoadAgents() override;
 
    void UIHint(const CString& strText, UINT hint);
 

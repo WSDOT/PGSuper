@@ -22,24 +22,9 @@
 
 #pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\PoiMap.h>
-
 #include <IFace\PointOfInterest.h>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -58,59 +43,23 @@ LOG
 class pgsGirderLiftingChecker
 {
 public:
-   // GROUP: LIFECYCLE
+   pgsGirderLiftingChecker(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
+   pgsGirderLiftingChecker() = delete;
+   pgsGirderLiftingChecker(const pgsGirderLiftingChecker&) = delete;
+   pgsGirderLiftingChecker& operator=(const pgsGirderLiftingChecker&) = delete;
+   ~pgsGirderLiftingChecker() = default;
 
-   //------------------------------------------------------------------------
-   // Constructor
-   pgsGirderLiftingChecker(IBroker* pBroker,StatusGroupIDType statusGroupID);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsGirderLiftingChecker();
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   void CheckLifting(const CSegmentKey& segmentKey,WBFL::Stability::LiftingCheckArtifact* pArtifact);
-   void AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc,WBFL::Stability::LiftingCheckArtifact* pArtifact);
-   void AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPOId, WBFL::Stability::LiftingCheckArtifact* pArtifact, const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem = nullptr);
-   pgsDesignCodes::OutcomeType DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPOId,WBFL::Stability::LiftingCheckArtifact* pArtifact,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem,SHARED_LOGFILE LOGFILE);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> CheckLifting(const CSegmentKey& segmentKey);
+   std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc);
+   std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPOId, const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem = nullptr);
+   std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>> DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPOId,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem,SHARED_LOGFILE LOGFILE);
 
 private:
-   // GROUP: DATA MEMBERS
-   IBroker* m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidLiftingSupportLocationError;
    StatusCallbackIDType m_scidLiftingSupportLocationWarning;
 
-   // GROUP: LIFECYCLE
-   // can't construct without a broker
-   pgsGirderLiftingChecker() = delete;
-
-   // Prevent accidental copying and assignment
-   pgsGirderLiftingChecker(const pgsGirderLiftingChecker&) = delete;
-   pgsGirderLiftingChecker& operator=(const pgsGirderLiftingChecker&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   void AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,WBFL::Stability::LiftingCheckArtifact* pArtifact,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem = nullptr);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPoiD,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem = nullptr);
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//

@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-
+#include "TestAgent.h"
 #include "TestFileWriter.h"
 
 #include <IFace\Project.h>
@@ -34,8 +34,9 @@
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\Intervals.h>
-
+#include <IFace/PointOfInterest.h>
 #include <IFace\RatingSpecification.h>
+
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\ISummaryRatingArtifact.h>
 
@@ -44,19 +45,14 @@
 #endif
 
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\GirderArtifactTool.h>
-#include <PgsExt\GirderLabel.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PsgLib\GirderLabel.h>
 
 
-static void write_spec_check_results(FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, bool designSucceeded);
-static std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+
+static void write_spec_check_results(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, bool designSucceeded);
+static std::_tstring MakeNonStandardStrandString(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi);
 
 // Return fractional string for strand size
 static int txdString_ftofrac	/* <=  Completion value                   */
@@ -114,7 +110,7 @@ Float64		value 			   /*  => Value to convert                   */
 }
 
 // Function to return number of raised straight strands as defined by top kern point
-inline StrandIndexType GetNumRaisedStraightStrands(IStrandGeometry * pStrandGeometry, const CSegmentKey& segmentKey,  const pgsPointOfInterest& pois, Float64 kt )
+inline StrandIndexType GetNumRaisedStraightStrands(std::shared_ptr<IStrandGeometry> pStrandGeometry, const CSegmentKey& segmentKey,  const pgsPointOfInterest& pois, Float64 kt )
 {
    StrandIndexType numRaisedStraightStrands = 0;
    if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) && 0 < pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped))
@@ -144,7 +140,7 @@ inline StrandIndexType GetNumRaisedStraightStrands(IStrandGeometry * pStrandGeom
 }
 
 // Legacy TxDOT algo for determining strand fill type. Not really useful for our purposes, but this is how it's always been done...
-static bool IsTxStandardStrands(bool isHarpedDesign, pgsTypes::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker)
+static bool IsTxStandardStrands(bool isHarpedDesign, pgsTypes::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
 
@@ -253,7 +249,7 @@ static bool IsTxStandardStrands(bool isHarpedDesign, pgsTypes::StrandDefinitionT
 }
 
 
-int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, bool designSucceeded)
+int Test_WriteCADDataToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, bool designSucceeded)
 {
 #if defined _DEBUG
    GET_IFACE2(pBroker,IDocumentType,pDocType);
@@ -1065,11 +1061,10 @@ void TestFileWriter::WriteInitialData(CadWriterWorkerBee& workerB)
       {
          // A little checking
          pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
-         RowIndexType nrs = m_pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
+         RowIndexType nrs = m_pStrandGeometry.lock()->GetNumRowsWithStrand(poi, pgsTypes::Straight);
          ATLASSERT((RowIndexType)m_Rows.size() == nrs); // could have more rows than rows with debonded strands
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         auto pBroker = EAFGetBroker();
       
          GET_IFACE2(pBroker, IIntervals, pIntervals);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
@@ -1096,8 +1091,7 @@ void TestFileWriter::WriteFinalData(FILE *fp, bool isExtended, bool isIBeam, Int
    {
       pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
    
       GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
@@ -1214,7 +1208,7 @@ void TestFileWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& ro
 }
 
 
-void write_spec_check_results(FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, bool designSucceeded)
+void write_spec_check_results(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, bool designSucceeded)
 {
 #if defined _DEBUG
    GET_IFACE2(pBroker,IDocumentType,pDocType);
@@ -1281,7 +1275,7 @@ void write_spec_check_results(FILE *fp, IBroker* pBroker, const CGirderKey& gird
 }
 
 
-int Test_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girderKey)
+int Test_WriteDistributionFactorsToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey)
 {
 #if defined _DEBUG
    GET_IFACE2(pBroker,IDocumentType,pDocType);
@@ -1334,7 +1328,7 @@ int Test_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CGird
    return CAD_SUCCESS;
 }
 
-std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi)
+std::_tstring MakeNonStandardStrandString(std::shared_ptr<WBFL::EAF::Broker>pBroker, const pgsPointOfInterest& midPoi)
 {
    StrandRowUtil::StrandRowSet strandrows = StrandRowUtil::GetStrandRowSet(pBroker, midPoi);
 

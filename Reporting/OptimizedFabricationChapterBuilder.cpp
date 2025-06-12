@@ -23,35 +23,21 @@
 #include "StdAfx.h"
 #include <Reporting\OptimizedFabricationChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Constructability.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 
-#include <PgsExt\SplicedGirderData.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   COptimizedFabricationChapterBuilder
-****************************************************************************/
+#include <PsgLib\SplicedGirderData.h>
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 COptimizedFabricationChapterBuilder::COptimizedFabricationChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR COptimizedFabricationChapterBuilder::GetName() const
 {
    return TEXT("Fabrication Options");
@@ -60,8 +46,7 @@ LPCTSTR COptimizedFabricationChapterBuilder::GetName() const
 rptChapter* COptimizedFabricationChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey( pGirderRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -351,27 +336,3 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(const std::shared_ptr<con
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> COptimizedFabricationChapterBuilder::Clone() const
-{
-   return std::make_unique<COptimizedFabricationChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

@@ -20,15 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_STRANDDESIGNTOOL_H_
-#define INCLUDED_STRANDDESIGNTOOL_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-
+#include <IFace/Tools.h>
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
@@ -39,9 +33,6 @@
 #include <algorithm>
 #include<list>
 #include<vector>
-
-// LOCAL INCLUDES
-//
 
 struct InitialDesignParameters
 {
@@ -76,12 +67,8 @@ static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rvec)
    return os.str();
 }
 
-// FORWARD DECLARATIONS
-//
-interface IBroker;
-interface IPretensionForce;
+class IPretensionForce;
 
-// MISCELLANEOUS
 // Strand adjustment outcomes
 #define STRAND_ADJUST_UNCHANGED               2
 #define STRAND_ADJUST_SUCCESS                 1
@@ -121,20 +108,15 @@ public:
       TensBotBtwnHp
    };
 
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    pgsStrandDesignTool(SHARED_LOGFILE lf);
    
-   void Initialize(IBroker* pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact);
+   void Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact);
 
    void InitReleaseStrength(Float64 fci,IntervalIndexType intervalIdx);
    void InitFinalStrength(Float64 fc,IntervalIndexType intervalIdx);
 
    void RestoreDefaults(bool retainProportioning, bool justAddedRaisedStrands);
 
-   // GROUP: OPERATIONS
    void FillArtifactWithFlexureValues();
 
    Float64 GetSegmentLength() const; // a little utility function to return a commonly used value
@@ -207,8 +189,8 @@ public:
    void SetHarpStrandOffsetEnd(pgsTypes::MemberEndType endType,Float64 off);
    void SetHarpStrandOffsetHp(pgsTypes::MemberEndType endType,Float64 off);
 
-   Float64 GetHarpedHpOffsetIncrement(IStrandGeometry* pStrandGeom) const;
-   Float64 GetHarpedEndOffsetIncrement(IStrandGeometry* pStrandGeom) const;
+   Float64 GetHarpedHpOffsetIncrement() const;
+   Float64 GetHarpedEndOffsetIncrement() const;
 
    Float64 ComputeEndOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc) const;
    bool ComputeMinHarpedForEndZoneEccentricity(const pgsPointOfInterest& poi, Float64 ecc, IntervalIndexType intervalIdx, StrandIndexType* pNs, StrandIndexType* pNh) const;
@@ -269,8 +251,6 @@ public:
    bool LayoutDebonding(const std::vector<DebondLevelType>& rDebondLevelsAtSections);
 
 
-   // ACCESS
-   //////////
    const GDRCONFIG& GetSegmentConfiguration() const;
 
    bool IsDesignDebonding() const;
@@ -302,8 +282,6 @@ public:
    virtual void GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey, Uint16 nPnts, Float64 leftOverhang, Float64 rightOverhang, PoiAttributeType attrib, std::vector<pgsPointOfInterest>* pvPoi,Uint32 mode = POIFIND_OR) const override;
 
    // Concrete
-   ////////////
-   // 
 
    Float64 GetConcreteStrength() const;
    Float64 GetReleaseStrength() const;
@@ -356,26 +334,7 @@ public:
    pgsSegmentDesignArtifact::ConcreteStrengthDesignState GetReleaseConcreteDesignState() const;
    pgsSegmentDesignArtifact::ConcreteStrengthDesignState GetFinalConcreteDesignState() const;
 
-   // GROUP: INQUIRY
    void DumpDesignParameters() const;
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-   // GROUP: DATA MEMBERS
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 
 private:
    // updates jacking forces with current design information
@@ -391,7 +350,9 @@ private:
    void ComputeMinStrands();
 
 
-   IBroker* m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
    StatusGroupIDType m_StatusGroupID;
 
    Float64 m_ConcreteAccuracy; // 100 PSI
@@ -691,7 +652,7 @@ private:
 
    StrandIndexType ComputeNextNumProportionalStrands(StrandIndexType prevNum, StrandIndexType* ns, StrandIndexType* nh) const;
 
-   bool AdjustStrandsForSlope(Float64 targetSlope, Float64 currentSlope, pgsTypes::MemberEndType endType,StrandIndexType nh, IStrandGeometry* pStrandGeom);
+   bool AdjustStrandsForSlope(Float64 targetSlope, Float64 currentSlope, pgsTypes::MemberEndType endType,StrandIndexType nh);
 
    // Private functions called from Initialize
    ///////////////////////////////////////////
@@ -711,7 +672,7 @@ private:
 
    // compute possible debond levels for the current span/girder
    void InitDebondData();
-   void ComputeDebondLevels(IPretensionForce* pPrestressForce);
+   void ComputeDebondLevels(std::shared_ptr<IPretensionForce> pPrestressForce);
    void DumpDebondLevels(Float64 Hg);
    bool SmoothDebondLevelsAtSections(std::vector<DebondLevelType>& rDebondLevelsAtSections) const;
    DebondLevelType GetMinAdjacentDebondLevel(DebondLevelType currLevel, StrandIndexType maxDbsTermAtSection) const;
@@ -755,19 +716,10 @@ private:
    std::vector<DebondLevelType> m_MaxPhysicalDebondLevels;
 
 
-   Float64 ComputePrestressForcePerStrand(const GDRCONFIG& fullyBondedConfig, const StressDemand& demand, const DebondLevel& lvl, IntervalIndexType interval, IPretensionForce* pPrestressForce) const;
+   Float64 ComputePrestressForcePerStrand(const GDRCONFIG& fullyBondedConfig, const StressDemand& demand, const DebondLevel& lvl, IntervalIndexType interval, std::shared_ptr<IPretensionForce> pPrestressForce) const;
    void GetHandlingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,PoiAttributeType supportAttribute, std::vector<pgsPointOfInterest>* pvPoi, Uint32 mode) const;
 
 
 private:
 	DECLARE_SHARED_LOGFILE;
-
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_STRANDDESIGNTOOL_H_

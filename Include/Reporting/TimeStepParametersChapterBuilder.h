@@ -26,34 +26,11 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CTimeStepParametersChapterBuilder
-
-DESCRIPTION
-   Chapter builder for reporting parameters used in the time step prestress loss analysis
-*****************************************************************************/
-
 class REPORTINGCLASS CTimeStepParametersChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CTimeStepParametersChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-protected:
-
-private:
-   // Prevent accidental copying and assignment
-   CTimeStepParametersChapterBuilder(const CTimeStepParametersChapterBuilder&) = delete;
-   CTimeStepParametersChapterBuilder& operator=(const CTimeStepParametersChapterBuilder&) = delete;
 };

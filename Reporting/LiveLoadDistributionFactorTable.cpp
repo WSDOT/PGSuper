@@ -24,19 +24,17 @@
 #include <Reporting\LiveLoadDistributionFactorTable.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -67,8 +65,8 @@ CLiveLoadDistributionFactorTable& CLiveLoadDistributionFactorTable::operator= (c
 }
 
 void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
-                                             IBroker* pBroker,const CGirderKey& girderKey,
-                                             IEAFDisplayUnits* pDisplayUnits) const
+                                             std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_SCALAR_PROTOTYPE(rptRcScalar, df, pDisplayUnits->GetScalarFormat());
 

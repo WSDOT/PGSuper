@@ -25,9 +25,9 @@
 #include <Reporting\BrokerReportSpecification.h>
 #include <ReportManager\ReportManager.h>
 #include <ReportManager\ReportHint.h>
-#include <WBFLCore.h>
-#include <PgsExt\Keys.h>
-#include <PgsExt\PointOfInterest.h>
+
+#include <PsgLib\Keys.h>
+#include <PsgLib\PointOfInterest.h>
 
 class REPORTINGCLASS CSpanReportHint : public WBFL::Reporting::ReportHint
 {
@@ -86,7 +86,7 @@ class REPORTINGCLASS CSpanReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CSpanReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,SpanIndexType spanIdx);
+   CSpanReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,SpanIndexType spanIdx);
    CSpanReportSpecification(const CBrokerReportSpecification& other,SpanIndexType spanIdx);
    CSpanReportSpecification(const CSpanReportSpecification& other);
    ~CSpanReportSpecification(void);
@@ -108,7 +108,7 @@ class REPORTINGCLASS CGirderReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const CGirderKey& girderKey);
+   CGirderReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey);
    CGirderReportSpecification(const CGirderReportSpecification& other);
    ~CGirderReportSpecification(void);
 
@@ -134,7 +134,7 @@ class REPORTINGCLASS CSegmentReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CSegmentReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, const CSegmentKey& segmentKey);
+   CSegmentReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey);
    CSegmentReportSpecification(const CSegmentReportSpecification& other);
    ~CSegmentReportSpecification(void);
 
@@ -163,7 +163,7 @@ class REPORTINGCLASS CGirderLineReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CGirderLineReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,GirderIndexType gdrIdx);
+   CGirderLineReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker,GirderIndexType gdrIdx);
    CGirderLineReportSpecification(const CGirderLineReportSpecification& other);
    ~CGirderLineReportSpecification(void);
 
@@ -185,7 +185,7 @@ class REPORTINGCLASS CMultiGirderReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CMultiGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
+   CMultiGirderReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys);
    CMultiGirderReportSpecification(const CMultiGirderReportSpecification& other);
    ~CMultiGirderReportSpecification(void);
 
@@ -211,7 +211,7 @@ class REPORTINGCLASS CMultiViewSpanGirderReportSpecification :
 {
 public:
 
-   CMultiViewSpanGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
+   CMultiViewSpanGirderReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys);
    CMultiViewSpanGirderReportSpecification(const CMultiViewSpanGirderReportSpecification& other);
    ~CMultiViewSpanGirderReportSpecification(void);
 
@@ -234,7 +234,7 @@ class REPORTINGCLASS CPointOfInterestReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CPointOfInterestReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi);
+   CPointOfInterestReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker>pBroker,const pgsPointOfInterest& poi);
    CPointOfInterestReportSpecification(const CPointOfInterestReportSpecification& other);
    ~CPointOfInterestReportSpecification(void);
 

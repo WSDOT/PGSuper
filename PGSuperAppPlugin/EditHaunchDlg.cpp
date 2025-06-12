@@ -28,24 +28,20 @@
 #include "EditHaunchDlg.h"
 
 #include <EAF\EAFMainFrame.h>
-#include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 
 #include "PGSuperUnits.h"
 #include "PGSuperDoc.h"
 #include "Utilities.h"
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\ClosureJointData.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <EAF\EAFDisplayUnits.h>
 
 
 IMPLEMENT_DYNAMIC(CEditHaunchDlg, CDialog)
@@ -66,8 +62,8 @@ void CEditHaunchDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // fillet
@@ -181,8 +177,8 @@ BOOL CEditHaunchDlg::OnInitDialog()
    m_pTempSupportElevAdjustGrid->SubclassDlgItem(IDC_TS_ELEVATION_ADJUST_GRID,this);
    m_pTempSupportElevAdjustGrid->CustomInit(0,this);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const CDeckDescription2* pDeck = m_BridgeDesc.GetDeckDescription();

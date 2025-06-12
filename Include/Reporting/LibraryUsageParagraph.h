@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Reporter.h>
-#include <WBFLCore.h>
+
 
 /*****************************************************************************
 CLASS 
@@ -47,7 +47,7 @@ public:
    CLibraryUsageParagraph();
    virtual ~CLibraryUsageParagraph();
 
-   virtual rptParagraph* Build(IBroker* pBroker, bool doPrintTable=true) const;
+   virtual rptParagraph* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, bool doPrintTable=true) const;
 
 private:
    CLibraryUsageParagraph(const CLibraryUsageParagraph& rOther);

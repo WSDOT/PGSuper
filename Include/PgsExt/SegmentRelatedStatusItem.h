@@ -22,16 +22,14 @@
 
 #pragma once
 
-// SYSTEM INCLUDES
-//
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\Keys.h>
-#include <EAF\EAFStatusItem.h>
+#include <PsgLib\Keys.h>
+#include <EAF\StatusItem.h>
 
-// Special CEAFStatusItem that is directly related to a given span(s)/girders(s)
-// This class allows reporting and messaging routines to filter CEAFStatusItem's
+// Special WBFL::EAF::StatusItem that is directly related to a given span(s)/girders(s)
+// This class allows reporting and messaging routines to filter WBFL::EAF::StatusItem's
 //
-class PGSEXTCLASS pgsSegmentRelatedStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsSegmentRelatedStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsSegmentRelatedStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSegmentKey& segmentKey);

@@ -28,7 +28,7 @@
 #endif // _MSC_VER >= 1000
 // LibEditorListView.h : header file
 //
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 #include <afxcview.h>
 #include <LibraryFw\ILibrary.h>

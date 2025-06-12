@@ -23,16 +23,16 @@
 #pragma once
 
 #include <WbflTypes.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 #include <PgsExt\Selection.h>
 
 // {A37216C6-E800-4ac9-899D-2518407E081C}
 DEFINE_GUID(IID_ISelection, 
 0xa37216c6, 0xe800, 0x4ac9, 0x89, 0x9d, 0x25, 0x18, 0x40, 0x7e, 0x8, 0x1c);
-struct __declspec(uuid("{A37216C6-E800-4ac9-899D-2518407E081C}")) ISelection;
 /// @brief Interface for interrogating and controlling the UI for the current selection in the Bridge Model View
-interface ISelection : IUnknown
+class __declspec(uuid("{A37216C6-E800-4ac9-899D-2518407E081C}")) ISelection
 {
+public:
    /// @brief Returns an object with information about the current select
    virtual CSelection GetSelection() = 0;
 

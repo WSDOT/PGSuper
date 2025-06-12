@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "GirderDiaphragmPage.h"
 #include "GirderMainSheet.h"
 
@@ -34,11 +34,6 @@
 #include <EAF\EAFDocument.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDiaphragmPage property page
@@ -77,8 +72,7 @@ BOOL CGirderDiaphragmPage::OnInitDialog()
    }
 
    CGirderMainSheet* pParent = (CGirderMainSheet*)GetParent();
-   CComPtr<IBeamFactory> beamFactory;
-   pParent->m_Entry.GetBeamFactory(&beamFactory);
+   auto beamFactory = pParent->m_Entry.GetBeamFactory();
 
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes = beamFactory->GetSupportedDiaphragms();
    if ( diaphragmTypes.size() == 0 )

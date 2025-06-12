@@ -37,9 +37,9 @@ DESCRIPTION
 // {C290BDA0-FD1F-4D2C-81C3-686A0A620405}
 DEFINE_GUID(IID_ISplittingChecks,
    0xc290bda0, 0xfd1f, 0x4d2c, 0x81, 0xc3, 0x68, 0x6a, 0xa, 0x62, 0x4, 0x5);
-interface ISplittingChecks : IUnknown
+class ISplittingChecks
 {
-   //------------------------------------------------------------------------
+public:
    // Returns the distance from the ends of the girder within which the Splitting
    // stress requirements must be checked. 5.9.4.4 (pre2017: 5.10.10.1)
    virtual Float64 GetSplittingZoneLength(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType) const = 0;
@@ -47,7 +47,9 @@ interface ISplittingChecks : IUnknown
    virtual std::shared_ptr<pgsSplittingCheckArtifact> CheckSplitting(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const = 0;
    /// Returns the area of steel required to pass the spec check
    virtual Float64 GetAsRequired(const pgsSplittingCheckArtifact* pArtifact) const = 0;
-   virtual void ReportSplittingChecks(IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const = 0;
-   virtual void ReportSplittingCheckDetails(IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const = 0;
+   virtual void ReportSplittingChecks(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const = 0;
+   virtual void ReportSplittingCheckDetails(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const = 0;
+
+   virtual std::_tstring GetSplittingCheckName() const = 0;
 };
 

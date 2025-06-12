@@ -12,28 +12,22 @@
 #include <Plugins\PGSuperIEPlugin.h>
 #include "PGSuperCatCom.h"
 #include <BridgeLinkCATID.h>
-#include <WBFLCore_i.c>
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>
+#include <EAF/EAFProgress.h>
 
-#include "PGSuperDataExporter.h"
+#include "KDOTDataExporter.h"
 #include "KDOTComponentInfo.h"
 
 #include "PGSuperInterfaces.h"
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CComModule _Module;
-
-BEGIN_OBJECT_MAP(ObjectMap)
-   OBJECT_ENTRY(CLSID_PGSuperDataExporter,    CPGSuperDataExporter)
-   OBJECT_ENTRY(CLSID_KDOTComponentInfo, CKDOTComponentInfo)
-END_OBJECT_MAP()
+#include <EAF\ComponentModule.h>
+WBFL::EAF::ComponentModule Module_;
+EAF_BEGIN_OBJECT_MAP(ObjectMap)
+   EAF_OBJECT_ENTRY(CLSID_KDOTDataExporter,CKDOTDataExporter)
+   EAF_OBJECT_ENTRY(CLSID_KDOTPGSuperComponentInfo, CKDOTComponentInfo)
+EAF_END_OBJECT_MAP()
 
 class CKDOTExportAppPlugin : public CWinApp
 {
@@ -78,7 +72,7 @@ BOOL CKDOTExportAppPlugin::InitInstance()
    // To get grids working
    GXInit();
 
-   _Module.Init(ObjectMap, m_hInstance, &LIBID_KDOTExport);
+   Module_.Init(ObjectMap);
 
    return CWinApp::InitInstance();
 }
@@ -86,63 +80,6 @@ BOOL CKDOTExportAppPlugin::InitInstance()
 int CKDOTExportAppPlugin::ExitInstance()
 {
    GXForceTerminate();
-   _Module.Term();
+   Module_.Term();
    return CWinApp::ExitInstance();
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// Used to determine whether the DLL can be unloaded by OLE
-
-STDAPI DllCanUnloadNow(void)
-{
-    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-    return (AfxDllCanUnloadNow()==S_OK && _Module.GetLockCount()==0) ? S_OK : S_FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Returns a class factory to create an object of the requested type
-
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-    return _Module.GetClassObject(rclsid, riid, ppv);
-}
-
-void RegisterPlugins(bool bRegister)
-{
-   // Importer/Exporter Plugins
-
-   // PGSuper
-   WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperDataExporter,    CATID_PGSuperDataExporter,    bRegister);
-   //WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperDataExporter,    CATID_PGSpliceDataExporter,   bRegister);
-  // The KDOT component info objects provides information about this entire plug-in component
-   // This information is used in the "About" dialog
-   HRESULT hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_KDOTComponentInfo, CATID_PGSuperComponentInfo, bRegister);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllRegisterServer - Adds entries to the system registry
-
-STDAPI DllRegisterServer(void)
-{
-	// registers object, typelib and all interfaces in typelib
-	HRESULT hr = _Module.RegisterServer(FALSE);
-   if ( FAILED(hr) )
-      return hr;
-
-   RegisterPlugins(true);
-
-   return S_OK;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllUnregisterServer - Removes entries from the system registry
-
-STDAPI DllUnregisterServer(void)
-{
-   RegisterPlugins(false);
-   
-   _Module.UnregisterServer();
-	return S_OK;
-}
-
-

@@ -20,28 +20,23 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// PostTensionTimeDependentLossesAtShippingTable.h : Declaration of the CPostTensionTimeDependentLossesAtShippingTable
+#pragma once
 
-#ifndef __POSTTENSIONTIMEDEPENDENTLOSSESATSHIPPINGTABLE_H_
-#define __POSTTENSIONTIMEDEPENDENTLOSSESATSHIPPINGTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 
 class WBFL::LRFD::Losses;
 
-/////////////////////////////////////////////////////////////////////////////
-// CPostTensionTimeDependentLossesAtShippingTable
 class CPostTensionTimeDependentLossesAtShippingTable : public rptRcTable
 {
 public:
-	static CPostTensionTimeDependentLossesAtShippingTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-	void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CPostTensionTimeDependentLossesAtShippingTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+	void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CPostTensionTimeDependentLossesAtShippingTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CPostTensionTimeDependentLossesAtShippingTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );
@@ -54,5 +49,3 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
 };
-
-#endif //__POSTTENSIONTIMEDEPENDENTLOSSESATSHIPPINGTABLE_H_

@@ -24,13 +24,8 @@
 #include <Reporting\CopyGirderPropertiesReportSpecificationBuilder.h>
 #include <Reporting\CopyGirderPropertiesReportSpecification.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CCopyGirderPropertiesReportSpecificationBuilder::CCopyGirderPropertiesReportSpecificationBuilder(IBroker* pBroker) :
+CCopyGirderPropertiesReportSpecificationBuilder::CCopyGirderPropertiesReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
    CBrokerReportSpecificationBuilder(pBroker)
 {
 }

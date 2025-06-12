@@ -47,7 +47,6 @@
 #define IDD_GIRDER_DIMENSIONS           148
 #define IDD_SPEC_STRANDS                149
 #define IDD_GIRDER_MISC                 150
-#define IDR_LIBAPPPLUGIN                150
 #define IDD_TRAFFIC_BARRIER             151
 #define IDC_Y1_T                        151
 #define IDB_Barrier                     152

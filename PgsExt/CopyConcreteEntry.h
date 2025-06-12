@@ -20,17 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_COPYCONCRETEENTRY_H__3D57C105_BFE5_443E_8B92_3604850FEC35__INCLUDED_)
-#define AFX_COPYCONCRETEENTRY_H__3D57C105_BFE5_443E_8B92_3604850FEC35__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// CopyConcreteEntry.h : header file
-//
 
-#include <psgLib\ConcreteLibraryEntry.h>
 #include <vector>
+
+class ConcreteLibraryEntry;
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyConcreteEntry dialog
@@ -48,7 +42,7 @@ public:
 	//}}AFX_DATA
 	CString	m_Concrete;
    bool m_IsPrestressed;
-   const ConcreteLibraryEntry* m_ConcreteEntry;
+   const ConcreteLibraryEntry* m_ConcreteEntry = nullptr;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -70,5 +64,3 @@ protected:
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_COPYCONCRETEENTRY_H__3D57C105_BFE5_443E_8B92_3604850FEC35__INCLUDED_)

@@ -23,16 +23,16 @@
 #pragma once
 
 #include <IFace\ExtendUI.h>
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 #include <PgsExt\MacroTxn.h>
-#include <PsgLib\ShearData.h>
-#include <PgsExt\LongitudinalRebarData.h>
-#include <PgsExt\StrandData.h>
-#include <PgsExt\HandlingData.h>
-#include <PgsExt\GirderMaterial.h>
-#include <PgsExt\PTData.h>
-#include <PgsExt\SegmentPTData.h>
-#include <PgsExt\ColumnData.h>
+#include <psgLib\ShearData.h>
+#include <psgLib\LongitudinalRebarData.h>
+#include <psgLib\StrandData.h>
+#include <psgLib\HandlingData.h>
+#include <psgLib\GirderMaterial.h>
+#include <psgLib\PTData.h>
+#include <psgLib\SegmentPTData.h>
+#include <psgLib\ColumnData.h>
 
 class rptParagraph;
 
@@ -71,14 +71,14 @@ public:
 ////////////////////////////////////////////////////////////////////////
 
 
-class txnCopyTempSupportConnectionProperties :  public CEAFTransaction
+class txnCopyTempSupportConnectionProperties :  public WBFL::EAF::Transaction
 {
 public:
    txnCopyTempSupportConnectionProperties(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports);
    virtual ~txnCopyTempSupportConnectionProperties();
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const { return true; }
    virtual bool IsRepeatable() const { return false; }
@@ -98,7 +98,7 @@ public:
    CCopyTempSupportConnectionProperties();
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) override;
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) override;
    virtual UINT GetTempSupportEditorTabIndex() override;
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) override;
 };

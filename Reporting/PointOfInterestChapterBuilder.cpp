@@ -22,24 +22,19 @@
 
 #include "StdAfx.h"
 #include <Reporting\PointOfInterestChapterBuilder.h>
-#include <IFace\PointOfInterest.h>
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
+#include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CPointOfInterestChapterBuilder::CPointOfInterestChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CPointOfInterestChapterBuilder::GetName() const
 {
    return TEXT("Points of Interest");
@@ -48,8 +43,7 @@ LPCTSTR CPointOfInterestChapterBuilder::GetName() const
 rptChapter* CPointOfInterestChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrRptSpec->GetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits, pDisplayUnits );
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
@@ -67,12 +61,7 @@ rptChapter* CPointOfInterestChapterBuilder::Build(const std::shared_ptr<const WB
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPointOfInterestChapterBuilder::Clone() const
-{
-   return std::make_unique<CPointOfInterestChapterBuilder>();
-}
-
-void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,IBroker* pBroker,IPointOfInterest* pPoi,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IPointOfInterest> pPoi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const
 {
    GirderIndexType gdrIdx = girderKey.girderIndex;
 

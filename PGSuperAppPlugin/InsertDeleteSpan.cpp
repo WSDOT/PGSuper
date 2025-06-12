@@ -24,15 +24,11 @@
 #include "InsertDeleteSpan.h"
 #include "PGSuperDocBase.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Views.h>
 #include <BridgeModelViewController.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnInsertSpan::txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,IndexType pierErectionEventIdx)
 {
@@ -48,7 +44,7 @@ std::_tstring txnInsertSpan::Name() const
    return _T("Insert Span");
 }
 
-std::unique_ptr<CEAFTransaction> txnInsertSpan::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnInsertSpan::CreateClone() const
 {
    return std::make_unique<txnInsertSpan>(m_RefPierIdx, m_PierFace,m_SpanLength,m_bCreateNewGroup,m_PierErectionEventIndex);
 }
@@ -65,8 +61,8 @@ bool txnInsertSpan::IsRepeatable() const
 
 bool txnInsertSpan::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder to keep from fireing events until we are done
@@ -91,8 +87,8 @@ bool txnInsertSpan::Execute()
 
 void txnInsertSpan::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder to keep from fireing events until we are done
@@ -160,7 +156,7 @@ std::_tstring txnDeleteSpan::Name() const
    return _T("Delete Span");
 }
 
-std::unique_ptr<CEAFTransaction> txnDeleteSpan::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnDeleteSpan::CreateClone() const
 {
    return std::make_unique<txnDeleteSpan>(*this);
 }
@@ -177,8 +173,8 @@ bool txnDeleteSpan::IsRepeatable() const
 
 bool txnDeleteSpan::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder to keep from fireing events until we are done
@@ -259,8 +255,8 @@ bool txnDeleteSpan::Execute()
 
 void txnDeleteSpan::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder to keep from fireing events until we are done

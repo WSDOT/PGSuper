@@ -26,14 +26,11 @@
 #include "resource.h"
 #include "BearingSame4BridgeDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CBearingSame4BridgeDlg dialog
@@ -71,8 +68,7 @@ BOOL CBearingSame4BridgeDlg::OnInitDialog()
 
 void CBearingSame4BridgeDlg::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_CBIndex(pDX, IDC_BRG_SHAPE, (int&)m_BearingData.Shape);

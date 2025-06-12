@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "ExtensionAgent.h"
 
 #include "resource.h"
 #include "TestDialogBar.h"

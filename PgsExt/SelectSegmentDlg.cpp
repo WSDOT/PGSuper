@@ -25,17 +25,15 @@
 #include <PgsExt\PgsExtLib.h>
 #include "resource.h"
 #include "SelectSegmentDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderLabel.h>
+
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderLabel.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CSelectSegmentDlg dialog
 
@@ -69,8 +67,7 @@ END_MESSAGE_MAP()
 
 BOOL CSelectSegmentDlg::OnInitDialog()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -104,8 +101,7 @@ BOOL CSelectSegmentDlg::OnInitDialog()
 
 void CSelectSegmentDlg::OnGroupChanged()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 

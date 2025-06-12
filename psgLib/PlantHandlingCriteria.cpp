@@ -20,9 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib\PlantHandlingCriteria.h>
+#include <PsgLib\PlantHandlingCriteria.h>
 #include <EAF/EAFDisplayUnits.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/DifferenceItem.h>
 
 bool PlantHandlingCriteria::operator==(const PlantHandlingCriteria& other) const
 {
@@ -34,20 +34,20 @@ bool PlantHandlingCriteria::operator!=(const PlantHandlingCriteria& other) const
    return bCheck != other.bCheck or !::IsEqual(WeightLimit, other.WeightLimit);
 }
 
-bool PlantHandlingCriteria::Compare(const PlantHandlingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool PlantHandlingCriteria::Compare(const PlantHandlingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (operator!=(other))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Handling Weight Limit requirements are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Handling Weight Limit requirements are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void PlantHandlingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void PlantHandlingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
 

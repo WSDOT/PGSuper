@@ -24,12 +24,16 @@
 #include "SectionCutDisplayImpl.h"
 #include <MathEx.h>
 #include <PGSuperColors.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace/PointOfInterest.h>
+
 #include "PGSuperDocBase.h"
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "PGSuperDoc.h"
 
 #include <DManip/PointDisplayObject.h>
@@ -53,7 +57,7 @@ CSectionCutDisplayImpl::~CSectionCutDisplayImpl()
 {
 }
 
-void CSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CGirderKey& girderKey, iCutLocation* pCutLoc)
+void CSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::weak_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, iCutLocation* pCutLoc)
 {
    m_pBroker = pBroker;
 
@@ -76,7 +80,7 @@ void CSectionCutDisplayImpl::SetColor(COLORREF color)
 
 pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 Xgl) const
 {
-   GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
    if (m_GirderKey.groupIndex == ALL_GROUPS)
    {
       return pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex, Xgl);
@@ -153,11 +157,11 @@ void CSectionCutDisplayImpl::GetBoundingBox(std::shared_ptr<const WBFL::DManip::
 
    pgsPointOfInterest poi = GetCutPOI(Xgl);
 
-   GET_IFACE(IGirder, pGirder);
+   GET_IFACE2(GetBroker(), IGirder, pGirder);
    Float64 Hg = pGirder->GetHeight(poi);
    Float64 top_flange_thickening = pGirder->GetTopFlangeThickening(poi);
    
-   GET_IFACE(ICamber, pCamber);
+   GET_IFACE2(GetBroker(), ICamber, pCamber);
    Float64 precamber = pCamber->GetPrecamber(poi,pgsTypes::pddErected);
 
    *top = dy + top_flange_thickening + precamber;
@@ -361,7 +365,7 @@ bool CSectionCutDisplayImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDispla
       if ( callbacks.size() == 0 )
          return false;
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
       std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
       for ( ; callbackIter != callbackIterEnd; callbackIter++ )
@@ -376,8 +380,6 @@ bool CSectionCutDisplayImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDispla
          pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pWnd);
          bResult = true;
       }
-
-      delete pMenu;
 
       return bResult;
    }
@@ -414,7 +416,7 @@ bool CSectionCutDisplayImpl::PrepareForDrag(std::shared_ptr<WBFL::DManip::iDispl
 
    pSink->Write(ms_Format,&threadid,sizeof(DWORD));
    pSink->Write(ms_Format,&m_Color,sizeof(COLORREF));
-   pSink->Write(ms_Format,&m_pBroker,sizeof(IBroker*));
+   pSink->Write(ms_Format,&m_pBroker,sizeof(std::shared_ptr<WBFL::EAF::Broker>));
    pSink->Write(ms_Format,&m_GirderKey,sizeof(CGirderKey));
    pSink->Write(ms_Format,&m_MinCutLocation,sizeof(Float64));
    pSink->Write(ms_Format,&m_MaxCutLocation,sizeof(Float64));
@@ -437,7 +439,7 @@ void CSectionCutDisplayImpl::OnDrop(std::shared_ptr<WBFL::DManip::iDisplayObject
    ATLASSERT(threadid == threadl);
 
    pSource->Read(ms_Format,&m_Color,sizeof(COLORREF));
-   pSource->Read(ms_Format,&m_pBroker,sizeof(IBroker*));
+   pSource->Read(ms_Format,&m_pBroker,sizeof(std::shared_ptr<WBFL::EAF::Broker>));
    pSource->Read(ms_Format,&m_GirderKey,sizeof(CGirderKey));
    pSource->Read(ms_Format,&m_MinCutLocation,sizeof(Float64));
    pSource->Read(ms_Format,&m_MaxCutLocation,sizeof(Float64));

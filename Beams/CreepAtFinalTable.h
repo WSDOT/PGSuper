@@ -20,16 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// CreepAtFinalTable.h : Declaration of the CCreepAtFinalTable
+#pragma once
 
-#ifndef __CREEPATFINALTABLE_H_
-#define __CREEPATFINALTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <Reporting\CreepCoefficientChapterBuilder.h>
-#include <PgsExt\StrandData.h>
+#include <PgsExt\ReportCreepCoefficient.h>
+#include <PgsExt/ReportPointOfInterest.h>
+#include <PsgLib\StrandData.h>
+
 
 class WBFL::LRFD::Losses;
 
@@ -38,11 +36,11 @@ class WBFL::LRFD::Losses;
 class CCreepAtFinalTable : public rptRcTable
 {
 public:
-	static CCreepAtFinalTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CCreepAtFinalTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CCreepAtFinalTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CCreepAtFinalTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );
@@ -63,5 +61,3 @@ private:
    bool m_bIsPrismatic;
    bool m_bIsAsymmetric;
 };
-
-#endif //__CREEPATFINALTABLE_H_

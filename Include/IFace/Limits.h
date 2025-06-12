@@ -23,12 +23,11 @@
 #pragma once
 
 #include <PGSuperTypes.h>
-#include <PgsExt\Keys.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib/Keys.h>
+#include <PsgLib/PointOfInterest.h>
+#include <PsgLib/TensionStressLimit.h>
 
-#include <psgLib/TensionStressLimit.h>
-
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class pgsSegmentArtifact;
 
 /*****************************************************************************
@@ -44,8 +43,9 @@ DEFINE_GUID(IID_IStressCheck,
    0xdfa2b573, 0xde2f, 0x44d0, 0xb3, 0x2e, 0x4b, 0xae, 0x1d, 0xf9, 0xce, 0xaf);
 
 /// @brief Interface that provides stress checking tasks and intervals
-interface IStressCheck : IUnknown
+class IStressCheck
 {
+public:
    /// @brief Returns stress check tasks for girders. This function calls GetStressCheckTasks for each segment.
    /// @param girderKey 
    /// @param bDesign indicates if the tasks are for design or specification checking
@@ -87,8 +87,9 @@ DEFINE_GUID(IID_IStrandStressLimit,
 /// strand stresses must be checked.Use the CheckStressXXX methods
 /// to determine when the strand stresses must be checked.
 /// Based on LRFD Table 5.9.2.2 - 1 (pre2017: 5.9.3 - 1)
-interface IStrandStressLimit : IUnknown
+class IStrandStressLimit
 {
+public:
    /// @brief Returns true if strand stresses are to be checked at jacking
    virtual bool CheckStrandStressAtJacking() const = 0;
 
@@ -131,8 +132,9 @@ DEFINE_GUID(IID_ITendonStressLimit,
 /// @brief Interface to get tendon stress limits. Based on LRFD Table 5.9.2.2-1 (pre2017: Table 5.9.3-1).
 /// Segment Tendons are PT tendons installed at the precasting plant. Girder Tendons are PT tendons
 /// installed on site and connect multiple segments.
-interface ITendonStressLimit : IUnknown
+class ITendonStressLimit
 {
+public:
    /// @brief Returns true if tendon stresses are limited at jacking
    virtual bool CheckTendonStressAtJacking() const = 0;
 
@@ -206,8 +208,9 @@ DEFINE_GUID(IID_IConcreteStressLimits,
 /// over the length of a segment so dummy POI can be passed into these functions
 /// so long as the segment key is valid. Though it is recommended to use actual POI
 /// if available to making implementation of per POI stress limits easier in the future.
-interface IConcreteStressLimits : IUnknown
+class IConcreteStressLimits
 {
+public:
    /// @brief Returns the concrete compression stress limit
    /// @param poi location where the stress limit is requested
    /// @param stressLocation location in the girder section
@@ -225,16 +228,16 @@ interface IConcreteStressLimits : IUnknown
    virtual Float64 GetConcreteTensionStressLimit(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const = 0;
 
    /// @brief Reports the segment concrete compression stress limit
-   virtual void ReportSegmentConcreteCompressionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportSegmentConcreteCompressionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
 
    /// @brief Reports the segment concrete tension stress limit
-   virtual void ReportSegmentConcreteTensionStressLimit(const pgsPointOfInterest& poi,const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportSegmentConcreteTensionStressLimit(const pgsPointOfInterest& poi,const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
 
    /// @brief Reports the closure joint concrete compression stress limit
-   virtual void ReportClosureJointConcreteCompressionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportClosureJointConcreteCompressionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
 
    /// @brief Reports the closure joint concrete tension stress limit
-   virtual void ReportClosureJointConcreteTensionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportClosureJointConcreteTensionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
 
    /// @brief Returns the concrete tension stress limit for load rating
    /// @param ratingType Type of load rating analysis
@@ -250,7 +253,7 @@ interface IConcreteStressLimits : IUnknown
    /// @return The compression stress limit coefficient
    virtual Float64 GetConcreteCompressionStressLimitCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const = 0;
 
-   /// @brief Returns the parameters for determining the concrete tension sterss limit
+   /// @brief Returns the parameters for determining the concrete tension stress limit
    /// @param poi Location where stress limit is requested. This method determine if poi is in a precast segment or closure joint
    /// @param stressLocation location in the girder section
    /// @param task stress checking task
@@ -344,11 +347,11 @@ interface IConcreteStressLimits : IUnknown
    /// @brief Returns the segment concrete tension stress limit for principal tension stress in the web
    virtual Float64 GetSegmentConcreteWebPrincipalTensionStressLimit(const CSegmentKey& segmentKey) const = 0;
    /// @brief Reports the segment concrete tension stress limit for principal tension stress in the web
-   virtual void ReportSegmentConcreteWebPrincipalTensionStressLimit(const CSegmentKey& segmentKey, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportSegmentConcreteWebPrincipalTensionStressLimit(const CSegmentKey& segmentKey, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
    /// @brief Returns the closure joint concrete tension stress limit for principal tension stress in the web
    virtual Float64 GetClosureJointConcreteWebPrincipalTensionStressLimit(const CClosureKey& closureKey) const = 0;
    /// @brief Reports the closure joint concrete tension stress limit for principal tension stress in the web
-   virtual void ReportClosureJointConcreteWebPrincipalTensionStressLimit(const CClosureKey& closureKey, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportClosureJointConcreteWebPrincipalTensionStressLimit(const CClosureKey& closureKey, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
    /// @brief Returns the concrete principal tension stress limit at a poi.
    virtual Float64 GetConcreteWebPrincipalTensionStressLimit(const pgsPointOfInterest& poi) const = 0;
    /// @brief Returns the coefficient multiplied with sqrt(f'c) for the concrete principal tension stress limit
@@ -385,8 +388,9 @@ DESCRIPTION
 // {34C607AB-62D4-43a6-AB8A-6CC66BC8C932}
 DEFINE_GUID(IID_IDebondLimits, 
 0x34c607ab, 0x62d4, 0x43a6, 0xab, 0x8a, 0x6c, 0xc6, 0x6b, 0xc8, 0xc9, 0x32);
-interface IDebondLimits : IUnknown
+class IDebondLimits
 {
+public:
    virtual bool CheckMaxDebondedStrands(const CSegmentKey& segmentKey) const = 0; // returns true if Max Debonded Strands is to be checked
    virtual Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey) const = 0;  // % of total
    virtual Float64 GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey) const = 0; // % of total in row
@@ -425,8 +429,9 @@ DESCRIPTION
 // {C99249A5-87C6-4fdf-AC1A-502E50FAEABC}
 DEFINE_GUID(IID_IDuctLimits, 
 0xc99249a5, 0x87c6, 0x4fdf, 0xac, 0x1a, 0x50, 0x2e, 0x50, 0xfa, 0xea, 0xbc);
-interface IDuctLimits : IUnknown
+class IDuctLimits
 {
+public:
    virtual Float64 GetSegmentTendonRadiusOfCurvatureLimit(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentTendonAreaLimit(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentTendonDuctSizeLimit(const CSegmentKey& segmentKey) const = 0;

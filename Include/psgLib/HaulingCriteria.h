@@ -23,15 +23,17 @@
 #pragma once
 
 
-#include "psgLibLib.h"
-#include <psgLib/TensionStressLimit.h>
+#include "PsgLibLib.h"
+#include <PsgLib/TensionStressLimit.h>
 #include <Stability/StabilityTypes.h>
+#include <LRFD/BDSManager.h>
+#include <Units/Units.h>
 #include <array>
 
 class rptChapter;
-interface IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
-class SpecLibraryEntryImpl;
+class IEAFDisplayUnits;
+
+namespace PGS {namespace Library{class DifferenceItem;};};
 
 struct PSGLIBCLASS KDOTHaulingCriteria
 {
@@ -42,8 +44,8 @@ struct PSGLIBCLASS KDOTHaulingCriteria
    TensionStressLimit TensionStressLimitWithoutReinforcement{ WBFL::Units::ConvertToSysUnits(0.0948, WBFL::Units::Measure::SqrtKSI) ,true, WBFL::Units::ConvertToSysUnits(0.200, WBFL::Units::Measure::KSI) };
    TensionStressLimit TensionStressLimitWithReinforcement{ WBFL::Units::ConvertToSysUnits(0.18, WBFL::Units::Measure::SqrtKSI) ,false, WBFL::Units::ConvertToSysUnits(0.200, WBFL::Units::Measure::KSI) };
 
-   bool Compare(const KDOTHaulingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   bool Compare(const KDOTHaulingCriteria& other, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);
 };
@@ -92,8 +94,8 @@ struct PSGLIBCLASS WSDOTHaulingCriteria
       TensionStressLimit{WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI),false,WBFL::Units::ConvertToSysUnits(0.2,WBFL::Units::Measure::KSI)}
    };
 
-   bool Compare(const WSDOTHaulingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   bool Compare(const WSDOTHaulingCriteria& other, WBFL::LRFD::BDSManager::Edition specEdition, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);
 };
@@ -113,11 +115,10 @@ struct PSGLIBCLASS HaulingCriteria
    KDOTHaulingCriteria KDOT;
 
 
-   bool Compare(const HaulingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const HaulingCriteria& other, WBFL::LRFD::BDSManager::Edition specEdition, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);
 };
-

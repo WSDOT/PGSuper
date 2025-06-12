@@ -25,8 +25,10 @@
 #include <Reporting\ReportNotes.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\TimelineEvent.h>
+#include <PsgLib\TimelineEvent.h>
 
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
@@ -34,9 +36,10 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace/Limits.h>
+#include <IFace/PointOfInterest.h>
 
-rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,
-                                            bool bDesign,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CPretensionStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                            bool bDesign,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, rptReleasePoi, pDisplayUnits->GetSpanLengthUnit(), false );

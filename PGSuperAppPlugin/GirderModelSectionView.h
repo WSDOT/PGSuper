@@ -87,16 +87,16 @@ private:
 
    void CreateDisplayLists();
    void UpdateDisplayObjects();
-   void BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi);
-   void BuildSectionDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi);
-   void BuildLongitudinalJointDisplayObject(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi);
-   void BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi);
+   void BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi);
+   void BuildSectionDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi);
+   void BuildLongitudinalJointDisplayObject(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi);
+   void BuildStrandDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi);
    std::shared_ptr<WBFL::DManip::iDisplayObject> GetDuctDisplayObject(IntervalIndexType intervalIdx, IntervalIndexType ptIntervalIdx, const WBFL::Geometry::Point2d& pntDuct, Float64 ductDiameter, StrandIndexType nStrands, COLORREF fillColor,COLORREF borderColor);
-   void BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi);
-   void BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi);
-   void BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi);
-   void BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi);
-   void BuildDimensionDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi);
+   void BuildDuctDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi);
+   void BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi);
+   void BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi);
+   void BuildCGDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi);
+   void BuildDimensionDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi);
    void CreateLineDisplayObject(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const WBFL::Geometry::Point2d& start, const WBFL::Geometry::Point2d& end, COLORREF color, WBFL::DManip::LineStyleType lineStyle);
 
    virtual void UpdateDrawingScale();

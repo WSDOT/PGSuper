@@ -23,7 +23,7 @@
 #pragma once
 
 #include <DManip/DisplayObjectEvents.h>
-interface IBroker;
+
 class CBridgeModelViewChildFrame;
 
 #define LEFT_TRAFFIC_BARRIER_ID 0
@@ -33,7 +33,7 @@ class CBridgeModelViewChildFrame;
 class CTrafficBarrierDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents
 {
 public:
-   CTrafficBarrierDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,pgsTypes::TrafficBarrierOrientation orientation);
+   CTrafficBarrierDisplayObjectEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,pgsTypes::TrafficBarrierOrientation orientation);
    ~CTrafficBarrierDisplayObjectEvents();
 
    virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
@@ -54,7 +54,7 @@ public:
    virtual void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
    pgsTypes::TrafficBarrierOrientation m_TrafficBarrierOrientation;
 

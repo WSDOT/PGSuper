@@ -32,7 +32,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CInplaceEditDisplayObjectEvents
 
-CInplaceEditDisplayObjectEvents::CInplaceEditDisplayObjectEvents(IBroker* pBroker)
+CInplaceEditDisplayObjectEvents::CInplaceEditDisplayObjectEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    m_pBroker = pBroker;
 }

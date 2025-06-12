@@ -22,10 +22,10 @@
 
 #pragma once
 
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 #include <IFace\Project.h>
 
-class txnEditProjectProperties : public CEAFTransaction
+class txnEditProjectProperties : public WBFL::EAF::Transaction
 {
 public:
    txnEditProjectProperties(const std::_tstring& oldBridgeName,const std::_tstring& newBridgeName,
@@ -39,7 +39,7 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction>CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const;
    virtual bool IsRepeatable() const;

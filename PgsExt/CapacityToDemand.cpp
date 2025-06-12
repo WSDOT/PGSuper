@@ -23,13 +23,6 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\CapacityToDemand.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
 
 // Returns true if C/D 1 is less than C/D 2
 bool IsCDLess(cdSense sense, Float64 capacity1, Float64 demand1, Float64 capacity2, Float64 demand2)

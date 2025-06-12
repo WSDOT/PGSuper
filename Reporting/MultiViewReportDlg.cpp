@@ -27,28 +27,22 @@
 #include "MultiViewReportDlg.h"
 #include "..\Documentation\PGSuper.hh"
 
-#include <initguid.h>
 #include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 #include "RMultiGirderSelectDlg.h"
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CMultiViewReportDlg dialog
 
 IMPLEMENT_DYNAMIC(CMultiViewReportDlg, CDialog)
 
-CMultiViewReportDlg::CMultiViewReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,
+CMultiViewReportDlg::CMultiViewReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,
                                          const CGirderKey& girderKey,
                                          UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)

@@ -24,17 +24,15 @@
 #include <Reporting\PrincipalTensionStressCheckTable.h>
 #include <PgsExt\PgsExt.h>
 
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace/Limits.h>
 #include <IFace\Project.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <psgLib/SpecLibraryEntry.h>
 
 CPrincipalTensionStressCheckTable::CPrincipalTensionStressCheckTable()
 {
@@ -59,7 +57,7 @@ CPrincipalTensionStressCheckTable& CPrincipalTensionStressCheckTable::operator= 
    return *this;
 }
 
-void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const
+void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    pPara->SetName(_T("Principal Tensile Stresses in Webs"));
@@ -127,7 +125,7 @@ void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, IBroker* pBr
    BuildTable(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 }
 
-void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const
+void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    std::_tstring strImagePath = rptStyleManager::GetImagePath();
 

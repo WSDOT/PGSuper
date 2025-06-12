@@ -23,13 +23,14 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 #include <Materials/PsStrand.h>
-class pgsLibraryEntryDifferenceItem;
 
 class rptChapter;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
+namespace PGS {namespace Library{class DifferenceItem;};};
+
 
 struct PSGLIBCLASS StrandSlopeCriteria
 {
@@ -41,11 +42,11 @@ struct PSGLIBCLASS StrandSlopeCriteria
 
    bool operator==(const StrandSlopeCriteria& other) const;
    bool operator!=(const StrandSlopeCriteria& other) const;
-   bool Compare(const StrandSlopeCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+   bool Compare(const StrandSlopeCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
 
    Float64 GetStrandSlopeLimit(WBFL::Materials::PsStrand::Size strandSize) const;
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);

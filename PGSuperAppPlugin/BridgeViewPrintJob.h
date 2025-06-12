@@ -33,12 +33,11 @@
 #include "BridgeModelViewChildFrame.h"
 #include "BridgeViewPane.h"
 
-struct IBroker;
 
 class CBridgeViewPrintJob : public CPrinterJob  
 {
 public:
-	CBridgeViewPrintJob(CBridgeModelViewChildFrame* pFrame,CBridgeViewPane* ppv, CBridgeViewPane* psv, IBroker* pBroker);
+	CBridgeViewPrintJob(CBridgeModelViewChildFrame* pFrame,CBridgeViewPane* ppv, CBridgeViewPane* psv, std::shared_ptr<WBFL::EAF::Broker> pBroker);
 	virtual ~CBridgeViewPrintJob();
 
 	// virtual overridden from base class; same meaning as CView's 
@@ -59,7 +58,7 @@ private:
 
    CBridgeViewPane*    m_pPlanView;
    CBridgeViewPane* m_pSectionView;
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
 };
 

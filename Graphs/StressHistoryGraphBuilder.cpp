@@ -32,9 +32,9 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <Units\UnitValueNumericalFormatTools.h>
-#include <PgsExt\LoadFactors.h>
+#include <PsgLib\LoadFactors.h>
 #include <PgsExt\IntervalTool.h>
 
 #include <IFace\Intervals.h>
@@ -50,11 +50,6 @@
 
 #include <MFCTools\MFCTools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // create a dummy unit conversion tool to pacify the graph constructor
 static WBFL::Units::LengthData DUMMY(WBFL::Units::Measure::Meter);
@@ -177,7 +172,7 @@ int CStressHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID
    // create the graph definitions before creating the graph controller.
    // our graph controller will call GetLoadCaseNames to populate the 
    // list of load cases
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    // setup the graph
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
@@ -240,8 +235,8 @@ void CStressHistoryGraphBuilder::ShowGrid(bool bShowGrid)
 
 bool CStressHistoryGraphBuilder::UpdateNow()
 {
-   GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
 
@@ -371,7 +366,7 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
    }
 }
 
-Float64 CStressHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IIntervals* pIntervals)
+Float64 CStressHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,std::shared_ptr<IIntervals> pIntervals)
 {
    Float64 x;
    if ( m_XAxisType == X_AXIS_TIME_LINEAR || m_XAxisType == X_AXIS_TIME_LOG )
@@ -400,7 +395,7 @@ Float64 CStressHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,IntervalI
    return x;
 }
 
-void CStressHistoryGraphBuilder::PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IndexType dataSeries,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,Float64 gLL,IntervalIndexType liveLoadIntervalIdx,ICombinedForces* pCombinedForces,ILimitStateForces* pLimitStateForces)
+void CStressHistoryGraphBuilder::PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IndexType dataSeries,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,Float64 gLL,IntervalIndexType liveLoadIntervalIdx,std::shared_ptr<ICombinedForces> pCombinedForces,std::shared_ptr<ILimitStateForces> pLimitStateForces)
 {
    bool bIncludePrestress = true;
 

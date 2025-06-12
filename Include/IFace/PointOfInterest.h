@@ -22,11 +22,12 @@
 #pragma once
 
 #include <PGSuperTypes.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 #define POIFIND_AND   1  // Find POIs that have all of the specified attributes
 #define POIFIND_OR    2  // Find POIs that have at least one of the specified attributes
 
+interface IDirection;
 
 /*****************************************************************************
 INTERFACE
@@ -41,8 +42,9 @@ DESCRIPTION
 // {32574861-444E-46dc-A12B-904A083E68EC}
 DEFINE_GUID(IID_IPointOfInterest, 
 0x32574861, 0x444e, 0x46dc, 0xa1, 0x2b, 0x90, 0x4a, 0x8, 0x3e, 0x68, 0xec);
-interface IPointOfInterest : public IUnknown
+class IPointOfInterest
 {
+public:
    // Returns all points of interest for a segment
    // If the segment index is ALL_SEGMENTS, returns pois for all segments in the specified girder
    // If the girder index is ALL_GIRDERS, returns the pois for the specified segments in all girders in the specified group
@@ -246,8 +248,9 @@ DESCRIPTION
    Interface to points of interest for lifting
 *****************************************************************************/
 // non-COM version
-interface ISegmentLiftingDesignPointsOfInterest
+class ISegmentLiftingDesignPointsOfInterest
 {
+public:
    // locations of points of interest
    virtual void GetLiftingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 overhang,PoiAttributeType attrib, std::vector<pgsPointOfInterest>* pvPoi,Uint32 mode = POIFIND_OR) const = 0;
 };
@@ -255,8 +258,9 @@ interface ISegmentLiftingDesignPointsOfInterest
 // {19EA189E-E5F4-11d2-AD3D-00105A9AF985}
 DEFINE_GUID(IID_ISegmentLiftingPointsOfInterest, 
 0x19ea189e, 0xe5f4, 0x11d2, 0xad, 0x3d, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface ISegmentLiftingPointsOfInterest : IUnknown, ISegmentLiftingDesignPointsOfInterest
+class ISegmentLiftingPointsOfInterest : public ISegmentLiftingDesignPointsOfInterest
 {
+public:
    virtual void GetLiftingPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeType attrib,PoiList* pPoiList,Uint32 mode = POIFIND_OR) const = 0;
 };
 
@@ -270,8 +274,9 @@ DESCRIPTION
    Interface to points of interest for Hauling
 *****************************************************************************/
 // non-COM version
-interface ISegmentHaulingDesignPointsOfInterest
+class ISegmentHaulingDesignPointsOfInterest
 {
+public:
    // locations of points of interest
    virtual void GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey,Uint16 nPnts,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType attrib, std::vector<pgsPointOfInterest>* pvPoi,Uint32 mode = POIFIND_OR) const = 0;
 };
@@ -279,8 +284,9 @@ interface ISegmentHaulingDesignPointsOfInterest
 // {E6A0E250-E5F4-11d2-AD3D-00105A9AF985}
 DEFINE_GUID(IID_ISegmentHaulingPointsOfInterest, 
 0xe6a0e250, 0xe5f4, 0x11d2, 0xad, 0x3d, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface ISegmentHaulingPointsOfInterest : IUnknown, ISegmentHaulingDesignPointsOfInterest
+class ISegmentHaulingPointsOfInterest : public ISegmentHaulingDesignPointsOfInterest
 {
+public:
    // locations of points of interest
    virtual void GetHaulingPointsOfInterest(const CSegmentKey& segmentKey,PoiAttributeType attrib, PoiList* pPoiList,Uint32 mode = POIFIND_OR) const = 0;
    virtual Float64 GetMinimumOverhang(const CSegmentKey& segmentKey) const = 0;

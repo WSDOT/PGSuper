@@ -34,21 +34,17 @@
 #include "EditHaunchDlg.h"
 #include "Utilities.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TimelineManager.h>
 
 #include <CoordGeom/Station.h>
 
 #include "SelectItemDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -70,8 +66,8 @@ CPierLocationPage::~CPierLocationPage()
 
 void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
@@ -143,8 +139,8 @@ BOOL CPierLocationPage::OnInitDialog()
 {
    FillEventList();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
@@ -231,8 +227,8 @@ void CPierLocationPage::OnChangeStation()
 BOOL CPierLocationPage::IsValidStation(Float64* pStation)
 {
    BOOL bResult = TRUE;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CWnd* pWnd = GetDlgItem(IDC_STATION);
@@ -265,8 +261,8 @@ void CPierLocationPage::UpdateMoveOptionList()
       return;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // get the current selection
@@ -569,8 +565,8 @@ void CPierLocationPage::UpdateHaunchAndCamberControls()
 
          GetDlgItem(IDC_EDIT_HAUNCH_BUTTON)->EnableWindow(TRUE);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
          GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
          if (inputType == pgsTypes::hidACamber)
@@ -798,8 +794,8 @@ void CPierLocationPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
    pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
          if (slabOffsetType == pgsTypes::sotBearingLine)
          {
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
+            
+            auto pBroker = EAFGetBroker();
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
@@ -861,8 +857,8 @@ void CPierLocationPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
 
          if (haunchLayoutType == pgsTypes::hltAlongSpans && haunchInputLocationType == pgsTypes::hilSame4AllGirders && haunchInputDistributionType == pgsTypes::hidAtEnds)
          {
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
+            
+            auto pBroker = EAFGetBroker();
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();

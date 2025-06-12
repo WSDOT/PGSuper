@@ -25,7 +25,7 @@
 // TimelineGrid.h : header file
 //
 
-#include <PgsExt\TimelineEvent.h>
+#include <PsgLib\TimelineEvent.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CTimelineGrid window

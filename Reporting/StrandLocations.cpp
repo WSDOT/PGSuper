@@ -23,16 +23,14 @@
 #include "StdAfx.h"
 #include <Reporting\StrandLocations.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -62,8 +60,8 @@ CStrandLocations& CStrandLocations::operator= (const CStrandLocations& rOther)
    return *this;
 }
 
-void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                IEAFDisplayUnits* pDisplayUnits) const
+void CStrandLocations::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    GET_IFACE2(pBroker,IBridge,pBridge);

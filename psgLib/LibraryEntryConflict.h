@@ -36,7 +36,7 @@ class CLibraryEntryConflict : public CDialog
 {
 // Construction
 public:
-   CLibraryEntryConflict(const std::_tstring& strServer, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported, const std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bMustRename,CWnd* pParent = NULL);
+   CLibraryEntryConflict(const std::_tstring& strServer, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported, const std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool bMustRename,CWnd* pParent = NULL);
 
 // Dialog Data
 	//{{AFX_DATA(CLibraryEntryConflict)
@@ -78,7 +78,7 @@ public:
    CString m_LibName;
    CString m_NewName;
    const std::vector<std::_tstring>& m_KeyList;
-   const std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& m_vDifferences;
+   const std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& m_vDifferences;
    bool m_IsImported; // are libraries coming from import or project?
 };
 

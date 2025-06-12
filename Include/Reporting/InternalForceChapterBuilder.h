@@ -25,18 +25,6 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-interface IEAFDisplayUnits;
-
-/*****************************************************************************
-CLASS 
-   CInternalForceChapterBuilder
-
-
-DESCRIPTION
-   Reports the internal forces on the concrete parts of a girder 
-   for a time-step analysis
-*****************************************************************************/
-
 class REPORTINGCLASS CInternalForceChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
@@ -44,11 +32,5 @@ public:
 
    virtual LPCTSTR GetName() const override;
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-private:
-   // Prevent accidental copying and assignment
-   CInternalForceChapterBuilder(const CInternalForceChapterBuilder&) = delete;
-   CInternalForceChapterBuilder& operator=(const CInternalForceChapterBuilder&) = delete;
 };
 

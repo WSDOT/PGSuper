@@ -28,8 +28,8 @@
 // EditDistributedLoadDlg.h : header file
 //
 #include "resource.h"
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\DistributedLoadData.h>
+#include <PsgLib\TimelineManager.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditDistributedLoadDlg dialog
@@ -55,7 +55,7 @@ public:
 
    CDistributedLoadData m_Load;
    EventIDType m_EventID;
-   CComPtr<IBroker>  m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    bool                 m_WasLiveLoad;
 

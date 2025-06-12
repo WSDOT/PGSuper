@@ -30,9 +30,10 @@
 #include "TxExcelDataExporter.h"
 #include "TxCSVDataExporter.h"
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFDocument.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Selection.h>
 #include <IFace\TestFileExport.h>
 #include <IFace\Intervals.h>
@@ -40,19 +41,13 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Constructability.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
 #include <MfcTools\XUnwind.h>
 #include <MFCTools\VersionInfo.h>
 #include <MFCTools\AutoRegistry.h>
 
 #include <Reporter\FormattedLengthUnitValue.h>
-
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 bool DoesFileExist(const CString& filename)
@@ -68,11 +63,11 @@ bool DoesFileExist(const CString& filename)
    }
 }
 
-// void raised_strand_research(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys);
+// void raised_strand_research(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys);
 
 // CTxDOTCadExporter
 
-HRESULT CTxDOTCadExporter::FinalConstruct()
+CTxDOTCadExporter::CTxDOTCadExporter()
 {
    CEAFApp* pApp = EAFGetApp();
    CString str = pApp->GetAppLocation();
@@ -103,11 +98,9 @@ HRESULT CTxDOTCadExporter::FinalConstruct()
    {
       m_strTemplateLocation += _T("\\");
    }
-
-   return S_OK;
 }
 
-void CTxDOTCadExporter::FinalRelease()
+CTxDOTCadExporter::~CTxDOTCadExporter()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
@@ -122,25 +115,22 @@ STDMETHODIMP CTxDOTCadExporter::Init(UINT nCmdID)
    return S_OK;
 }
 
-STDMETHODIMP CTxDOTCadExporter::GetMenuText(BSTR*  bstrText) const
+CString CTxDOTCadExporter::GetMenuText() const
 {
-   *bstrText = CComBSTR("TxDOT &CAD Data...");
-   return S_OK;
+   return CString("TxDOT &CAD Data...");
 }
 
-STDMETHODIMP CTxDOTCadExporter::GetBitmapHandle(HBITMAP* phBmp) const
+HBITMAP CTxDOTCadExporter::GetBitmapHandle() const
 {
-   *phBmp = nullptr;
-   return S_OK;
+   return nullptr;
 }
 
-STDMETHODIMP CTxDOTCadExporter::GetCommandHintText(BSTR*  bstrText) const
+CString CTxDOTCadExporter::GetCommandHintText() const
 {
-   *bstrText = CComBSTR("Export TxDOT CAD Data\nExport TxDOT CAD Data");
-   return S_OK;
+   return CString("Export TxDOT CAD Data\nExport TxDOT CAD Data");
 }
 
-STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
+STDMETHODIMP CTxDOTCadExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    GET_IFACE2(pBroker, ISelection, pSelection);
    CSelection selection = pSelection->GetSelection();
@@ -206,7 +196,7 @@ STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
    }
 }
 
-HRESULT CTxDOTCadExporter::ExportGirderDesignData(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat)
+HRESULT CTxDOTCadExporter::ExportGirderDesignData(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat)
 {
    // Generic class for writing CAD format (Excel or CSV) to a specific CTxDataExporter
    TxDOTCadWriter cadWriter;
@@ -372,11 +362,11 @@ HRESULT CTxDOTCadExporter::ExportGirderDesignData(IBroker* pBroker, const std::v
          // Create progress window in own scope
          try
          {
-            GET_IFACE2(pBroker, IProgress, pProgress);
+            GET_IFACE2(pBroker, IEAFProgress, pProgress);
 
             bool multi = girderKeys.size() > 1;
             DWORD mask = multi ? PW_ALL : PW_ALL | PW_NOGAUGE; // Progress window has a cancel button,
-            CEAFAutoProgress ap(pProgress, 0, mask);
+            WBFL::EAF::AutoProgress ap(pProgress, 0, mask);
 
             if (multi)
                pProgress->Init(0, (short)girderKeys.size(), 1);  // and for multi-girders, a gauge.
@@ -427,7 +417,7 @@ HRESULT CTxDOTCadExporter::ExportGirderDesignData(IBroker* pBroker, const std::v
    return S_OK;
 }
 
-HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat)
+HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat)
 {
    // Factory the specific file format exporter and its associated information
    std::unique_ptr<CTxDataExporter> pExporter;
@@ -528,11 +518,11 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
    // Get down to dumping data
    try
    {
-      GET_IFACE2(pBroker, IProgress, pProgress);
+      GET_IFACE2(pBroker, IEAFProgress, pProgress);
 
       bool multi = girderKeys.size() > 1;
       DWORD mask = multi ? PW_ALL : PW_ALL | PW_NOGAUGE; // Progress window has a cancel button,
-      CEAFAutoProgress ap(pProgress, 0, mask);
+      WBFL::EAF::AutoProgress ap(pProgress, 0, mask);
 
       if (multi)
          pProgress->Init(0, (short)girderKeys.size(), 1);  // and for multi-girders, a gauge.
@@ -693,20 +683,15 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
 }
 
 //////////////////////////////////////////////////
-// IPGSDocumentation
-STDMETHODIMP CTxDOTCadExporter::GetDocumentationSetName(BSTR* pbstrName) const
+// IPluginDocumentation
+CString CTxDOTCadExporter::GetDocumentationSetName() const
 {
-   CComBSTR bstrDocSetName(_T("TxCADExport"));
-   bstrDocSetName.CopyTo(pbstrName);
-   return S_OK;
+   return CString("TxCADExport");
 }
 
 STDMETHODIMP CTxDOTCadExporter::LoadDocumentationMap()
 {
-   CComBSTR bstrDocSetName;
-   GetDocumentationSetName(&bstrDocSetName);
-
-   CString strDocSetName(OLE2T(bstrDocSetName));
+   CString strDocSetName(GetDocumentationSetName());
 
    CEAFApp* pApp = EAFGetApp();
 
@@ -718,26 +703,23 @@ STDMETHODIMP CTxDOTCadExporter::LoadDocumentationMap()
    return S_OK;
 }
 
-STDMETHODIMP CTxDOTCadExporter::GetDocumentLocation(UINT nHID,BSTR* pbstrURL) const
+std::pair<WBFL::EAF::HelpResult,CString> CTxDOTCadExporter::GetDocumentLocation(UINT nHID) const
 {
    auto found = m_HelpTopics.find(nHID);
    if ( found == m_HelpTopics.end() )
    {
-      return E_FAIL;
+      CHECK(false);
+      return { WBFL::EAF::HelpResult::TopicNotFound,CString("") };
    }
 
    CString strURL;
    strURL.Format(_T("%s%s"),GetDocumentationURL(),found->second);
-   CComBSTR bstrURL(strURL);
-   bstrURL.CopyTo(pbstrURL);
-   return S_OK;
+   return { WBFL::EAF::HelpResult::OK,strURL };
 }
 
 CString CTxDOTCadExporter::GetDocumentationURL() const
 {
-   CComBSTR bstrDocSetName;
-   GetDocumentationSetName(&bstrDocSetName);
-   CString strDocSetName(OLE2T(bstrDocSetName));
+   CString strDocSetName(GetDocumentationSetName());
 
    CEAFApp* pApp = EAFGetApp();
    CString strDocumentationRootLocation = pApp->GetDocumentationRootLocation();
@@ -777,11 +759,11 @@ CString CTxDOTCadExporter::GetExcelTemplateFolderLocation() const
 
 /*
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <IFace\Artifact.h>
 #include <PgsExt\GirderArtifact.h>
 
-void raised_strand_research(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys)
+void raised_strand_research(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys)
 {
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
    GET_IFACE2(pBroker, IPointOfInterest, pIPOI);

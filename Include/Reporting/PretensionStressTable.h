@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 // Reports the stresses in the girder segments due to pretensioning
 class REPORTINGCLASS CPretensionStressTable
@@ -35,6 +35,6 @@ public:
    ~CPretensionStressTable() = default;
 
    CPretensionStressTable& operator = (const CPretensionStressTable& rOther) = default;
-   rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey,
-                             bool bDesign,IEAFDisplayUnits* pDisplayUnits) const;
+   rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                             bool bDesign,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };

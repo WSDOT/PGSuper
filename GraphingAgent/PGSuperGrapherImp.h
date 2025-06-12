@@ -26,10 +26,9 @@
 
 #include "CLSID.h"
 
-#include "resource.h"       // main symbols
 #include "GrapherBase.h"
 
-#include <EAF\EAFInterfaceCache.h>
+
 #include <IFace\Project.h>
 
 #include <memory>
@@ -40,43 +39,21 @@ class rptReport;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperGrapherImp
-class ATL_NO_VTABLE CPGSuperGrapherImp : 
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CPGSuperGrapherImp, &CLSID_PGSuperGraphingAgent>,
-	public IConnectionPointContainerImpl<CPGSuperGrapherImp>,
-   public CGrapherBase,
-   public IAgentEx
+class CPGSuperGrapherImp : public CGrapherBase
 {
 public:
 	CPGSuperGrapherImp()
 	{
-      m_pBroker = 0;
-   }
-
-DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPER_GRAPHER)
-
-BEGIN_COM_MAP(CPGSuperGrapherImp)
-	COM_INTERFACE_ENTRY(IAgent)
-   COM_INTERFACE_ENTRY(IAgentEx)
-	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-END_COM_MAP()
-
-BEGIN_CONNECTION_POINT_MAP(CPGSuperGrapherImp)
-END_CONNECTION_POINT_MAP()
+    }
 
 
-// IAgent
+// Agent
 public:
-	STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker) override;
-   STDMETHOD(RegInterfaces)() override;
-	STDMETHOD(Init)() override;
-	STDMETHOD(Reset)() override;
-	STDMETHOD(ShutDown)() override;
-   STDMETHOD(Init2)() override;
-   STDMETHOD(GetClassID)(CLSID* pCLSID) override;
+   bool Init() override;
+   CLSID GetCLSID() const override;
 
 private:
-   DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
-   HRESULT InitGraphBuilders();
+   bool InitGraphBuilders();
 };

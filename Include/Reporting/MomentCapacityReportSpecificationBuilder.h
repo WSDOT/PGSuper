@@ -29,7 +29,7 @@ class REPORTINGCLASS CMomentCapacityReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CMomentCapacityReportSpecificationBuilder(IBroker* pBroker);
+   CMomentCapacityReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    ~CMomentCapacityReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;

@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib/MomentCapacityCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/MomentCapacityCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include "SpecLibraryEntryImpl.h"
 #include <EAF/EAFDisplayUnits.h>
 
@@ -75,7 +75,7 @@ MomentCapacityCriteria::MomentCapacityCriteria()
    PhiClosureJoint[pgsTypes::UHPC] = 0.95; // UHPC doesn't have a fixed phi for flexure
 }
 
-bool MomentCapacityCriteria::Compare(const MomentCapacityCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool MomentCapacityCriteria::Compare(const MomentCapacityCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if ((impl.GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims &&  OverReinforcedMomentCapacity != other.OverReinforcedMomentCapacity) ||
@@ -88,7 +88,7 @@ bool MomentCapacityCriteria::Compare(const MomentCapacityCriteria& other, const 
       (impl.GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims && !::IsEqual(ModulusOfRuptureCoefficient[pgsTypes::AllLightweight], other.ModulusOfRuptureCoefficient[pgsTypes::AllLightweight])))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Moment Capacity parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Moment Capacity parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -114,21 +114,21 @@ bool MomentCapacityCriteria::Compare(const MomentCapacityCriteria& other, const 
    if (!bPhiFactors)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Moment Resistance Factors are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Moment Resistance Factors are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (bIncludeNoncompositeMomentsForNegMomentDesign != other.bIncludeNoncompositeMomentsForNegMomentDesign)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Negative Moment Capacity parameters are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Negative Moment Capacity parameters are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void MomentCapacityCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void MomentCapacityCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptSqrtPressureValue, tension_coefficient, pDisplayUnits->GetTensionCoefficientUnit(), false);
 

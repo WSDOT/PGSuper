@@ -29,19 +29,12 @@
 #include <IFace\DocumentType.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CCopyGirderPropertiesChapterBuilder::CCopyGirderPropertiesChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CCopyGirderPropertiesChapterBuilder::GetName() const
 {
    return TEXT("Girder Property Comparison");
@@ -52,8 +45,7 @@ rptChapter* CCopyGirderPropertiesChapterBuilder::Build(const std::shared_ptr<con
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pCopyGirderPropertiesMgrRptSpec = std::dynamic_pointer_cast<const CCopyGirderPropertiesReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    rptChapter* pChapter = new rptChapter(GetName());
    if (!m_CallBacks.empty())
@@ -75,11 +67,6 @@ rptChapter* CCopyGirderPropertiesChapterBuilder::Build(const std::shared_ptr<con
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCopyGirderPropertiesChapterBuilder::Clone() const
-{
-   return std::make_unique<CCopyGirderPropertiesChapterBuilder>();
 }
 
 void CCopyGirderPropertiesChapterBuilder::SetCopyGirderProperties(std::vector<ICopyGirderPropertiesCallback*>& rCallBacks, const CGirderKey& fromGirderKey)

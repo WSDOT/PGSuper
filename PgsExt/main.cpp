@@ -24,9 +24,12 @@
 #include <System\dllTest.h>
 
 #include <initguid.h>
+
+#include <EAF\EAFStatusCenter.h>
+#include <EAF\EAFDisplayUnits.h>
+
 #include <IFace\Project.h>
 #include <IFace\VersionInfo.h>
-#include <IFace\StatusCenter.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\EditByUI.h>
@@ -41,8 +44,8 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\SplittingChecks.h>
 #include <IFace/Alignment.h>
+#include <IFace/PointOfInterest.h>
 
-#include <EAF\EAFDisplayUnits.h>
 
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>
@@ -60,11 +63,6 @@
 #include <PgsExt\DevelopmentLength.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 //// Every DLL has an entry point DllEntryPoint
 //BOOL WINAPI DllEntryPoint( HINSTANCE /*hinstDll*/,

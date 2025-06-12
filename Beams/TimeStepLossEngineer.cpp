@@ -21,24 +21,26 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Beams.h"
 #include "resource.h"
-#include "TimeStepLossEngineer.h"
+#include <Beams/TimeStepLossEngineer.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosureJointData.h>
-#include <PgsExt\LoadFactors.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\ClosureJointData.h>
+#include <PsgLib\LoadFactors.h>
 
 
 #include <Reporting\ReportNotes.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 #include <EAF\EAFStatusCenter.h>
 #include <PgsExt\StatusItem.h>
 #include <PGSuperException.h>
 
 #include <psgLib/PrincipalTensionStressCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 
 #include <WBFLGenericBridgeTools.h>
@@ -53,11 +55,7 @@
 //#undef USE_ALL_POI
 //#endif
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+using namespace PGS::Beams;
 
 inline Float64 GetVertShearFromSlope(Float64 ss)
 {
@@ -70,39 +68,23 @@ inline Float64 GetVertShearFromSlope(Float64 ss)
    return vz;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CTimeStepLossEngineer
-HRESULT CTimeStepLossEngineer::FinalConstruct()
+TimeStepLossEngineer::TimeStepLossEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+PsLossEngineerBase(pBroker,statusGroupID)
 {
    m_Bat = pgsTypes::ContinuousSpan;
-
-   return S_OK;
+   GET_IFACE2(pBroker.lock(), IEAFStatusCenter, pStatusCenter);
+   m_scidProjectCriteria = pStatusCenter->RegisterCallback( std::make_shared<pgsProjectCriteriaStatusCallback>() );
 }
 
-void CTimeStepLossEngineer::FinalRelease()
+const LOSSDETAILS* TimeStepLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
 {
-}
-
-void CTimeStepLossEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID)
-{
-   m_pBroker = pBroker;
-   m_StatusGroupID = statusGroupID;
-
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   m_scidProjectCriteria = pStatusCenter->RegisterCallback( new pgsProjectCriteriaStatusCallback(pBroker) );
-}
-
-const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
-{
-   GET_IFACE(ILossParameters,pLossParameters);
+   GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    if ( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       std::_tstring msg(_T("Prestress losses cannot be computed. Use Project Criteria that specifies the time-step method for prestress loss calculations."));
       
-      pgsProjectCriteriaStatusItem* pStatusItem = new pgsProjectCriteriaStatusItem(m_StatusGroupID,m_scidProjectCriteria,msg.c_str());
-
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      pStatusCenter->Add(pStatusItem);
+      GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
+      pStatusCenter->Add(std::make_shared<pgsProjectCriteriaStatusItem>(m_StatusGroupID, m_scidProjectCriteria, msg.c_str()));
 
       msg += std::_tstring(_T("\nSee Status Center for Details"));
       THROW_UNWIND(msg.c_str(),XREASON_PROJECT_CRITERIA);
@@ -113,7 +95,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
    if ( intervalIdx == INVALID_INDEX )
    {
       // INVALID_INDEX means compute losses for all intervals
-      GET_IFACE(IIntervals,pIntervals);
+      GET_IFACE2(GetBroker(), IIntervals,pIntervals);
       IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
       intervalIdx = nIntervals-1;
    }
@@ -150,7 +132,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
          // Losses have not been computed all the way up to and including the requested interval.
          
          // Get the loss objects for this girder line
-         GET_IFACE(IBridgeDescription,pIBridgeDesc);
+         GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
          std::vector<LOSSES*> vpLosses;
          GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
          for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -231,18 +213,18 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
    return pLossDetails;
 }
 
-const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx)
+const LOSSDETAILS* TimeStepLossEngineer::GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx)
 {
    ATLASSERT(false); // not doing design with Time Step method... therefore this should never be called
    return nullptr;
 }
 
-void CTimeStepLossEngineer::ClearDesignLosses()
+void TimeStepLossEngineer::ClearDesignLosses()
 {
    ATLASSERT(false); // should not get called... not doing design with time-step method
 }
 
-const ANCHORSETDETAILS* CTimeStepLossEngineer::GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx)
+const ANCHORSETDETAILS* TimeStepLossEngineer::GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx)
 {
    ComputeLosses(girderKey,0);
    std::map<CGirderKey,LOSSES>::const_iterator found;
@@ -251,7 +233,7 @@ const ANCHORSETDETAILS* CTimeStepLossEngineer::GetGirderTendonAnchorSetDetails(c
    return &(*found).second.GirderAnchorSet[ductIdx];
 }
 
-const ANCHORSETDETAILS* CTimeStepLossEngineer::GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx)
+const ANCHORSETDETAILS* TimeStepLossEngineer::GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx)
 {
    ComputeLosses(segmentKey, 0);
    auto found_losses = m_Losses.find(segmentKey);
@@ -263,7 +245,7 @@ const ANCHORSETDETAILS* CTimeStepLossEngineer::GetSegmentTendonAnchorSetDetails(
    return &(anchor_set_details_container[ductIdx]);
 }
 
-Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
+Float64 TimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
 {
    ComputeLosses(girderKey,0);
    std::map<CGirderKey,LOSSES>::const_iterator found;
@@ -276,8 +258,8 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
 #if defined _DEBUG
    // Elongation calculations are kind of tricky... they are computed with friction losses
    // Re-compute them here using a more direct method and compare to what was computed before.
-   GET_IFACE(IBridgeDescription,pBridgeDesc);
-   GET_IFACE(IGirder,pIGirder);
+   GET_IFACE2(GetBroker(), IBridgeDescription,pBridgeDesc);
+   GET_IFACE2(GetBroker(), IGirder,pIGirder);
    const CSplicedGirderData* pGirder = pBridgeDesc->GetGirder(girderKey);
    const CPTData* pPTData = pGirder->GetPostTensioning();
    WebIndexType nWebs = pIGirder->GetWebCount(girderKey);
@@ -293,7 +275,7 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
       Float64 Pj;
       if ( pDuct->bPjCalc )
       {
-         GET_IFACE(IPosttensionForce,pPTForce);
+         GET_IFACE2(GetBroker(), IPosttensionForce,pPTForce);
          Pj = pPTForce->GetGirderTendonPjackMax(girderKey,pDuct->nStrands);
       }
       else
@@ -305,11 +287,11 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
       StrandIndexType nStrands = pDuct->nStrands;
       Float64 Apt = apt*nStrands;
 
-      GET_IFACE(IMaterials,pMaterials);
+      GET_IFACE2(GetBroker(), IMaterials,pMaterials);
       Float64 Ept = pMaterials->GetGirderTendonMaterial(girderKey)->GetE();
 
       // this is iterating by POI
-      GET_IFACE(IPointOfInterest,pPoi);
+      GET_IFACE2(GetBroker(), IPointOfInterest,pPoi);
       SectionLossContainer::const_iterator sectionLossIter(losses.SectionLosses.begin());
       while ( !pPoi->IsOnGirder(sectionLossIter->first) && sectionLossIter != losses.SectionLosses.end() )
       {
@@ -322,7 +304,7 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
 
       sectionLossIter++;
 
-      GET_IFACE(IGirderTendonGeometry, pTendonGeom);
+      GET_IFACE2(GetBroker(), IGirderTendonGeometry, pTendonGeom);
       SectionLossContainer::const_iterator sectionLossIterEnd(losses.SectionLosses.end());
       for ( ; sectionLossIter != sectionLossIterEnd; sectionLossIter++ )
       {
@@ -371,7 +353,7 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
    return (endType == pgsTypes::metStart ? m_GirderTendonElongation[tendonKey].first : m_GirderTendonElongation[tendonKey].second);
 }
 
-Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType)
+Float64 TimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType)
 {
    ComputeLosses(segmentKey, 0);
    std::map<CGirderKey, LOSSES>::const_iterator found;
@@ -384,8 +366,8 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
 #if defined _DEBUG
    // Elongation calculations are kind of tricky... they are computed with friction losses
    // Re-compute them here using a more direct method and compare to what was computed before.
-   GET_IFACE(IBridgeDescription, pBridgeDesc);
-   GET_IFACE(IGirder, pIGirder);
+   GET_IFACE2(GetBroker(), IBridgeDescription, pBridgeDesc);
+   GET_IFACE2(GetBroker(), IGirder, pIGirder);
    const CPrecastSegmentData* pSegment = pBridgeDesc->GetPrecastSegmentData(segmentKey);
    const CSegmentPTData* pPTData = &(pSegment->Tendons);
    WebIndexType nWebs = pIGirder->GetWebCount(segmentKey);
@@ -401,7 +383,7 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
       Float64 Pj;
       if (pDuct->bPjCalc)
       {
-         GET_IFACE(IPosttensionForce, pPTForce);
+         GET_IFACE2(GetBroker(), IPosttensionForce, pPTForce);
          Pj = pPTForce->GetSegmentTendonPjackMax(segmentKey, pDuct->nStrands);
       }
       else
@@ -413,11 +395,11 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
       StrandIndexType nStrands = pDuct->nStrands;
       Float64 Apt = apt*nStrands;
 
-      GET_IFACE(IMaterials, pMaterials);
+      GET_IFACE2(GetBroker(), IMaterials, pMaterials);
       Float64 Ept = pMaterials->GetSegmentTendonMaterial(segmentKey)->GetE();
 
       // this is iterating by POI... advance the iterator until we get the first poi that is on the subject segment
-      GET_IFACE(IPointOfInterest, pPoi);
+      GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
       SectionLossContainer::const_iterator sectionLossIter(losses.SectionLosses.begin());
       while ( (!segmentKey.IsEqual(sectionLossIter->first.GetSegmentKey()) || !pPoi->IsOnSegment(sectionLossIter->first)) && sectionLossIter != losses.SectionLosses.end())
       {
@@ -430,7 +412,7 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
 
       sectionLossIter++;
 
-      GET_IFACE(ISegmentTendonGeometry, pTendonGeom);
+      GET_IFACE2(GetBroker(), ISegmentTendonGeometry, pTendonGeom);
       SectionLossContainer::const_iterator sectionLossIterEnd(losses.SectionLosses.end());
       for (; sectionLossIter != sectionLossIterEnd; sectionLossIter++)
       {
@@ -486,7 +468,7 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
    return (endType == pgsTypes::metStart ? m_SegmentTendonElongation[tendonKey].first : m_SegmentTendonElongation[tendonKey].second);
 }
 
-void CTimeStepLossEngineer::GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA)
+void TimeStepLossEngineer::GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA)
 {
    CGirderTendonKey tendonKey(girderKey,ductIdx);
 
@@ -502,7 +484,7 @@ void CTimeStepLossEngineer::GetGirderTendonAverageFrictionAndAnchorSetLoss(const
    *pfpA = found->second.second;
 }
 
-void CTimeStepLossEngineer::GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA)
+void TimeStepLossEngineer::GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA)
 {
    CSegmentTendonKey tendonKey(segmentKey, ductIdx);
 
@@ -518,7 +500,7 @@ void CTimeStepLossEngineer::GetSegmentTendonAverageFrictionAndAnchorSetLoss(cons
    *pfpA = found->second.second;
 }
 
-void CTimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIndexType endAnalysisIntervalIdx)
+void TimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIndexType endAnalysisIntervalIdx)
 {
    std::map<CGirderKey,LOSSES>::const_iterator found;
    found = m_Losses.find( girderKey );
@@ -529,7 +511,7 @@ void CTimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIn
       // create the loss objects for this girder line
       std::vector<LOSSES*> vpLosses;
 
-      GET_IFACE(IBridge, pBridge);
+      GET_IFACE2(GetBroker(), IBridge, pBridge);
       std::vector<CGirderKey> vGirderKeys;
       pBridge->GetGirderline(girderKey.girderIndex, &vGirderKeys); // must use girder line index version here (not the girder key version)
       for(const auto& thisGirderKey : vGirderKeys)
@@ -546,7 +528,7 @@ void CTimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIn
    }
 }
 
-void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,IntervalIndexType endAnalysisIntervalIdx,std::vector<LOSSES*>* pvpLosses)
+void TimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,IntervalIndexType endAnalysisIntervalIdx,std::vector<LOSSES*>* pvpLosses)
 {
    if ( m_pProgress )
    {
@@ -555,44 +537,45 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
 
    // Get frequently used interfaces
    // NOTE: We can't get these interfaces and hold them for the lifetime of this object
-   // because it creates circular references. As a result there are massive memory leaks
-   // Get them here, do the full timestep analysis, then release them.
-   m_pBroker->GetInterface(IID_IProgress,          (IUnknown**)&m_pProgress);
-   m_pBroker->GetInterface(IID_IBridgeDescription, (IUnknown**)&m_pBridgeDesc);
-   m_pBroker->GetInterface(IID_IBridge,            (IUnknown**)&m_pBridge);
-   m_pBroker->GetInterface(IID_IStrandGeometry,    (IUnknown**)&m_pStrandGeom);
-   m_pBroker->GetInterface(IID_IGirderTendonGeometry, (IUnknown**)&m_pGirderTendonGeometry);
-   m_pBroker->GetInterface(IID_ISegmentTendonGeometry, (IUnknown**)&m_pSegmentTendonGeometry);
-   m_pBroker->GetInterface(IID_IIntervals,         (IUnknown**)&m_pIntervals);
-   m_pBroker->GetInterface(IID_ISectionProperties, (IUnknown**)&m_pSectProp);
-   m_pBroker->GetInterface(IID_IGirder,            (IUnknown**)&m_pGirder);
-   m_pBroker->GetInterface(IID_IMaterials,         (IUnknown**)&m_pMaterials);
-   m_pBroker->GetInterface(IID_IPretensionForce,   (IUnknown**)&m_pPSForce);
-   m_pBroker->GetInterface(IID_IPosttensionForce,  (IUnknown**)&m_pPTForce);
-   m_pBroker->GetInterface(IID_ILossParameters,    (IUnknown**)&m_pLossParams);
-   m_pBroker->GetInterface(IID_IPointOfInterest,   (IUnknown**)&m_pPoi);
-   m_pBroker->GetInterface(IID_ILongRebarGeometry, (IUnknown**)&m_pRebarGeom);
-   m_pBroker->GetInterface(IID_IProductLoads,      (IUnknown**)&m_pProductLoads);
-   m_pBroker->GetInterface(IID_IProductForces,     (IUnknown**)&m_pProductForces);
-   m_pBroker->GetInterface(IID_ICombinedForces,    (IUnknown**)&m_pCombinedForces);
-   m_pBroker->GetInterface(IID_IExternalLoading,   (IUnknown**)&m_pExternalLoading);
-   m_pBroker->GetInterface(IID_IEAFDisplayUnits,   (IUnknown**)&m_pDisplayUnits);
-   m_pBroker->GetInterface(IID_ILosses,            (IUnknown**)&m_pLosses);
-   m_pBroker->GetInterface(IID_IDuctLimits,        (IUnknown**)&m_pDuctLimits);
+   // because it creates circular references.
+   // Get them here, do the full timestep analysis, then release them (see the end of this functino).
+
+   m_pProgress = GetBroker()->GetInterface<IEAFProgress>(IID_IEAFProgress);
+   m_pBridgeDesc = GetBroker()->GetInterface<IBridgeDescription>(IID_IBridgeDescription);
+   m_pBridge = GetBroker()->GetInterface<IBridge>(IID_IBridge);
+   m_pStrandGeom = GetBroker()->GetInterface<IStrandGeometry>(IID_IStrandGeometry);
+   m_pGirderTendonGeometry = GetBroker()->GetInterface<IGirderTendonGeometry>(IID_IGirderTendonGeometry);
+   m_pSegmentTendonGeometry = GetBroker()->GetInterface<ISegmentTendonGeometry>(IID_ISegmentTendonGeometry);
+   m_pIntervals = GetBroker()->GetInterface<IIntervals>(IID_IIntervals);
+   m_pSectProp = GetBroker()->GetInterface<ISectionProperties>(IID_ISectionProperties);
+   m_pGirder = GetBroker()->GetInterface<IGirder>(IID_IGirder);
+   m_pMaterials = GetBroker()->GetInterface<IMaterials>(IID_IMaterials);
+   m_pPSForce = GetBroker()->GetInterface<IPretensionForce>(IID_IPretensionForce);
+   m_pPTForce = GetBroker()->GetInterface<IPosttensionForce>(IID_IPosttensionForce);
+   m_pLossParams = GetBroker()->GetInterface<ILossParameters>(IID_ILossParameters);
+   m_pPoi = GetBroker()->GetInterface<IPointOfInterest>(IID_IPointOfInterest);
+   m_pRebarGeom = GetBroker()->GetInterface<ILongRebarGeometry>(IID_ILongRebarGeometry);
+   m_pProductLoads = GetBroker()->GetInterface<IProductLoads>(IID_IProductLoads);
+   m_pProductForces = GetBroker()->GetInterface<IProductForces>(IID_IProductForces);
+   m_pCombinedForces = GetBroker()->GetInterface<ICombinedForces>(IID_ICombinedForces);
+   m_pExternalLoading = GetBroker()->GetInterface<IExternalLoading>(IID_IExternalLoading);
+   m_pDisplayUnits = GetBroker()->GetInterface<IEAFDisplayUnits>(IID_IEAFDisplayUnits);
+   m_pLosses = GetBroker()->GetInterface<ILosses>(IID_ILosses);
+   m_pDuctLimits = GetBroker()->GetInterface<IDuctLimits>(IID_IDuctLimits);
 
    {
       // scope the use of all the interface pointers accessed above and released below
 
-      CEAFAutoProgress ap(m_pProgress);
+      WBFL::EAF::AutoProgress ap(m_pProgress);
       m_pProgress->UpdateMessage(_T("Computing prestress losses"));
 
       // Store principal web stress parameters
-      GET_IFACE(ISpecification, pSpec);
+      GET_IFACE2(GetBroker(), ISpecification, pSpec);
       m_PrincipalTensileStressCheckType = pSpec->GetPrincipalWebStressCheckType(CSegmentKey(INVALID_INDEX, girderLineIdx, 0));
 
       if (ISpecification::pwcNCHRPTimeStepMethod == m_PrincipalTensileStressCheckType)
       {
-         GET_IFACE(ILibrary, pLib);
+         GET_IFACE2(GetBroker(), ILibrary, pLib);
          std::_tstring specName = pSpec->GetSpecification();
          const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
          const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
@@ -622,31 +605,33 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
       ComputeSectionLosses(girderLineIdx,endAnalysisIntervalIdx,pvpLosses);
    }
 
-   m_pProgress.Release();
-   m_pBridgeDesc.Release();
-   m_pBridge.Release();
-   m_pStrandGeom.Release();
-   m_pGirderTendonGeometry.Release();
-   m_pSegmentTendonGeometry.Release();
-   m_pIntervals.Release();
-   m_pSectProp.Release();
-   m_pGirder.Release();
-   m_pMaterials.Release();
-   m_pPSForce.Release();
-   m_pPTForce.Release();
-   m_pLossParams.Release();
-   m_pPoi.Release();
-   m_pRebarGeom.Release();
-   m_pProductLoads.Release();
-   m_pProductForces.Release();
-   m_pCombinedForces.Release();
-   m_pExternalLoading.Release();
-   m_pDisplayUnits.Release();
-   m_pLosses.Release();
-   m_pDuctLimits.Release();
+   // we are done with these interfaces
+   // release them so we don't hold a circular reference
+   m_pProgress = nullptr;
+   m_pBridgeDesc = nullptr;
+   m_pBridge = nullptr;
+   m_pStrandGeom = nullptr;
+   m_pGirderTendonGeometry = nullptr;
+   m_pSegmentTendonGeometry = nullptr;
+   m_pIntervals = nullptr;
+   m_pSectProp = nullptr;
+   m_pGirder = nullptr;
+   m_pMaterials = nullptr;
+   m_pPSForce = nullptr;
+   m_pPTForce = nullptr;
+   m_pLossParams = nullptr;
+   m_pPoi = nullptr;
+   m_pRebarGeom = nullptr;
+   m_pProductLoads = nullptr;
+   m_pProductForces = nullptr;
+   m_pCombinedForces = nullptr;
+   m_pExternalLoading = nullptr;
+   m_pDisplayUnits = nullptr;
+   m_pLosses = nullptr;
+   m_pDuctLimits = nullptr;
 }
 
-void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LOSSES* pLosses)
+void TimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LOSSES* pLosses)
 {
    // start by computing the friction losses for the PT in individual segments
    const CSplicedGirderData* pGirder = m_pBridgeDesc->GetGirder(girderKey);
@@ -827,7 +812,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
    }
 }
 
-void CTimeStepLossEngineer::ComputeFrictionLosses(const CPrecastSegmentData* pSegment, LOSSES* pLosses)
+void TimeStepLossEngineer::ComputeFrictionLosses(const CPrecastSegmentData* pSegment, LOSSES* pLosses)
 {
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
@@ -997,7 +982,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CPrecastSegmentData* pSe
    }
 }
 
-void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,LOSSES* pLosses)
+void TimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,LOSSES* pLosses)
 {
    // start by computing the anchor set losses for the PT in individual segments
    const CSplicedGirderData* pGirder = m_pBridgeDesc->GetGirder(girderKey);
@@ -1215,7 +1200,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CGirderKey& girderKey,L
    } // next duct
 }
 
-void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CPrecastSegmentData* pSegment, LOSSES* pLosses)
+void TimeStepLossEngineer::ComputeAnchorSetLosses(const CPrecastSegmentData* pSegment, LOSSES* pLosses)
 {
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
@@ -1421,7 +1406,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CPrecastSegmentData* pS
    } // next duct
 }
 
-void CTimeStepLossEngineer::ComputeSectionLosses(GirderIndexType girderLineIdx,IntervalIndexType endAnalysisIntervalIdx,std::vector<LOSSES*>* pvpLosses)
+void TimeStepLossEngineer::ComputeSectionLosses(GirderIndexType girderLineIdx,IntervalIndexType endAnalysisIntervalIdx,std::vector<LOSSES*>* pvpLosses)
 {
    bool bIgnoreCreepEffects      = m_pLossParams->IgnoreCreepEffects();
    bool bIgnoreShrinkageEffects  = m_pLossParams->IgnoreShrinkageEffects();
@@ -1481,7 +1466,7 @@ void CTimeStepLossEngineer::ComputeSectionLosses(GirderIndexType girderLineIdx,I
    } // next interval
 }
 
-void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details)
+void TimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details)
 {
    // Initializes the time step analysis
    // Gets basic information about the cross section such as section properties.
@@ -2369,7 +2354,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    details.TimeStepDetails.emplace_back(tsDetails);
 }
 
-void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,const CGirderKey& girderKey,LOSSES* pLosses)
+void TimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,const CGirderKey& girderKey,LOSSES* pLosses)
 {
    // Compute the response to the inital strains (see Tadros 1977, section titled "Effects of Initial Strains")
    
@@ -2484,7 +2469,7 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
    }
 }
 
-void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details)
+void TimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,LOSSDETAILS& details)
 {
    // Determine the effect of the externally applied loads and the initial strains on the various parts 
    // of the cross section using a transformed section analysis.
@@ -3947,14 +3932,14 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 #endif // _BETA_VERSION
 }
 
-void CTimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void TimeStepLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
    *pPara << _T("Details for Time-Dependent Prestress Loss computations may be found in the Time-Step Details report.") << rptNewLine;
 }
 
-void CTimeStepLossEngineer::ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void TimeStepLossEngineer::ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
 #pragma Reminder("UPDATE: implement - time step loss reporting")
    ATLASSERT(false);
@@ -3962,7 +3947,7 @@ void CTimeStepLossEngineer::ReportFinalLosses(const CGirderKey& girderKey,rptCha
 }
 
 
-void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64* pdfpAT,Float64* pdfpS,Float64* pXset)
+void TimeStepLossEngineer::ComputeAnchorSetLosses(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64* pdfpAT,Float64* pdfpS,Float64* pXset)
 {
    if ( pDuctData->nStrands == 0 )
    {
@@ -4067,7 +4052,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CPTData* pPTData,const 
 }
 
 
-void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CSegmentPTData* pPTData, const CSegmentDuctData* pDuctData, DuctIndexType ductIdx, pgsTypes::MemberEndType endType, LOSSES* pLosses, Float64 Ls, SectionLossContainer::iterator& frMinIter, Float64* pdfpAT, Float64* pdfpS, Float64* pXset)
+void TimeStepLossEngineer::ComputeAnchorSetLosses(const CSegmentPTData* pPTData, const CSegmentDuctData* pDuctData, DuctIndexType ductIdx, pgsTypes::MemberEndType endType, LOSSES* pLosses, Float64 Ls, SectionLossContainer::iterator& frMinIter, Float64* pdfpAT, Float64* pdfpS, Float64* pXset)
 {
    if (pDuctData->nStrands == 0)
    {
@@ -4171,7 +4156,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CSegmentPTData* pPTData
    *pdfpS = dfpS;
 }
 
-void CTimeStepLossEngineer::BoundAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,Float64 Dset,LOSSES* pLosses,Float64 fpj,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64* pXsetMin,Float64* pDsetMin,Float64* pdfpATMin,Float64* pdfpSMin,Float64* pXsetMax,Float64* pDsetMax,Float64* pdfpATMax,Float64* pdfpSMax)
+void TimeStepLossEngineer::BoundAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,Float64 Dset,LOSSES* pLosses,Float64 fpj,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64* pXsetMin,Float64* pDsetMin,Float64* pdfpATMin,Float64* pdfpSMin,Float64* pXsetMax,Float64* pDsetMax,Float64* pdfpATMax,Float64* pdfpSMax)
 {
    const CSplicedGirderData* pGirder = pPTData->GetGirder();
    const CGirderKey& girderKey(pGirder->GetGirderKey());
@@ -4292,7 +4277,7 @@ void CTimeStepLossEngineer::BoundAnchorSet(const CPTData* pPTData,const CDuctDat
    }
 }
 
-void CTimeStepLossEngineer::BoundAnchorSet(const CSegmentPTData* pPTData, const CSegmentDuctData* pDuctData, DuctIndexType ductIdx, pgsTypes::MemberEndType endType, Float64 Dset, LOSSES* pLosses, Float64 fpj, Float64 Ls, SectionLossContainer::iterator& frMinIter, Float64* pXsetMin, Float64* pDsetMin, Float64* pdfpATMin, Float64* pdfpSMin, Float64* pXsetMax, Float64* pDsetMax, Float64* pdfpATMax, Float64* pdfpSMax)
+void TimeStepLossEngineer::BoundAnchorSet(const CSegmentPTData* pPTData, const CSegmentDuctData* pDuctData, DuctIndexType ductIdx, pgsTypes::MemberEndType endType, Float64 Dset, LOSSES* pLosses, Float64 fpj, Float64 Ls, SectionLossContainer::iterator& frMinIter, Float64* pXsetMin, Float64* pDsetMin, Float64* pdfpATMin, Float64* pdfpSMin, Float64* pXsetMax, Float64* pDsetMax, Float64* pdfpATMax, Float64* pdfpSMax)
 {
    const CPrecastSegmentData* pSegment = pPTData->GetSegment();
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
@@ -4410,7 +4395,7 @@ void CTimeStepLossEngineer::BoundAnchorSet(const CSegmentPTData* pPTData, const 
    }
 }
 
-Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 fpj,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64 Xset,Float64* pdfpAT,Float64* pdfpS)
+Float64 TimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CDuctData* pDuctData,DuctIndexType ductIdx,pgsTypes::MemberEndType endType,LOSSES* pLosses,Float64 fpj,Float64 Lg,SectionLossContainer::iterator& frMinIter,Float64 Xset,Float64* pdfpAT,Float64* pdfpS)
 {
    //
    // Computes Dset given an assumed length of the anchor set zone, Lset
@@ -4624,7 +4609,7 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CPTData* pPTData,const CD
    return Dset;
 }
 
-Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CSegmentPTData* pPTData, const CSegmentDuctData* pDuctData, DuctIndexType ductIdx, pgsTypes::MemberEndType endType, LOSSES* pLosses, Float64 fpj, Float64 Ls, SectionLossContainer::iterator& frMinIter, Float64 Xset, Float64* pdfpAT, Float64* pdfpS)
+Float64 TimeStepLossEngineer::EvaluateAnchorSet(const CSegmentPTData* pPTData, const CSegmentDuctData* pDuctData, DuctIndexType ductIdx, pgsTypes::MemberEndType endType, LOSSES* pLosses, Float64 fpj, Float64 Ls, SectionLossContainer::iterator& frMinIter, Float64 Xset, Float64* pdfpAT, Float64* pdfpS)
 {
    //
    // Computes Dset given an assumed length of the anchor set zone, Lset
@@ -4856,7 +4841,7 @@ Float64 CTimeStepLossEngineer::EvaluateAnchorSet(const CSegmentPTData* pPTData, 
    return Dset;
 }
 
-LOSSDETAILS* CTimeStepLossEngineer::GetLossDetails(LOSSES* pLosses,const pgsPointOfInterest& poi)
+LOSSDETAILS* TimeStepLossEngineer::GetLossDetails(LOSSES* pLosses,const pgsPointOfInterest& poi)
 {
    SectionLossContainer::iterator found(pLosses->SectionLosses.find(poi));
    ATLASSERT( found != pLosses->SectionLosses.end() );
@@ -4865,7 +4850,7 @@ LOSSDETAILS* CTimeStepLossEngineer::GetLossDetails(LOSSES* pLosses,const pgsPoin
    return &(found->second);
 }
 
-std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProductLoads(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bExternalForcesOnly)
+std::vector<pgsTypes::ProductForceType> TimeStepLossEngineer::GetApplicableProductLoads(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bExternalForcesOnly)
 {
    // creates a vector of the product force type for only those loads that are applied during this interval
    // or cause a force effect during this interval. An example of a load causing a force effect during
@@ -5139,7 +5124,7 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
    return vProductForces;
 }
 
-void CTimeStepLossEngineer::InitializeStrandTypes(const CSegmentKey& segmentKey)
+void TimeStepLossEngineer::InitializeStrandTypes(const CSegmentKey& segmentKey)
 {
    std::vector<pgsTypes::StrandType> strandTypes;
    for ( int i = 0; i < 3; i++ )
@@ -5154,7 +5139,7 @@ void CTimeStepLossEngineer::InitializeStrandTypes(const CSegmentKey& segmentKey)
    m_StrandTypes.insert(std::make_pair(segmentKey,strandTypes));
 }
 
-const std::vector<pgsTypes::StrandType>& CTimeStepLossEngineer::GetStrandTypes(const CSegmentKey& segmentKey)
+const std::vector<pgsTypes::StrandType>& TimeStepLossEngineer::GetStrandTypes(const CSegmentKey& segmentKey)
 {
    std::map<CSegmentKey,std::vector<pgsTypes::StrandType>>::iterator found(m_StrandTypes.find(segmentKey));
    if ( found == m_StrandTypes.end() )
@@ -5166,7 +5151,7 @@ const std::vector<pgsTypes::StrandType>& CTimeStepLossEngineer::GetStrandTypes(c
    return found->second;
 }
 
-void CTimeStepLossEngineer::GetAnalysisLocations(const CGirderKey& girderKey,PoiList* pPoiList)
+void TimeStepLossEngineer::GetAnalysisLocations(const CGirderKey& girderKey,PoiList* pPoiList)
 {
    ASSERT_GIRDER_KEY(girderKey); // must be a full girder key
 
@@ -5187,14 +5172,14 @@ void CTimeStepLossEngineer::GetAnalysisLocations(const CGirderKey& girderKey,Poi
    m_pPoi->RemovePointsOfInterestOffGirder(*pPoiList);
 }
 
-void CTimeStepLossEngineer::GetAnalysisLocations(const CSegmentKey& segmentKey, PoiList* pPoiList)
+void TimeStepLossEngineer::GetAnalysisLocations(const CSegmentKey& segmentKey, PoiList* pPoiList)
 {
    ASSERT_SEGMENT_KEY(segmentKey); // must be a full segment key
    m_pPoi->GetPointsOfInterest(segmentKey, pPoiList);
    m_pPoi->RemovePointsOfInterestOffGirder(*pPoiList);
 }
 
-void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, pgsTypes::ProductForceType pfType, 
+void TimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, pgsTypes::ProductForceType pfType, 
                                                         DuctIndexType nSegmentDucts, DuctIndexType nGirderDucts,TIME_STEP_DETAILS& tsDetails, 
                                                         const TIME_STEP_DETAILS* pPrevTsDetails)
 {

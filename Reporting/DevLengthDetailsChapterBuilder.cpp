@@ -23,6 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\DevLengthDetailsChapterBuilder.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Project.h>
@@ -31,16 +32,11 @@
 #include <IFace\Intervals.h>
 #include <WBFLGenericBridgeTools.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // Some utility functions
-rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits, bool is_LocationFactor)
+rptRcTable* CreateDevelopmentTable(std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool is_LocationFactor)
 {
    bool is_2015 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims == WBFL::LRFD::BDSManager::GetEdition();
    bool is_2016 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition();
@@ -115,22 +111,12 @@ void WriteRowToDevelopmentTable(rptRcTable* pTable, RowIndexType row, CComBSTR b
 }
 
 
-/****************************************************************************
-CLASS
-   CDevLengthDetailsChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CDevLengthDetailsChapterBuilder::CDevLengthDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CDevLengthDetailsChapterBuilder::GetName() const
 {
    return TEXT("Transfer and Development Length Details");
@@ -141,17 +127,17 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -463,9 +449,3 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDevLengthDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CDevLengthDetailsChapterBuilder>();
-}
-

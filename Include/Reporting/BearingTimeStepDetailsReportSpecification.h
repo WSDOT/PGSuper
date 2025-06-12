@@ -31,7 +31,7 @@ class REPORTINGCLASS CBearingTimeStepDetailsReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-	CBearingTimeStepDetailsReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,bool bReportAtAllLocations,
+	CBearingTimeStepDetailsReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,bool bReportAtAllLocations,
 		const ReactionLocation& location,IntervalIndexType intervalIdx);
    ~CBearingTimeStepDetailsReportSpecification(void);
 

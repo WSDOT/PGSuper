@@ -23,14 +23,12 @@
 #include "stdafx.h"
 #include <Reporting\GirderSeedDataComparisonParagraph.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <psglib/GirderLibraryEntry.h>
+#include <PsgLib\BridgeDescription2.h>
+
 
 /****************************************************************************
 CLASS
@@ -45,7 +43,7 @@ CGirderSeedDataComparisonParagraph::~CGirderSeedDataComparisonParagraph()
 {
 } 
 
-rptParagraph* CGirderSeedDataComparisonParagraph::Build(IBroker* pBroker, const CGirderKey& girderKey) const
+rptParagraph* CGirderSeedDataComparisonParagraph::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey) const
 {
    rptParagraph* pParagraph = new rptParagraph;
 

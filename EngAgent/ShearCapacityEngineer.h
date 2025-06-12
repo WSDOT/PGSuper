@@ -20,25 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_SHEARCAPENG_H_
-#define INCLUDED_SHEARCAPENG_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
 #include <Details.h>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-interface IBroker;
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -57,28 +41,18 @@ LOG
 class pgsShearCapacityEngineer
 {
 public:
-   pgsShearCapacityEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID);
+   pgsShearCapacityEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
    pgsShearCapacityEngineer(const pgsShearCapacityEngineer& rOther) = default;
    ~pgsShearCapacityEngineer() = default;
    pgsShearCapacityEngineer& operator=(const pgsShearCapacityEngineer& rOther) = default;
 
-   // GROUP: OPERATIONS
-
-   void SetBroker(IBroker* pBroker);
-   void SetStatusGroupID(StatusGroupIDType statusGroupID);
-
-   // Shear capacity
-   //------------------------------------------------------------------------
    void ComputeShearCapacity(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi,const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pmcd) const;
 
    // concrete stress at girder centroid used to calculate shear capacity
-   //------------------------------------------------------------------------
    void ComputeFpc(const pgsPointOfInterest& pPoi, const GDRCONFIG* pConfig, FPCDETAILS* mcd) const;
 
-   //------------------------------------------------------------------------
    void ComputeVsReqd(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const;
 
-   //------------------------------------------------------------------------
    // When the poi being evaluated is outboard of the critical section for shear
    // The Vu and Vc values are forced to be the same as at the critical section
    // Update the shear capacity details to reflect this. Update all derived data
@@ -86,16 +60,11 @@ public:
    void TweakShearCapacityOutboardOfCriticalSection(const pgsPointOfInterest& poiCS,SHEARCAPACITYDETAILS* pscd,const SHEARCAPACITYDETAILS* pscd_at_cs) const;
 
 private:
-   // GROUP: DATA MEMBERS
-   IBroker* m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidGirderDescriptionError;
-
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   
 
    bool GetGeneralInformation(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd) const;
    bool GetInformation(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd) const;
@@ -107,15 +76,4 @@ private:
    bool ComputeVs(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const;
 
    void EvaluateStirrupRequirements(SHEARCAPACITYDETAILS* pscd) const;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_SHEARCAPENG_H_

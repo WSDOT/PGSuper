@@ -7,16 +7,12 @@
 
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CConstructSegmentsDlg dialog
@@ -131,8 +127,8 @@ BOOL CConstructSegmentsDlg::OnInitDialog()
    }
 
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
@@ -165,8 +161,8 @@ void CConstructSegmentsDlg::OnMoveToSourceList()
 
 void CConstructSegmentsDlg::FillLists()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IDocumentType,pDocType);
 
    GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();

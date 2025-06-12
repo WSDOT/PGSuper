@@ -19,13 +19,14 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\BearingDesignParameters.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -44,71 +45,15 @@ LOG
 class REPORTINGCLASS CBearingRotationTable
 {
 public:
-   // GROUP: LIFECYCLE
+   CBearingRotationTable() = default;
 
-   //------------------------------------------------------------------------
-   // Default constructor
-   CBearingRotationTable();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CBearingRotationTable(const CBearingRotationTable& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CBearingRotationTable();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CBearingRotationTable& operator = (const CBearingRotationTable& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
-   // 
-
-
-
-   ColumnIndexType GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey, 
+   ColumnIndexType GetBearingTableColumnCount(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, 
        pgsTypes::AnalysisType analysisType, bool bDesign, bool bUserLoads, ROTATIONDETAILS* details, bool bDetail) const;
    // 
    // 
    // 
    // Builds ......
-   virtual rptRcTable* BuildBearingRotationTable(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+   virtual rptRcTable* BuildBearingRotationTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
                              bool bIncludeImpact,bool bIncludeLLDF,bool bDesign,bool bUserLoads, bool bIndicateControllingLoad,
-                             IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool isFlexural) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CBearingRotationTable& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CBearingRotationTable& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bDetail, bool isFlexural) const;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-

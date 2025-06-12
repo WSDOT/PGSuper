@@ -35,7 +35,14 @@
 #include "GirderTopWidthGrid.h"
 
 class CSpanDetailsDlg;
-interface IBeamFactory;
+
+namespace PGS
+{
+   namespace Beams
+   {
+	  class BeamFactory;
+   };
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanGirderLayoutPage dialog
@@ -52,7 +59,7 @@ public:
 
    GirderIndexType m_MinGirderCount;
 
-   void GetBeamFactory(IBeamFactory** ppFactory);
+   std::shared_ptr<PGS::Beams::BeamFactory> GetBeamFactory();
    
    // Dialog Data
 	//{{AFX_DATA(CSpanGirderLayoutPage)

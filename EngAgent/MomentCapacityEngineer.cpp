@@ -22,28 +22,31 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "EngAgent.h"
 #include "MomentCapacityEngineer.h"
 #include <PGSuperException.h>
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\ResistanceFactors.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace/Limits.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PgsExt\statusitem.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\DevelopmentLength.h>
 
+#include <psgLib/SpecLibraryEntry.h>
 #include <psgLib/SpecificationCriteria.h>
 #include <psgLib/MomentCapacityCriteria.h>
 #include <psgLib/LimitStateConcreteStrengthCriteria.h>
@@ -57,11 +60,6 @@
 #include <WBFLTools_i.c>
 #include <EAF\EAFUIIntegration.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 DIAG_DEFINE_GROUP(MomCap,DIAG_GROUP_DISABLE,0);
 
@@ -201,15 +199,8 @@ void GetControllingSolution(bool bPositiveMoment,MOMENTCAPACITYDETAILS& mcd, IMo
    }
 }
 
-/****************************************************************************
-CLASS
-   pgsMomentCapacityEngineer
-****************************************************************************/
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID)
+pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
 {
    ATLASSERT(pBroker != nullptr);
 
@@ -235,7 +226,7 @@ pgsMomentCapacityEngineer::pgsMomentCapacityEngineer(IBroker* pBroker,StatusGrou
    }
 
    GET_IFACE(IEAFStatusCenter, pStatusCenter);
-   m_scidMomentCapacity = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning));
+   m_scidMomentCapacity = pStatusCenter->RegisterCallback(std::make_shared<pgsInformationalStatusCallback>(WBFL::EAF::StatusSeverityType::Warning));
 }
 
 pgsMomentCapacityEngineer::~pgsMomentCapacityEngineer()
@@ -247,8 +238,7 @@ pgsMomentCapacityEngineer::~pgsMomentCapacityEngineer()
    CLOSE_LOGFILE;
 }
 
-//======================== OPERATIONS =======================================
-void pgsMomentCapacityEngineer::SetBroker(IBroker* pBroker)
+void pgsMomentCapacityEngineer::SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    m_pBroker = pBroker;
 }
@@ -260,7 +250,7 @@ void pgsMomentCapacityEngineer::SetStatusGroupID(StatusGroupIDType statusGroupID
    if (m_scidMomentCapacity == INVALID_ID)
    {
       GET_IFACE(IEAFStatusCenter, pStatusCenter);
-      m_scidMomentCapacity = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning));
+      m_scidMomentCapacity = pStatusCenter->RegisterCallback(std::make_shared<pgsInformationalStatusCallback>(WBFL::EAF::StatusSeverityType::Warning));
    }
 }
 
@@ -1129,8 +1119,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
                strErrorCode,
                poi.GetID()
             );
-            pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidMomentCapacity, msg);
-            pStatusCenter->Add(pStatusItem);
+            pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidMomentCapacity, msg));
          }
       }
 
@@ -1458,8 +1447,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          CString msg;
          msg.Format(_T("Bonded tension flexural reinforcement is not provided at %s from the left end of the girder (Location ID = %d). GS 1.6.3 requires the UHPC section to have bonded reinforcement. Capacity reduction factor set to 0.0"),
             FormatDimension(poi.GetDistFromStart(), pDisplayUnits->GetSpanLengthUnit()),poi.GetID());
-         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidMomentCapacity, msg);
-         pStatusCenter->Add(pStatusItem);
+         pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidMomentCapacity, msg));
 
          mcd.Phi = 0.0;
       }
@@ -2012,7 +2000,6 @@ Float64 pgsMomentCapacityEngineer::GetNonCompositeDeadLoadMoment(IntervalIndexTy
    return Mdnc;
 }
 
-#include <IFace/Limits.h>
 Float64 pgsMomentCapacityEngineer::GetModulusOfRupture(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IMaterials,pMaterial);
@@ -2274,23 +2261,6 @@ void pgsMomentCapacityEngineer::AnalyzeCrackedSection(const pgsPointOfInterest& 
    pCSD->c = c;
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 StrandGradeType GetStrandGradeType(WBFL::Materials::PsStrand::Grade grade)
 {
    StrandGradeType grade_type;
@@ -3233,7 +3203,6 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
    (*ppProblem)->AddRef();
 }
 
-//-----------------------------------------------------------------------------
 const MINMOMENTCAPDETAILS* pgsMomentCapacityEngineer::ValidateMinMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi,  bool bPositiveMoment) const
 {
    ATLASSERT(poi.GetID() != INVALID_ID);
@@ -3261,7 +3230,6 @@ const MINMOMENTCAPDETAILS* pgsMomentCapacityEngineer::ValidateMinMomentCapacity(
    return &((*(retval.first)).second);
 }
 
-//-----------------------------------------------------------------------------
 const CRACKINGMOMENTDETAILS* pgsMomentCapacityEngineer::ValidateCrackingMoments(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment) const
 {
    ATLASSERT(poi.GetID() != INVALID_ID);
@@ -3292,7 +3260,6 @@ const CRACKINGMOMENTDETAILS* pgsMomentCapacityEngineer::ValidateCrackingMoments(
    return pMcrDetails;
 }
 
-//-----------------------------------------------------------------------------
 const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::ValidateMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const GDRCONFIG* pConfig) const
 {
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -3312,7 +3279,6 @@ const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::ValidateMomentCapacity(I
    }
 }
 
-//-----------------------------------------------------------------------------
 pgsPointOfInterest pgsMomentCapacityEngineer::GetEquivalentPointOfInterest(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const
 {
    const CGirderKey& girderKey = poi.GetSegmentKey();
@@ -3348,7 +3314,6 @@ pgsPointOfInterest pgsMomentCapacityEngineer::GetEquivalentPointOfInterest(Inter
    return search_poi;
 }
 
-//-----------------------------------------------------------------------------
 const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::GetCachedMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment,const GDRCONFIG* pConfig) const
 {
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -3380,7 +3345,6 @@ const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::GetCachedMomentCapacity(
    }
 }
 
-//-----------------------------------------------------------------------------
 const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::GetStoredMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const MomentCapacityDetailsContainer& container) const
 {
    // if the beam has some symmetry, we can use the results for another poi...
@@ -3404,7 +3368,6 @@ const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::GetStoredMomentCapacityD
    return nullptr;
 }
 
-//-----------------------------------------------------------------------------
 const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::StoreMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const MOMENTCAPACITYDETAILS& mcd, MomentCapacityDetailsContainer& container) const
 {
    // if the beam has some symmetry, we can use the results for another poi...
@@ -3428,7 +3391,6 @@ const MOMENTCAPACITYDETAILS* pgsMomentCapacityEngineer::StoreMomentCapacityDetai
    return &((*(retval.first)).second);
 }
 
-//-----------------------------------------------------------------------------
 void pgsMomentCapacityEngineer::InvalidateMomentCapacity()
 {
    for (int i = 0; i < 2; i++)
@@ -3460,7 +3422,6 @@ void pgsMomentCapacityEngineer::InvalidateMinMomentCapacity()
    }
 }
 
-//-----------------------------------------------------------------------------
 void pgsMomentCapacityEngineer::InvalidateCrackedSectionDetails()
 {
    for (int i = 0; i < 2; i++)
@@ -3484,8 +3445,8 @@ const CRACKEDSECTIONDETAILS* pgsMomentCapacityEngineer::ValidateCrackedSectionDe
       }
    }
 
-   GET_IFACE(IProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE(IEAFProgress, pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
    std::_tostringstream os;
@@ -3613,9 +3574,6 @@ bool pgsMomentCapacityEngineer::IsDiaphragmConfined(const pgsPointOfInterest& po
    return true;
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
 #if defined _DEBUG_SECTION_DUMP
 void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGeneralSection* section, std::map<StrandIndexType,Float64> ssBondFactors,std::map<StrandIndexType,Float64> hsBondFactors,bool bPositiveMoment) const
 {
@@ -3670,9 +3628,10 @@ void pgsMomentCapacityEngineer::DumpSection(const pgsPointOfInterest& poi,IGener
 }
 #endif // _DEBUG_SECTION_DUMP
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-pgsMomentCapacityEngineer::pgsBondTool::pgsBondTool(IBroker* pBroker,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig)
+
+
+pgsMomentCapacityEngineer::pgsBondTool::pgsBondTool(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig)
 {
    m_pBroker    = pBroker;
    m_Poi        = poi;
@@ -3681,9 +3640,6 @@ pgsMomentCapacityEngineer::pgsBondTool::pgsBondTool(IBroker* pBroker,const pgsPo
    GET_IFACE(IBridge, pBridge);
 
    m_pConfig = pConfig;
-
-   m_pBroker->GetInterface(IID_IPretensionForce,(IUnknown**)&m_pPrestressForce);
-   m_pBroker->GetInterface(IID_IStrandGeometry, (IUnknown**)&m_pStrandGeometry);
 
    m_GirderLength = pBridge->GetSegmentLength(segmentKey);
 
@@ -3716,11 +3672,14 @@ pgsMomentCapacityEngineer::pgsBondTool::pgsBondTool(IBroker* pBroker,const pgsPo
 
 Float64 pgsMomentCapacityEngineer::pgsBondTool::GetTransferLengthFactor(StrandIndexType strandIdx, pgsTypes::StrandType strandType) const
 {
-   return m_pPrestressForce->GetTransferLengthAdjustment(m_Poi, strandType, pgsTypes::TransferLengthType::Maximum, strandIdx, m_pConfig);
+   GET_IFACE(IPretensionForce, pPrestressForce);
+   return pPrestressForce->GetTransferLengthAdjustment(m_Poi, strandType, pgsTypes::TransferLengthType::Maximum, strandIdx, m_pConfig);
 }
 
 Float64 pgsMomentCapacityEngineer::pgsBondTool::GetDevelopmentLengthFactor(StrandIndexType strandIdx,pgsTypes::StrandType strandType) const
 {
+   GET_IFACE(IStrandGeometry, pStrandGeometry);
+
    // NOTE: More tricky code here (see note above)
    //
    // If we have a section that isn't near mid-span, we have to compute a bond factor. The bond factor is
@@ -3730,16 +3689,19 @@ Float64 pgsMomentCapacityEngineer::pgsBondTool::GetDevelopmentLengthFactor(Stran
    // To work around this, the bond factors for moment capacity analysis are computed based on fps and fpe
    // at mid span.
    Float64 development_length_factor = 1.0;
-   bool bIsExtendedStrand = m_pStrandGeometry->IsExtendedStrand(m_Poi, strandIdx, strandType, m_pConfig);
+   bool bIsExtendedStrand = pStrandGeometry->IsExtendedStrand(m_Poi, strandIdx, strandType, m_pConfig);
 
    if ( !m_bNearMidSpan && !bIsExtendedStrand)
    {
       bool bDebonded = IsDebonded(strandIdx,strandType);
-      const std::shared_ptr<pgsDevelopmentLength> pDevLength = m_pPrestressForce->GetDevelopmentLengthDetails(m_PoiMidSpan,strandType,bDebonded, m_pConfig);
+
+      GET_IFACE(IPretensionForce, pPrestressForce);
+      auto pDevLength = pPrestressForce->GetDevelopmentLengthDetails(m_PoiMidSpan,strandType,bDebonded, m_pConfig);
+
       Float64 fps = pDevLength->GetFps();
       Float64 fpe = pDevLength->GetFpe();
 
-      development_length_factor = m_pPrestressForce->GetDevelopmentLengthAdjustment(m_Poi,strandIdx,strandType,fps,fpe, m_pConfig);
+      development_length_factor = pPrestressForce->GetDevelopmentLengthAdjustment(m_Poi,strandIdx,strandType,fps,fpe, m_pConfig);
    }
 
    return development_length_factor;

@@ -25,7 +25,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "AdditionalInterfaceShearBarDlg.h"
-#include <psglib\ShearSteelPage.h>
+#include <PsgLib\ShearSteelPage.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocument.h>

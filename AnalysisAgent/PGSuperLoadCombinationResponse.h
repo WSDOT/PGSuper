@@ -111,8 +111,6 @@ private:
    CComPtr<ILBAMModel> m_Model;
    CComPtr<IPOIs> m_POIs;
    const CGirderModelManager* m_pGirderModelManager;
-   CComPtr<ILibrary> m_pLibrary;
-   CComPtr<IRatingSpecification> m_pRatingSpec;
 
    void GetNewLiveLoadFactors(BSTR bstrLoadCombination,ILoadCombinationResultConfiguration* pLeftConfig,ILoadCombinationResultConfiguration* pRightConfig,Float64* pgLL_Left,Float64* pgLL_Right);
 };

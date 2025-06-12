@@ -242,7 +242,7 @@ xcopy /y /d .\TogaTemplates\*.* $(ARPDIR)\BridgeLink\TogaTemplates\*.*</Command>
     <ClCompile Include="TxDOTAgent.cpp" />
     <ClCompile Include="TxDOTAgentApp.cpp" />
     <ClCompile Include="TxDOTAgentImp.cpp" />
-    <ClCompile Include="TxDOTAppPlugin.cpp" />
+    <ClCompile Include="TOGAPluginApp.cpp" />
     <ClCompile Include="TxDOTAppPluginComponentInfo.cpp" />
     <ClCompile Include="TxDOTCadExporter.cpp" />
     <ClCompile Include="TxDOTCadWriter.cpp" />
@@ -270,10 +270,6 @@ xcopy /y /d .\TogaTemplates\*.* $(ARPDIR)\BridgeLink\TogaTemplates\*.*</Command>
     <None Include="TxDOTAgent.def" />
     <None Include="TxDOTAgent.rgs" />
     <None Include="TxDOTAgentImp.rgs" />
-    <None Include="TxDOTAppPlugin.rgs" />
-    <None Include="TxDOTAppPluginComponentInfo.rgs" />
-    <None Include="TxDOTCadExporter.rgs" />
-    <None Include="TxDOTComponentInfo.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\SharedCtrls\MultiGirderSelectGrid.h" />
@@ -325,7 +321,7 @@ xcopy /y /d .\TogaTemplates\*.* $(ARPDIR)\BridgeLink\TogaTemplates\*.*</Command>
     <ClInclude Include="TOGATitlePageBuilder.h" />
     <ClInclude Include="TxDOTAgentApp.h" />
     <ClInclude Include="TxDOTAgentImp.h" />
-    <ClInclude Include="TxDOTAppPlugin.h" />
+    <ClInclude Include="TOGAPluginApp.h" />
     <ClInclude Include="TxDOTAppPluginComponentInfo.h" />
     <ClInclude Include="TxDOTCadExporter.h" />
     <ClInclude Include="TxDOTCadWriter.h" />
@@ -357,6 +353,9 @@ xcopy /y /d .\TogaTemplates\*.* $(ARPDIR)\BridgeLink\TogaTemplates\*.*</Command>
     <ResourceCompile Include="TxDOTAgent.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Beams\Beams.vcxproj">
+      <Project>{3dbe87d2-ceed-457b-b345-7748084d947d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Reporting\Reporting.vcxproj">
       <Project>{4a38b3b0-7c87-40e8-bf6a-9d1b4051ff71}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

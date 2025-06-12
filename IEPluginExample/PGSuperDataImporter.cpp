@@ -27,41 +27,36 @@
 
 #include "PGSuperInterfaces.h"
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
 
-/////////////////////////////////////////////////////////////////////////////
-// CPGSuperDataImporter
 STDMETHODIMP CPGSuperDataImporter::Init(UINT nCmdID)
 {
    return S_OK;
 }
 
-STDMETHODIMP CPGSuperDataImporter::GetMenuText(BSTR*  bstrText) const
+CString CPGSuperDataImporter::GetMenuText() const
 {
-   *bstrText = CComBSTR("Project Data from External Data Source into this PGSuper project");
-   return S_OK;
+   return CString("Project Data from External Data Source into this PGSuper project");
 }
 
-STDMETHODIMP CPGSuperDataImporter::GetBitmapHandle(HBITMAP* phBmp) const
+HBITMAP CPGSuperDataImporter::GetBitmapHandle() const
 {
-   *phBmp = nullptr;
-   return S_OK;
+   return nullptr;
 }
 
-STDMETHODIMP CPGSuperDataImporter::GetCommandHintText(BSTR*  bstrText) const
+CString CPGSuperDataImporter::GetCommandHintText() const
 {
-   *bstrText = CComBSTR("Status line hint text\nTool tip text");
-   return S_OK;   
+   return CString("Status line hint text\nTool tip text");
 }
 
-STDMETHODIMP CPGSuperDataImporter::Import(IBroker* pBroker)
+HRESULT CPGSuperDataImporter::Import(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   int st = AfxMessageBox(_T("Simulate importing data from an external source by changing the alignment. Click Yes to do it!"),MB_YESNO);
+   int st = AfxMessageBox(_T("Simulate importing data from an external source by changing the alignment. Click Yes to do it!"), MB_YESNO);
 
-   if (st==IDYES)
+   if (st == IDYES)
    {
       CompoundCurveData hcData;
       hcData.PIStation = 15.;
@@ -79,10 +74,10 @@ STDMETHODIMP CPGSuperDataImporter::Import(IBroker* pBroker)
       alignmentData.xRefPoint = 50;
       alignmentData.yRefPoint = 50;
 
-      GET_IFACE2(pBroker,IEvents,pEvents);
+      GET_IFACE2(pBroker, IEvents, pEvents);
       pEvents->HoldEvents();
 
-      GET_IFACE2(pBroker,IRoadwayData,pRoadway);
+      GET_IFACE2(pBroker, IRoadwayData, pRoadway);
       pRoadway->SetAlignmentData2(alignmentData);
 
       pEvents->FirePendingEvents();

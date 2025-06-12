@@ -25,107 +25,103 @@
 // SYSTEM INCLUDES
 //
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 #include <PgsExt\SpanGirderRelatedStatusItem.h>
 #include <PgsExt\SegmentRelatedStatusItem.h>
 
 
 // status for refined analysis
-class PGSEXTCLASS pgsRefinedAnalysisStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsRefinedAnalysisStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsRefinedAnalysisStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 };
 
 ///////////////////////////
-class PGSEXTCLASS pgsRefinedAnalysisStatusCallback : public iStatusCallback
+class PGSEXTCLASS pgsRefinedAnalysisStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsRefinedAnalysisStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
-
-private:
-   IBroker* m_pBroker;
+   pgsRefinedAnalysisStatusCallback();
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 };
 
 // status for install error
-class PGSEXTCLASS pgsInstallationErrorStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsInstallationErrorStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsInstallationErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strComponent,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
    std::_tstring m_Component;
 };
 
 ///////////////////////////
-class PGSEXTCLASS pgsInstallationErrorStatusCallback : public iStatusCallback
+class PGSEXTCLASS pgsInstallationErrorStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
    pgsInstallationErrorStatusCallback();
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 };
 
 // status for unknown error
-class PGSEXTCLASS pgsUnknownErrorStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsUnknownErrorStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsUnknownErrorStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR file,long line,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
    std::_tstring m_File;
    long m_Line;
 };
 
 ///////////////////////////
-class PGSEXTCLASS pgsUnknownErrorStatusCallback : public iStatusCallback
+class PGSEXTCLASS pgsUnknownErrorStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
    pgsUnknownErrorStatusCallback();
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 };
 
 // status informational message
-class PGSEXTCLASS pgsInformationalStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsInformationalStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsInformationalStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    ~pgsInformationalStatusItem();
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
 };
 
-class PGSEXTCLASS pgsInformationalStatusCallback : public iStatusCallback
+class PGSEXTCLASS pgsInformationalStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsInformationalStatusCallback(eafTypes::StatusSeverityType severity,UINT helpID=0);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsInformationalStatusCallback(WBFL::EAF::StatusSeverityType severity,UINT helpID=0);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
    UINT m_HelpID;
 };
 
 /////////////////////////
-class PGSEXTCLASS pgsProjectCriteriaStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsProjectCriteriaStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsProjectCriteriaStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 };
 
-class PGSEXTCLASS pgsProjectCriteriaStatusCallback : public iStatusCallback
+class PGSEXTCLASS pgsProjectCriteriaStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsProjectCriteriaStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsProjectCriteriaStatusCallback();
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
    UINT m_HelpID;
 };
 
@@ -134,7 +130,7 @@ class PGSEXTCLASS pgsGirderDescriptionStatusItem : public pgsSegmentRelatedStatu
 {
 public:
    pgsGirderDescriptionStatusItem(const CSegmentKey& segmentKey,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    CSegmentKey m_SegmentKey;
    Uint16 m_Page; // page of girder input wizard
@@ -142,143 +138,137 @@ public:
 
 
 ///////////////////////////
-class PGSEXTCLASS pgsGirderDescriptionStatusCallback : public iStatusCallback
+class PGSEXTCLASS pgsGirderDescriptionStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsGirderDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsGirderDescriptionStatusCallback(WBFL::EAF::StatusSeverityType severity);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
 };
 
 // status for structural analysis type
-class PGSEXTCLASS pgsStructuralAnalysisTypeStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsStructuralAnalysisTypeStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsStructuralAnalysisTypeStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 };
 
-class PGSEXTCLASS pgsStructuralAnalysisTypeStatusCallback : public iStatusCallback
+class PGSEXTCLASS pgsStructuralAnalysisTypeStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
    pgsStructuralAnalysisTypeStatusCallback();
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 };
 
 // status for general bridge description input
-class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsBridgeDescriptionStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    typedef enum IssueType { General, Framing, Railing, Deck, BoundaryConditions, Bearings, DeckCasting } IssueType;
    pgsBridgeDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,IssueType issueType,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    IssueType m_IssueType;
 };
 
 ///////////////////////////
-class PGSEXTCLASS pgsBridgeDescriptionStatusCallback : public iStatusCallback
+class PGSEXTCLASS pgsBridgeDescriptionStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsBridgeDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsBridgeDescriptionStatusCallback(WBFL::EAF::StatusSeverityType severity);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
 };
 
 // status for distribution factor warnings
-class PGSEXTCLASS pgsLldfWarningStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsLldfWarningStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsLldfWarningStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 };
 
 ///////////////////////////
-class PGSEXTCLASS pgsLldfWarningStatusCallback : public iStatusCallback
+class PGSEXTCLASS pgsLldfWarningStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsLldfWarningStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsLldfWarningStatusCallback();
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
 };
 
 // status for effective flange width warnings
-class PGSEXTCLASS pgsEffectiveFlangeWidthStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsEffectiveFlangeWidthStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsEffectiveFlangeWidthStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 };
 
 ///////////////////////////
-class PGSEXTCLASS pgsEffectiveFlangeWidthStatusCallback : public iStatusCallback
+class PGSEXTCLASS pgsEffectiveFlangeWidthStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsEffectiveFlangeWidthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsEffectiveFlangeWidthStatusCallback(WBFL::EAF::StatusSeverityType severity);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
 };
 
 
 // status for timeline input
-class PGSEXTCLASS pgsTimelineStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsTimelineStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsTimelineStatusItem(StatusGroupIDType statusGroupID, StatusCallbackIDType callbackID, LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 };
 
 
 ///////////////////////////
-class PGSEXTCLASS pgsTimelineStatusCallback : public iStatusCallback
+class PGSEXTCLASS pgsTimelineStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsTimelineStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsTimelineStatusCallback(WBFL::EAF::StatusSeverityType severity);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
 };
 
 
 ///////////////////////////
 // status for connection geometry
-class PGSEXTCLASS pgsConnectionGeometryStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsConnectionGeometryStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsConnectionGeometryStatusItem(StatusGroupIDType statusGroupID, StatusCallbackIDType callbackID, PierIndexType pierIdx, LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    PierIndexType m_PierIdx;
 };
 
 
-class PGSEXTCLASS pgsConnectionGeometryStatusCallback : public iStatusCallback
+class PGSEXTCLASS pgsConnectionGeometryStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsConnectionGeometryStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity = eafTypes::statusWarning);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsConnectionGeometryStatusCallback(WBFL::EAF::StatusSeverityType severity = WBFL::EAF::StatusSeverityType::Warning);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
 };

@@ -20,36 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_GIRDERHANDLINGSPECCRITERIA_H_
-#define INCLUDED_IFACE_GIRDERHANDLINGSPECCRITERIA_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#if !defined INCLUDED_WBFLTYPES_H_
 #include <WbflTypes.h>
-#endif
-
-#if !defined INCLUDED_PGSUPERTYPES_H_
 #include <PGSuperTypes.h>
-#endif
-
-#if !defined INCLUDED_PGSEXT_POINTOFINTEREST_H_
 #include <PgsExt\ReportPointOfInterest.h>
-#endif
-
 #include <Stability\Stability.h>
-
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 INTERFACE
@@ -63,8 +39,9 @@ DESCRIPTION
 // {CA83DBFA-E62F-11d2-AD3D-00105A9AF985}
 DEFINE_GUID(IID_ISegmentLiftingSpecCriteria, 
 0xca83dbfa, 0xe62f, 0x11d2, 0xad, 0x3d, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface ISegmentLiftingSpecCriteria : IUnknown
+class ISegmentLiftingSpecCriteria
 {
+public:
    // do we analyze lifting or not?
    virtual bool IsLiftingAnalysisEnabled() const = 0;
 
@@ -128,8 +105,9 @@ DESCRIPTION
 // {DBEBE70C-E62F-11d2-AD3D-00105A9AF985}
 DEFINE_GUID(IID_ISegmentHaulingSpecCriteria, 
 0xdbebe70c, 0xe62f, 0x11d2, 0xad, 0x3d, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface ISegmentHaulingSpecCriteria : IUnknown
+class ISegmentHaulingSpecCriteria
 {
+public:
    // do we analyze hauling or not?
    virtual bool IsHaulingAnalysisEnabled() const = 0;
 
@@ -200,8 +178,9 @@ interface ISegmentHaulingSpecCriteria : IUnknown
 // {CA374433-127A-4850-AEC1-AB250D323724}
 DEFINE_GUID(IID_IKdotGirderHaulingSpecCriteria, 
 0xca374433, 0x127a, 0x4850, 0xae, 0xc1, 0xab, 0x25, 0xd, 0x32, 0x37, 0x24);
-interface IKdotGirderHaulingSpecCriteria : IUnknown
+class IKdotGirderHaulingSpecCriteria
 {
+public:
    // Spec criteria for KDOT analyses
    // Allowable concrete stresses
    virtual Float64 GetKdotHaulingAllowableTensileConcreteStress(const CSegmentKey& segmentKey) const = 0;
@@ -219,6 +198,4 @@ interface IKdotGirderHaulingSpecCriteria : IUnknown
 
    virtual void GetHaulingGFactors(Float64* pOverhangFactor, Float64* pInteriorFactor) const = 0;
 };
-
-#endif // INCLUDED_IFACE_GIRDERHANDLINGSPECCRITERIA_H_
 

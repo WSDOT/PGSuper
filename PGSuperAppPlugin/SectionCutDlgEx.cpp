@@ -29,6 +29,7 @@
 #include "SectionCutDlgEx.h"
 #include <ostream>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
@@ -36,16 +37,11 @@
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSectionCutDlgEx dialog
 
-CSectionCutDlgEx::CSectionCutDlgEx(IBroker* pBroker,const CGirderKey& girderKey,const pgsPointOfInterest& initialPoi,CWnd* pParent) 
+CSectionCutDlgEx::CSectionCutDlgEx(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,const pgsPointOfInterest& initialPoi,CWnd* pParent) 
 : CDialog(CSectionCutDlgEx::IDD, pParent),
 m_pBroker(pBroker),
 m_SliderPos(0)

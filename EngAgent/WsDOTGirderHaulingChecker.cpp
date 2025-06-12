@@ -26,7 +26,7 @@
 
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\PrestressForce.h>
@@ -53,11 +53,6 @@
 
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 bool CompareHaulTrucks(const HaulTruckLibraryEntry* pA,const HaulTruckLibraryEntry* pB)
 {
@@ -104,35 +99,19 @@ bool CompareHaulTrucks(const HaulTruckLibraryEntry* pA,const HaulTruckLibraryEnt
    return true;
 }
 
-/****************************************************************************
-CLASS
-   pgsWsdotGirderHaulingChecker
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-
-//======================== LIFECYCLE  =======================================
-pgsWsdotGirderHaulingChecker::pgsWsdotGirderHaulingChecker(IBroker* pBroker,StatusGroupIDType statusGroupID)
+pgsWsdotGirderHaulingChecker::pgsWsdotGirderHaulingChecker(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   m_scidBunkPointLocation = pStatusCenter->RegisterCallback( new pgsBunkPointLocationStatusCallback(m_pBroker) );
-   m_scidHaulTruck         = pStatusCenter->RegisterCallback( new pgsHaulTruckStatusCallback(m_pBroker) );
+   GET_IFACE2(GetBroker(),IEAFStatusCenter,pStatusCenter);
+   m_scidBunkPointLocation = pStatusCenter->RegisterCallback( std::make_shared<pgsBunkPointLocationStatusCallback>() );
+   m_scidHaulTruck         = pStatusCenter->RegisterCallback( std::make_shared<pgsHaulTruckStatusCallback>() );
 }
 
-pgsWsdotGirderHaulingChecker::~pgsWsdotGirderHaulingChecker()
+std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE)
 {
-}
-
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-
-pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE)
-{
-   GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   GET_IFACE2(GetBroker(),ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
 
    if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
@@ -146,76 +125,74 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::CheckHauling(const CSe
    }
 }
 
-pgsHaulingAnalysisArtifact*  pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey)
+std::shared_ptr<pgsHaulingAnalysisArtifact>  pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey)
 {
-   std::unique_ptr<pgsWsdotHaulingAnalysisArtifact> pArtifact(std::make_unique<pgsWsdotHaulingAnalysisArtifact>());
+   auto pArtifact(std::make_shared<pgsWsdotHaulingAnalysisArtifact>());
 
    HANDLINGCONFIG dummy_config;
-   GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
-   AnalyzeHauling(segmentKey,false,dummy_config,pSegmentHaulingPointsOfInterest,pArtifact.get());
+   GET_IFACE2(GetBroker(),ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
+   AnalyzeHauling(segmentKey,false,dummy_config,pSegmentHaulingPointsOfInterest,*pArtifact);
 
-   return pArtifact.release();
+   return pArtifact;
 }
 
-pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang)
+std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang)
 {
-   std::unique_ptr<pgsWsdotHaulingAnalysisArtifact> pArtifact(std::make_unique<pgsWsdotHaulingAnalysisArtifact>());
+   auto pArtifact(std::make_shared<pgsWsdotHaulingAnalysisArtifact>());
 
    HANDLINGCONFIG dummy_config;
    dummy_config.bIgnoreGirderConfig = true;
    dummy_config.LeftOverhang = leftOverhang;
    dummy_config.RightOverhang = rightOverhang;
 
-   GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
-
-   AnalyzeHauling(segmentKey,true,dummy_config,pSegmentHaulingPointsOfInterest,pArtifact.get());
-   return pArtifact.release();
+   GET_IFACE2(GetBroker(),ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
+   AnalyzeHauling(segmentKey,true,dummy_config,pSegmentHaulingPointsOfInterest,*pArtifact);
+   return pArtifact;
 }
 
-pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig,ISegmentHaulingDesignPointsOfInterest* pPOId)
+std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& haulConfig,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId)
 {
-   std::unique_ptr<pgsWsdotHaulingAnalysisArtifact> pArtifact(std::make_unique<pgsWsdotHaulingAnalysisArtifact>());
-   AnalyzeHauling(segmentKey,true,haulConfig,pPOId,pArtifact.get());
+   auto pArtifact(std::make_shared<pgsWsdotHaulingAnalysisArtifact>());
+   AnalyzeHauling(segmentKey,true,haulConfig,pPOId,*pArtifact);
 
-   return pArtifact.release();
+   return pArtifact;
 }
 
-void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& haulConfig,ISegmentHaulingDesignPointsOfInterest* pPOId,pgsWsdotHaulingAnalysisArtifact* pArtifact)
+void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& haulConfig,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,pgsWsdotHaulingAnalysisArtifact& pArtifact)
 {
    WBFL::Stability::HaulingCheckArtifact artifact;
 #if defined _DEBUG
-   AnalyzeHauling(segmentKey,bUseConfig,haulConfig,pPOId,&artifact,&pArtifact->m_pStabilityProblem);
+   AnalyzeHauling(segmentKey,bUseConfig,haulConfig,pPOId,artifact,&(pArtifact.m_pStabilityProblem));
 #else
-   AnalyzeHauling(segmentKey,bUseConfig,haulConfig,pPOId,&artifact);
+   AnalyzeHauling(segmentKey,bUseConfig,haulConfig,pPOId,artifact);
 #endif
-   pArtifact->SetHaulingCheckArtifact(artifact);
+   pArtifact.SetHaulingCheckArtifact(artifact);
 }
 
-pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& shipping_config,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE)
+std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& shipping_config,bool bIgnoreConfigurationLimits,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE)
 {
    LOG(_T("Entering pgsWsdotGirderHaulingChecker::DesignHauling"));
-   std::unique_ptr<pgsWsdotHaulingAnalysisArtifact> artifact(std::make_unique<pgsWsdotHaulingAnalysisArtifact>());
+   auto artifact(std::make_shared<pgsWsdotHaulingAnalysisArtifact>());
 
    // Get all of the haul trucks that have sufficient capacity to carry the girder
-   GET_IFACE(ISectionProperties,pSectProps);
+   GET_IFACE2(GetBroker(),ISectionProperties,pSectProps);
    Float64 Wgt = pSectProps->GetSegmentWeight(segmentKey);
-   GET_IFACE(ILibraryNames,pLibNames);
+   GET_IFACE2(GetBroker(),ILibraryNames,pLibNames);
    std::vector<std::_tstring> names;
    pLibNames->EnumHaulTruckNames( &names );
    if (names.size() == 0)
    {
       // the haul truck library is empty... this is a problem.
-      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      GET_IFACE2(GetBroker(),IEAFStatusCenter, pStatusCenter);
 
       CString strMsg = _T("The haul truck library is empty. Please define haul trucks in the Haul Truck library.");
-      pgsHaulTruckStatusItem* pStatusItem = new pgsHaulTruckStatusItem(m_StatusGroupID, m_scidHaulTruck, strMsg);
-      pStatusCenter->Add(pStatusItem);
+      pStatusCenter->Add(std::make_shared<pgsHaulTruckStatusItem>(m_StatusGroupID, m_scidHaulTruck, strMsg));
 
       strMsg += _T("\nSee Status Center for details");
       THROW_UNWIND(strMsg, -1);
    }
    std::vector<const HaulTruckLibraryEntry*> vHaulTrucks;
-   GET_IFACE(ILibrary,pLib);
+   GET_IFACE2(GetBroker(),ILibrary,pLib);
    const HaulTruckLibraryEntry* pMaxCapacityTruck = pLib->GetHaulTruckEntry(names.front().c_str()); // keep track of the truck with the max capacity
    for (const auto& strHaulTruckName : names)
    {
@@ -242,10 +219,10 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
 
    // Get range of values for truck support locations
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
    Float64 Lg = pBridge->GetSegmentLength(segmentKey);
 
-   GET_IFACE(ISegmentHaulingSpecCriteria,pCriteria);
+   GET_IFACE2(GetBroker(),ISegmentHaulingSpecCriteria,pCriteria);
    Float64 FSrMin = pCriteria->GetHaulingRolloverFs();
    LOG(_T("Allowable FS rollover FSrMin = ")<<FSrMin);
 
@@ -335,7 +312,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
          LOG(_T("Trying Trailing Overhang = ") << WBFL::Units::ConvertFromSysUnits(shipping_config.LeftOverhang,WBFL::Units::Measure::Feet) << _T(" ft") << _T("      Leading Overhang = ") << WBFL::Units::ConvertFromSysUnits(shipping_config.RightOverhang,WBFL::Units::Measure::Feet) << _T(" ft"));
 
-         AnalyzeHauling(segmentKey,true,shipping_config,pPOId,artifact.get());
+         AnalyzeHauling(segmentKey,true,shipping_config,pPOId,*artifact);
 
          Float64 FSr = Min(artifact->GetFsRollover(WBFL::Stability::HaulingSlope::CrownSlope),artifact->GetFsRollover(WBFL::Stability::HaulingSlope::Superelevation));
          LOG(_T("FSr = ") << FSr);
@@ -405,21 +382,16 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    {
       LOG(_T("A successful design could not be found with any of the haul trucks. Add temporary strands and try again"));
    }
-   return artifact.release();
+   return artifact;
 }
 
-
-
-////////////////////////////////////////////////////////
-// hauling
-////////////////////////////////////////////////////////
 #if defined _DEBUG
-void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,WBFL::Stability::HaulingCheckArtifact* pArtifact,const WBFL::Stability::HaulingStabilityProblem** ppStabilityProblem)
+void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,WBFL::Stability::HaulingCheckArtifact& pArtifact,const WBFL::Stability::HaulingStabilityProblem** ppStabilityProblem)
 #else
-void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,WBFL::Stability::HaulingCheckArtifact* pArtifact)
+void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,WBFL::Stability::HaulingCheckArtifact& pArtifact)
 #endif
 {
-   GET_IFACE(IGirder,pGirder);
+   GET_IFACE2(GetBroker(),IGirder,pGirder);
    const WBFL::Stability::Girder* pStabilityModel = pGirder->GetSegmentHaulingStabilityModel(segmentKey);
    const WBFL::Stability::HaulingStabilityProblem* pStabilityProblem = (bUseConfig ? pGirder->GetSegmentHaulingStabilityProblem(segmentKey,config,pPOId) : pGirder->GetSegmentHaulingStabilityProblem(segmentKey));
 
@@ -427,9 +399,9 @@ void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,
    *ppStabilityProblem = pStabilityProblem;
 #endif
 
-   GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   GET_IFACE2(GetBroker(),ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    WBFL::Stability::HaulingCriteria criteria = pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey, bUseConfig ? &config : nullptr);
 
    WBFL::Stability::StabilityEngineer engineer;
-   *pArtifact = engineer.CheckHauling(pStabilityModel,pStabilityProblem,criteria);
+   pArtifact = engineer.CheckHauling(pStabilityModel,pStabilityProblem,criteria);
 }

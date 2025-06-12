@@ -29,15 +29,10 @@
 #include "TimelineEventDlg.h"
 
 #include "EditTimelineDlg.h"
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\TimelineManager.h>
 
 #include <System\Tokenizer.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CTimelineGrid, CS_DBLCLKS, 0, 0, 0);
 

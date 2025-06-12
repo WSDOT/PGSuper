@@ -27,63 +27,51 @@
 #include <Reporting\StrandEccentricities.h>
 #include <Reporting\LongRebarLocations.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\BeamFactory.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PsgLib\ConnectionLibraryEntry.h>
 #include <PsgLib\ConcreteLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <Materials/PsStrand.h>
 #include <LRFD\RebarPool.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-void write_segment_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
-void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
-void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
-void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry);
-void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CSegmentKey& segmentKey);
-void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
-void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
-void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
-void write_segment_pt(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CSegmentKey& segmentKey);
-void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey);
-void write_girder_pt(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey);
+void write_segment_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
+void write_intermedate_diaphragm_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
+void write_deck_width_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level);
+void write_traffic_barrier_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry);
+void write_strand_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level,const CSegmentKey& segmentKey);
+void write_rebar_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level);
+void write_handling(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& segmentKey);
+void write_debonding(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& segmentKey);
+void write_segment_pt(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CSegmentKey& segmentKey);
+void write_camber_factors(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& segmentKey);
+void write_girder_pt(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& girderKey);
 
-void write_linear_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, IEAFDisplayUnits* pDisplayUnits);
-void write_parabolic_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, IEAFDisplayUnits* pDisplayUnits);
+void write_linear_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+void write_parabolic_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 
-/****************************************************************************
-CLASS
-   CBridgeDescDetailsChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CBridgeDescDetailsChapterBuilder::CBridgeDescDetailsChapterBuilder(bool bOmitStrandLocations,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
    m_bOmitStrandLocations = bOmitStrandLocations;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CBridgeDescDetailsChapterBuilder::GetName() const
 {
    return TEXT("Bridge Description Details");
@@ -94,17 +82,17 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(const std::shared_ptr<const 
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -222,31 +210,7 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(const std::shared_ptr<const 
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBridgeDescDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CBridgeDescDetailsChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-void write_segment_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
+void write_segment_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
 {
 #pragma Reminder("UPDATE: need to write out spliced girder taper information")
    rptParagraph* pPara = new rptParagraph;
@@ -265,8 +229,7 @@ void write_segment_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptC
 
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   auto factory = pGdrEntry->GetBeamFactory();
 
    (*pTable)(0,0) << rptRcImage( std::_tstring(rptStyleManager::GetImagePath()) + factory->GetImage());
 
@@ -342,7 +305,7 @@ void write_segment_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptC
 #pragma Reminder("Implement")
 }
 
-void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey)
+void write_debonding(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    if ( pStrandGeom->CanDebondStrands(segmentKey,pgsTypes::Straight) || 
@@ -412,7 +375,7 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
    }
 }
 
-void write_segment_pt(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CSegmentKey& segmentKey)
+void write_segment_pt(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -487,7 +450,7 @@ void write_segment_pt(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* 
    }
 }
 
-void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey)
+void write_camber_factors(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -546,7 +509,7 @@ void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    (*pTable)(row++,1) << scalar.SetValue(cm.BarrierSwOverlayUser2Factor);
 }
 
-void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level)
+void write_deck_width_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBarriers,pBarriers);
@@ -637,7 +600,7 @@ void write_deck_width_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,r
    }
 }
 
-void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level)
+void write_intermedate_diaphragm_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,const CGirderKey& girderKey,Uint16 level)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  locdim,  pDisplayUnits->GetSpanLengthUnit(), true );
@@ -729,7 +692,7 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
    }
 }
 
-void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry)
+void write_traffic_barrier_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level,const TrafficBarrierEntry* pBarrierEntry)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  ydim,  pDisplayUnits->GetComponentDimUnit(), true );
@@ -779,7 +742,7 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    }
 }
 
-rptRcTable* write_strand_material(LPCTSTR strStrandType, const WBFL::Materials::PsStrand* pStrand, IEAFDisplayUnits* pDisplayUnits)
+rptRcTable* write_strand_material(LPCTSTR strStrandType, const WBFL::Materials::PsStrand* pStrand, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
    INIT_UV_PROTOTYPE(rptStressUnitValue, modE, pDisplayUnits->GetModEUnit(), true);
@@ -816,7 +779,7 @@ rptRcTable* write_strand_material(LPCTSTR strStrandType, const WBFL::Materials::
    return pTable;
 }
 
-void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level,const CSegmentKey& segmentKey)
+void write_strand_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level,const CSegmentKey& segmentKey)
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -855,7 +818,7 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    }
 }
 
-void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
+void write_rebar_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,const CSegmentKey& segmentKey,Uint16 level)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,  pDisplayUnits->GetStressUnit(),       true );
@@ -940,7 +903,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    }
 }
 
-void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& segmentKey)
+void write_handling(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    bool dolift = pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled();
@@ -975,7 +938,7 @@ void write_handling(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDis
    }
 }
 
-void write_girder_pt(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey)
+void write_girder_pt(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& girderKey)
 {
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(girderKey);
@@ -1044,7 +1007,7 @@ void write_girder_pt(rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* p
    }
 }
 
-void write_linear_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, IEAFDisplayUnits* pDisplayUnits)
+void write_linear_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false);
@@ -1091,7 +1054,7 @@ void write_linear_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, I
    }
 }
 
-void write_parabolic_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, IEAFDisplayUnits* pDisplayUnits)
+void write_parabolic_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false);

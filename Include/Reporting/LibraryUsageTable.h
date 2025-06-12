@@ -23,7 +23,7 @@
 
 #pragma once
 #include <Reporting\ReportingExp.h>
-#include <WBFLCore.h>
+
 #include <Reporter\Reporter.h>
 
 /*****************************************************************************
@@ -49,7 +49,7 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the table.
-   virtual rptRcTable* Build(IBroker* pBroker) const;
+   virtual rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker) const;
 
 
 private:

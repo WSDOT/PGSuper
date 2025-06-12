@@ -23,12 +23,8 @@
 #include "stdafx.h"
 #include "EditTimeline.h"
 #include "PGSuperDoc.h"
+#include <IFace/Tools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditTimeline::txnEditTimeline(const CTimelineManager& oldTimelineManager,const CTimelineManager& newTimelineManager)
 {
@@ -51,7 +47,7 @@ void txnEditTimeline::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditTimeline::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditTimeline::CreateClone() const
 {
    return std::make_unique<txnEditTimeline>(m_TimelineManager[0],m_TimelineManager[1]);
 }
@@ -73,8 +69,8 @@ bool txnEditTimeline::IsRepeatable() const
 
 void txnEditTimeline::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done

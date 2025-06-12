@@ -25,63 +25,13 @@
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class REPORTINGCLASS CPrestressRotationTable
 {
 public:
-   // GROUP: LIFECYCLE
+   CPrestressRotationTable() = default;
 
-   //------------------------------------------------------------------------
-   // Default constructor
-   CPrestressRotationTable();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CPrestressRotationTable(const CPrestressRotationTable& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CPrestressRotationTable();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CPrestressRotationTable& operator = (const CPrestressRotationTable& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType, IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CPrestressRotationTable& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CPrestressRotationTable& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   virtual rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType, IntervalIndexType intervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//

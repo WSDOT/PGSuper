@@ -208,16 +208,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="PGSuperDataExporter.cpp" />
+    <ClCompile Include="KDOTDataExporter.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="KDOTComponentInfo.rgs" />
     <None Include="KDOTExport.def" />
-    <None Include="PGSuperDataExporter.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="KDOTExport.rc">
@@ -230,7 +228,7 @@
     <ClInclude Include="KDOTComponentInfo.h" />
     <ClInclude Include="KDOTExport.h" />
     <ClInclude Include="KDOTExporter.hxx" />
-    <ClInclude Include="PGSuperDataExporter.h" />
+    <ClInclude Include="KDOTDataExporter.h" />
     <ClInclude Include="PGSuperInterfaces.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="StdAfx.h" />
@@ -244,9 +242,11 @@
     </CXX_Tree_Mapping_Rule>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Beams\Beams.vcxproj">
+      <Project>{3dbe87d2-ceed-457b-b345-7748084d947d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

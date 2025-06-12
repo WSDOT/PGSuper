@@ -22,13 +22,9 @@
 
 // PGSpliceGraphReporterImp.cpp : Implementation of CPGSpliceGrapherImp
 #include "stdafx.h"
+#include <IFace\Tools.h>
 #include "PGSpliceGrapherImp.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 //CPGSpliceGrapherImp::InitGraphBuilders
 //
@@ -43,57 +39,18 @@ static char THIS_FILE[] = __FILE__;
 
 HRESULT CPGSpliceGrapherImp::InitGraphBuilders()
 {
-   CGrapherBase::InitCommonGraphBuilders();
+   InitCommonGraphBuilders(m_pBroker);
    return S_OK;
 }
 
-STDMETHODIMP CPGSpliceGrapherImp::SetBroker(IBroker* pBroker)
+bool CPGSpliceGrapherImp::Init()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
-   CGrapherBase::SetBroker(pBroker);
-   return S_OK;
-}
-
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSpliceGrapherImp::RegInterfaces()
-{
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-
-   // this agent doesn't implement any interfaces... it just provides graphs
-
-   return S_OK;
-}
-
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSpliceGrapherImp::Init()
-{
-   /* Gets done at project load time */
    EAF_AGENT_INIT;
 
-   return AGENT_S_SECONDPASSINIT;
-}
-
-STDMETHODIMP CPGSpliceGrapherImp::Init2()
-{
    return InitGraphBuilders();
 }
 
-STDMETHODIMP CPGSpliceGrapherImp::GetClassID(CLSID* pCLSID)
+CLSID CPGSpliceGrapherImp::GetCLSID() const
 {
-   *pCLSID = CLSID_PGSpliceGraphingAgent;
-   return S_OK;
-}
-
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSpliceGrapherImp::Reset()
-{
-   return S_OK;
-}
-
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSpliceGrapherImp::ShutDown()
-{
-   EAF_AGENT_CLEAR_INTERFACE_CACHE;
-
-   return S_OK;
+   return CLSID_PGSpliceGraphingAgent;
 }

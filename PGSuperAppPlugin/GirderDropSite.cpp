@@ -96,8 +96,8 @@ void CGirderDropSite::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffec
       source->SetDataObject(pDataObject);
       draggable->OnDrop(source); // Rebuild the tool object from the data object
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker, IEditByUI, pEditByUI);
 
       // Was it the concentrated load tool?

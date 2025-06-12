@@ -26,7 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -68,13 +68,13 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the typical Deflections  table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                             bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const;
+   virtual rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+                             bool bDesign,bool bRating,bool bIndicateControllingLoad,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    //------------------------------------------------------------------------
    // Builds the Deflections  table for the optional deflection live load
-   virtual rptRcTable* BuildLiveLoadTable(IBroker* pBroker,const CGirderKey& girderKey,
-                                          IEAFDisplayUnits* pDisplayUnits) const;
+   virtual rptRcTable* BuildLiveLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                                          std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

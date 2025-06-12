@@ -29,18 +29,13 @@
 #include "GirderDescDlg.h"
 
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\PrecastSegmentData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include "GirderSegmentDlg.h"
 #include "ClosureJointDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CGirderGrid, CS_DBLCLKS, 0, 0, 0);
 const ROWCOL nEditCol = 1;

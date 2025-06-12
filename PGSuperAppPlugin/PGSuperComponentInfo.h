@@ -20,43 +20,22 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-
 #pragma once
-#include <EAF\EAFComponentInfo.h>
-#include "resource.h"
 
-class ATL_NO_VTABLE CPGSuperComponentInfo : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CPGSuperComponentInfo, &CLSID_PGSuperComponentInfo>,
-   public IEAFComponentInfo
+#include <EAF\ApplicationComponentInfo.h>
+
+class CPGSuperComponentInfo : public WBFL::EAF::ApplicationComponentInfo
 {
 public:
-   CPGSuperComponentInfo()
-   {
-   }
+   CPGSuperComponentInfo() = default;
 
-DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPERCOMPONENTINFO)
-DECLARE_CLASSFACTORY_SINGLETON(CPGSuperComponentInfo)
-
-BEGIN_COM_MAP(CPGSuperComponentInfo)
-   COM_INTERFACE_ENTRY(IEAFComponentInfo)
-END_COM_MAP()
-
-BEGIN_CONNECTION_POINT_MAP(CPGSuperComponentInfo)
-END_CONNECTION_POINT_MAP()
-
-   HRESULT FinalConstruct();
-   void FinalRelease();
-
-// IEAFComponentInfo
+// IComponentInfo
 public:
-   virtual BOOL Init(CEAFApp* pApp) override;
-   virtual void Terminate() override;
-   virtual CString GetName() override;
-   virtual CString GetDescription() override;
-   virtual HICON GetIcon() override;
-   virtual bool HasMoreInfo() override;
-   virtual void OnMoreInfo() override;
+   BOOL Init(CEAFApp* pApp) override;
+   void Terminate() override;
+   CString GetName() override;
+   CString GetDescription() override;
+   HICON GetIcon() override;
+   bool HasMoreInfo() override;
+   void OnMoreInfo() override;
 };
-
-OBJECT_ENTRY_AUTO(__uuidof(PGSuperComponentInfo), CPGSuperComponentInfo)

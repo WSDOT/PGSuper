@@ -21,11 +21,3 @@
 ///////////////////////////////////////////////////////////////////////
 
 // dllmain.h : Declaration of module class.
-
-class CTxDOTAgentModule : public CAtlDllModuleT< CTxDOTAgentModule >
-{
-public :
-	DECLARE_REGISTRY_APPID_RESOURCEID(IDR_TXDOTAGENT, "{B84B5AAB-22E8-41DB-B661-6238BC4D9EDD}")
-};
-
-extern class CTxDOTAgentModule _AtlModule;

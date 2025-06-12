@@ -31,7 +31,7 @@
 #include <MathEx.h>
 
 #include <EAF\EAFApp.h>
-#include <psgLib\LibraryEntryDifferenceItem.h>
+#include <PsgLib\DifferenceItem.h>
 
 // During the development of PGSplice, there was an overlap in version numbers between the
 // 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
@@ -187,7 +187,7 @@ bool SpecLibraryEntryImpl::LoadMe(WBFL::Library::LibraryEntry* pParent,WBFL::Sys
    return true;
 }
 
-bool SpecLibraryEntryImpl::Compare(const SpecLibraryEntryImpl* pOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool SpecLibraryEntryImpl::Compare(const SpecLibraryEntryImpl* pOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -228,7 +228,7 @@ bool SpecLibraryEntryImpl::Compare(const SpecLibraryEntryImpl* pOther, std::vect
       RETURN_ON_DIFFERENCE;
    }
 
-   if (!m_HaulingCriteria.Compare(pOther->m_HaulingCriteria,*this,vDifferences,bReturnOnFirstDifference))
+   if (!m_HaulingCriteria.Compare(pOther->m_HaulingCriteria,this->GetSpecificationCriteria().GetEdition(), vDifferences, bReturnOnFirstDifference))
    {
       RETURN_ON_DIFFERENCE;
    }
@@ -467,7 +467,7 @@ void SpecLibraryEntryImpl::SetLiftingCriteria(const LiftingCriteria& criteria)
    m_LiftingCriteria = criteria;
 }
 
-const HaulingCriteria& SpecLibraryEntryImpl::GetHaulingCriteria() const
+const HaulingCriteria & SpecLibraryEntryImpl::GetHaulingCriteria() const
 {
    return m_HaulingCriteria;
 }
@@ -687,7 +687,7 @@ void SpecLibraryEntryImpl::SetBearingCriteria(const BearingCriteria& criteria)
    m_BearingCriteria = criteria;
 }
 
-void SpecLibraryEntryImpl::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void SpecLibraryEntryImpl::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    m_SpecificationCriteria.Report(pChapter,pDisplayUnits);
    m_SectionPropertiesCriteria.Report(pChapter,pDisplayUnits);
@@ -4216,7 +4216,7 @@ bool SpecLibraryEntryImpl::LegacyLoadMe(WBFL::Library::LibraryEntry* pParent, WB
       m_SlabOffsetCriteria.SlabOffsetTolerance = m_SpecificationCriteria.Units == WBFL::LRFD::BDSManager::Units::US ? WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch) : WBFL::Units::ConvertToSysUnits(5.0, WBFL::Units::Measure::Millimeter);
    }
 
-   // Bearings was added in verison 79
+   // Bearings was added in version 79
    if (78 < version)
    {
       if (!pLoad->BeginUnit(_T("Bearings")))

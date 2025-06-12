@@ -23,13 +23,10 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\EditBridge.h>
 #include <EAF\EAFUtilities.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <IFace/Tools.h>
+#include <IFace\Project.h>
 
 txnEditBridge::txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
    pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
@@ -74,8 +71,7 @@ void txnEditBridge::Undo()
 
 void txnEditBridge::Execute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    GET_IFACE2(pBroker,IEnvironment, pEnvironment );
@@ -98,7 +94,7 @@ void txnEditBridge::Execute(int i)
    pEvents->FirePendingEvents();
 }
 
-std::unique_ptr<CEAFTransaction> txnEditBridge::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditBridge::CreateClone() const
 {
    if ( m_bBridgeDescOnly )
    {

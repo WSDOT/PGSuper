@@ -30,15 +30,10 @@
 #include <IFace\Bridge.h>
 #include <IFace\Selection.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include "LocationGraphController.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNAMIC(CLocationGraphController,CEAFGraphControlWindow)
 
@@ -73,7 +68,7 @@ BOOL CLocationGraphController::OnInitDialog()
 {
    CEAFGraphControlWindow::OnInitDialog();
 
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    // Set initial value based on the current selection
    GET_IFACE(ISelection,pSelection);

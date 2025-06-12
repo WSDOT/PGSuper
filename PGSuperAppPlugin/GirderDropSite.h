@@ -52,8 +52,8 @@ private:
    template <class T>
    void InitLoad(T& load) const
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
       load.m_SpanKey = m_SpanKey;

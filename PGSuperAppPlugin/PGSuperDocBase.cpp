@@ -35,15 +35,15 @@
 
 #include "PGSuperDocBase.h"
 #include "PGSuperUnits.h"
-#include "PGSuperBaseAppPlugin.h"
-#include "PGSuperAppPlugin.h"
-#include "PGSuperProjectImporterAppPlugin.h"
+#include "PGSPluginAppBase.h"
+#include "PGSuperPluginApp.h"
+#include "PGSuperProjectImporterPluginApp.h"
 #include "PGSuperDocTemplateBase.h"
 
 #include "BridgeSectionView.h"
 #include "BridgePlanView.h"
 
-#include <WBFLCore_i.c>
+
 #include <WBFLTools_i.c>
 #include <WBFLUnitServer_i.c>
 #include <WBFLGeometry_i.c>
@@ -52,6 +52,7 @@
 #include <PsgLib\PsgLib.h>
 #include <PsgLib\BeamFamilyManager.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Test1250.h>
 #include <IFace\DrawBridgeSettings.h>
 #include <IFace\Artifact.h>
@@ -67,7 +68,7 @@
 #include <IFace\ShearCapacity.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace/Limits.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Intervals.h>
@@ -93,7 +94,7 @@
 
 #include "Hints.h"
 
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
 #include "PGSuperException.h"
 #include <System\FileStream.h>
@@ -145,13 +146,13 @@
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderDesignArtifact.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\DesignConfigUtil.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
 
 
@@ -186,11 +187,6 @@
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\MacroTxn.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // cause the resource control values to be defined
 #define APSTUDIO_INVOKED
@@ -209,7 +205,7 @@ static bool DoesFileExist(const CString& filname);
 // Function to update prestress force after editing strands
 static void UpdatePrestressForce(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, 
                                  CPrecastSegmentData& newSegmentData,const CPrecastSegmentData& oldSegmentData, 
-                                 IPretensionForce* pPrestress)
+                                 std::shared_ptr<IPretensionForce> pPrestress)
 {
 
       // If going from no strands - always compute pjack automatically
@@ -329,14 +325,12 @@ m_bAutoCalcEnabled(true)
 
    m_bShowProjectProperties = true;
 
-   m_pPGSuperDocProxyAgent = nullptr;
-
    m_pPluginMgr = nullptr;
 
    m_CallbackID = 0;
 
-   SetCustomReportHelpID(eafTypes::crhCustomReport,IDH_CUSTOM_REPORT);
-   SetCustomReportHelpID(eafTypes::crhFavoriteReport,IDH_FAVORITE_REPORT);
+   SetCustomReportHelpID(WBFL::EAF::CustomReportHelp::CustomReport,IDH_CUSTOM_REPORT);
+   SetCustomReportHelpID(WBFL::EAF::CustomReportHelp::FavoriteReport,IDH_FAVORITE_REPORT);
    SetCustomReportDefinitionHelpID(IDH_CUSTOM_REPORT_DEFINITION);
 
 
@@ -350,7 +344,7 @@ m_bAutoCalcEnabled(true)
    m_bClearingSelection = false;
 
    std::unique_ptr<pgsTxnManagerFactory> txnMgrFactory(std::make_unique<pgsTxnManagerFactory>());
-   CEAFTxnManager::SetTransactionManagerFactory(std::move(txnMgrFactory));
+   WBFL::EAF::TxnManager::SetTransactionManagerFactory(std::move(txnMgrFactory));
 }
 
 CPGSDocBase::~CPGSDocBase()
@@ -484,7 +478,7 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
    if ( dlg.DoModal() == IDOK )
    {
 
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
                                               oldExposureCondition, dlg.m_EnvironmentalPage.m_Exposure == 0 ? pgsTypes::ExposureCondition::Normal : pgsTypes::ExposureCondition::Severe,
                                               oldClimateCondition, dlg.m_EnvironmentalPage.m_Climate == 0 ? pgsTypes::ClimateCondition::Cold : pgsTypes::ClimateCondition::Moderate,
                                               oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity));
@@ -493,7 +487,7 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -526,11 +520,11 @@ bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
 
    if ( dlg.DoModal() == IDOK )
    {
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditPier>(pierIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditPier>(pierIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -564,12 +558,12 @@ bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 
    if ( dlg.DoModal() == IDOK )
    {
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditSpan>(spanIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditSpan>(spanIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
 
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -618,7 +612,7 @@ bool CPGSDocBase::DoEditBearing()
       // dialog modifies descr
       dlg.ModifyBridgeDescr(&newBridgeDesc);
 
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,     newBridgeDesc,
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,     newBridgeDesc,
                                               oldExposureCondition, oldExposureCondition,
                                               oldClimateCondition, oldClimateCondition,
                                               oldRelHumidity,       oldRelHumidity));
@@ -657,7 +651,7 @@ bool CPGSDocBase::DoEditHaunch()
          auto oldClimateCondition = pEnvironment->GetClimateCondition();
          Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
 
-         std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,dlg.m_BridgeDesc,
+         std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,dlg.m_BridgeDesc,
             oldExposureCondition,oldExposureCondition,
             oldClimateCondition, oldClimateCondition,
             oldRelHumidity,oldRelHumidity));
@@ -1208,7 +1202,7 @@ bool CPGSDocBase::EditEffectiveFlangeWidth()
    strQuestion += _T("\r\n\r\nSelect a method for addressing cases when the limits are exeeded:");
    CString strResponses(_T("Stop analysis if structure violates these limits\nIgnore these limits"));
 
-   CEAFHelpHandler helpHandler(GetDocumentationSetName(), IDH_EFFECTIVE_FLANGE_WIDTH);
+   WBFL::EAF::HelpHandler helpHandler(GetDocumentationSetName(), IDH_EFFECTIVE_FLANGE_WIDTH);
    int choice = pEFW->IgnoreEffectiveFlangeWidthLimits() ? 1 : 0;
    int new_choice = AfxChoose(_T("Effective Flange Width"), strQuestion, strResponses, choice, TRUE, &helpHandler);
    if (choice != new_choice && 0 <= new_choice)
@@ -1475,7 +1469,7 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //CEAFBrokerDocument::SaveTheDocument(templateFileName);
 }
 
-BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
+BOOL CPGSDocBase::UpdateTemplates(std::shared_ptr<IEAFProgress> pProgress,LPCTSTR lpszDir)
 {
    CFileFind dir_finder;
    BOOL bMoreDir = dir_finder.FindFile(CString(lpszDir)+_T("\\*"));
@@ -1518,8 +1512,7 @@ BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
 
       m_pBroker->Reset();
 
-      CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pInit(m_pBroker);
-      pInit->InitAgents();
+      m_pBroker->InitAgents();
    }
 
    return TRUE;
@@ -1528,9 +1521,8 @@ BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
 BOOL CPGSDocBase::UpdateTemplates()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSuper = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CString workgroup_folder;
    pPGSuper->GetTemplateFolders(workgroup_folder);
@@ -1540,16 +1532,13 @@ BOOL CPGSDocBase::UpdateTemplates()
       return FALSE;
    }
 
-   GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    // we want the template files to be "clean" with only PGSuper data in them
    // Tell the broker to not save data from any missing extension agents
-   CComQIPtr<IBrokerPersist2> broker_persist(m_pBroker);
-   ATLASSERT(broker_persist);
-   VARIANT_BOOL bFlag;
-   broker_persist->GetSaveMissingAgentDataFlag(&bFlag);
-   broker_persist->SetSaveMissingAgentDataFlag(VARIANT_FALSE);
+   auto bFlag = m_pBroker->GetSaveMissingAgentDataFlag();
+   m_pBroker->SetSaveMissingAgentDataFlag(false);
 
    // we don't want the program to stop and prompt us about saving
    // a backup copy of the file before it's format is updated.
@@ -1559,7 +1548,7 @@ BOOL CPGSDocBase::UpdateTemplates()
    UpdateTemplates(pProgress,workgroup_folder);
 
    // restore the flag to its previous state
-   broker_persist->SetSaveMissingAgentDataFlag(bFlag);
+   m_pBroker->SetSaveMissingAgentDataFlag(bFlag);
 
 
    return FALSE; // didn't really open a file
@@ -2011,7 +2000,7 @@ void CPGSDocBase::OnCloseDocument()
 {
    CEAFBrokerDocument::OnCloseDocument();
 
-   CBeamFamilyManager::Reset();
+   PGS::Library::BeamFamilyManager::Reset();
 }
 
 BOOL CPGSDocBase::DoSave(LPCTSTR lpszPathName, BOOL bReplace)
@@ -2056,7 +2045,7 @@ void CPGSDocBase::OnCreateFinalize()
 
    // Register callbacks for status items
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   m_scidInformationalError  = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
+   m_scidInformationalError  = pStatusCenter->RegisterCallback(std::make_shared<pgsInformationalStatusCallback>(WBFL::EAF::StatusSeverityType::Warning)); 
    m_StatusGroupID = pStatusCenter->CreateStatusGroupID();
 
 
@@ -2066,9 +2055,9 @@ void CPGSDocBase::OnCreateFinalize()
    //CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    //CComPtr<IEAFAppPlugin> pAppPlugin;
    //pTemplate->GetPlugin(&pAppPlugin);
-   //CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   //CPGSPluginAppBase* pPGSuper = dynamic_cast<CPGSPluginAppBase*>(pAppPlugin.p);
 
-   //// Transfer report favorites and custom reports data from CPGSAppPluginBase to CEAFBrokerDocument (this)
+   //// Transfer report favorites and custom reports data from CPGSPluginAppBase to CEAFBrokerDocument (this)
    //bool doDisplayFavorites = pPGSuper->GetDoDisplayFavoriteReports();
    //std::vector<std::_tstring> Favorites = pPGSuper->GetFavoriteReports();
 
@@ -2147,15 +2136,14 @@ BOOL CPGSDocBase::CreateBroker()
 
    // map old PGSuper (pre version 3.0) CLSID to current CLSID
    // CLSID's were changed so that pre version 3.0 installations could co-exist with 3.0 and later installations
-   CComQIPtr<ICLSIDMap> clsidMap(m_pBroker);
-   clsidMap->AddCLSID(CComBSTR("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),CComBSTR("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
-   clsidMap->AddCLSID(CComBSTR("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),CComBSTR("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
-   clsidMap->AddCLSID(CComBSTR("{B455A760-6DAF-11D2-8EE9-006097DF3C68}"),CComBSTR("{73922319-9243-4974-BA54-CF22593EC9C4}")); // Eng Agent
-   clsidMap->AddCLSID(CComBSTR("{3DA9045D-7C49-4591-AD14-D560E7D95581}"),CComBSTR("{B4639189-ED38-4A68-8A18-38026202E9DE}")); // Graph Agent
-   clsidMap->AddCLSID(CComBSTR("{59D50426-265C-11D2-8EB0-006097DF3C68}"),CComBSTR("{256B5B5B-762C-4693-8802-6B0351290FEA}")); // Project Agent
-   clsidMap->AddCLSID(CComBSTR("{3D5066F2-27BE-11D2-8EB2-006097DF3C68}"),CComBSTR("{1FFED5EC-7A32-4837-A1F1-99481AFF2825}")); // PGSuper Report Agent
-   clsidMap->AddCLSID(CComBSTR("{EC915470-6E76-11D2-8EEB-006097DF3C68}"),CComBSTR("{F510647E-1F4F-4FEF-8257-6914DE7B07C8}")); // Spec Agent
-   clsidMap->AddCLSID(CComBSTR("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),CComBSTR("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
+   m_pBroker->AddMappedCLSID(_T("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),_T("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
+   m_pBroker->AddMappedCLSID(_T("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),_T("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
+   m_pBroker->AddMappedCLSID(_T("{B455A760-6DAF-11D2-8EE9-006097DF3C68}"),_T("{73922319-9243-4974-BA54-CF22593EC9C4}")); // Eng Agent
+   m_pBroker->AddMappedCLSID(_T("{3DA9045D-7C49-4591-AD14-D560E7D95581}"),_T("{B4639189-ED38-4A68-8A18-38026202E9DE}")); // Graph Agent
+   m_pBroker->AddMappedCLSID(_T("{59D50426-265C-11D2-8EB0-006097DF3C68}"),_T("{256B5B5B-762C-4693-8802-6B0351290FEA}")); // Project Agent
+   m_pBroker->AddMappedCLSID(_T("{3D5066F2-27BE-11D2-8EB2-006097DF3C68}"),_T("{1FFED5EC-7A32-4837-A1F1-99481AFF2825}")); // PGSuper Report Agent
+   m_pBroker->AddMappedCLSID(_T("{EC915470-6E76-11D2-8EEB-006097DF3C68}"),_T("{F510647E-1F4F-4FEF-8257-6914DE7B07C8}")); // Spec Agent
+   m_pBroker->AddMappedCLSID(_T("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),_T("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
 
    return TRUE;
 }
@@ -2278,9 +2266,8 @@ HRESULT CPGSDocBase::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFile
 CString CPGSDocBase::GetRootNodeName()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSuper = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
    return pPGSuper->GetAppName();
 }
 
@@ -2294,7 +2281,7 @@ HRESULT CPGSDocBase::WriteTheDocument(IStructuredSave* pStrSave)
    // before the standard broker document persistence, write out the version
    // number of the application that created this document
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   CPGSuperPluginAppApp* pApp = (CPGSuperPluginAppApp*)AfxGetApp();
    CString strAppVersion = pApp->GetVersion(true);
 
    HRESULT hr = pStrSave->put_Property(_T("Version"),CComVariant(strAppVersion));
@@ -2388,11 +2375,10 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
 
                   // Save the default option to the registry
                   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-                  CComPtr<IEAFAppPlugin> pAppPlugin;
-                  pTemplate->GetPlugin(&pAppPlugin);
-                  CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+                  auto pluginApp = pTemplate->GetPluginApp();
+                  auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
-                  CPGSuperAppPluginApp* pPluginApp = (CPGSuperAppPluginApp*)AfxGetApp();
+                  CPGSuperPluginAppApp* pPluginApp = (CPGSuperPluginAppApp*)AfxGetApp();
 
                   CAutoRegistry autoReg(pPGSBase->GetAppName(), pPluginApp);
                   pPluginApp->WriteProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), dlg.m_DefaultCopyOption);
@@ -2412,9 +2398,8 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
          // we aren't prompting because the "don't show me again" is enabled.... 
          // get the default action from the registry
          CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-         CComPtr<IEAFAppPlugin> pAppPlugin;
-         pTemplate->GetPlugin(&pAppPlugin);
-         CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+         auto pluginApp = pTemplate->GetPluginApp();
+         auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
          CAutoRegistry autoReg(pPGSBase->GetAppName());
          CWinApp* pApp = AfxGetApp();
          int value = pApp->GetProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), FSW_COPY);
@@ -2451,7 +2436,7 @@ void CPGSDocBase::OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup
    pLog->LogMessage( msg );
    pLog->LogMessage(_T(""));
 
-   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)EAFGetApp()->GetLogFileName();
 
    AfxFormatString2( msg, IDS_E_SAVERECOVER1, lpszPathName, CString(strLogFileName.c_str()) );
    AfxMessageBox(msg );
@@ -2474,7 +2459,7 @@ void CPGSDocBase::OnErrorRenamingSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBac
    pLog->LogMessage( msg );
    pLog->LogMessage(_T(""));
 
-   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)EAFGetApp()->GetLogFileName();
 
    AfxFormatString2( msg, IDS_E_SAVERECOVER2, lpszPathName, CString(strLogFileName.c_str()) );
    AfxMessageBox( msg );
@@ -2501,9 +2486,8 @@ void CPGSDocBase::Dump(CDumpContext& dc) const
 BOOL CPGSDocBase::Init()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSuper = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    // must happen before calling base class Init()
    m_pPluginMgr = CreatePluginManager();
@@ -2518,7 +2502,7 @@ BOOL CPGSDocBase::Init()
    // is executed in its own thread... Need to add some
    // code that indicates if the call fails.. then throw
    // a shut down exception
-   if ( FAILED(CBeamFamilyManager::Init(GetBeamFamilyCategoryID())) )
+   if ( FAILED(PGS::Library::BeamFamilyManager::Init(GetBeamFamilyCategoryID())) )
    {
       return FALSE;
    }
@@ -2562,27 +2546,23 @@ BOOL CPGSDocBase::Init()
    return TRUE;
 }
 
-BOOL CPGSDocBase::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
+std::pair<bool, WBFL::EAF::AgentErrors> CPGSDocBase::LoadSpecialAgents()
 {
-   if ( !CEAFBrokerDocument::LoadSpecialAgents(pBrokerInit) )
-   {
-      return FALSE;
-   }
-
-   CComObject<CPGSuperDocProxyAgent>* pDocProxyAgent;
-   CComObject<CPGSuperDocProxyAgent>::CreateInstance(&pDocProxyAgent);
-   m_pPGSuperDocProxyAgent = dynamic_cast<CPGSuperDocProxyAgent*>(pDocProxyAgent);
-   m_pPGSuperDocProxyAgent->SetDocument( this );
-
-   CComPtr<IAgentEx> pAgent(m_pPGSuperDocProxyAgent);
+   auto errors = CEAFBrokerDocument::LoadSpecialAgents();
    
-   HRESULT hr = pBrokerInit->AddAgent( pAgent );
-   if ( FAILED(hr) )
+   m_pPGSuperDocProxyAgent = std::make_shared<CPGSuperDocProxyAgent>(this);
+   auto result = m_pBroker->AddAgent(m_pPGSuperDocProxyAgent);
+   if (result.first == false)
    {
-      return FALSE;
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      result.second.component.dll = AfxGetApp()->m_pszExeName;
+      result.second.reason += _T(" - could not add PGSuperDocProxyAgent to broker");
+      errors.second.push_back(result.second);
    }
 
-   return TRUE;
+   errors.first = errors.second.empty();
+
+   return errors;
 }
 
 void CPGSDocBase::OnFileProjectProperties() 
@@ -2686,7 +2666,7 @@ void CPGSDocBase::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 
    CString msg;
    CString msg2;
-   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)EAFGetApp()->GetLogFileName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -2736,7 +2716,7 @@ void CPGSDocBase::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 
    CString msg;
    CString msg2;
-   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)EAFGetApp()->GetLogFileName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -2782,7 +2762,7 @@ void CPGSDocBase::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
 
    CString msg;
    CString msg2;
-   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)EAFGetApp()->GetLogFileName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -2997,10 +2977,10 @@ void CPGSDocBase::OnRatingSpec()
 
       if ( oldData != newData || pExtensionTxn )
       {
-         std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditRatingCriteria>(oldData,newData));
+         std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditRatingCriteria>(oldData,newData));
          if ( pExtensionTxn )
          {
-            std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+            std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
             pMacro->Name(pTxn->Name());
             pMacro->AddTransaction(std::move(pTxn));
             pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -3027,9 +3007,8 @@ void CPGSDocBase::OnUpdateAutoCalc(CCmdUI* pCmdUI)
 void CPGSDocBase::OnExportToTemplateFile() 
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSuper = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3138,16 +3117,16 @@ void CPGSDocBase::OnLoadsLoadModifiers()
    loadModifiers.RedundancyLevel   = pLoadModifiers->GetRedundancyLevel();
    loadModifiers.RedundancyFactor  = pLoadModifiers->GetRedundancyFactor();
 
-   CEAFHelpHandler helpHandler(GetDocumentationSetName(),IDH_DIALOG_LOADMODIFIERS);
+   WBFL::EAF::HelpHandler helpHandler(GetDocumentationSetName(),IDH_DIALOG_LOADMODIFIERS);
    CLoadModifiersDlg dlg;
    dlg.SetHelpData( &helpHandler, &helpHandler, &helpHandler );
 
    dlg.SetLoadModifiers( loadModifiers.DuctilityFactor,
-                         ((loadModifiers.DuctilityLevel == ILoadModifiers::High)  ? 0 : (loadModifiers.DuctilityLevel  == ILoadModifiers::Normal ? 1 : 2)),
+                         ((loadModifiers.DuctilityLevel == ILoadModifiers::Level::High)  ? 0 : (loadModifiers.DuctilityLevel  == ILoadModifiers::Level::Normal ? 1 : 2)),
                          loadModifiers.RedundancyFactor,
-                         ((loadModifiers.RedundancyLevel == ILoadModifiers::High) ? 0 : (loadModifiers.RedundancyLevel == ILoadModifiers::Normal ? 1 : 2)),
+                         ((loadModifiers.RedundancyLevel == ILoadModifiers::Level::High) ? 0 : (loadModifiers.RedundancyLevel == ILoadModifiers::Level::Normal ? 1 : 2)),
                          loadModifiers.ImportanceFactor,
-                         ((loadModifiers.ImportanceLevel == ILoadModifiers::High) ? 0 : (loadModifiers.ImportanceLevel == ILoadModifiers::Normal ? 1 : 2))
+                         ((loadModifiers.ImportanceLevel == ILoadModifiers::Level::High) ? 0 : (loadModifiers.ImportanceLevel == ILoadModifiers::Level::Normal ? 1 : 2))
                         );
 
    if ( dlg.DoModal() == IDOK )
@@ -3159,9 +3138,9 @@ void CPGSDocBase::OnLoadsLoadModifiers()
                            &newLoadModifiers.RedundancyFactor,&r,
                            &newLoadModifiers.ImportanceFactor,&i);
 
-      newLoadModifiers.DuctilityLevel  = (d == 0 ? ILoadModifiers::High : (d == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
-      newLoadModifiers.RedundancyLevel = (r == 0 ? ILoadModifiers::High : (r == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
-      newLoadModifiers.ImportanceLevel = (i == 0 ? ILoadModifiers::High : (i == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
+      newLoadModifiers.DuctilityLevel  = (d == 0 ? ILoadModifiers::Level::High : (d == 1 ? ILoadModifiers::Level::Normal : ILoadModifiers::Level::Low));
+      newLoadModifiers.RedundancyLevel = (r == 0 ? ILoadModifiers::Level::High : (r == 1 ? ILoadModifiers::Level::Normal : ILoadModifiers::Level::Low));
+      newLoadModifiers.ImportanceLevel = (i == 0 ? ILoadModifiers::Level::High : (i == 1 ? ILoadModifiers::Level::Normal : ILoadModifiers::Level::Low));
 
       std::unique_ptr<txnEditLoadModifiers> pTxn(std::make_unique<txnEditLoadModifiers>(loadModifiers,newLoadModifiers));
       GET_IFACE(IEAFTransactions,pTransactions);
@@ -3214,9 +3193,8 @@ bool CPGSDocBase::LoadMasterLibrary()
 
    // Load the master library
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSuper = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
 
    const auto& strPublisher = pPGSuper->GetMasterLibraryPublisher();
@@ -3245,7 +3223,7 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
    bool bSuccess = false;
    while(!bSuccess)
    {
-      eafTypes::UnitMode unitMode;
+      WBFL::EAF::UnitMode unitMode;
       HRESULT hr = pgslibLoadLibrary(strFile,&m_LibMgr,&unitMode);
       if ( FAILED(hr) )
       {
@@ -3258,9 +3236,8 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
          if ( AfxMessageBox(err_msg,MB_YESNO|MB_ICONSTOP) == IDYES )
          {
             CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-            CComPtr<IEAFAppPlugin> pAppPlugin;
-            pTemplate->GetPlugin(&pAppPlugin);
-            CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+            auto pluginApp = pTemplate->GetPluginApp();
+            auto pPGSuper = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
             if (pPGSuper->UpdateProgramSettings())
             {
                // the configuration was updated... need to start over
@@ -3312,8 +3289,7 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
       std::_tstring strName = keyList[i];
       const WBFL::Library::LibraryEntry* pEntry = gdrLib.GetEntry(strName.c_str());
       const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pEntry);
-      CComPtr<IBeamFactory> beamFactory;
-      pGdrEntry->GetBeamFactory(&beamFactory);
+      auto beamFactory = pGdrEntry->GetBeamFactory();
       CLSID clsid = beamFactory->GetFamilyCLSID();
 
       HRESULT result = pICatInfo->IsClassOfCategories(clsid,1,&catid,0,nullptr);
@@ -3942,25 +3918,19 @@ BOOL CPGSDocBase::GetStatusBarMessageString(UINT nID,CString& rMessage) const
 
    CPGSDocBase* pThis = const_cast<CPGSDocBase*>(this);
    
-   CComPtr<IPGSDataExporter> exporter;
-   pThis->m_pPluginMgr->GetExporter(nID,false,&exporter);
+   auto exporter = pThis->m_pPluginMgr->GetExporter(nID,false);
    if ( exporter )
    {
-      CComBSTR bstr;
-      exporter->GetCommandHintText(&bstr);
-      rMessage = OLE2T(bstr);
+      rMessage = exporter->GetCommandHintText();
       rMessage.Replace('\n','\0');
 
       return TRUE;
    }
    
-   CComPtr<IPGSDataImporter> importer;
-   pThis->m_pPluginMgr->GetImporter(nID,false,&importer);
+   auto importer = pThis->m_pPluginMgr->GetImporter(nID,false);
    if ( importer )
    {
-      CComBSTR bstr;
-      importer->GetCommandHintText(&bstr);
-      rMessage = OLE2T(bstr);
+      rMessage = importer->GetCommandHintText();
       rMessage.Replace('\n','\0');
 
       return TRUE;
@@ -3982,13 +3952,10 @@ BOOL CPGSDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
 
    CPGSDocBase* pThis = const_cast<CPGSDocBase*>(this);
    
-   CComPtr<IPGSDataExporter> exporter;
-   pThis->m_pPluginMgr->GetExporter(nID,false,&exporter);
+   auto exporter = pThis->m_pPluginMgr->GetExporter(nID,false);
    if ( exporter )
    {
-      CComBSTR bstr;
-      exporter->GetCommandHintText(&bstr);
-      CString string( OLE2T(bstr) );
+      auto string = exporter->GetCommandHintText();
       int pos = string.Find('\n');
       if ( 0 < pos )
       {
@@ -3998,13 +3965,10 @@ BOOL CPGSDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
       return TRUE;
    }
    
-   CComPtr<IPGSDataImporter> importer;
-   pThis->m_pPluginMgr->GetImporter(nID,false,&importer);
+   auto importer = pThis->m_pPluginMgr->GetImporter(nID,false);
    if ( importer )
    {
-      CComBSTR bstr;
-      importer->GetCommandHintText(&bstr);
-      CString string( OLE2T(bstr) );
+      auto string = importer->GetCommandHintText();
       int pos = string.Find('\n');
       if ( 0 < pos )
       {
@@ -4551,25 +4515,25 @@ BOOL CPGSDocBase::OnCopyGirderPropsTb(NMHDR* pnmhdr,LRESULT* plr)
    CMenu* pMenu = menu.GetSubMenu(0);
    pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
 
-   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+   auto contextMenu = WBFL::EAF::Menu::CreateMenu(pMenu->Detach(),GetPluginCommandManager());
 
    int i = 0;
    for (const auto& iCallBack : m_CopyGirderPropertiesCallbacks)
    {
       UINT nCmd = i++ + FIRST_COPY_GIRDER_PLUGIN;
       CString copyName = _T("Copy ") + CString(iCallBack.second->GetName());
-      contextMenu.AppendMenu(nCmd, copyName, nullptr);
+      contextMenu->AppendMenu(nCmd, copyName, nullptr);
    }
 
    GET_IFACE(IEAFToolbars,pToolBars);
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_COPY_GIRDER_PROPS,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
    CPoint point(rect.left,rect.bottom);
    pToolBar->ClientToScreen(&point);
-   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+   contextMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
 
    return TRUE;
 }
@@ -4596,26 +4560,26 @@ BOOL CPGSDocBase::OnCopyPierPropsTb(NMHDR* pnmhdr,LRESULT* plr)
    CMenu* pMenu = menu.GetSubMenu(0);
    pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
 
-   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+   auto contextMenu = WBFL::EAF::Menu::CreateMenu(pMenu->Detach(),GetPluginCommandManager());
 
    int i = 0;
    for (const auto& ICallBack : m_CopyPierPropertiesCallbacks)
    {
       UINT nCmd = i++ + FIRST_COPY_PIER_PLUGIN;
       CString copyName = _T("Copy ") + CString(ICallBack.second->GetName());
-      contextMenu.AppendMenu(nCmd, copyName, nullptr);
+      contextMenu->AppendMenu(nCmd, copyName, nullptr);
    }
 
 
    GET_IFACE(IEAFToolbars,pToolBars);
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_COPY_PIER_PROPS,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
    CPoint point(rect.left,rect.bottom);
    pToolBar->ClientToScreen(&point);
-   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+   contextMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
 
    return TRUE;
 }
@@ -4659,20 +4623,20 @@ BOOL CPGSDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO
 
 void CPGSDocBase::PopulateReportMenu()
 {
-   CEAFMenu* pMainMenu = GetMainMenu();
+   auto pMainMenu = GetMainMenu();
    if (pMainMenu != nullptr)
    {
        UINT viewPos = pMainMenu->FindMenuItem(_T("&View"));
        ASSERT(0 <= viewPos);
 
-       CEAFMenu* pViewMenu = pMainMenu->GetSubMenu(viewPos);
+       auto pViewMenu = pMainMenu->GetSubMenu(viewPos);
        ASSERT(pViewMenu != nullptr);
 
        UINT reportsPos = pViewMenu->FindMenuItem(_T("&Reports"));
        ASSERT(0 <= reportsPos);
 
        // Get the reports menu
-       CEAFMenu* pReportsMenu = pViewMenu->GetSubMenu(reportsPos);
+       auto pReportsMenu = pViewMenu->GetSubMenu(reportsPos);
        ASSERT(pReportsMenu != nullptr);
 
        CEAFBrokerDocument::PopulateReportMenu(pReportsMenu);
@@ -4681,19 +4645,19 @@ void CPGSDocBase::PopulateReportMenu()
 
 void CPGSDocBase::PopulateGraphMenu()
 {
-   CEAFMenu* pMainMenu = GetMainMenu();
+   auto pMainMenu = GetMainMenu();
 
    UINT viewPos = pMainMenu->FindMenuItem(_T("&View"));
    ASSERT( 0 <= viewPos );
 
-   CEAFMenu* pViewMenu = pMainMenu->GetSubMenu(viewPos);
+   auto pViewMenu = pMainMenu->GetSubMenu(viewPos);
    ASSERT( pViewMenu != nullptr );
 
    UINT graphsPos = pViewMenu->FindMenuItem(_T("Gr&aphs"));
    ASSERT( 0 <= graphsPos );
 
    // Get the graphs menu
-   CEAFMenu* pGraphMenu = pViewMenu->GetSubMenu(graphsPos);
+   auto pGraphMenu = pViewMenu->GetSubMenu(graphsPos);
    ASSERT(pGraphMenu != nullptr);
 
    CEAFBrokerDocument::PopulateGraphMenu(pGraphMenu);
@@ -4741,9 +4705,8 @@ void CPGSDocBase::LoadDocumentSettings()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    {
       CWinApp* pApp = AfxGetApp();
@@ -4837,9 +4800,8 @@ void CPGSDocBase::SaveDocumentSettings()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    {
       CWinApp* pApp = AfxGetApp();
@@ -4881,12 +4843,12 @@ CString CPGSDocBase::GetDocumentationRootLocation()
    return pApp->GetDocumentationRootLocation();
 }
 
-eafTypes::HelpResult CPGSDocBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL)
+std::pair<WBFL::EAF::HelpResult,CString> CPGSDocBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID)
 {
    // do the normal work first
-   eafTypes::HelpResult helpResult = CEAFBrokerDocument::GetDocumentLocation(lpszDocSetName,nHID,strURL);
+   auto helpResult = CEAFBrokerDocument::GetDocumentLocation(lpszDocSetName,nHID);
 
-   if ( helpResult == eafTypes::hrOK || helpResult== eafTypes::hrTopicNotFound )
+   if ( helpResult.first == WBFL::EAF::HelpResult::OK || helpResult.first == WBFL::EAF::HelpResult::TopicNotFound )
    {
       // if we have a good help document location or if the doc set was found but the HID was bad,
       // we are done... return the result
@@ -4894,28 +4856,13 @@ eafTypes::HelpResult CPGSDocBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UIN
    }
 
    // Check our plugins
-   return m_pPluginMgr->GetDocumentLocation(lpszDocSetName,nHID,strURL);
-}
-
-void CPGSDocBase::OnLogFileOpened()
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CEAFBrokerDocument::OnLogFileOpened();
-
-   GET_IFACE(IEAFProjectLog,pLog);
-   CString strMsg;
-
-   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
-   strMsg.Format(_T("PGSuper version %s"),pApp->GetVersion(false).GetBuffer(100));
-   pLog->LogMessage(strMsg);
+   return m_pPluginMgr->GetDocumentLocation(lpszDocSetName,nHID);
 }
 
 void CPGSDocBase::BrokerShutDown()
 {
+   m_pPGSuperDocProxyAgent = nullptr; // this must happen before base class BrokerShutDown()
    CEAFBrokerDocument::BrokerShutDown();
-
-   m_pPGSuperDocProxyAgent = nullptr;
 }
 
 void CPGSDocBase::OnStatusChanged()
@@ -4944,9 +4891,8 @@ CString CPGSDocBase::GetToolbarSectionName()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
    CAutoRegistry autoReg(pPGSBase->GetAppName());
 
    CString strToolbarSection;
@@ -4957,7 +4903,7 @@ CString CPGSDocBase::GetToolbarSectionName()
 
 void CPGSDocBase::OnUpdateViewGraphs(CCmdUI* pCmdUI)
 {
-   GET_IFACE(IGraphManager,pGraphMgr);
+   GET_IFACE(IEAFGraphManager,pGraphMgr);
    pCmdUI->Enable( 0 < pGraphMgr->GetGraphBuilderCount() );
 }
 
@@ -4978,27 +4924,27 @@ BOOL CPGSDocBase::OnViewGraphs(NMHDR* pnmhdr,LRESULT* plr)
    CMenu* pMenu = menu.GetSubMenu(0);
    pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
 
-   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+   auto contextMenu = WBFL::EAF::Menu::CreateMenu(pMenu->Detach(),GetPluginCommandManager());
 
 
-   BuildGraphMenu(&contextMenu);
+   BuildGraphMenu(contextMenu);
 
    GET_IFACE(IEAFToolbars,pToolBars);
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_VIEW_GRAPHS,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
    CPoint point(rect.left,rect.bottom);
    pToolBar->ClientToScreen(&point);
-   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+   contextMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
 
    return TRUE;
 }
 
 void CPGSDocBase::OnUpdateViewReports(CCmdUI* pCmdUI)
 {
-   GET_IFACE(IReportManager,pReportMgr);
+   GET_IFACE(IEAFReportManager,pReportMgr);
    pCmdUI->Enable( 0 < pReportMgr->GetReportBuilderCount() );
 }
 
@@ -5019,19 +4965,19 @@ BOOL CPGSDocBase::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
    CMenu* pMenu = menu.GetSubMenu(0);
    pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
 
-   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+   auto contextMenu = WBFL::EAF::Menu::CreateMenu(pMenu->Detach(),GetPluginCommandManager());
 
-   CEAFBrokerDocument::PopulateReportMenu(&contextMenu);
+   CEAFBrokerDocument::PopulateReportMenu(contextMenu);
 
    GET_IFACE(IEAFToolbars,pToolBars);
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_VIEW_REPORTS,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
    CPoint point(rect.left,rect.bottom);
    pToolBar->ClientToScreen(&point);
-   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+   contextMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
 
    return TRUE;
 }
@@ -5073,14 +5019,12 @@ void CPGSDocBase::OnImportMenu(CCmdUI* pCmdUI)
       // populate the menu
       for ( idx = 0; idx < nImporters; idx++ )
       {
-         CComPtr<IPGSDataImporter> importer;
-         m_pPluginMgr->GetImporter(idx,true,&importer);
+         auto importer = m_pPluginMgr->GetImporter(idx,true);
 
          UINT cmdID = m_pPluginMgr->GetImporterCommand(idx);
 
-         CComBSTR bstrMenuText;
-         importer->GetMenuText(&bstrMenuText);
-         pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,OLE2T(bstrMenuText));
+         auto strMenuText = importer->GetMenuText();
+         pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,strMenuText);
 
          const CBitmap* pBmp = m_pPluginMgr->GetImporterBitmap(idx);
          pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,nullptr);
@@ -5128,15 +5072,13 @@ void CPGSDocBase::OnExportMenu(CCmdUI* pCmdUI)
 
       for ( idx = 0; idx < nExporters; idx++ )
       {
-         CComPtr<IPGSDataExporter> exporter;
-         m_pPluginMgr->GetExporter(idx,true,&exporter);
+         auto exporter = m_pPluginMgr->GetExporter(idx,true);
 
          UINT cmdID = m_pPluginMgr->GetExporterCommand(idx);
 
-         CComBSTR bstrMenuText;
-         exporter->GetMenuText(&bstrMenuText);
+         auto strMenuText = exporter->GetMenuText();
 
-         pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,OLE2T(bstrMenuText));
+         pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,strMenuText);
 
          const CBitmap* pBmp = m_pPluginMgr->GetExporterBitmap(idx);
          pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,nullptr);
@@ -5145,15 +5087,14 @@ void CPGSDocBase::OnExportMenu(CCmdUI* pCmdUI)
          pCmdUI->m_nIndex++;
       }
    }
-
-	// update end menu count
+   
+   // update end menu count
 	pCmdUI->m_nIndex--; // point to last menu added
 }
 
 void CPGSDocBase::OnImport(UINT nID)
 {
-   CComPtr<IPGSDataImporter> importer;
-   m_pPluginMgr->GetImporter(nID,false,&importer);
+   auto importer = m_pPluginMgr->GetImporter(nID,false);
 
    if ( importer )
    {
@@ -5163,8 +5104,7 @@ void CPGSDocBase::OnImport(UINT nID)
 
 void CPGSDocBase::OnExport(UINT nID)
 {
-   CComPtr<IPGSDataExporter> exporter;
-   m_pPluginMgr->GetExporter(nID,false,&exporter);
+   auto exporter = m_pPluginMgr->GetExporter(nID,false);
 
    if ( exporter )
    {
@@ -5284,12 +5224,8 @@ BOOL CPGSDocBase::LoadAgents()
 {
    // set up the registry stuff so we read from the correct location
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
-
-   CEAFApp* pApp = EAFGetApp();
-   CAutoRegistry autoReg(pPGSBase->GetAppName(),pApp);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    return __super::LoadAgents();
 }
@@ -5307,7 +5243,7 @@ void CPGSDocBase::OnChangedFavoriteReports(BOOL bIsFavorites,BOOL bFromMenu)
    PopulateReportMenu();
 }
 
-void CPGSDocBase::ShowCustomReportHelp(eafTypes::CustomReportHelp helpType)
+void CPGSDocBase::ShowCustomReportHelp(WBFL::EAF::CustomReportHelp helpType)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    __super::ShowCustomReportHelp(helpType);
@@ -5338,7 +5274,7 @@ bool CPGSDocBase::DoDesignHaunch(const CGirderKey& girderKey)
          auto oldClimateCondition = pEnvironment->GetClimateCondition();
          Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
 
-         std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc, newBridgeDescr,
+         std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc, newBridgeDescr,
             oldExposureCondition, oldExposureCondition, oldClimateCondition, oldClimateCondition, oldRelHumidity, oldRelHumidity));
 
          GET_IFACE(IEAFTransactions, pTransactions);
@@ -5364,7 +5300,7 @@ bool CPGSDocBase::DoDesignHaunch(const CGirderKey& girderKey)
 CString CFileCompatibilityState::GetApplicationVersion() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CPGSuperAppPluginApp* pPluginApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   CPGSuperPluginAppApp* pPluginApp = (CPGSuperPluginAppApp*)AfxGetApp();
    CString strAppVersion = pPluginApp->GetVersion(true);
    return strAppVersion;
 }

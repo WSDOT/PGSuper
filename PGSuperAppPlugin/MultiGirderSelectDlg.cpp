@@ -24,15 +24,12 @@
 #include "resource.h"
 #include "PGSuperColors.h"
 #include "MultiGirderSelectDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 
 // CMultiGirderSelectDlg dialog
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNAMIC(CMultiGirderSelectDlg, CDialog)
@@ -77,8 +74,8 @@ BOOL CMultiGirderSelectDlg::OnInitDialog()
 
  	m_pGrid->SubclassDlgItem(IDC_SELECT_GRID, this);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridge,pBridge);
 
    // need list of groups/girders

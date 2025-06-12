@@ -28,14 +28,11 @@
 #include "ProfilePage.h"
 #include "AlignmentDescriptionDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CProfilePage property page
@@ -53,7 +50,7 @@ CProfilePage::~CProfilePage()
 {
 }
 
-IBroker* CProfilePage::GetBroker()
+std::shared_ptr<WBFL::EAF::Broker> CProfilePage::GetBroker()
 {
    CAlignmentDescriptionDlg* pParent = (CAlignmentDescriptionDlg*)GetParent();
    return pParent->m_pBroker;

@@ -23,13 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\InitialStrainAnalysisReportSpecification.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CInitialStrainAnalysisReportSpecification::CInitialStrainAnalysisReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx) :
+CInitialStrainAnalysisReportSpecification::CInitialStrainAnalysisReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_GirderKey = girderKey;

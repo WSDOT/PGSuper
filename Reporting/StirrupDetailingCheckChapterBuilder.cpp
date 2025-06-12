@@ -27,6 +27,7 @@
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -37,30 +38,22 @@
 #include <IFace\ReportOptions.h>
 
 #include <psgLib/ShearCapacityCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
+void build_min_avs_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
                                       IntervalIndexType intervalIdx, bool doIncludeSpanAndGirderForPois,
-                                      IEAFDisplayUnits* pDisplayUnits);
+                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
+void build_max_spacing_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
                                           IntervalIndexType intervalIdx, pgsTypes::LimitState ls,bool doIncludeSpanAndGirderForPois,
-                                          IEAFDisplayUnits* pDisplayUnits);
+                                          std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-void build_max_spacing_paragraph_uhpc(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
+void build_max_spacing_paragraph_uhpc(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
    IntervalIndexType intervalIdx, pgsTypes::LimitState ls,bool doIncludeSpanAndGirderForPois,
-   IEAFDisplayUnits* pDisplayUnits);
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-/****************************************************************************
-CLASS
-   CStirrupDetailingCheckChapterBuilder
-****************************************************************************/
 
 CStirrupDetailingCheckChapterBuilder::CStirrupDetailingCheckChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -75,8 +68,7 @@ LPCTSTR CStirrupDetailingCheckChapterBuilder::GetName() const
 rptChapter* CStirrupDetailingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey = pGirderRptSpec->GetGirderKey();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -114,14 +106,9 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(const std::shared_ptr<co
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CStirrupDetailingCheckChapterBuilder::Clone() const
-{
-   return std::make_unique<CStirrupDetailingCheckChapterBuilder>();
-}
-
-void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
+void build_min_avs_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
                                       IntervalIndexType intervalIdx,bool bIncludeSpanAndGirderForPois,
-                                      IEAFDisplayUnits* pDisplayUnits)
+                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* pParagraph;
 
@@ -370,9 +357,9 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
    } // next segment
 }
 
-void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
+void build_max_spacing_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
                                     IntervalIndexType intervalIdx, pgsTypes::LimitState ls, bool bIncludeSpanAndGirderForPois,
-                                    IEAFDisplayUnits* pDisplayUnits)
+                                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Spacing check 5.7.2.6 (pre2017: 5.8.2.7)
    rptParagraph* pParagraph;
@@ -527,9 +514,9 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
 }
 
 
-void build_max_spacing_paragraph_uhpc(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
+void build_max_spacing_paragraph_uhpc(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
    IntervalIndexType intervalIdx, pgsTypes::LimitState ls, bool bIncludeSpanAndGirderForPois,
-   IEAFDisplayUnits* pDisplayUnits)
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Spacing check 5.7.2.6 (pre2017: 5.8.2.7)
    rptParagraph* pParagraph;

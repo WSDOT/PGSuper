@@ -22,10 +22,10 @@
 
 #pragma once
 
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 #include <IFace\Project.h>
 
-class txnEditEffectiveFlangeWidth : public CEAFTransaction
+class txnEditEffectiveFlangeWidth : public WBFL::EAF::Transaction
 {
 public:
    txnEditEffectiveFlangeWidth(bool bOldSetting,bool bNewSetting);
@@ -34,7 +34,7 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const;
    virtual bool IsRepeatable() const;

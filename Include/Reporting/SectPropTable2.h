@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /// <summary>
 /// Tabular list of section properties for non-prismatic section (lists section properties a many POI)
@@ -34,5 +34,5 @@ class REPORTINGCLASS CSectionPropertiesTable2
 public:
    CSectionPropertiesTable2() = default;
    ~CSectionPropertiesTable2() = default;
-   rptRcTable* Build(IBroker* pBroker,pgsTypes::SectionPropertyType spType,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const;
+   rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SectionPropertyType spType,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };

@@ -21,41 +21,16 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
-
-
-/*****************************************************************************
-CLASS 
-   CLongitudinalReinforcementForShearLoadRatingChapterBuilder
-
-   Reports load rating outcome.
-
-
-DESCRIPTION
-   Reports load rating outcome.
-
-LOG
-   rab : 12.07.2009 : Created file
-*****************************************************************************/
 
 class REPORTINGCLASS CLongitudinalReinforcementForShearLoadRatingChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CLongitudinalReinforcementForShearLoadRatingChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-private:
-   // Prevent accidental copying and assignment
-   CLongitudinalReinforcementForShearLoadRatingChapterBuilder(const CLongitudinalReinforcementForShearLoadRatingChapterBuilder&) = delete;
-   CLongitudinalReinforcementForShearLoadRatingChapterBuilder& operator=(const CLongitudinalReinforcementForShearLoadRatingChapterBuilder&) = delete;
 };

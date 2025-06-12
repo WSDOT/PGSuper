@@ -23,12 +23,9 @@
 #include "stdafx.h"
 #include "EditProjectProperties.h"
 #include "PGSuperDoc.h"
+#include <IFace/Tools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+
 
 txnEditProjectProperties::txnEditProjectProperties(
       const std::_tstring& oldBridgeName, const std::_tstring& newBridgeName,
@@ -74,8 +71,8 @@ void txnEditProjectProperties::Undo()
 
 void txnEditProjectProperties::Execute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IProjectProperties,pProjProp);
    GET_IFACE2(pBroker,IEvents, pEvents);
@@ -90,7 +87,7 @@ void txnEditProjectProperties::Execute(int i)
    pProjProp->SetComments(   m_Comment[i].c_str()    );
 }
 
-std::unique_ptr<CEAFTransaction> txnEditProjectProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditProjectProperties::CreateClone() const
 {
    return std::make_unique<txnEditProjectProperties>(m_BridgeName[0],
                                        m_BridgeName[1],

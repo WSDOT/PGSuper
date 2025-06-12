@@ -25,44 +25,28 @@
 #pragma once
 
 #include <Plugins\PGSuperIEPlugin.h>
-#include "resource.h"       // main symbols
+#include <EAF\ComponentObject.h>
 
 class CBridgeDescription2;
 
-/////////////////////////////////////////////////////////////////////////////
-// CPGSuperProjectImporter
-class ATL_NO_VTABLE CPGSuperProjectImporter : 
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CPGSuperProjectImporter, &CLSID_PGSuperProjectImporter>,
-   public IPGSProjectImporter
+class CPGSuperProjectImporter : public WBFL::EAF::ComponentObject, 
+   public PGS::IProjectImporter
 {
 public:
-	CPGSuperProjectImporter()
-	{
-	}
+   CPGSuperProjectImporter();
 
-   HRESULT FinalConstruct();
-
-   CBitmap m_Bitmap;
-
-DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPERPROJECTIMPORTER)
-
-DECLARE_PROTECT_FINAL_CONSTRUCT()
-
-BEGIN_COM_MAP(CPGSuperProjectImporter)
-	COM_INTERFACE_ENTRY(IPGSProjectImporter)
-END_COM_MAP()
-
-// IPGSProjectImporter
+   // IProjectImporter
 public:
-   STDMETHOD(GetItemText)(/*[out,retval]*/BSTR*  bstrText) const override;
-   STDMETHOD(GetIcon)(/*[out]*/HICON* phIcon) const override;
-   STDMETHOD(Import)(/*[in]*/IBroker* pBroker) override;
-   STDMETHOD(GetCLSID)(CLSID* pCLSID) const override;
+   CString GetItemText() const override;
+   HICON GetIcon() const override;
+   HRESULT Import(std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
+   CLSID GetCLSID() const override;
 
 private:
-   void BuildBridge(IBroker* pBroker);
-   void SetSpecification(IBroker* pBroker);
-   void InitGirderData(IBroker* pBroker);
-   void InitTimelineManager(IBroker* pBroker,CBridgeDescription2& bridge);
+   void BuildBridge(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   void SetSpecification(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   void InitGirderData(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   void InitTimelineManager(std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeDescription2& bridge);
+
+   CBitmap m_Bitmap;
 };

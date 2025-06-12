@@ -32,11 +32,13 @@
 // are likely to break.
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class CEAFTransaction;
+namespace WBFL {
+   namespace EAF { class Transaction; };
+};
 
-interface IEditBridgeCallback;
-interface IEditSplicedGirderCallback;
-interface IEditLoadRatingOptionsCallback;
+class IEditBridgeCallback;
+class IEditSplicedGirderCallback;
+class IEditLoadRatingOptionsCallback;
 
 class CPierData2;
 class rptParagraph;
@@ -70,8 +72,9 @@ struct EditLoadRatingOptionsExtension
 };
 
 /// @brief Interface that provides pier data to the IEditPierCallback::CreatePropertyPage method
-interface IEditPierData
+class IEditPierData
 {
+public:
    /// @brief Returns the pier data being edited
    virtual CPierData2* GetPierData() = 0;
    
@@ -89,8 +92,9 @@ interface IEditPierData
 };
 
 /// @brief Callback interface for objects extending the Edit Pier dialog
-interface IEditPierCallback
+class IEditPierCallback
 {
+public:
    /// @brief Called by the framework to create the property page when the Pier dialog is opened for stand alone editing
    virtual CPropertyPage* CreatePropertyPage(IEditPierData* pEditPierData) = 0;
 
@@ -101,7 +105,7 @@ interface IEditPierCallback
    /// @return Return a transaction object if you
    /// want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPropertyPage,IEditPierData* pEditPierData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPropertyPage,IEditPierData* pEditPierData) = 0;
 
    /// @brief Return the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to the Pier dialog
    virtual IDType GetEditBridgeCallbackID() = 0;
@@ -112,8 +116,9 @@ interface IEditPierCallback
 /// command is executed. Implement this interface, and register it with the IExtendUI interface to
 /// have your Pier properties listed in the Copy Pier Properties dialog and for your code
 /// to be notified when it is time to copy the data
-interface ICopyPierPropertiesCallback
+class ICopyPierPropertiesCallback
 {
+public:
    /// @brief Returns a text string to be displayed in the Copy Pier Properties dialog
    virtual LPCTSTR GetName() = 0;
 
@@ -122,7 +127,7 @@ interface ICopyPierPropertiesCallback
    virtual BOOL CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
 
    /// @brief Called by the framework when you need to create a transaction object that will cause your Pier data to be copied.
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
 
    /// @brief UI has an edit button for this callback. 
    /// @return Returns the tab index that will be opened
@@ -137,8 +142,9 @@ interface ICopyPierPropertiesCallback
 /// command is executed. Implement this interface, and register it with the IExtendUI interface to
 /// have your TempSupport properties listed in the Copy TempSupport Properties dialog and for your code
 /// to be notified when it is time to copy the data
-interface ICopyTemporarySupportPropertiesCallback
+class ICopyTemporarySupportPropertiesCallback
 {
+public:
    /// @brief Returns a text string to be displayed in the Copy TempSupport Properties dialog
    virtual LPCTSTR GetName() = 0;
 
@@ -147,7 +153,7 @@ interface ICopyTemporarySupportPropertiesCallback
    virtual BOOL CanCopy(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) = 0;
 
    /// @brief Called by the framework when you need to create a transaction object that will cause your TempSupport data to be copied.
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) = 0;
 
    /// @brief UI has an edit button for this callback. 
    /// @return Returns the tab index that will be opened
@@ -159,15 +165,17 @@ interface ICopyTemporarySupportPropertiesCallback
 
 
 /// @brief Interface that provides information to an IEditTemporarySupportCallback::CreatePropertyPage method
-interface IEditTemporarySupportData
+class IEditTemporarySupportData
 {
+public:
    /// @brief Returns the index of the temporary support being edited
    virtual SupportIndexType GetTemporarySupport() = 0;
 };
 
 /// @brief Callback interface for objects extending the Edit Temporary Support dialog
-interface IEditTemporarySupportCallback
+class IEditTemporarySupportCallback
 {
+public:
    /// @brief Called by the framework to create the property page for the Pier dialog is opened for stand alone editing
    virtual CPropertyPage* CreatePropertyPage(IEditTemporarySupportData* pEditTemporarySupportData) = 0;
 
@@ -177,15 +185,16 @@ interface IEditTemporarySupportCallback
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPropertyPage,IEditTemporarySupportData* pEditTemporarySupportData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPropertyPage,IEditTemporarySupportData* pEditTemporarySupportData) = 0;
 
    //@ brief Returns the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to the Temporary Support dialog
    virtual IDType GetEditBridgeCallbackID() = 0;
 };
 
 /// @brief Interface that provides information to the IEditSpanCallback::CreatePropertyPage method
-interface IEditSpanData
+class IEditSpanData
 {
+public:
    /// @brief Returns the number of spans in the bridge
    virtual SpanIndexType GetSpanCount() = 0;
 
@@ -200,8 +209,9 @@ interface IEditSpanData
 };
 
 /// @brief Callback interface for objects extending the Edit Span dialog
-interface IEditSpanCallback
+class IEditSpanCallback
 {
+public:
    /// @brief Called by the framework to create the property page for the Span dialog is opened for stand alone editing
    virtual CPropertyPage* CreatePropertyPage(IEditSpanData* pSpanData) = 0;
 
@@ -211,22 +221,24 @@ interface IEditSpanCallback
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData) = 0;
 
    /// @brief Returns the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to the Span dialog
    virtual IDType GetEditBridgeCallbackID() = 0;
 };
 
 /// @brief Interface that provides information to the IEditSegmentCallback::CreatePropertyPage method
-interface IEditSegmentData
+class IEditSegmentData
 {
+public:
    /// @brief Returns the key of the segment being edited
    virtual const CSegmentKey& GetSegmentKey() = 0;
 };
 
 /// @brief Callback interface for objects extending the Edit Segment dialog
-interface IEditSegmentCallback
+class IEditSegmentCallback
 {
+public:
    /// @brief Called by the framework to create the property page for the Segment dialog is opened for stand alone editing
    virtual CPropertyPage* CreatePropertyPage(IEditSegmentData* pSegmentData) = 0;
 
@@ -236,22 +248,24 @@ interface IEditSegmentCallback
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData) = 0;
 
    /// @brief Returns the ID of EditSplicedGirderCallback or INVALID_ID if extensions to the Spliced Girder dialog are not related to the Segment dialog
    virtual IDType GetEditSplicedGirderCallbackID() = 0;
 };
 
 /// @brief Interface that provides information to the IEditClosureJointCallback::CreatePropertyPage method
-interface IEditClosureJointData
+class IEditClosureJointData
 {
+public:
    /// @brief Key for the closure joint being edited
    virtual const CClosureKey& GetClosureKey() = 0;
 };
 
 /// @brief Callback interface for objects extending the Edit Closure Joint dialog
-interface IEditClosureJointCallback
+class IEditClosureJointCallback
 {
+public:
    /// @brief Called by the framework to create the property page for the Closure Joint dialog is opened for stand alone editing
    virtual CPropertyPage* CreatePropertyPage(IEditClosureJointData* pClosureJointData) = 0;
 
@@ -261,29 +275,31 @@ interface IEditClosureJointCallback
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData) = 0;
 
    /// @brief Returns the ID of EditSplicedGirderCallback or INVALID_ID if extensions to the Spliced Girder dialog are not related to the Closure Joint dialog
    virtual IDType GetEditSplicedGirderCallbackID() = 0;
 };
 
 /// @brief Interface that provides information to the IEditSplicedGirderCallback::CreatePropertyPage method
-interface IEditSplicedGirderData
+class IEditSplicedGirderData
 {
+public:
    /// @brief Returns the key of the girder being edited
    virtual const CGirderKey& GetGirderKey() = 0;
 };
 
 /// @brief Callback interface for objects extending the Edit Spliced Girder dialog
-interface IEditSplicedGirderCallback
+class IEditSplicedGirderCallback
 {
+public:
    /// @brief Called by the framework to create the property page for the Girder dialog
    virtual CPropertyPage* CreatePropertyPage(IEditSplicedGirderData* pGirderData) = 0;
 
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData) = 0;
 
    /// @brief Called by the framework after editing segment data from the Spliced Girder general page completes successfully
    /// so that data from the Segment and Spliced Girder editing dialogs can be made consistent with each other
@@ -295,43 +311,47 @@ interface IEditSplicedGirderCallback
 };
 
 /// @brief Interface that provides information to the IEditGirderCallback::CreatePropertyPage method
-interface IEditGirderData
+class IEditGirderData
 {
+public:
    /// @brief Returns the key of the segment being edited. In this case, the Girder dialog is for PGSuper
    /// so Girder and Segment are the same
    virtual const CSegmentKey& GetSegmentKey() = 0;
 };
 
 /// @brief Callback interface for objects extending the Edit Girder dialog
-interface IEditGirderCallback
+class IEditGirderCallback
 {
+public:
    /// @brief Called by the framework to create the property page for the Girder dialog
    virtual CPropertyPage* CreatePropertyPage(IEditGirderData* pGirderData) = 0;
 
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData) = 0;
 };
 
 /// @brief Interface that provides information to the IEditBridgeCallback::CreatePropertyPage method
-interface IEditBridgeData
+class IEditBridgeData
 {
+public:
    /// @brief This is a dummy method - it doesn't do anything or provide any information.
    /// This interface and the methods may change in the future
    virtual void EBDummy() = 0;
 };
 
 /// @brief Callback interface for objects extending the Edit Bridge dialog
-interface IEditBridgeCallback
+class IEditBridgeCallback
 {
+public:
    /// @brief Called by the framework to create the property page for the Edit Bridge dialog
    virtual CPropertyPage* CreatePropertyPage(IEditBridgeData* pBridgeData) = 0;
 
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData) = 0;
 
    /// @brief Called by the framework after editing pier data from the Framing page completes successfully
    /// so that data from the Pier and Bridge editing dialogs can be made consistent with each other
@@ -351,8 +371,9 @@ interface IEditBridgeCallback
 /// command is executed. Implement this interface, and register it with the IExtendUI interface to
 /// have your girder properties listed in the Copy Girder Properties dialog and for your code
 /// to be notified when it is time to copy the data
-interface ICopyGirderPropertiesCallback
+class ICopyGirderPropertiesCallback
 {
+public:
    /// @brief Returns a text string to be displayed in the Copy Girder Properties dialog
    virtual LPCTSTR GetName() = 0;
 
@@ -364,7 +385,7 @@ interface ICopyGirderPropertiesCallback
 
    /// @brief Called by the framework when you need to create a transaction object that
    /// will cause your girder data to be copied.
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) = 0;
 
    /// @brief UI has an edit button for this callback. 
    /// @return Returns the tab index that will be opened
@@ -375,32 +396,34 @@ interface ICopyGirderPropertiesCallback
 };
 
 /// @brief Interface the provides information to the IEditLoadRatingOptionsCallback::CreatePropertyPage method
-interface IEditLoadRatingOptions
+class IEditLoadRatingOptions
 {
+public:
    /// @brief This is a dummy method - it doesn't do anything or provide any information.
    /// This interface and the methods may change in the future
    virtual void LRDummy() = 0;
 };
 
 /// @brief Callback interface for objects extending the Edit Load Rating Ptions dialog
-interface IEditLoadRatingOptionsCallback
+class IEditLoadRatingOptionsCallback
 {
+public:
    /// @brief Called by the framework to create the property page for the Edit Bridge dialog
    virtual CPropertyPage* CreatePropertyPage(IEditLoadRatingOptions* pLoadRatingOptions) = 0;
 
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditLoadRatingOptions* pLoadRatingOptions) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditLoadRatingOptions* pLoadRatingOptions) = 0;
 };
 
 // {F477FBFC-2C57-42bf-8FB5-A32296087B64}
 DEFINE_GUID(IID_IExtendUI, 
 0xf477fbfc, 0x2c57, 0x42bf, 0x8f, 0xb5, 0xa3, 0x22, 0x96, 0x8, 0x7b, 0x64);
-struct __declspec(uuid("{F477FBFC-2C57-42bf-8FB5-A32296087B64}")) IExtendUI;
 /// @brief Interface used to manage the registration of callback objects that extend elements of the user interface common to both PGSuper and PGSplice.
-interface IExtendUI : IUnknown
+class __declspec(uuid("{F477FBFC-2C57-42bf-8FB5-A32296087B64}")) IExtendUI
 {
+public:
    /// @brief Registers a callback to extend the Edit Pier dialog
    /// @param pCallback Callback for extending the dialog
    /// @param pCopyCallback Callback for extending the pier data copying dialog
@@ -447,10 +470,10 @@ interface IExtendUI : IUnknown
 // {D3CF52A4-A37E-4e9b-A71C-F9B37A045B8A}
 DEFINE_GUID(IID_IExtendPGSuperUI, 
 0xd3cf52a4, 0xa37e, 0x4e9b, 0xa7, 0x1c, 0xf9, 0xb3, 0x7a, 0x4, 0x5b, 0x8a);
-struct __declspec(uuid("{D3CF52A4-A37E-4e9b-A71C-F9B37A045B8A}")) IExtendPGSuperUI;
 /// @brief Interface used to manage the registration of callback objects that extend elements of the user interface of PGSuper only
-interface IExtendPGSuperUI : IExtendUI
+class __declspec(uuid("{D3CF52A4-A37E-4e9b-A71C-F9B37A045B8A}")) IExtendPGSuperUI : public IExtendUI
 {
+public:
    /// @brief Registers a callback that extends the Edit Girder dialog
    /// @param pCallback Callback that extends the dialog
    /// @param pCopyCallback Callback that extends the Copy Girder Properties dialog
@@ -467,10 +490,10 @@ interface IExtendPGSuperUI : IExtendUI
 // {0303E609-6BBD-45b0-AFA2-E642CE7DA219}
 DEFINE_GUID(IID_IExtendPGSpliceUI, 
 0x303e609, 0x6bbd, 0x45b0, 0xaf, 0xa2, 0xe6, 0x42, 0xce, 0x7d, 0xa2, 0x19);
-struct __declspec(uuid("{0303E609-6BBD-45b0-AFA2-E642CE7DA219}")) IExtendPGSpliceUI;
 /// @brief Interface used to manage the registration of callback objects that extend elements of the user interface of PGSplice only
-interface IExtendPGSpliceUI : IExtendUI
+class __declspec(uuid("{0303E609-6BBD-45b0-AFA2-E642CE7DA219}")) IExtendPGSpliceUI : public IExtendUI
 {
+public:
    /// @brief Registers a callback that extends the Edit Temporary Support dialog
    /// @param pCallback Callback that extends the dialog
    /// @param pCopyCallBack Callback that extends the Copy Temporary Support Properties dialog
@@ -519,8 +542,9 @@ DEFINE_GUID(IID_IExtendUIEventSink,
 0x7fb4e6ef, 0x639, 0x47dc, 0xae, 0x76, 0x9, 0x48, 0xf9, 0x18, 0x42, 0x91);
 /// @brief Callback interface objects extending the UI Event Sink.
 /// Implement this interfaced to be notified when user interface hints are reset.
-interface IExtendUIEventSink : IUnknown
+class IExtendUIEventSink
 {
+public:
    /// @brief Called by the framework when user interface hints are reset
    /// @return Returns S_OK if successful
    virtual HRESULT OnHintsReset() = 0;

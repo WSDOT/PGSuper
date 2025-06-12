@@ -192,7 +192,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="TestAgent.def" />
-    <None Include="TestAgent.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="TestAgent.rc" />
@@ -208,9 +207,11 @@
     <ClInclude Include="TestFileWriter.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Beams\Beams.vcxproj">
+      <Project>{3dbe87d2-ceed-457b-b345-7748084d947d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

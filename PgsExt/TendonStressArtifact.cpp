@@ -29,11 +29,6 @@ CLASS
 
 #include <PgsExt\TendonStressArtifact.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define CAPACITY 0
 #define DEMAND   1

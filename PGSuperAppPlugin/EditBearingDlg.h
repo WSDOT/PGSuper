@@ -26,7 +26,7 @@
 #include "BearingSame4BridgeDlg.h"
 #include "BearingPierByPierDlg.h"
 #include "BearingGdrByGdrDlg.h"
-#include "PgsExt\BearingData2.h"
+#include <psgLib/BearingData2.h>
 
 class CBridgeDescription2;
 

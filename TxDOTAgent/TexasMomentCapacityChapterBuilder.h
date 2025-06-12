@@ -20,75 +20,16 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_TEXASMOMENTCAPACITYCHAPTERBUILDER_H_
-#define INCLUDED_TEXASMOMENTCAPACITYCHAPTERBUILDER_H_
-
-interface IEAFDisplayUnits;
+#pragma once
 
 #include <ReportManager\ReportManager.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-/*****************************************************************************
-CLASS 
-   CTexasMomentCapacityChapterBuilder
-
-   Texas Moment Capacity Chapter Builder.
-
-
-DESCRIPTION
-   Reports the IBNS and other girder data for TxDOT
-
-LOG
-   rdp : 06.16.2006 : Created file
-*****************************************************************************/
-
 class CTexasMomentCapacityChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CTexasMomentCapacityChapterBuilder(bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CTexasMomentCapacityChapterBuilder(const CTexasMomentCapacityChapterBuilder&) = delete;
-   CTexasMomentCapacityChapterBuilder& operator=(const CTexasMomentCapacityChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_TEXASCAMBERANDDEFLECTIONCHAPTERBUILDER_H_

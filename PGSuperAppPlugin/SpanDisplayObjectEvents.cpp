@@ -28,9 +28,11 @@
 #include "PGSuperApp.h"
 #include "SpanDisplayObjectEvents.h"
 #include "PGSuperDocBase.h"
+
+#include <IFace/Tools.h>
 #include <IFace\EditByUI.h>
 
-#include <PgsExt\SpanData2.h>
+#include <PsgLib\SpanData2.h>
 
 #include <DManip/DisplayObject.h>
 #include <DManip/DisplayList.h>
@@ -46,8 +48,8 @@ CBridgePlanViewSpanDisplayObjectEvents::CBridgePlanViewSpanDisplayObjectEvents(S
    m_SpanIdx = spanIdx;
    m_pFrame  = pFrame;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CSpanData2* pSpan = pIBridgeDesc->GetSpan(spanIdx);
    m_TempSupports         = pSpan->GetTemporarySupports();
@@ -189,7 +191,7 @@ bool CBridgePlanViewSpanDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL:
       auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_SPAN_CONTEXT,nullptr);
 
       const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();

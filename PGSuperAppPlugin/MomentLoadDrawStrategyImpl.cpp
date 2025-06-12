@@ -23,7 +23,10 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "MomentLoadDrawStrategyImpl.h"
+
+#include <IFace/Tools.h>
 #include <IFace\EditByUI.h> 
+
 #include <MathEx.h>
 
 #include <DManip/PointDisplayObject.h>
@@ -40,7 +43,7 @@ CMomentLoadDrawStrategyImpl::CMomentLoadDrawStrategyImpl()
 {
 }
 
-void CMomentLoadDrawStrategyImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, CMomentLoadData load,
+void CMomentLoadDrawStrategyImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, CMomentLoadData load,
                                                  IndexType loadIndex, Float64 spanLength, 
                                                  Float64 maxMagnitude, COLORREF color)
 {

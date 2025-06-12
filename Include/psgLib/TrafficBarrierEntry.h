@@ -20,18 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PSGLIB_TRAFFIC_BARRIER_H_
-#define INCLUDED_PSGLIB_TRAFFIC_BARRIER_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
+#include "PsgLibLib.h"
 
-// PROJECT INCLUDES
-//
-
-#include "psgLibLib.h"
-
-#include <psgLib\ISupportIcon.h>
+#include <PsgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 
 #include <WBFLTools.h>
@@ -39,18 +32,15 @@
 
 #include <System\SubjectT.h>
 
-// FORWARD DECLARATIONS
-//
-class pgsLibraryEntryDifferenceItem;
 class TrafficBarrierEntry;
 class TrafficBarrierEntryObserver;
+namespace PGS {namespace Library{class DifferenceItem;};};
+
 #pragma warning(disable:4231)
 PSGLIBTPL WBFL::System::SubjectT<TrafficBarrierEntryObserver, TrafficBarrierEntry>;
 
 interface ISidewalkBarrier;
 
-// MISCELLANEOUS
-//
 /*****************************************************************************
 CLASS 
    TrafficBarrierEntryObserver
@@ -68,8 +58,6 @@ class PSGLIBCLASS TrafficBarrierEntryObserver
 {
 public:
 
-   // GROUP: LIFECYCLE
-   //------------------------------------------------------------------------
    // called by our subject to let us now he's changed, along with an optional
    // hint
    virtual void Update(TrafficBarrierEntry& subject, Int32 hint)=0;
@@ -93,7 +81,6 @@ class PSGLIBCLASS TrafficBarrierEntry : public WBFL::Library::LibraryEntry, publ
        public WBFL::System::SubjectT<TrafficBarrierEntryObserver, TrafficBarrierEntry>
 {
 public:
-   // GROUP: LIFECYCLE
    enum WeightMethod
    {
       Compute,
@@ -101,38 +88,24 @@ public:
    };
    static CString GetWeightMethodType(TrafficBarrierEntry::WeightMethod weightMethod);
 
-   //------------------------------------------------------------------------
-   // Default constructor
    TrafficBarrierEntry();
 
-   //------------------------------------------------------------------------
-   // Copy constructor
    TrafficBarrierEntry(const TrafficBarrierEntry& rOther);
 
-   //------------------------------------------------------------------------
-   // Destructor
    virtual ~TrafficBarrierEntry() = default;
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
    TrafficBarrierEntry& operator = (const TrafficBarrierEntry& rOther);
 
-   // GROUP: OPERATIONS
 
-   //------------------------------------------------------------------------
    // Edit the entry
    virtual bool Edit(bool allowEditing,int nPage=0);
 
-   //------------------------------------------------------------------------
    // Save to structured storage
    virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
-   //------------------------------------------------------------------------
    // Load from structured storage
    virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
-   //------------------------------------------------------------------------
    // Get the icon for this entry
    virtual HICON GetIcon() const;
 
@@ -156,23 +129,14 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const TrafficBarrierEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const TrafficBarrierEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
 
    bool IsEqual(const TrafficBarrierEntry& rOther,bool bConsiderName=false) const;
 
-   // GROUP: INQUIRY
-
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
    void CopyValuesAndAttributes(const TrafficBarrierEntry& rOther);
-  // GROUP: ACCESS
-  // GROUP: INQUIRY
 
 private:
-   // GROUP: DATA MEMBERS
    CComPtr<IPoint2dCollection> m_BarrierPoints;
    WeightMethod m_WeightMethod;
    Float64 m_Weight;
@@ -180,23 +144,10 @@ private:
    Float64 m_CurbOffset; // offset from face of barrier to "notional" curb line
    bool m_bStructurallyContinuous;
 
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
    bool ComparePoints(IPoint2dCollection* points1,IPoint2dCollection* points2) const;
    void CopyPoints(IPoint2dCollection* points1,IPoint2dCollection* points2);
    void CopyPoints(IPoint2dCollection* points1,IPoint2dCollection* points2) const;
    void ConvertDimensionsToPoints(Float64 x1,Float64 x2,Float64 x3,Float64 x4,Float64 x5,Float64 y1,Float64 y2,Float64 y3);
    void CreatePolyShape(pgsTypes::TrafficBarrierOrientation orientation,IPoint2dCollection* points,IPolyShape** polyShape) const;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
 
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_PSGLIB_TRAFFIC_BARRIER_H_

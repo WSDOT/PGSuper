@@ -21,20 +21,15 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <psgLib\DiaphragmLayoutEntry.h>
+#include <PsgLib\DiaphragmLayoutEntry.h>
 
 #include <System\IStructuredSave.h>
 #include <System\IStructuredLoad.h>
 #include <System\XStructuredLoad.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/DifferenceItem.h>
 
 #include "resource.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /****************************************************************************
@@ -113,12 +108,12 @@ bool DiaphragmLayoutEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
 bool DiaphragmLayoutEntry::IsEqual(const DiaphragmLayoutEntry& rOther,bool bConsiderName) const
 {
-   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
+   std::vector<std::unique_ptr<PGS::Library::DifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool DiaphragmLayoutEntry::Compare(const DiaphragmLayoutEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool DiaphragmLayoutEntry::Compare(const DiaphragmLayoutEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
 
    bMustRename = false;

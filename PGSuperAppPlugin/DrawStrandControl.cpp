@@ -24,26 +24,27 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "PGSuperColors.h"
 #include "DrawStrandControl.h"
 
 #include <GenericBridge\Helpers.h>
 
-#include <PgsExt\SplicedGirderData.h>
+#include <PsgLib\SplicedGirderData.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\BeamFactory.h>
+#include <IFace/PointOfInterest.h>
+
 #include <PsgLib\GirderLibraryEntry.h>
+#include <psgLib/DuctLibraryEntry.h>
+#include <psgLib/LibraryManager.h>
 
 
 // CDrawStrandControl
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNAMIC(CDrawStrandControl, CWnd)
 
@@ -82,8 +83,8 @@ void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CS
 
    // Gets the segment height based on the data in the girder library entry
    const GirderLibraryEntry* pGdrEntry = m_pSegment->GetGirder()->GetGirderLibraryEntry();
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   auto factory = pGdrEntry->GetBeamFactory();
+
 
    switch (m_pSegment->GetVariationType() )
    {
@@ -126,8 +127,8 @@ void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CS
    // Get the end view cross section shapes of the segment
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    PoiList vPoi;
@@ -340,8 +341,8 @@ void CDrawStrandControl::CreateSegmentProfiles(IShape** ppShape,IPoint2dCollecti
    const CSplicedGirderData* pSplicedGirder = m_pSegment->GetGirder();
    CSegmentKey segmentKey(m_pSegment->GetSegmentKey());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IGirder,pGirder);
    pGirder->GetSegmentProfile(segmentKey,pSplicedGirder,false/*don't include closure joint*/,ppShape);
    pGirder->GetSegmentBottomFlangeProfile(segmentKey,pSplicedGirder,false/*don't include closure joint*/,ppPoints);
@@ -396,8 +397,8 @@ void CDrawStrandControl::Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IPoi
 
 void CDrawStrandControl::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& leftMapper, WBFL::Graphing::PointMapper& centerMapper, WBFL::Graphing::PointMapper& rightMapper)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder);
    GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2_NOCHECK(pBroker, IStrandGeometry, pStrandGeom);
@@ -610,8 +611,8 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& left
 
 void CDrawStrandControl::DrawTendons(CDC* pDC, WBFL::Graphing::PointMapper& leftMapper, WBFL::Graphing::PointMapper& centerMapper, WBFL::Graphing::PointMapper& rightMapper)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IGirder, pGirder);
    GET_IFACE2_NOCHECK(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
 

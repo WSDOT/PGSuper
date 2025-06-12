@@ -21,8 +21,8 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <psgLib\HaulTruckLibraryEntry.h>
-#include <psgLib\LibraryEntryDifferenceItem.h>
+#include <PsgLib\HaulTruckLibraryEntry.h>
+#include <PsgLib\DifferenceItem.h>
 
 #include <System\IStructuredSave.h>
 #include <System\IStructuredLoad.h>
@@ -34,11 +34,6 @@
 
 #include <EAF\EAFApp.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 HaulTruckLibraryEntry::HaulTruckLibraryEntry()
 {
@@ -132,55 +127,55 @@ bool HaulTruckLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
 bool HaulTruckLibraryEntry::IsEqual(const HaulTruckLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
+   std::vector<std::unique_ptr<PGS::Library::DifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool HaulTruckLibraryEntry::Compare(const HaulTruckLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool HaulTruckLibraryEntry::Compare(const HaulTruckLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    bMustRename = false;
 
    if ( !::IsEqual(m_Hbg,rOther.m_Hbg) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    if ( !::IsEqual(m_Hrc,rOther.m_Hrc) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    if ( !::IsEqual(m_Wcc,rOther.m_Wcc) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    if ( !::IsEqual(m_Ktheta,rOther.m_Ktheta) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    if ( !::IsEqual(m_Lmax,rOther.m_Lmax) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    if ( !::IsEqual(m_MaxOH,rOther.m_MaxOH) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    if ( !::IsEqual(m_MaxWeight,rOther.m_MaxWeight) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    return vDifferences.size() == 0 ? true : false;

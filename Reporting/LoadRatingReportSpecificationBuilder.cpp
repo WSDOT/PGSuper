@@ -25,17 +25,13 @@
 #include <Reporting\LoadRatingReportDlg.h>
 #include <Reporting\LoadRatingSummaryReportDlg.h>
 
+#include <IFace/Tools.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Selection.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CLoadRatingReportSpecificationBuilder::CLoadRatingReportSpecificationBuilder(IBroker* pBroker) :
+CLoadRatingReportSpecificationBuilder::CLoadRatingReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
    CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -46,7 +42,7 @@ CLoadRatingReportSpecificationBuilder::~CLoadRatingReportSpecificationBuilder(vo
 
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
-   GET_IFACE(IRatingSpecification,pRatingSpec);
+   GET_IFACE2(GetBroker(),IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
@@ -59,12 +55,12 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecifica
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
       // Prompt for gider and chapter list
-      GET_IFACE(ISelection, pSelection);
+      GET_IFACE2(GetBroker(),ISelection, pSelection);
       CGirderKey girderKey = pSelection->GetSelectedGirder();
       girderKey.groupIndex = (girderKey.groupIndex == INVALID_INDEX ? ALL_GROUPS : girderKey.groupIndex);
       girderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
-      CLoadRatingReportDlg dlg(m_pBroker, rptDesc, pOldRptSpec);
+      CLoadRatingReportDlg dlg(GetBroker(), rptDesc, pOldRptSpec);
       dlg.SetGirderKey(girderKey);
 
       if (dlg.DoModal() == IDOK)
@@ -106,7 +102,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecifica
 
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
-   GET_IFACE(IRatingSpecification,pRatingSpec);
+   GET_IFACE2(GetBroker(),IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
@@ -117,7 +113,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecifica
       )
    {
       // Get the selected span and girder. By default we rate a entire selected girderline
-      GET_IFACE(ISelection, pSelection);
+      GET_IFACE2(GetBroker(),ISelection, pSelection);
       CGirderKey girderKey = pSelection->GetSelectedGirder();
       GirderIndexType girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
@@ -136,7 +132,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecifica
 
 //////////////////////////////// CLoadRatingSummaryReportSpecificationBuilder ////////////////////
 
-CLoadRatingSummaryReportSpecificationBuilder::CLoadRatingSummaryReportSpecificationBuilder(IBroker* pBroker) :
+CLoadRatingSummaryReportSpecificationBuilder::CLoadRatingSummaryReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
    CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -147,7 +143,7 @@ CLoadRatingSummaryReportSpecificationBuilder::~CLoadRatingSummaryReportSpecifica
 
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
-   GET_IFACE(IRatingSpecification,pRatingSpec);
+   GET_IFACE2(GetBroker(),IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
@@ -160,12 +156,12 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSp
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
       // Prompt for span and chapter list
-      GET_IFACE(ISelection, pSelection);
+      GET_IFACE2(GetBroker(),ISelection, pSelection);
       CGirderKey girderKey = pSelection->GetSelectedGirder();
       girderKey.groupIndex = (girderKey.groupIndex == INVALID_INDEX ? 0 : girderKey.groupIndex);
       girderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
-      CLoadRatingSummaryReportDlg dlg(m_pBroker, rptDesc, pOldRptSpec);
+      CLoadRatingSummaryReportDlg dlg(GetBroker(), rptDesc, pOldRptSpec);
       dlg.m_GirderKeys.push_back(girderKey);
 
       if (dlg.DoModal() == IDOK)
@@ -203,7 +199,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSp
 
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
-   GET_IFACE(IRatingSpecification,pRatingSpec);
+   GET_IFACE2(GetBroker(),IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
@@ -214,7 +210,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSp
       )
    {
       // Get the selected span and girder. By default we rate a entire selected girderline
-      GET_IFACE(ISelection, pSelection);
+      GET_IFACE2(GetBroker(),ISelection, pSelection);
       CGirderKey girderKey = pSelection->GetSelectedGirder();
       GirderIndexType girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
@@ -250,7 +246,7 @@ bool CLoadRatingReportSpecificationBase::ReportAtAllPointsOfInterest() const
 
 ////////////////////  CGirderLoadRatingReportSpecification //////////////////////////////
 
-CGirderLoadRatingReportSpecification::CGirderLoadRatingReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, const CGirderKey& gdrKey, bool bReportForAllPoi) :
+CGirderLoadRatingReportSpecification::CGirderLoadRatingReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& gdrKey, bool bReportForAllPoi) :
    CGirderReportSpecification(strReportName, pBroker, gdrKey), CLoadRatingReportSpecificationBase(bReportForAllPoi)
 {
 }
@@ -266,7 +262,7 @@ std::vector<CGirderKey> CGirderLoadRatingReportSpecification::GetGirderKeys() co
 
 ////////////////////  CGirderLineLoadRatingReportSpecification //////////////////////////////
 
-CGirderLineLoadRatingReportSpecification::CGirderLineLoadRatingReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, GirderIndexType gdrIdx, bool bReportForAllPoi) :
+CGirderLineLoadRatingReportSpecification::CGirderLineLoadRatingReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, GirderIndexType gdrIdx, bool bReportForAllPoi) :
    CGirderLineReportSpecification(strReportName, pBroker, gdrIdx), CLoadRatingReportSpecificationBase(bReportForAllPoi)
 {
 }
@@ -282,7 +278,7 @@ std::vector<CGirderKey> CGirderLineLoadRatingReportSpecification::GetGirderKeys(
 
 //////////////////////////   CMultiGirderLoadRatingReportSpecification  ////////////////////////
 
-CMultiGirderLoadRatingReportSpecification::CMultiGirderLoadRatingReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, const std::vector<CGirderKey>& gdrKeys, bool bReportForAllPoi) :
+CMultiGirderLoadRatingReportSpecification::CMultiGirderLoadRatingReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& gdrKeys, bool bReportForAllPoi) :
    CMultiGirderReportSpecification(strReportName, pBroker, gdrKeys), CLoadRatingReportSpecificationBase(bReportForAllPoi)
 {
 }
@@ -309,7 +305,7 @@ bool CMultiGirderLoadRatingReportSpecification::IsValid() const
    }
    else
    {
-      GET_IFACE(IBridge,pBridge);
+      GET_IFACE2(GetBroker(),IBridge,pBridge);
       GroupIndexType nGroups = pBridge->GetGirderGroupCount();
       for (const auto& girderKey : m_GirderKeys)
       {

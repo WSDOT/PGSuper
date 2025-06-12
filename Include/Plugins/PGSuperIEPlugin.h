@@ -36,6 +36,8 @@
 
 #pragma once
 
+#include <EAF\Broker.h>
+
 // {289D1CFF-D1A4-4b65-B673-867D7F41C7DB}
 DEFINE_GUID(CATID_PGSuperProjectImporter,
    0x289d1cff, 0xd1a4, 0x4b65, 0xb6, 0x73, 0x86, 0x7d, 0x7f, 0x41, 0xc7, 0xdb);
@@ -55,51 +57,42 @@ DEFINE_GUID(CATID_PGSpliceDataImporter,
 DEFINE_GUID(CATID_PGSpliceDataExporter,
    0xd889af1d, 0xca1, 0x4f01, 0xaa, 0x2d, 0x84, 0xf8, 0xf9, 0xf3, 0xa2, 0xdd);
 
-// {98B3DF17-7E0E-4d4a-B8A2-5443914FC608}
-DEFINE_GUID(IID_IPGSDataImporter, 
-   0x98B3DF17, 0x7E0E, 0x4d4a, 0xB8, 0xA2, 0x54, 0x43, 0x91, 0x4F, 0xC6, 0x08);
-struct __declspec(uuid("{98B3DF17-7E0E-4d4a-B8A2-5443914FC608}")) IPGSDataImporter;
-interface IPGSDataImporter : IUnknown
+namespace PGS
 {
-   virtual HRESULT Init(UINT nCmdID) = 0;
-   virtual HRESULT GetMenuText(BSTR*  bstrText) const = 0;
-   virtual HRESULT GetBitmapHandle(HBITMAP* phBmp) const = 0;
-   virtual HRESULT GetCommandHintText(BSTR*  bstrText) const = 0;
-   virtual HRESULT Import(IBroker* pBroker) = 0;
-};
+   class IDataImporter
+   {
+   public:
+      virtual HRESULT Init(UINT nCmdID) = 0;
+      virtual CString GetMenuText() const = 0;
+      virtual HBITMAP GetBitmapHandle() const = 0;
+      virtual CString GetCommandHintText() const = 0;
+      virtual HRESULT Import(std::shared_ptr<WBFL::EAF::Broker> pBroker) = 0;
+   };
 
-// {5DB8B1D3-C91D-4e62-81E6-A7B64B0D38FD}
-DEFINE_GUID(IID_IPGSProjectImporter, 
-   0x5DB8B1D3, 0xC91D, 0x4e62, 0x81, 0xE6, 0xA7, 0xB6, 0x4B, 0x0D, 0x38, 0xFD);
-struct __declspec(uuid("{5DB8B1D3-C91D-4e62-81E6-A7B64B0D38FD}")) IPGSProjectImporter;
-interface IPGSProjectImporter : IUnknown
-{
-   virtual HRESULT GetItemText(BSTR* bstrText) const = 0;
-   virtual HRESULT Import(IBroker* pBroker) = 0;
-   virtual HRESULT GetIcon(HICON* phIcon) const = 0;
-   virtual HRESULT GetCLSID(CLSID* pCLSID) const = 0;
-};
+   class IDataExporter
+   {
+   public:
+      virtual HRESULT Init(UINT nCmdID) = 0;
+      virtual CString GetMenuText() const = 0;
+      virtual HBITMAP GetBitmapHandle() const = 0;
+      virtual CString GetCommandHintText() const = 0;
+      virtual HRESULT Export(std::shared_ptr<WBFL::EAF::Broker> pBroker) = 0;
+   };
 
-// {BF6EC18A-43D2-4ea1-BC7F-54365DD645DA}
-DEFINE_GUID(IID_IPGSDataExporter, 
-   0xBF6EC18A, 0x43D2, 0x4ea1, 0xBC, 0x7F, 0x54, 0x36, 0x5D, 0xD6, 0x45, 0xDA);
-struct __declspec(uuid("{BF6EC18A-43D2-4ea1-BC7F-54365DD645DA}")) IPGSDataExporter;
-interface IPGSDataExporter : IUnknown
-{
-   virtual HRESULT Init(UINT nCmdID) = 0;
-   virtual HRESULT GetMenuText(BSTR*  bstrText) const = 0;
-   virtual HRESULT GetBitmapHandle(HBITMAP* phBmp) const = 0;
-   virtual HRESULT GetCommandHintText(BSTR*  bstrText) const = 0;
-   virtual HRESULT Export(IBroker* pBroker) = 0;
-};
+   class IProjectImporter
+   {
+   public:
+      virtual CString GetItemText() const = 0;
+      virtual HRESULT Import(std::shared_ptr<WBFL::EAF::Broker> pBroker) = 0;
+      virtual HICON GetIcon() const = 0;
+      virtual CLSID GetCLSID() const = 0;
+   };
 
-// {45C667CB-67C4-4b2e-89CD-51D07D665507}
-DEFINE_GUID(IID_IPGSDocumentation, 
-   0x45C667CB, 0x67C4, 0x4b2e, 0x89, 0xCD, 0x51, 0xD0, 0x7D, 0x66, 0x55, 0x07);
-struct __declspec(uuid("{45C667CB-67C4-4b2e-89CD-51D07D665507}")) IPGSDocumentation;
-interface IPGSDocumentation : IUnknown
-{
-   virtual HRESULT GetDocumentationSetName(BSTR* pbstrName) const = 0;
-   virtual HRESULT LoadDocumentationMap() = 0;
-   virtual HRESULT GetDocumentLocation(UINT nHID,BSTR* pbstrURL) const = 0;
+   class IPluginDocumentation
+   {
+   public:
+      virtual CString GetDocumentationSetName() const = 0;
+      virtual HRESULT LoadDocumentationMap() = 0;
+      virtual std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(UINT nHID) const = 0;
+   };
 };

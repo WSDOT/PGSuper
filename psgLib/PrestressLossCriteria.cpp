@@ -20,27 +20,26 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib/PrestressLossCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/PrestressLossCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include "SpecLibraryEntryImpl.h"
 #include <EAF/EAFDisplayUnits.h>
 
 inline constexpr auto operator+(WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod a) noexcept { return std::underlying_type<WBFL::LRFD::RefinedLosses2005::RelaxationLossMethod>::type(a); }
 
-
-bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
    if (LossMethod != other.LossMethod)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Prestress Loss Methods are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Methods are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
    else
    {
-      if (LossMethod == LossMethodType::AASHTO_REFINED || LossMethod == LossMethodType::WSDOT_REFINED)
+      if (LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED || LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED)
       {
          if (AreElasticGainsApplicable(impl.GetSpecificationCriteria().GetEdition()))
          {
@@ -48,7 +47,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                RelaxationLossMethod != other.RelaxationLossMethod)
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
 
@@ -65,7 +64,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                !::IsEqual(LiveLoadElasticGain, other.LiveLoadElasticGain))
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Elastic Gains are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Elastic Gains are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
          }
@@ -75,12 +74,12 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                RelaxationLossMethod != other.RelaxationLossMethod)
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
          }
       }
-      else if (LossMethod == LossMethodType::TXDOT_REFINED_2004)
+      else if (LossMethod == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004)
       {
          if (impl.GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004)
          {
@@ -88,7 +87,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                RelaxationLossMethod != other.RelaxationLossMethod)
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
          }
@@ -98,23 +97,23 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                RelaxationLossMethod != other.RelaxationLossMethod)
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
          }
       }
-      else if (LossMethod == LossMethodType::TXDOT_REFINED_2013)
+      else if (LossMethod == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013)
       {
          if (!::IsEqual(ShippingLosses, other.ShippingLosses) ||
             RelaxationLossMethod != other.RelaxationLossMethod ||
             FcgpComputationMethod != other.FcgpComputationMethod)
          {
             bSame = false;
-            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
+            vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
             if (bReturnOnFirstDifference) return false;
          }
       }
-      else if (LossMethod == LossMethodType::AASHTO_LUMPSUM)
+      else if (LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM)
       {
          if (AreElasticGainsApplicable(impl.GetSpecificationCriteria().GetEdition()))
          {
@@ -130,7 +129,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                !::IsEqual(LiveLoadElasticGain, other.LiveLoadElasticGain))
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Elastic Gains are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Elastic Gains are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
          }
@@ -140,24 +139,24 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
                RelaxationLossMethod != other.RelaxationLossMethod)
             {
                bSame = false;
-               vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
+               vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Parameters are different"), _T(""), _T("")));
                if (bReturnOnFirstDifference) return false;
             }
          }
       }
-      else if (LossMethod == LossMethodType::WSDOT_LUMPSUM)
+      else if (LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM)
       {
          bSame = false;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Prestress Loss Methods are different"), _T(""), _T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Loss Methods are different"), _T(""), _T("")));
          if (bReturnOnFirstDifference) return false;
       }
       else
       {
-         CHECK(LossMethod == LossMethodType::TIME_STEP);
+         CHECK(LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP);
          if (TimeDependentConcreteModel != other.TimeDependentConcreteModel)
          {
             bSame = false;
-            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Time-Dependent Models are different"), _T(""), _T("")));
+            vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Time-Dependent Models are different"), _T(""), _T("")));
             if (bReturnOnFirstDifference) return false;
          }
       }
@@ -166,7 +165,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
    return bSame;
 }
 
-void PrestressLossCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void PrestressLossCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -187,43 +186,43 @@ void PrestressLossCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisp
 
    switch (LossMethod)
    {
-   case LossMethodType::AASHTO_REFINED:
+   case PrestressLossCriteria::LossMethodType::AASHTO_REFINED:
       *pPara << _T("Losses calculated in accordance with AASHTO LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")) << _T(" Refined Estimate") << rptNewLine;
       *pPara << _T("Relaxation Loss Method = ") << relaxation_method[+RelaxationLossMethod] << rptNewLine;
       bReportElasticGainParameters = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
       break;
-   case LossMethodType::WSDOT_REFINED:
+   case PrestressLossCriteria::LossMethodType::WSDOT_REFINED:
       *pPara << _T("Losses calculated in accordance with AASHTO LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")) << _T(" Refined Estimate and WSDOT Bridge Design") << rptNewLine;
       *pPara << _T("Relaxation Loss Method = ") << relaxation_method[+RelaxationLossMethod] << rptNewLine;
       bReportElasticGainParameters = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
       break;
-   case LossMethodType::TXDOT_REFINED_2004:
+   case PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004:
       *pPara << _T("Losses calculated in accordance with AASHTO LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")) << _T(" Refined Estimate and TxDOT Bridge Design") << rptNewLine;
       break;
-   case LossMethodType::TXDOT_REFINED_2013:
+   case PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013:
       *pPara << _T("Losses calculated accordance with TxDOT Bridge Research Report 0-6374-2, June, 2013") << rptNewLine;
       break;
-   case LossMethodType::AASHTO_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM:
       bReportElasticGainParameters = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
       *pPara << _T("Losses calculated in accordance with AASHTO LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")) << (bReportElasticGainParameters ? _T(" Approximate Estimate") : _T(" Approximate Lump Sum Estimate")) << rptNewLine;
       break;
-   case LossMethodType::AASHTO_LUMPSUM_2005:
+   case PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM_2005:
       *pPara << _T("Losses calculated in accordance with AASHTO LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")) << _T(" Approximate Method") << rptNewLine;
       break;
-   case LossMethodType::WSDOT_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM:
       *pPara << _T("Losses calculated in accordance with AASHTO LRFD  ") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")) << _T(" Approximate Method and WSDOT Bridge Design Manual") << rptNewLine;
       break;
-   case LossMethodType::TIME_STEP:
+   case PrestressLossCriteria::LossMethodType::TIME_STEP:
       *pPara << _T("Losses calculated with a time-step method") << rptNewLine;
-      if (TimeDependentConcreteModel == TimeDependentConcreteModelType::AASHTO)
+      if (TimeDependentConcreteModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO)
       {
          *pPara << _T("Time-dependent concrete properties based on AASHTO LRFD") << rptNewLine;
       }
-      else if (TimeDependentConcreteModel == TimeDependentConcreteModelType::ACI209)
+      else if (TimeDependentConcreteModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209)
       {
          *pPara << _T("Time-dependent concrete properties based on ACI 209R-92") << rptNewLine;
       }
-      else if (TimeDependentConcreteModel == TimeDependentConcreteModelType::CEBFIP)
+      else if (TimeDependentConcreteModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP)
       {
          *pPara << _T("Time-dependent concrete properties based on CEB-FIP Model Code 1990") << rptNewLine;
       }
@@ -236,7 +235,7 @@ void PrestressLossCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisp
       ATLASSERT(false); // Should never get here
    }
 
-   if (LossMethod != LossMethodType::TXDOT_REFINED_2013 && WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
+   if (LossMethod != PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013 && WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       *pPara << _T("Assumed time at shipping = ") << time.SetValue(ShippingTime) << rptNewLine;
    }
@@ -338,7 +337,7 @@ bool PrestressLossCriteria::AreElasticGainsApplicable(WBFL::LRFD::BDSManager::Ed
    bool bIsApplicable = false;
    if (WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 < edition)
    {
-      if (LossMethod == LossMethodType::AASHTO_REFINED|| LossMethod == LossMethodType::WSDOT_REFINED || LossMethod == LossMethodType::AASHTO_LUMPSUM )
+      if (LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED|| LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM )
       {
          bIsApplicable = true;
       }
@@ -352,7 +351,7 @@ bool PrestressLossCriteria::IsDeckShrinkageApplicable(WBFL::LRFD::BDSManager::Ed
    bool bIsApplicable = false;
    if (WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 < edition)
    {
-      if (LossMethod == LossMethodType::AASHTO_REFINED || LossMethod == LossMethodType::WSDOT_REFINED)
+      if (LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED || LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED)
       {
          bIsApplicable = true;
       }
