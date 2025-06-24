@@ -92,6 +92,13 @@ void CDuctGeometryCheckTable::Build(rptChapter* pChapter, std::shared_ptr<WBFL::
    pPara = new rptParagraph;
    *pChapter << pPara;
 
+   if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= WBFL::LRFD::BDSManager::GetEdition())
+   {
+      (*pPara) << _T("Starting with LRFD 8th Edition 2017 the requirement for minimum radius of curvature of tendon ducts change from 30 ft for plastic and 20 ft for metal to ");
+      (*pPara) << _T("\"The minimum radius of curvature of tendon ducts shall take into account the tendon size, duct type and shape, and the location relative to the stress anchorage; subject to the manufacturer's recommendations.\"");
+      (*pPara) << _T(" The minimum curvatures are evaluated against the LRFD 7th Edition criteria.") << rptNewLine;
+   }
+
    GET_IFACE2(pBroker, IDuctLimits, pDuctLimits);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {

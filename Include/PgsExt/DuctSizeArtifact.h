@@ -25,27 +25,13 @@
 
 #include <PgsExt\PgsExtExp.h>
 
-/*****************************************************************************
-CLASS 
-   pgsDuctSizeArtifact
-
-   Code check artifact for duct sizing requirements (LRFD 5.4.6.2)
-*****************************************************************************/
-
 class PGSEXTCLASS pgsDuctSizeArtifact
 {
 public:
    pgsDuctSizeArtifact();
+   ~pgsDuctSizeArtifact() = default;
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsDuctSizeArtifact(const pgsDuctSizeArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsDuctSizeArtifact();
-
-   pgsDuctSizeArtifact& operator = (const pgsDuctSizeArtifact& rOther);
+   pgsDuctSizeArtifact& operator = (const pgsDuctSizeArtifact&) = default;
 
    void SetRadiusOfCurvature(Float64 r,Float64 rMin);
    void GetRadiusOfCurvature(Float64* pR,Float64* pRmin) const;
@@ -60,13 +46,6 @@ public:
    bool PassedRadiusOfCurvature() const;
    bool PassedDuctArea() const;
    bool PassedDuctSize() const;
-
-protected:
-   //------------------------------------------------------------------------
-   void MakeCopy(const pgsDuctSizeArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsDuctSizeArtifact& rOther);
 
 private:
    Float64 m_Apt;

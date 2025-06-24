@@ -23,11 +23,6 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\DuctSizeArtifact.h>
 
-/****************************************************************************
-CLASS
-   pgsDuctSizeArtifact
-****************************************************************************/
-
 pgsDuctSizeArtifact::pgsDuctSizeArtifact()
 {
    m_Apt = 0;
@@ -40,25 +35,6 @@ pgsDuctSizeArtifact::pgsDuctSizeArtifact()
 
    m_R = 0;
    m_Rmin = 0;
-}
-
-pgsDuctSizeArtifact::pgsDuctSizeArtifact(const pgsDuctSizeArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsDuctSizeArtifact::~pgsDuctSizeArtifact()
-{
-}
-
-pgsDuctSizeArtifact& pgsDuctSizeArtifact::operator= (const pgsDuctSizeArtifact& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 void pgsDuctSizeArtifact::SetRadiusOfCurvature(Float64 r,Float64 rMin)
@@ -103,7 +79,7 @@ void pgsDuctSizeArtifact::GetDuctSize(Float64* pOD,Float64* pMinGrossThickness,F
 
 bool pgsDuctSizeArtifact::Passed() const
 {
-   return PassedDuctArea() && PassedDuctSize() & PassedRadiusOfCurvature();
+   return PassedDuctArea() && PassedDuctSize() && PassedRadiusOfCurvature();
 }
 
 bool pgsDuctSizeArtifact::PassedRadiusOfCurvature() const
@@ -119,23 +95,4 @@ bool pgsDuctSizeArtifact::PassedDuctArea() const
 bool pgsDuctSizeArtifact::PassedDuctSize() const
 {
    return m_OD <= m_Tmax*m_MinGrossThickness;
-}
-
-void pgsDuctSizeArtifact::MakeCopy(const pgsDuctSizeArtifact& rOther)
-{
-   m_Apt = rOther.m_Apt;
-   m_Aduct = rOther.m_Aduct;
-   m_Kmax = rOther.m_Kmax;
-
-   m_OD = rOther.m_OD;
-   m_Tmax = rOther.m_Tmax;
-   m_MinGrossThickness = rOther.m_MinGrossThickness;
-
-   m_R = rOther.m_R;
-   m_Rmin = rOther.m_Rmin;
-}
-
-void pgsDuctSizeArtifact::MakeAssignment(const pgsDuctSizeArtifact& rOther)
-{
-   MakeCopy( rOther );
 }
