@@ -29,12 +29,13 @@
 
 #include <PgsExt\SegmentRelatedStatusItem.h>
 
-#include <IFace/Tools.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\Project.h>
 #include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFUIIntegration.h>
 #include <IFace\Bridge.h>
+#include <Reporting\SpanGirderBearingReportSpecification.h>
+#include <AgentTools.h>
 
 
 // inline functions to determine whether to print status center items
@@ -159,9 +160,13 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
    auto pGirderRptSpec     = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGirderLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
+   //Determine if the report spec ha bearng information
+   auto pBearingRptSpec    = std::dynamic_pointer_cast<const CBearingReportSpecification>(pRptSpec);
+
    CGirderKey girderKey;
 
    bool bGirderReport = true;
+   bool bBearingReport = false;
    if ( pGirderRptSpec != nullptr )
    {
       girderKey = pGirderRptSpec->GetGirderKey();
@@ -180,6 +185,9 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
    {
       bGirderReport = false;
    }
+
+   if (pBearingRptSpec != nullptr)
+       bBearingReport = true;
 
    pPara = new rptParagraph;
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
@@ -475,7 +483,7 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
    }
 
    // Status Center Items
-   if ( bGirderReport )
+   if ( bGirderReport || bBearingReport)
    {
       GET_IFACE2(broker, IBridge,pBridge);
       

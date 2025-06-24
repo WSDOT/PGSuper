@@ -40,6 +40,7 @@ public:
 
    // Data for Bearing input
    BearingInputData m_BearingInputData;
+   CBearingDetailsDlg m_details_dlg;
    CMetaFileStatic m_Bearing;
 
    bool m_IsMsgFromMe;
@@ -54,5 +55,7 @@ public:
    afx_msg void OnCbnSelchangeBrgType();
    afx_msg void OnCbnSelchangeBrgShape();
    afx_msg void OnCbnSelchangeBrgCount();
+   afx_msg void OnCbnSelchangeBrgDefType();
+   afx_msg void OnCbnEditBearingDetails();
    afx_msg void OnHelp();
 };

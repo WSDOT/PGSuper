@@ -20,6 +20,9 @@
     <ClCompile Include="ExportDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\SharedCtrls\MultiSelectGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KDOTExporter.hxx" />

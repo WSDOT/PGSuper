@@ -23,6 +23,7 @@
 #pragma once
 
 #include "BearingPierGrid.h"
+#include "BearingDetailsDlg.h"
 
 // CBearingSame4BridgeDlg dialog
 
@@ -47,7 +48,11 @@ protected:
 
 public:
    CBearingData2 m_BearingData;
+   CBearingDetailsDlg m_details_dlg;
    afx_msg void OnCbnSelchangeBrgShape();
    virtual BOOL OnInitDialog();
    afx_msg void OnCbnSelchangeBrgCount();
+   afx_msg void OnCbnSelchangeBrgDefType();
+   afx_msg void OnCbnEditBearingDetails();
+
 };
