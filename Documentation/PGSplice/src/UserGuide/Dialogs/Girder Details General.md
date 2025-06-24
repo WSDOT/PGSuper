@@ -24,7 +24,7 @@ Item | Description
 Duct Grid | Grid listing the general parameters of the ducts and tendons. See Duct Grid below for details.
 Duct Material | Select the duct material. Used for evaluation the provisions of LRFD 5.4.6.1. This setting does not effect the duct friction factor or wobble coefficient. Select Project > Losses to edit duct friction factors.
 Strand Size | Select the tendon strand size
-Installation Method | Select the strand installation method. Used to evaluate the provisions of LRFD 5.4.6.2
+Installation Method | Select the strand installation method. Used to evaluate the provisions of LRFD 5.4.6.2. (Starting with LRFD 10th Edition, the requirements of LRFD 5.4.6.2 are no longer contingent upon the strand installation method)
 
 ### Duct Grid ###
 Enter the following information in the duct grid. The first two items define the duct geometry. The remainder of the items define the tendon and the jacking force parameters.

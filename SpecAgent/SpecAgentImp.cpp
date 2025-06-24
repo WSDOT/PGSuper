@@ -4253,7 +4253,18 @@ Float64 CSpecAgentImp::GetTendonAreaLimit(pgsTypes::StrandInstallationType insta
    // LRFD 5.4.6.2
    const SpecLibraryEntry* pSpecEntry = GetSpec();
    const auto& duct_size_criteria = pSpecEntry->GetDuctSizeCriteria();
-   return (installationType == pgsTypes::sitPush ? duct_size_criteria.DuctAreaPushRatio : duct_size_criteria.DuctAreaPullRatio);
+   Float64 ratio = 0.0;
+   if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition())
+   {
+      // starting with LRFD 10th Edition, ratio is no longer a function of installation method
+      // the ratio is stored in the DuctAreaPullRatio variable
+      ratio = duct_size_criteria.DuctAreaPullRatio;
+   }
+   else
+   {
+      ratio = (installationType == pgsTypes::sitPush ? duct_size_criteria.DuctAreaPushRatio : duct_size_criteria.DuctAreaPullRatio);
+   }
+   return ratio;
 }
 
 Float64 CSpecAgentImp::GetSegmentDuctDeductionFactor(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const

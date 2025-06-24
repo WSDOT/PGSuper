@@ -58,10 +58,16 @@ void DuctSizeCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayU
    pPara = new rptParagraph;
    *pChapter << pPara;
    
-   *pPara << _T("Maximum ratio of inside area of duct to net area of prestressing steel:") << rptNewLine;
-   *pPara << DuctAreaPushRatio << _T(" for strands placed by the push method") << rptNewLine;
-   *pPara << DuctAreaPullRatio << _T(" for strands placed by the pull method") << rptNewLine;
-   *pPara << rptNewLine;
+   if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition())
+   {
+      *pPara << _T("Maximum ratio of inside area of duct to net area of prestressing steel: ") << DuctAreaPullRatio << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("Maximum ratio of inside area of duct to net area of prestressing steel:") << rptNewLine;
+      *pPara << _T("   * ") << DuctAreaPushRatio << _T(" for strands placed by the push method") << rptNewLine;
+      *pPara << _T("   * ") << DuctAreaPullRatio << _T(" for strands placed by the pull method") << rptNewLine;
+   }
    *pPara << _T("Nominal diameter of ducts shall not exceed ") << DuctDiameterRatio << _T(" times the least gross concrete thickness at the duct") << rptNewLine;
 }
 

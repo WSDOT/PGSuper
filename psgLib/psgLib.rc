@@ -12,8 +12,7 @@
 #include <WBFLGrid.h>
 #if !defined _NOGRID
 #include "grid\gxresrc.h"
-#endif
-
+#endif
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -593,11 +592,11 @@ BEGIN
     LTEXT           "Compute the transfer length of prestressing strands using the following method:",IDC_STATIC,20,281,247,10
     COMBOBOX        IDC_COMBO_TRANSFER,20,293,230,39,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Size of Ducts (LRFD 5.4.6.2)",IDC_STATIC,7,320,395,80
-    LTEXT           "Minimum ratio of inside area of duct to net area of prestressing steel",IDC_STATIC,16,332,212,8
+    LTEXT           "Minimum ratio of inside area of duct to net area of prestressing steel",IDC_DUCT_AREA_RATIO_DESC,16,332,212,8
     EDITTEXT        IDC_PUSH_METHOD,31,344,30,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "for strands placed by the push method",IDC_STATIC,65,347,121,8
+    LTEXT           "for strands placed by the push method",IDC_PUSH_METHOD_DESC,65,347,121,8
     EDITTEXT        IDC_PULL_METHOD,31,360,30,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "for strands placed by the pull-through method",IDC_STATIC,65,363,142,8
+    LTEXT           "for strands placed by the pull-through method",IDC_PULL_METHOD_DESC,65,363,142,8
     LTEXT           "Outside diameter of duct shall not exceed ",IDC_DUCT_SIZE_LABEL,17,383,133,8
     EDITTEXT        IDC_DUCT_SIZE_RATIO,150,381,26,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "times the least gross concrete thickness at the duct",IDC_STATIC,179,383,162,8
@@ -3160,8 +3159,7 @@ LANGUAGE 9, 1
 #endif
 #if !defined _NOGRID
 #include "grid\gxres.rc"
-#endif
-
+#endif
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

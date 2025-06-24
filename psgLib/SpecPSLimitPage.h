@@ -66,6 +66,8 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
+	CRect ratio_rect;
+
    void EnableControls(BOOL bEnable,UINT nSR,UINT nLR);
 public:
    virtual BOOL OnSetActive();
