@@ -792,10 +792,11 @@ typedef struct pgsTypes
 
    typedef enum DuctType
    {
-      // See LRFD 5.4.6.1
+      // See LRFD 5.9.3.2.2 and 5.4.6.1
       dtMetal,   // galvanized ferrous metal
-      dtPlastic, // polyethylene
-      dtFormed   // formed in concrete with removable cores
+      dtPolyethylene, // polyethylene (removed in LRFD 10th Edition)
+      dtFormed,   // formed in concrete with removable cores
+      dtCorrugatedPolymer // added in LRFD 10th Edition
    } DuctType;
 
    typedef enum StrandInstallationType

@@ -394,7 +394,7 @@ void write_segment_pt(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> p
 
    std::array<std::_tstring, 2> strDuctGeometryType{ _T("Straight"),_T("Parabolic") };
    std::array<std::_tstring, 3> strJackingEnd{ _T("Left"), _T("Right"), _T("Both") };
-   std::array<std::_tstring, 3> strDuctType{ _T("Galvanized ferrous metal"),_T("Polyethylene"), _T("Formed in concrete with removable cores") };
+   std::array<std::_tstring, 4> strDuctType{ _T("Galvanized ferrous metal"),_T("Polyethylene"), _T("Formed in concrete with removable cores"), _T("Corrugated Polymer") };
    std::array<std::_tstring, 2> strInstallationMethod{ _T("Push"),_T("Pull") };
    std::array<std::_tstring, 2> strGirderFace{ _T("Top"),_T("Bottom") };
 
@@ -955,7 +955,7 @@ void write_girder_pt(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pB
 
    std::array<std::_tstring, 3> strDuctGeometryType{ _T("Linear"),_T("Parabolic"),_T("Offset") };
    std::array<std::_tstring, 3> strJackingEnd{ _T("Left"), _T("Right"), _T("Both") };
-   std::array<std::_tstring, 3> strDuctType{ _T("Galvanized ferrous metal"),_T("Polyethylene"), _T("Formed in concrete with removable cores") };
+   std::array<std::_tstring, 4> strDuctType{ _T("Galvanized ferrous metal"),_T("Polyethylene"), _T("Formed in concrete with removable cores"), _T("Corrugated Polymer") };
    std::array<std::_tstring, 2> strInstallationMethod{ _T("Push"),_T("Pull") };
 
    rptParagraph* pHead = new rptParagraph(rptStyleManager::GetHeadingStyle());

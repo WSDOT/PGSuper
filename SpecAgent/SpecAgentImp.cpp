@@ -4201,7 +4201,7 @@ Float64 CSpecAgentImp::GetRadiusOfCurvatureLimit(pgsTypes::DuctType ductType) co
    // and the location relative to the stress anchorage; subject to the manufacturer's recommendations"...
    // This is not an enforceable requirement... we will retain the 30 ft and 20 ft limitations but could
    // expend the Project Criteria to make this user defined input
-   return WBFL::Units::ConvertToSysUnits(ductType == pgsTypes::dtPlastic ? 30.0 : 20.0, WBFL::Units::Measure::Feet);
+   return WBFL::Units::ConvertToSysUnits(ductType == pgsTypes::dtMetal ? 20.0 : 30.0, WBFL::Units::Measure::Feet);
 }
 
 Float64 CSpecAgentImp::GetSegmentTendonRadiusOfCurvatureLimit(const CSegmentKey& segmentKey) const

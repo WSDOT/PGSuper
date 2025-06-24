@@ -104,10 +104,12 @@ inline LPCTSTR GetDuctMaterialStr(pgsTypes::DuctType dtype)
    {
    case pgsTypes::dtMetal:
       return _T("Galvanized ferrous metal");
-   case pgsTypes::dtPlastic:
+   case pgsTypes::dtPolyethylene:
       return _T("Polyethylene");
    case pgsTypes::dtFormed:
       return _T("Formed in concrete with removable cores");
+   case pgsTypes::dtCorrugatedPolymer:
+      return _T("Corrugated Polymer");
    }
 
    return _T("Invalid");

@@ -457,6 +457,7 @@ void CSplicedGirderGeneralPage::FillDuctType()
    pcbDuctType->AddString(_T("Galvanized ferrous metal"));
    pcbDuctType->AddString(_T("Polyethylene"));
    pcbDuctType->AddString(_T("Formed in concrete with removable cores"));
+   pcbDuctType->AddString(_T("Corrugated Polymer"));
 }
 
 void CSplicedGirderGeneralPage::FillInstallationType()
