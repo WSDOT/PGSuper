@@ -24,6 +24,7 @@
 
 
 #include "PsgLibLib.h"
+#include <PsgLib\SpecLibraryEntry.h>
 #include <EngTools/BearingDesignCriteria.h>
 
 
