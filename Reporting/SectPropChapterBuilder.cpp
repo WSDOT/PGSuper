@@ -222,7 +222,18 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
       if ( IsStructuralDeck(pBridge->GetDeckType()) )
       {
          GET_IFACE2(pBroker, IMaterials,         pMaterial);
-        (*pPara) << _T("Deck   ") << RPT_EC << _T(" = ") << modE.SetValue( pMaterial->GetDeckEc28() ) << rptNewLine;
+         Float64 Ecdeck = pMaterial->GetDeckEc28();
+        (*pPara) << _T("Deck   ") << RPT_EC << _T(" = ") << modE.SetValue( Ecdeck ) << rptNewLine;
+
+        // Report girder Ec and n if there is only one segment in this girder
+        if (girderKeys.size()==1 && pBridge->GetSegmentCount(girderKeys[0].groupIndex, girderKeys[0].girderIndex)==1)
+        {
+           INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+
+           CSegmentKey segKey(girderKeys[0].groupIndex, girderKeys[0].girderIndex, 0);
+           Float64 Ecg = pMaterial->GetSegmentEc28(segKey); 
+           (*pPara) << _T("Girder   ") << RPT_EC << _T(" = ") << modE.SetValue(Ecg) << _T(", n = (Deck ") << RPT_EC << _T(")/(Girder ") << RPT_EC << _T(") = ") << scalar.SetValue(Ecdeck/Ecg) << rptNewLine;
+        }
         (*pPara) << rptNewLine;
       }
 
