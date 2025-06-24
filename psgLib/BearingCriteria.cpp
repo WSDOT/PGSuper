@@ -103,7 +103,8 @@ void BearingCriteria::Save(WBFL::System::IStructuredSave* pSave) const
    pSave->Property(_T("bUseImpactForBearingReactions"), bUseImpactForBearingReactions);
 
    pSave->Property(_T("bCheck"), bCheck);
-   int design_method = static_cast<int>(BearingDesignMethod);
+
+   int design_method = static_cast<int>(AnalysisMethod);
    pSave->Property(_T("BearingDesignMethod"), design_method);
    pSave->Property(_T("MinimumElastomerShearModulus"), MinimumElastomerShearModulus);
    pSave->Property(_T("MaximumElastomerShearModulus"), MaximumElastomerShearModulus);
@@ -140,8 +141,9 @@ void BearingCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
     if (pLoad->GetVersion() > 1.0)
     {
         if (!pLoad->Property(_T("bCheck"), &bCheck)) THROW_LOAD(InvalidFileFormat, pLoad);
-        int design_method = static_cast<int>(BearingDesignMethod);
+        int design_method = static_cast<int>(AnalysisMethod);
         if (!pLoad->Property(_T("BearingDesignMethod"), &design_method)) THROW_LOAD(InvalidFileFormat, pLoad);
+        AnalysisMethod = static_cast<WBFL::EngTools::BearingAnalysisMethod>(design_method);
         if (!pLoad->Property(_T("MinimumElastomerShearModulus"), &MinimumElastomerShearModulus)) THROW_LOAD(InvalidFileFormat, pLoad);
         if (!pLoad->Property(_T("MaximumElastomerShearModulus"), &MaximumElastomerShearModulus)) THROW_LOAD(InvalidFileFormat, pLoad);
         if (!pLoad->Property(_T("bRequiredIntermediateElastomerThickness"), &bRequiredIntermediateElastomerThickness)) THROW_LOAD(InvalidFileFormat, pLoad);

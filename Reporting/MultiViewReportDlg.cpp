@@ -31,7 +31,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#include <PsgLib\GirderLabel.h>
 
 #include "RMultiGirderSelectDlg.h"
 #include <EAF\EAFDocument.h>
@@ -42,12 +41,10 @@
 
 IMPLEMENT_DYNAMIC(CMultiViewReportDlg, CDialog)
 
-CMultiViewReportDlg::CMultiViewReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,
-                                         const CGirderKey& girderKey,
-                                         UINT nIDTemplate,CWnd* pParent)
+CMultiViewReportDlg::CMultiViewReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,
+    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec, UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
-   m_GirderKey = girderKey;
    m_pBroker = pBroker;
 }
 
@@ -61,26 +58,13 @@ void CMultiViewReportDlg::DoDataExchange(CDataExchange* pDX)
 
 	CDialog::DoDataExchange(pDX);
 
-	DDX_Control(pDX, IDC_LIST, m_ChList);
+   DDX_Control(pDX, IDC_LIST, m_ChList);
 
    DDX_CBIndex(pDX, IDC_SPAN, (int&)m_GirderKey.groupIndex);
    DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_GirderKey.girderIndex);
 
    if ( pDX->m_bSaveAndValidate )
    {
-      // Girder list
-      // Make list of one if single girder is checked
-      BOOL enab_sgl = IsDlgButtonChecked(IDC_RADIO1) == BST_CHECKED ? TRUE : FALSE;
-      if (enab_sgl)
-      {
-         m_GirderKeys.clear();
-         m_GirderKeys.push_back(m_GirderKey);
-      }
-      else if (m_GirderKeys.empty())
-      {
-         AfxMessageBox(_T("You must select at least one girder"));
-         pDX->Fail();
-      }
 
       // Chapters
       m_ChapterList.clear();
@@ -125,30 +109,7 @@ BOOL CMultiViewReportDlg::OnInitDialog()
    pwndTitle->SetWindowText(m_RptDesc.GetReportName().c_str());
 
    GET_IFACE(IBridge, pBridge);
-   bool bMultiSelect = false;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   if (m_GirderKey.groupIndex == ALL_GROUPS || m_GirderKey.girderIndex == ALL_GIRDERS)
-   {
-      // if all groups or all girders, fill the girder keys
-      bMultiSelect = true;
-      GroupIndexType firstGroupIdx = (m_GirderKey.groupIndex == ALL_GROUPS ? 0 : m_GirderKey.groupIndex);
-      GroupIndexType lastGroupIdx = (m_GirderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
-      for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
-      {
-         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-         GirderIndexType firstGirderIdx = (m_GirderKey.girderIndex == ALL_GIRDERS ? 0 : m_GirderKey.girderIndex);
-         GirderIndexType lastGirderIdx = (m_GirderKey.girderIndex == ALL_GIRDERS ? nGirders - 1 : firstGirderIdx);
-         for (GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++)
-         {
-            m_GirderKeys.emplace_back(grpIdx,gdrIdx);
-         }
-      }
-      m_GirderKey.groupIndex = firstGroupIdx;
-      m_GirderKey.girderIndex = (m_GirderKey.girderIndex == ALL_GIRDERS ? 0 : m_GirderKey.girderIndex);
-   }
-
-   CheckDlgButton(bMultiSelect ? IDC_RADIO2 : IDC_RADIO1,BST_CHECKED);
-   OnBnClickedRadio();
 
    // Fill up the span and girder combo boxes
 
@@ -179,10 +140,7 @@ BOOL CMultiViewReportDlg::OnInitDialog()
 
    UpdateChapterList();
 
-   if ( m_pInitRptSpec )
-      InitFromRptSpec();
 
-   UpdateButtonText();
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
@@ -284,67 +242,15 @@ void CMultiViewReportDlg::InitChapterListFromSpec()
    }
 }
 
-void CMultiViewReportDlg::InitFromRptSpec()
-{
-   std::shared_ptr<CMultiViewSpanGirderReportSpecification> pRptSpec = std::dynamic_pointer_cast<CMultiViewSpanGirderReportSpecification>(m_pInitRptSpec);
-   if (pRptSpec)
-   {
-      m_GirderKeys.clear();
-      m_GirderKeys = pRptSpec->GetGirderKeys();
-      m_GirderKey = m_GirderKeys.front();
-   }
-   else
-   {
-      ATLASSERT(false);
-      return;
-   }
 
-   UpdateData(FALSE);
 
-   InitChapterListFromSpec();
-}
-
-void CMultiViewReportDlg::OnBnClickedRadio()
-{
-   BOOL enab_sgl = IsDlgButtonChecked(IDC_RADIO1) == BST_CHECKED ? TRUE : FALSE;
-   BOOL enab_mpl = enab_sgl ? FALSE : TRUE;
-
-   GetDlgItem(IDC_SPAN)->EnableWindow(enab_sgl);
-   GetDlgItem(IDC_GIRDER)->EnableWindow(enab_sgl);
-
-   GetDlgItem(IDC_SELECT_MULTIPLE_BUTTON)->EnableWindow(enab_mpl);
-
-   if ( enab_mpl && m_GirderKeys.size() == 0 )
-   {
-      OnBnClickedSelectMultipleButton();
-   }
-}
 
 void CMultiViewReportDlg::OnBnClickedSelectMultipleButton()
 {
 
-   CRMultiGirderSelectDlg dlg;
-   dlg.m_SelGdrs = m_GirderKeys;
-
-   if (dlg.DoModal()==IDOK)
-   {
-      m_GirderKeys = dlg.m_SelGdrs;
-
-      UpdateButtonText();
-   }
 }
 
-std::vector<CGirderKey> CMultiViewReportDlg::GetGirderKeys() const
-{
-   return m_GirderKeys;
-}
 
-void CMultiViewReportDlg::UpdateButtonText()
-{
-   CString msg;
-   msg.Format(_T("Select Girders\n(%d Selected)"), m_GirderKeys.size());
-   GetDlgItem(IDC_SELECT_MULTIPLE_BUTTON)->SetWindowText(msg);
-}
 
 void CMultiViewReportDlg::OnSelectAll()
 {

@@ -10,7 +10,7 @@
 #define IDC_HELPBTN                     250
 #define IDC_SELECT_ALL                  255
 #define IDC_CLEAR_ALL                   256
-#define IDD_MULTI_GIRDER_SELECT         317
+#define IDD_MULTI_SELECT                317
 #define IDC_SELECT_GRID                 1606
 #define IDD_LOADRATINGREPORT            2999
 #define IDD_SPANGIRDERREPORT            3000
@@ -23,6 +23,7 @@
 #define IDD_MULTIGIRDERREPORT           3004
 #define IDC_GIRDER2                     3004
 #define IDC_SEGMENT                     3004
+#define IDC_GROUP_BEARING_SELECT        3004
 #define IDC_LABEL                       3005
 #define IDS_E_NOGIRDERS                 3005
 #define IDD_MULTIVIEWREPORT             3005
@@ -30,6 +31,8 @@
 #define IDD_EQUILIBRIUM_CHECK           3006
 #define IDC_DESIGN                      3007
 #define IDD_POI_SELECT                  3007
+#define IDC_GIRDER3                     3007
+#define IDC_FACE                        3007
 #define IDC_CHECK2                      3008
 #define IDC_RATING                      3008
 #define IDD_DIALOG1                     3008
@@ -56,19 +59,22 @@
 #define IDC_BUTTON2                     3021
 #define IDC_DESELECT_ALL                3021
 #define IDD_TIMESTEP_SHEAR_DEFORMATION_DETAILS 3022
-#define IDC_GIRDERLINE_SHEAR_DEF        3022
-#define IDC_INTERVAL_SHEAR_DEF          3023
-#define IDC_ALL_LOCATIONS_SHEAR_DEF     3024
-#define IDC_SLIDER_SHEAR_DEF            3025
-#define IDC_LOCATION_SHEAR_DEF          3026
+#define IDC_GIRDERLINE_SHEAR_DEF        3023
+#define IDD_MULTIBEARINGREPORT          3023
+#define IDC_INTERVAL_SHEAR_DEF          3024
+#define IDC_ALL_LOCATIONS_SHEAR_DEF     3026
+#define IDC_SLIDER_SHEAR_DEF            3027
+#define IDC_LOCATION_SHEAR_DEF          3028
+#define IDC_STATIC_MULTI_SELECT_ITEM    3028
+#define IDC_GROUP_GIRDER_SELECT         3029
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        3014
+#define _APS_NEXT_RESOURCE_VALUE        3015
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         3027
+#define _APS_NEXT_CONTROL_VALUE         3030
 #define _APS_NEXT_SYMED_VALUE           3000
 #endif
 #endif

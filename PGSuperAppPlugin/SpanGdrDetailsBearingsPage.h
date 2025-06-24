@@ -64,6 +64,8 @@ private:
 
    pgsTypes::BearingType m_MyBearingType; // this dialog works for both single girders and spans. This tells us which one
 
+   CBearingDetailsDlg m_details_dlg;
+
    bool m_IsMsgFromMe;
 
 public:
@@ -75,9 +77,12 @@ public:
    virtual BOOL OnInitDialog();
    afx_msg void OnBnClickedEditBearings();
    afx_msg void OnCbnSelchangeBrgType();
+   afx_msg void OnCbnSelchangeBrgDefType();
    afx_msg void OnCbnSelchangeBrgShape1();
    afx_msg void OnCbnSelchangeBrgCount1();
+   afx_msg void OnCbnEditBearingDetails1();
    afx_msg void OnCbnSelchangeBrgShape2();
    afx_msg void OnCbnSelchangeBrgCount2();
+   afx_msg void OnCbnEditBearingDetails2();
    afx_msg void OnHelp();
 };
