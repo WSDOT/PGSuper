@@ -29,6 +29,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
+#include <IFace/Limits.h>
 
 #include <LRFD\ConcreteUtil.h>
 #include <PsgLib\BridgeDescription2.h>
@@ -2630,7 +2631,14 @@ std::unique_ptr<WBFL::LRFD::LRFDConcrete> CConcreteManager::CreateLRFDConcreteMo
    Float64 lambda = WBFL::LRFD::ConcreteUtil::ComputeConcreteDensityModificationFactor((WBFL::Materials::ConcreteType)concrete.Type,concrete.StrengthDensity,concrete.bHasFct,concrete.Fct,concrete.Fc);
    pLRFDConcrete->SetLambda(lambda);
 
-   if (concrete.Type == pgsTypes::Normal && (stepTime-startTime) < 90)
+   bool bApplicableType = false;
+   // LRFD 10th Edition, 2024 made LWC an applicable type
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::TenthEdition2024)
+      bApplicableType = IsNWC(concrete.Type) ? true : false;
+   else
+      bApplicableType = IsNWC(concrete.Type) || IsLWC(concrete.Type) ? true : false;
+
+   if (bApplicableType && (stepTime - startTime) < 90)
    {
       GET_IFACE(ILibrary, pLib);
       GET_IFACE(ISpecification, pSpec);

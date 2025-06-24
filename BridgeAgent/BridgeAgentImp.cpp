@@ -13015,19 +13015,10 @@ Float64 CBridgeAgentImp::GetSegmentDesignFc(const CSegmentKey& segmentKey,Interv
          else
          {
             // return the specified 28 day strength
-            GET_IFACE(ILibrary, pLib);
-            GET_IFACE(ISpecification, pSpec);
-            const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-            const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
-
+            GET_IFACE(IConcreteStressLimits, pConcreteLimits);
             Float64 age = GetSegmentConcreteAge(segmentKey, intervalIdx, pgsTypes::Middle);
             auto type = GetSegmentConcreteType(segmentKey);
-            Float64 f = 1.0;
-            if (type == pgsTypes::Normal && limit_state_concrete_strength_criteria.bUse90DayConcreteStrength && limit_state_concrete_strength_criteria.SlowCuringConcreteStrengthFactor != 1.0 && 90 < age)
-            {
-               f = limit_state_concrete_strength_criteria.SlowCuringConcreteStrengthFactor;
-            }
-               
+            Float64 f = pConcreteLimits->GetSlowCuringConcreteStrengthFactor(pgsTypes::ServiceI, type, age);
             return f*pSegment->Material.Concrete.Fc;
          }
       }

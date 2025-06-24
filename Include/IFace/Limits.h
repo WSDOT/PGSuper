@@ -373,6 +373,9 @@ public:
 
    /// @brief Returns the name used for concrete stress limit names (concrete strength or cracking strength)
    virtual std::_tstring GetConcreteStressLimitParameterName(pgsTypes::StressType stressType, pgsTypes::ConcreteType concreteType) const = 0;
+
+   /// @brief Returns the concrete strength increase factor for slow curing concretes per LRFD 5.12.3.2.5
+   virtual Float64 GetSlowCuringConcreteStrengthFactor(pgsTypes::LimitState limitState, pgsTypes::ConcreteType type, Float64 age) const = 0;
 };
 
 

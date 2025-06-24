@@ -32,6 +32,7 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PsgLib/HaulingCriteria.h>
 #include <PsgLib\SpecLibraryEntry.h>
+#include <psgLib/LimitStateConcreteStrengthCriteria.h>
 #include <LRFD\PsStrand.h>
 #include <LRFD\Rebar.h>
 
@@ -881,6 +882,32 @@ std::_tstring CSpecAgentImp::GetConcreteStressLimitParameterName(pgsTypes::Stres
    }
 
    return strParamName;
+}
+
+Float64 CSpecAgentImp::GetSlowCuringConcreteStrengthFactor(pgsTypes::LimitState limitState, pgsTypes::ConcreteType type, Float64 age) const
+{
+   // only applicable to service limit states and concrete age 90 days are greater
+   if (!IsServiceLimitState(limitState) || age <= 90.)
+      return 1.0;
+
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
+
+   bool bApplicableType = false;
+   // LRFD 10th Edition, 2024 made LWC an applicable type
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::TenthEdition2024)
+      bApplicableType = IsNWC(type) ? true : false;
+   else
+      bApplicableType = IsNWC(type) || IsLWC(type) ? true : false;
+
+   Float64 f = 1.0;
+   if (bApplicableType && limit_state_concrete_strength_criteria.bUse90DayConcreteStrength && limit_state_concrete_strength_criteria.SlowCuringConcreteStrengthFactor != 1.0 && 90 < age)
+   {
+      f = limit_state_concrete_strength_criteria.SlowCuringConcreteStrengthFactor;
+   }
+   return f;
 }
 
 void CSpecAgentImp::ReportSegmentConcreteTensionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const

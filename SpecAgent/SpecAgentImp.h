@@ -185,6 +185,8 @@ public:
    Float64 ComputeRequiredConcreteStrength(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 stressDemand,const StressCheckTask& task,bool bWithBondedReinforcement,bool bInPrecompressedTensileZone) const override;
    std::_tstring GetConcreteStressLimitParameterName(pgsTypes::StressType stressType, pgsTypes::ConcreteType concreteType) const override;
 
+   Float64 GetSlowCuringConcreteStrengthFactor(pgsTypes::LimitState limitState, pgsTypes::ConcreteType type, Float64 age) const override;
+
 // ITransverseReinforcementSpec
 public:
    WBFL::Materials::Rebar::Size GetMinConfinementBarSize() const override;

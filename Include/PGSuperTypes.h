@@ -2290,7 +2290,7 @@ inline bool IsDirectStrandModel(pgsTypes::StrandDefinitionType strandModelType)
    return (strandModelType == pgsTypes::sdtDirectRowInput || strandModelType == pgsTypes::sdtDirectStrandInput) ? true : false;
 }
 
-inline bool IsLNWC(pgsTypes::ConcreteType type)
+inline bool IsNWC(pgsTypes::ConcreteType type)
 {
    return type == pgsTypes::Normal;
 }
