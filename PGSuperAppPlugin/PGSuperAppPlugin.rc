@@ -354,12 +354,13 @@ BEGIN
         MENUITEM "&Closure Joint...",           ID_EDIT_CLOSURE
         MENUITEM "&Segment...",                 ID_EDIT_SEGMENT
         MENUITEM "&Girder...",                  ID_EDIT_GIRDER
-        MENUITEM "Bea&rings...",                ID_EDIT_BEARING
+        MENUITEM "&Bearings...",                ID_EDIT_BEARING
         MENUITEM "&Haunch...",                  ID_EDIT_HAUNCH
         MENUITEM "&Timeline...",                ID_EDIT_TIMELINE
         MENUITEM SEPARATOR
         MENUITEM "&Copy Girder Properties...",  ID_EDIT_COPYGIRDERPROPERTIES
         MENUITEM "Copy &Pier Properties...",    ID_EDIT_COPYPIERPROPERTIES
+        MENUITEM "Copy Bearing Properties...",  ID_EDIT_COPYBEARINGPROPERTIES
         MENUITEM "Copy Temporary Support Properties...", ID_EDIT_COPYTEMPSUPPORTPROPERTIES
         MENUITEM SEPARATOR
         MENUITEM "&Insert Span\tIns",           ID_INSERT
@@ -5580,4 +5581,5 @@ END
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
+
 

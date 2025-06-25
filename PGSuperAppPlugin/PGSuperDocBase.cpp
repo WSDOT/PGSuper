@@ -193,6 +193,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 #include "resource.h"       // main symbols 
+#include "CopyBearingDlg.h"
 
 #define PGSUPER_PLUGIN_COMMAND_COUNT 256
 
@@ -239,6 +240,7 @@ BEGIN_MESSAGE_MAP(CPGSDocBase, CEAFBrokerDocument)
    ON_COMMAND_RANGE(FIRST_COPY_GIRDER_PLUGIN,LAST_COPY_GIRDER_PLUGIN, OnCopyGirderProps)
    ON_COMMAND(ID_EDIT_COPYGIRDERPROPERTIES, OnCopyGirderPropsAll)
    ON_COMMAND(ID_EDIT_COPYPIERPROPERTIES, OnCopyPierPropsAll)
+    ON_COMMAND(ID_EDIT_COPYBEARINGPROPERTIES, OnCopyBearingPropsAll)
    ON_COMMAND_RANGE(FIRST_COPY_PIER_PLUGIN,LAST_COPY_PIER_PLUGIN, OnCopyPierProps)
 	ON_UPDATE_COMMAND_UI(ID_COPY_GIRDER_PROPS, OnUpdateCopyGirderPropsTb)
 	ON_UPDATE_COMMAND_UI(ID_COPY_PIER_PROPS, OnUpdateCopyPierPropsTb)
@@ -261,6 +263,9 @@ BEGIN_MESSAGE_MAP(CPGSDocBase, CEAFBrokerDocument)
 	ON_COMMAND(ID_OPTIONS_LABELS, OnOptionsLabels)
    ON_COMMAND(ID_PROJECT_LOSSES,OnLosses)
    ON_COMMAND(ID_EDIT_TIMELINE,OnEditTimeline)
+
+    ON_COMMAND(ID_COPY_BRG_PROPS, OnCopyBearingProps)
+
 
    ON_COMMAND(ID_VIEW_BRIDGEMODELEDITOR, OnViewBridgeModelEditor)
    ON_COMMAND(ID_VIEW_GIRDEREDITOR, OnViewGirderEditor)
@@ -3648,6 +3653,22 @@ void CPGSDocBase::OnCopyPierPropsAll()
    }
 }
 
+
+void CPGSDocBase::OnCopyBearingPropsAll()
+{
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+    try
+    {
+        CCopyBearingDlg dlg(m_pBroker);
+        dlg.DoModal();
+    }
+    catch (...)
+    {
+        ATLASSERT(0); // map access out of range is the likely problem
+    }
+}
+
 void CPGSDocBase::OnImportProjectLibrary() 
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -4067,6 +4088,11 @@ void CPGSDocBase::OnEditPier()
    }
 
    EditPierDescription(editPierIdx, EPD_GENERAL);
+}
+
+void CPGSDocBase::OnCopyBearingProps()
+{
+    OnCopyBearingPropsAll();
 }
 
 void CPGSDocBase::OnEditSpan() 
