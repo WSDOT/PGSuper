@@ -489,6 +489,7 @@ protected:
 	afx_msg void OnCopyGirderPropsAll();
 	afx_msg void OnCopyPierProps(UINT nID);
 	afx_msg void OnCopyPierPropsAll();
+	afx_msg void OnCopyBearingPropsAll();
 	afx_msg void OnImportProjectLibrary();
 	afx_msg void OnAddPointload();
 	afx_msg void OnAddDistributedLoad();
@@ -530,6 +531,7 @@ protected:
 public:
 	afx_msg void OnViewBridgeModelEditor();
 	afx_msg void OnViewGirderEditor();
+	afx_msg void OnCopyBearingProps();
    afx_msg void OnEditUserLoads();
 	afx_msg void OnViewLibraryEditor();
 	afx_msg void OnEffectiveFlangeWidth();
