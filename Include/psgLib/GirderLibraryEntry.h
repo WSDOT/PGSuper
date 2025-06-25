@@ -566,8 +566,8 @@ public:
    void SetMaxFractionDebondedStrandsPerRow(Float64 fraction);
    Float64 GetMaxFractionDebondedStrandsPerRow() const;
 
-   void SetMaxDebondedStrandsPerSection(StrandIndexType n10orLess, StrandIndexType number, bool bCheck,Float64 fraction);
-   void GetMaxDebondedStrandsPerSection(StrandIndexType* p10orLess, StrandIndexType* pNumber, bool* pbCheck, Float64* pFraction) const;
+   void SetMaxDebondedStrandsPerSection(StrandIndexType n10orLess, StrandIndexType n10orMore,StrandIndexType n10orMore_07Strand, bool bCheck,Float64 fraction);
+   void GetMaxDebondedStrandsPerSection(StrandIndexType* p10orLess, StrandIndexType* pn10orMore, StrandIndexType* pn10orMore_07Strand, bool* pbCheck, Float64* pFraction) const;
 
    void  SetMaxDebondedLength(bool useSpanFraction, Float64 spanFraction, bool useHardDistance, Float64 hardDistance);
    void  GetMaxDebondedLength(bool* pUseSpanFraction, Float64* pSpanFraction, bool* pUseHardDistance, Float64* pHardDistance)const;
@@ -707,6 +707,7 @@ private:
    Float64 m_MaxDebondStrandsPerRow;
    StrandIndexType m_MaxNumDebondedStrandsPerSection10orLess;
    StrandIndexType  m_MaxNumDebondedStrandsPerSection;
+   StrandIndexType m_MaxNumDebondedStrandsPerSectionFor07; // max number for 0.7" diameter strands (added as a required in LRFD 10th Edition)
    bool m_bCheckMaxNumDebondedStrandsPerSection;
    Float64 m_MaxDebondedStrandsPerSection;
    Float64 m_MinDebondLengthDB; // distance between debond sections as a multiple of strand diameters

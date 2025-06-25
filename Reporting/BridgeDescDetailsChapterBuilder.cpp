@@ -333,11 +333,11 @@ void write_debonding(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBr
       }
       *pPara << _T("Maximum number of debonded strands per row = ") << pGdrEntry->GetMaxFractionDebondedStrandsPerRow()*100 << _T("% of strands in any row") << rptNewLine;
 
-      StrandIndexType nDebonded10orLess, nDebonded;
+      StrandIndexType nDebonded10orLess, nDebonded, nDebonded07;
       bool bCheckMax;
       Float64 fMax;
-      pGdrEntry->GetMaxDebondedStrandsPerSection(&nDebonded10orLess,&nDebonded,&bCheckMax,&fMax);   
-      *pPara << _T("Maximum number of debonded strands per section. For 10 or fewer total strands ") << nDebonded10orLess << _T(" otherwise ") << nDebonded << _T(" strands");
+      pGdrEntry->GetMaxDebondedStrandsPerSection(&nDebonded10orLess,&nDebonded,&nDebonded07,&bCheckMax,&fMax);   
+      *pPara << _T("Maximum number of debonded strands per section. For 10 or fewer total strands ") << nDebonded10orLess << _T(" otherwise ") << nDebonded << _T(" strands or ") << nDebonded07 << _T(" for 0.7\" diameter strands");
       if (bCheckMax)
       {
          *pPara << _T(" but not more than ") << fMax * 100 << _T("% of strands debonded at any section");

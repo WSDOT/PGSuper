@@ -1356,10 +1356,13 @@ BEGIN
     EDITTEXT        IDC_MAX_STRANDS_PER_ROW,145,36,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "(% of total permanent strands in a row) ",IDC_STATIC,191,36,122,8
     LTEXT           "Maximum debonded strands per section. For 10 or fewer debonded strands",IDC_STATIC,15,53,218,8
-    EDITTEXT        IDC_MAX_NUM_PER_SECTION_10_OR_LESS,234,49,40,14,ES_AUTOHSCROLL
-    LTEXT           "strands, otherwise",IDC_STATIC,276,52,58,8
-    EDITTEXT        IDC_MAX_NUM_PER_SECTION,337,50,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "strands",IDC_STATIC,381,53,24,8
+    EDITTEXT        IDC_MAX_NUM_PER_SECTION_10_OR_LESS,227,49,21,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "strands, otherwise",IDC_STATIC,251,52,58,8
+    EDITTEXT        IDC_MAX_NUM_PER_SECTION,309,50,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "strands",IDC_STATIC,329,53,24,8
+    LTEXT           ", or",IDC_07_LABEL_1,352,53,11,8
+    EDITTEXT        IDC_MAX_NUM_PER_SECTION_FOR_07,364,50,20,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "for 0.7"" diameter strand",IDC_07_LABEL_2,386,53,74,8
     CONTROL         "but not greater than",IDC_CHECK_MAX_FRACTION_PER_SECTION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,39,69,78,10
     EDITTEXT        IDC_MAX_FRACTION_PER_SECTION,117,67,40,14,ES_RIGHT | ES_AUTOHSCROLL

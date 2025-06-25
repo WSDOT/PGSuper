@@ -1487,7 +1487,6 @@
 #define IDC_SHEAR_MOD_MIN_LIMIT_UNIT    1750
 #define IDC_SHEAR_MOD_MAX_LIMIT_UNIT2   1751
 #define IDC_SHEAR_MOD_MAX_LIMIT_UNIT    1751
-#define IDC_PUS_METHOD_DESC             1751
 #define IDC_PUSH_METHOD_DESC            1751
 #define IDS_E_USERDEFINED               1752
 #define IDC_REQ_INT_LAYER_THICK_UNIT    1752
@@ -1495,8 +1494,11 @@
 #define IDC_MIN_BEARING_HEIGHT_UNIT     1753
 #define IDC_DUCT_AREA_RATIO_DESC        1753
 #define IDC_MIN_BEARING_GIRDER_EDGE_UNIT 1754
+#define IDC_MAX_NUM_PER_SECTION_FOR_07  1754
 #define IDC_MAX_BEARING_GIRDER_EDGE_UNIT 1755
+#define IDC_07_LABEL_1                  1755
 #define IDC_REQ_BEARING_GIRDER_EDGE_UNIT 1756
+#define IDC_07_LABEL_2                  1756
 #define IDC_MAX_LL_DEF_LIMIT_UNIT       1757
 #define IDC_MAX_TL_LIMIT_UNIT           1758
 #define IDC_MAX_TL_UNIT                 1758
@@ -1539,7 +1541,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        335
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1754
+#define _APS_NEXT_CONTROL_VALUE         1757
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

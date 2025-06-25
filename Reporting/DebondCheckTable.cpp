@@ -176,11 +176,11 @@ void CDebondCheckTable::Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::B
       {
          *p << Bold(_T("Restriction B")) << rptNewLine;
       }
-      StrandIndexType nDebonded10orLess, nDebonded;
+      StrandIndexType nDebonded10orLess, nDebonded, nDebonded07;
       bool bCheckMax;
       Float64 fraMax;
-      pDebondLimits->GetMaxDebondedStrandsPerSection(segmentKey, &nDebonded10orLess, &nDebonded, &bCheckMax, &fraMax);
-      *p << _T("Debonding shall not be terminated for more than ") << nDebonded << _T(" strands in any given section. When a total of ten or fewer strands are debonded, debonding shall not be terminated for more than ") << nDebonded10orLess << _T(" strands in any given section");
+      pDebondLimits->GetMaxDebondedStrandsPerSection(segmentKey, &nDebonded10orLess, &nDebonded, &nDebonded07, &bCheckMax, &fraMax);
+      *p << _T("Debonding shall not be terminated for more than ") << nDebonded << _T(" strands in any given section or ") << nDebonded07 << _T(" strands for girders using 0.7-in. diameter strand. ") << _T("When a total of ten or fewer strands are debonded, debonding shall not be terminated for more than ") << nDebonded10orLess << _T(" strands in any given section.");
       if (bCheckMax)
       {
          *p << _T(", but not more than ") << percentage.SetValue(fraMax) << _T(" of all strands may be debonded");

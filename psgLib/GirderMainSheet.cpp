@@ -711,6 +711,7 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
 
    DDX_Text(pDX, IDC_MAX_NUM_PER_SECTION_10_OR_LESS, m_Entry.m_MaxNumDebondedStrandsPerSection10orLess);
    DDX_Text(pDX, IDC_MAX_NUM_PER_SECTION, m_Entry.m_MaxNumDebondedStrandsPerSection);
+   DDX_Text(pDX, IDC_MAX_NUM_PER_SECTION_FOR_07, m_Entry.m_MaxNumDebondedStrandsPerSectionFor07);
    DDX_Check_Bool(pDX, IDC_CHECK_MAX_FRACTION_PER_SECTION, m_Entry.m_bCheckMaxNumDebondedStrandsPerSection);
    DDX_Percentage(pDX,IDC_MAX_FRACTION_PER_SECTION, m_Entry.m_MaxDebondedStrandsPerSection);
 

@@ -3856,7 +3856,15 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
    Float64 db_max_percent_total = pDebondLimits->GetMaxDebondedStrands(m_SegmentKey);
    Float64 db_max_percent_row   = pDebondLimits->GetMaxDebondedStrandsPerRow(m_SegmentKey);
 
-   pDebondLimits->GetMaxDebondedStrandsPerSection(m_SegmentKey, &m_MaxDebondSection10orLess, &m_MaxDebondSection, &m_bCheckMaxFraAtSection, &m_MaxPercentDebondSection);
+   StrandIndexType nMax, nMax07;
+   pDebondLimits->GetMaxDebondedStrandsPerSection(m_SegmentKey, &m_MaxDebondSection10orLess, &nMax, &nMax07, &m_bCheckMaxFraAtSection, &m_MaxPercentDebondSection);
+
+   // starting with LRFD 10th edition, there is a different max number of strands for 0.7" diameter strands
+   // get the controlling value and set it here - the rest of the design algorithm is unaffected since it just uses the number, whatever it is.
+   // using the 10th edition 0.7" diameter strand limit for all LRFD. The validity of the guidance is independent of the LRFD edition.
+   GET_IFACE2(GetBroker(), IMaterials, pMaterials);
+   const WBFL::Materials::PsStrand* pStrand = pMaterials->GetStrandMaterial(m_SegmentKey, pgsTypes::Straight);
+   m_MaxDebondSection = pStrand->GetSize() == WBFL::Materials::PsStrand::Size::D1778 ? nMax07 : nMax;
 
    if (bCheckMaxPercentTotal)
    {

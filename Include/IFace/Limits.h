@@ -397,7 +397,7 @@ public:
    virtual bool CheckMaxDebondedStrands(const CSegmentKey& segmentKey) const = 0; // returns true if Max Debonded Strands is to be checked
    virtual Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey) const = 0;  // % of total
    virtual Float64 GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey) const = 0; // % of total in row
-   virtual void GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey,StrandIndexType* p10orLess,StrandIndexType* pNS,bool* pbCheckMax,Float64* pMaxFraction) const = 0;
+   virtual void GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey,StrandIndexType* p10orLess,StrandIndexType* pn10orMore,StrandIndexType* pn10orMore_07Strand,bool* pbCheckMax,Float64* pMaxFraction) const = 0;
    virtual void    GetMaxDebondLength(const CSegmentKey& segmentKey,Float64* pLen, pgsTypes::DebondLengthControl* pControl) const = 0;
 
    // Get the criteria for determining the minimum distance between termination of debond sections

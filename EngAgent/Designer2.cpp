@@ -5795,12 +5795,14 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
       pArtifact->SetSection(pgsDebondArtifact::K);
    }
 
+   GET_IFACE2(GetBroker(), IMaterials, pMaterials);
+   const WBFL::Materials::PsStrand* pStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight);
 
-   StrandIndexType nMax10orLess, nMax;
+   StrandIndexType nMax10orLess, nMax, nMax07;
    bool bCheckMaxPerSection;
    Float64 fraMaxPerSection;
-   pDebondLimits->GetMaxDebondedStrandsPerSection(segmentKey, &nMax10orLess, &nMax, &bCheckMaxPerSection, &fraMaxPerSection);
-   pArtifact->AddMaxDebondStrandsAtSection(nDebonded <= 10 ? nMax10orLess : nMax, bCheckMaxPerSection, fraMaxPerSection);
+   pDebondLimits->GetMaxDebondedStrandsPerSection(segmentKey, &nMax10orLess, &nMax, &nMax07, &bCheckMaxPerSection, &fraMaxPerSection);
+   pArtifact->AddMaxDebondStrandsAtSection(nDebonded <= 10 ? nMax10orLess : (pStrand->GetSize() == WBFL::Materials::PsStrand::Size::D1778 ? nMax07 : nMax), bCheckMaxPerSection, fraMaxPerSection);
 
    Float64 maxFraPerRow = pDebondLimits->GetMaxDebondedStrandsPerRow(segmentKey);
 

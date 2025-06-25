@@ -308,7 +308,7 @@ public:
    bool CheckMaxDebondedStrands(const CSegmentKey& segmentKey) const override;
    Float64 GetMaxDebondedStrands(const CSegmentKey& segmentKey) const override;
    Float64 GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey) const override;
-   void GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey, StrandIndexType* p10orLess, StrandIndexType* pNS, bool* pbCheckMax, Float64* pMaxFraction) const override;
+   void GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey, StrandIndexType* p10orLess, StrandIndexType* pn10orMore, StrandIndexType* pn10orMore_07Strand, bool* pbCheckMax, Float64* pMaxFraction) const override;
    void GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* pLen, pgsTypes::DebondLengthControl* pControl) const override;
    void GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey, Float64* pndb, bool* pbUseMinDistance, Float64* pMinDistance) const override;
    Float64 GetMinDistanceBetweenDebondSections(const CSegmentKey& segmentKey) const override;

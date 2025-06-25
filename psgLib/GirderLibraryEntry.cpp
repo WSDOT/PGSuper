@@ -155,6 +155,7 @@ m_MaxDebondStrands(0.25),
 m_MaxDebondStrandsPerRow(0.45), // changed from 40% to 45% in LRFD 9th Edition
 m_MaxNumDebondedStrandsPerSection10orLess(4),
 m_MaxNumDebondedStrandsPerSection(6),
+m_MaxNumDebondedStrandsPerSectionFor07(4),
 m_bCheckMaxNumDebondedStrandsPerSection(false),
 m_MaxDebondedStrandsPerSection(0.40),
 m_MinDebondLengthDB(60),
@@ -410,12 +411,13 @@ bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    //pSave->Property(_T("TopFlangeShearBarSpacing"), m_TopFlangeShearBarSpacing);
 
    // debond criteria - added in version 13
-   pSave->BeginUnit(_T("DebondingCritia"), 2.0);
+   pSave->BeginUnit(_T("DebondingCritia"), 3.0);
    pSave->Property(_T("CheckMaxDebondedStrands"), m_bCheckMaxDebondStrands); // added in version 2 of this data block
    pSave->Property(_T("MaxDebondStrands"),               m_MaxDebondStrands);
    pSave->Property(_T("MaxDebondStrandsPerRow"),         m_MaxDebondStrandsPerRow);
    pSave->Property(_T("MaxNumDebondedStrandsPerSection10orLess"), m_MaxNumDebondedStrandsPerSection10orLess); // added in version 2
    pSave->Property(_T("MaxNumDebondedStrandsPerSection"),m_MaxNumDebondedStrandsPerSection);
+   pSave->Property(_T("MaxNumDebondedStrandsPerSectionFor07"), m_MaxNumDebondedStrandsPerSectionFor07); // added in version 3
    pSave->Property(_T("CheckMaxDebondedStrandsPerSection"), m_bCheckMaxNumDebondedStrandsPerSection); // added in version 2
    pSave->Property(_T("MaxDebondedStrandsPerSection"),   m_MaxDebondedStrandsPerSection);
    pSave->Property(_T("MinDebondLengthDB"), m_MinDebondLengthDB); // added in version 2
@@ -1426,6 +1428,15 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          if ( !pLoad->Property(_T("MaxNumDebondedStrandsPerSection"),&m_MaxNumDebondedStrandsPerSection))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if (2 < local_vers)
+         {
+            // added in version 3
+            if (!pLoad->Property(_T("MaxNumDebondedStrandsPerSectionFor07"), &m_MaxNumDebondedStrandsPerSectionFor07))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
          }
 
          if (1 < local_vers)
@@ -3163,6 +3174,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
         !::IsEqual(m_MaxDebondStrandsPerRow,rOther.m_MaxDebondStrandsPerRow)          ||
       m_MaxNumDebondedStrandsPerSection10orLess != rOther.m_MaxNumDebondedStrandsPerSection10orLess ||
         m_MaxNumDebondedStrandsPerSection != rOther.m_MaxNumDebondedStrandsPerSection ||
+      m_MaxNumDebondedStrandsPerSectionFor07 != rOther.m_MaxNumDebondedStrandsPerSectionFor07 ||
       m_bCheckMaxNumDebondedStrandsPerSection != rOther.m_bCheckMaxNumDebondedStrandsPerSection ||
         (m_bCheckMaxNumDebondedStrandsPerSection && !::IsEqual(m_MaxDebondedStrandsPerSection,rOther.m_MaxDebondedStrandsPerSection))  ||
       !::IsEqual(m_MinDebondLengthDB, rOther.m_MinDebondLengthDB) ||
@@ -4790,6 +4802,7 @@ void GirderLibraryEntry::CopyValuesAndAttributes(const GirderLibraryEntry& rOthe
    m_MaxDebondStrandsPerRow                 = rOther.m_MaxDebondStrandsPerRow;
    m_MaxNumDebondedStrandsPerSection10orLess = rOther.m_MaxNumDebondedStrandsPerSection10orLess;
    m_MaxNumDebondedStrandsPerSection        = rOther.m_MaxNumDebondedStrandsPerSection;
+   m_MaxNumDebondedStrandsPerSectionFor07 = rOther.m_MaxNumDebondedStrandsPerSectionFor07;
    m_bCheckMaxNumDebondedStrandsPerSection = rOther.m_bCheckMaxNumDebondedStrandsPerSection;
    m_MaxDebondedStrandsPerSection           = rOther.m_MaxDebondedStrandsPerSection;
    m_MinDebondLengthDB = rOther.m_MinDebondLengthDB;
@@ -5055,20 +5068,22 @@ void GirderLibraryEntry::SetMaxFractionDebondedStrandsPerRow(Float64 fraction)
    m_MaxDebondStrandsPerRow = fraction;
 }
 
-void  GirderLibraryEntry::GetMaxDebondedStrandsPerSection(StrandIndexType* p10orLess, StrandIndexType* pNumber, bool* pbCheck, Float64* pFraction) const
+void  GirderLibraryEntry::GetMaxDebondedStrandsPerSection(StrandIndexType* p10orLess, StrandIndexType* pn10orMore,StrandIndexType* pn10orMore_07Strand, bool* pbCheck, Float64* pFraction) const
 {
    *p10orLess = m_MaxNumDebondedStrandsPerSection10orLess;
-   *pNumber = m_MaxNumDebondedStrandsPerSection;
+   *pn10orMore = m_MaxNumDebondedStrandsPerSection;
+   *pn10orMore_07Strand = m_MaxNumDebondedStrandsPerSectionFor07;
    *pbCheck = m_bCheckMaxNumDebondedStrandsPerSection;
    *pFraction = m_MaxDebondedStrandsPerSection;
 }
 
-void GirderLibraryEntry::SetMaxDebondedStrandsPerSection(StrandIndexType n10orLess, StrandIndexType number, bool bCheck,Float64 fraction)
+void GirderLibraryEntry::SetMaxDebondedStrandsPerSection(StrandIndexType n10orLess, StrandIndexType n10orMore,StrandIndexType n10orMore_07Strand, bool bCheck,Float64 fraction)
 {
    ATLASSERT(0.0 <= fraction && fraction <= 1.0);
 
    m_MaxNumDebondedStrandsPerSection10orLess = n10orLess;
-   m_MaxNumDebondedStrandsPerSection = number;
+   m_MaxNumDebondedStrandsPerSection = n10orMore;
+   m_MaxNumDebondedStrandsPerSectionFor07 = n10orMore_07Strand;
    m_bCheckMaxNumDebondedStrandsPerSection = bCheck;
    m_MaxDebondedStrandsPerSection    = fraction;
 }

@@ -3882,10 +3882,10 @@ Float64 CSpecAgentImp::GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey
    return pGirderEntry->GetMaxFractionDebondedStrandsPerRow();
 }
 
-void CSpecAgentImp::GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey, StrandIndexType* p10orLess, StrandIndexType* pNS, bool* pbCheckMax, Float64* pMaxFraction) const
+void CSpecAgentImp::GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey, StrandIndexType* p10orLess, StrandIndexType* pn10orMore, StrandIndexType* pn10orMore_07Strand, bool* pbCheckMax, Float64* pMaxFraction) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
-   pGirderEntry->GetMaxDebondedStrandsPerSection(p10orLess,pNS,pbCheckMax,pMaxFraction);
+   pGirderEntry->GetMaxDebondedStrandsPerSection(p10orLess,pn10orMore,pn10orMore_07Strand,pbCheckMax,pMaxFraction);
 }
 
 void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* pLen, pgsTypes::DebondLengthControl* pControl) const
