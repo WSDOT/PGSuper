@@ -59,7 +59,7 @@ HRESULT CAgeAdjustedMaterial::FinalConstruct()
 }
 
 // IAgeAdjustedMaterial
-STDMETHODIMP CAgeAdjustedMaterial::InitSegment(const CSegmentKey& segmentKey,std::shared_ptr<IMaterials> pMaterials)
+STDMETHODIMP CAgeAdjustedMaterial::InitSegment(const CSegmentKey& segmentKey,std::weak_ptr<IMaterials> pMaterials)
 {
    m_bIsSegment = true;
    m_SegmentKey = segmentKey;
@@ -67,7 +67,7 @@ STDMETHODIMP CAgeAdjustedMaterial::InitSegment(const CSegmentKey& segmentKey,std
    return S_OK;
 }
 
-STDMETHODIMP CAgeAdjustedMaterial::InitClosureJoint(const CClosureKey& closureKey,std::shared_ptr<IMaterials> pMaterials)
+STDMETHODIMP CAgeAdjustedMaterial::InitClosureJoint(const CClosureKey& closureKey,std::weak_ptr<IMaterials> pMaterials)
 {
    m_bIsClosure = true;
    m_ClosureKey = closureKey;
@@ -75,7 +75,7 @@ STDMETHODIMP CAgeAdjustedMaterial::InitClosureJoint(const CClosureKey& closureKe
    return S_OK;
 }
 
-STDMETHODIMP CAgeAdjustedMaterial::InitDeck(IndexType deckCastingRegionIdx,std::shared_ptr<IMaterials> pMaterials)
+STDMETHODIMP CAgeAdjustedMaterial::InitDeck(IndexType deckCastingRegionIdx,std::weak_ptr<IMaterials> pMaterials)
 {
    m_bIsDeck = true;
    m_DeckCastingRegionIdx = deckCastingRegionIdx;
@@ -84,7 +84,7 @@ STDMETHODIMP CAgeAdjustedMaterial::InitDeck(IndexType deckCastingRegionIdx,std::
    return S_OK;
 }
 
-STDMETHODIMP CAgeAdjustedMaterial::InitLongitudinalJoint(const CSegmentKey& segmentKey, std::shared_ptr<IMaterials> pMaterials)
+STDMETHODIMP CAgeAdjustedMaterial::InitLongitudinalJoint(const CSegmentKey& segmentKey, std::weak_ptr<IMaterials> pMaterials)
 {
    m_bIsLongitudinalJoint = true;
    m_SegmentKey = segmentKey;
@@ -98,19 +98,19 @@ STDMETHODIMP CAgeAdjustedMaterial::get_E(StageIndexType stageIdx,Float64* E)
    IntervalIndexType intervalIdx = (IntervalIndexType)stageIdx;
    if ( IsDeck() )
    {
-      *E = m_pMaterials->GetDeckAgeAdjustedEc(m_DeckCastingRegionIdx,intervalIdx);
+      *E = m_pMaterials.lock()->GetDeckAgeAdjustedEc(m_DeckCastingRegionIdx, intervalIdx);
    }
    else if ( IsSegment() )
    {
-      *E = m_pMaterials->GetSegmentAgeAdjustedEc(m_SegmentKey,intervalIdx);
+      *E = m_pMaterials.lock()->GetSegmentAgeAdjustedEc(m_SegmentKey, intervalIdx);
    }
    else if ( IsClosureJoint() )
    {
-      *E = m_pMaterials->GetClosureJointAgeAdjustedEc(m_ClosureKey,intervalIdx);
+      *E = m_pMaterials.lock()->GetClosureJointAgeAdjustedEc(m_ClosureKey, intervalIdx);
    }
    else if (IsLongitudinalJoint())
    {
-      *E = m_pMaterials->GetLongitudinalJointAgeAdjustedEc(intervalIdx);
+      *E = m_pMaterials.lock()->GetLongitudinalJointAgeAdjustedEc(intervalIdx);
    }
    else
    {
@@ -131,19 +131,19 @@ STDMETHODIMP CAgeAdjustedMaterial::get_Density(StageIndexType stageIdx,Float64* 
    IntervalIndexType intervalIdx = (IntervalIndexType)stageIdx;
    if ( IsDeck() )
    {
-      *w = m_pMaterials->GetDeckWeightDensity(m_DeckCastingRegionIdx,intervalIdx);
+      *w = m_pMaterials.lock()->GetDeckWeightDensity(m_DeckCastingRegionIdx, intervalIdx);
    }
    else if ( IsSegment() )
    {
-      *w = m_pMaterials->GetSegmentWeightDensity(m_SegmentKey,intervalIdx);
+      *w = m_pMaterials.lock()->GetSegmentWeightDensity(m_SegmentKey, intervalIdx);
    }
    else if ( IsClosureJoint() )
    {
-      *w = m_pMaterials->GetClosureJointWeightDensity(m_ClosureKey,intervalIdx);
+      *w = m_pMaterials.lock()->GetClosureJointWeightDensity(m_ClosureKey, intervalIdx);
    }
    else if (IsLongitudinalJoint())
    {
-      *w = m_pMaterials->GetLongitudinalJointWeightDensity(intervalIdx);
+      *w = m_pMaterials.lock()->GetLongitudinalJointWeightDensity(intervalIdx);
    }
    else
    {

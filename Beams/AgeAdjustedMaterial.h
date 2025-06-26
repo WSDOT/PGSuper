@@ -66,8 +66,8 @@ private:
 
    IndexType m_DeckCastingRegionIdx;
 
-   // use weak refereces so we don't have circular dependencies
-   std::shared_ptr<IMaterials> m_pMaterials;
+   // use weak references so we don't have circular dependencies
+   std::weak_ptr<IMaterials> m_pMaterials;
 
    bool IsDeck();
    bool IsClosureJoint();
@@ -76,10 +76,10 @@ private:
 
 // IAgeAdjustedMaterial
 public:
-   STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,std::shared_ptr<IMaterials> pMaterials) override;
-   STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,std::shared_ptr<IMaterials> pMaterials) override;
-   STDMETHOD(InitDeck)(IndexType deckCastingRegionIdx, std::shared_ptr<IMaterials> pMaterials) override;
-   STDMETHOD(InitLongitudinalJoint)(const CSegmentKey& segmentKey, std::shared_ptr<IMaterials> pMaterials) override;
+   STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,std::weak_ptr<IMaterials> pMaterials) override;
+   STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,std::weak_ptr<IMaterials> pMaterials) override;
+   STDMETHOD(InitDeck)(IndexType deckCastingRegionIdx, std::weak_ptr<IMaterials> pMaterials) override;
+   STDMETHOD(InitLongitudinalJoint)(const CSegmentKey& segmentKey, std::weak_ptr<IMaterials> pMaterials) override;
 
 // IMaterial
 public:
