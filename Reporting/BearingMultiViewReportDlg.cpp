@@ -117,7 +117,7 @@ void CBearingMultiViewReportDlg::DoDataExchange(CDataExchange* pDX)
         if (bcType == _T("Hinge"))
         {
             CString hingeBrgStr;
-            hingeBrgStr.Format(_T("%s (Hinge)"), strBrg);
+            hingeBrgStr.Format(_T("%s (Xc)"), strBrg);
             pBrgBox->AddString(hingeBrgStr);
         }
         else
@@ -236,6 +236,8 @@ void CBearingMultiViewReportDlg::OnBnClickedRadio()
    GetDlgItem(IDC_SPAN)->EnableWindow(enab_sgl);
    GetDlgItem(IDC_GIRDER)->EnableWindow(enab_sgl);
    GetDlgItem(IDC_FACE)->EnableWindow(enab_sgl);
+
+
 
    GetDlgItem(IDC_SELECT_MULTIPLE_BUTTON)->EnableWindow(enab_mpl);
 
