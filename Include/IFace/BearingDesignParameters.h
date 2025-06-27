@@ -188,7 +188,7 @@ struct BEARINGSHEARDEFORMATIONDETAILS  //results per bearing
 	Float64 creep{ 0.0 };
 	Float64 tendon_creep{ 0.0 };
 	Float64 shrinkage{ 0.0 };
-	Float64 tendon_shrinkage;
+	Float64 tendon_shrinkage{ 0.0 };
 	Float64 relaxation{ 0.0 };
 	Float64 tendon_relaxation{ 0.0 };
 	std::vector<TSSHEARDEFORMATIONDETAILS> timestep_details;  /// timestep method for td losses
