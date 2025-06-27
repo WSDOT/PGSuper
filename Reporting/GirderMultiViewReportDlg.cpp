@@ -167,6 +167,7 @@ void CGirderMultiViewReportDlg::OnBnClickedRadio()
     GetDlgItem(IDC_SPAN)->EnableWindow(enab_sgl);
     GetDlgItem(IDC_GIRDER)->EnableWindow(enab_sgl);
     GetDlgItem(IDC_SELECT_MULTIPLE_BUTTON)->EnableWindow(enab_mpl);
+    GetDlgItem(IDC_STATIC_XC)->ShowWindow(SW_HIDE);
 
     if (enab_mpl && m_GirderKeys.size() == 0)
     {

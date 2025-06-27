@@ -67,6 +67,7 @@
 #define IDC_LOCATION_SHEAR_DEF          3028
 #define IDC_STATIC_MULTI_SELECT_ITEM    3028
 #define IDC_GROUP_GIRDER_SELECT         3029
+#define IDC_STATIC_XC                   3030
 
 // Next default values for new objects
 // 
@@ -74,7 +75,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        3015
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         3030
+#define _APS_NEXT_CONTROL_VALUE         3031
 #define _APS_NEXT_SYMED_VALUE           3000
 #endif
 #endif
