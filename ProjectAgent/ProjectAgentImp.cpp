@@ -13065,6 +13065,8 @@ void CProjectAgentImp::UpgradeBearingData()
    {
       CPierData2* pPier = m_BridgeDescription.GetPier(0);
 
+      CBearingData2 bd;
+
       bool postedMsg(false);
       while (pPier != nullptr && !postedMsg)
       {
@@ -13076,16 +13078,19 @@ void CProjectAgentImp::UpgradeBearingData()
             if (pSpan)
             {
                const CBearingData2* pbd = pPier->GetBearingData(0, face);
-               if (pbd->bNeedsDefaults)
-               {
-                  // Bearing data was not loaded at start up. Need to tell user that data should be initialized
-                  CString strMsg(_T("New Bearing Data at Piers was added in this version of the program. The data was not available when this file was last saved. You may want to investigate the bearing information and make sure it is appropriate for this project."));
-                  GET_IFACE(IEAFStatusCenter,pStatusCenter);
-                  pStatusCenter->Add(std::make_shared<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::Bearings, strMsg));
+//               if (pbd->bNeedsDefaults)
+//               {
 
-                  postedMsg = true;
-                  break;
-               }
+                   pPier->SetBearingData(face, bd);
+
+                  //// Bearing data was not loaded at start up. Need to tell user that data should be initialized
+                  //CString strMsg(_T("New Bearing Data at Piers was added in this version of the program. The data was not available when this file was last saved. You may want to investigate the bearing information and make sure it is appropriate for this project."));
+                  //GET_IFACE(IEAFStatusCenter,pStatusCenter);
+                  //pStatusCenter->Add(std::make_shared<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::Bearings, strMsg));
+
+                  //postedMsg = true;
+                  //break;
+ //              }
             }
          }
 
