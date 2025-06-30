@@ -56,6 +56,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
          auto importer = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::IDataImporter>(component);
          if (importer)
          {
+            WBFL::System::Logger::Debug(std::_tstring(_T("Importer Loaded: ")) + component.name + std::_tstring(_T(" from ") + component.dll));
             ImporterRecord record;
             record.commandID = cmdImporter++;
             record.Plugin = importer;
@@ -100,6 +101,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
          auto exporter = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::IDataExporter>(component);
          if (exporter)
          {
+            WBFL::System::Logger::Debug(std::_tstring(_T("Exporter Loaded: ")) + component.name + std::_tstring(_T(" from ") + component.dll));
             ExporterRecord record;
             record.commandID = cmdExporter++;
             record.Plugin = exporter;
