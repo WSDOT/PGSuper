@@ -40,7 +40,7 @@ struct PSGLIBCLASS BearingCriteria : public WBFL::EngTools::BearingProjectCriter
         bMinimumTotalBearingHeight = true;
         bMinimumBearingEdgeToGirderEdgeDistance = true;
         bMaximumBearingEdgeToGirderEdgeDistance = true;
-        bRequiredBearingEdgeToGirderEdgeDistance = true;
+        bRequiredBearingEdgeToGirderEdgeDistance = false;
         bMaximumTotalLoad = true;
     }
 
