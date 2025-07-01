@@ -25,7 +25,6 @@
 #include <Reporting\BrokerReportSpecification.h>
 #include <ReportManager\ReportManager.h>
 #include <ReportManager\ReportHint.h>
-#include <WBFLCore.h>
 #include <PsgLib\Keys.h>
 #include <IFace/AnalysisResults.h>
 
