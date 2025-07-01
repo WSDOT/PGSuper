@@ -81,11 +81,8 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    // that is passed to all the chapter builders
 
    // this report spec builder prompts for span #, girder # and chapter list
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pSpanRptSpecBuilder(             std::make_shared<CSpanReportSpecificationBuilder>(m_pBroker) );
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiGirderRptSpecBuilder(    std::make_shared<CMultiGirderReportSpecificationBuilder>(m_pBroker) );
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiBearingRptSpecBuilder(    std::make_shared<CMultiBearingReportSpecificationBuilder>(m_pBroker) );
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiViewRptSpecBuilder(      std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder(         std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,CGirderKey(0,0)) );
 
    CreateMultiGirderSpecCheckReport(pRptMgr);
 
@@ -100,7 +97,6 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
 #endif
    //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
-   pRptBuilder->SetReportSpecificationBuilder( pMultiBearingRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CDesignOutcomeChapterBuilder>()) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
