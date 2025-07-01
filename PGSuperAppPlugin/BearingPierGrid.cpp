@@ -31,7 +31,11 @@
 #include <Units\Measure.h>
 
 #include <IFace/Tools.h>
+#include <IFace/Project.h>
+
 #include <EAF\EAFDisplayUnits.h>
+#include <psgLib/SpecLibraryEntry.h>
+#include <psgLib/BearingCriteria.h>
 
 
 
@@ -544,11 +548,30 @@ void CBearingPierGrid::FillGrid(const BearingInputData& BearingData)
 
       CString strType = (hp.m_BearingsForGirders[0].DefinitionType == btBasic) ? _T("Basic") : _T("Detailed");
 
-      SetStyleRange(CGXRange(row, col++), CGXStyle()
-          .SetReadOnly(FALSE)
-          .SetEnabled(TRUE)
-          .SetValue(strType)
-      );
+      auto pBroker = EAFGetBroker();
+
+      GET_IFACE2(pBroker, ILibrary, pLib);
+      GET_IFACE2(pBroker, ISpecification, pSpec);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+      const BearingCriteria& criteria = pSpecEntry->GetBearingCriteria();
+
+      if (criteria.bCheck)
+      {
+          SetStyleRange(CGXRange(row, col++), CGXStyle()
+              .SetReadOnly(FALSE)
+              .SetEnabled(TRUE)
+              .SetValue(strType)
+          );
+      }
+      else
+      {
+          SetStyleRange(CGXRange(row, col++), CGXStyle()
+              .SetInterior(GXSYSCOLOR(COLOR_BTNFACE))
+              .SetReadOnly(TRUE)
+              .SetEnabled(FALSE)
+              .SetValue(strType)
+          );
+      }
 
       // We use slot (girder) zero for piers
       CString strshape = (hp.m_BearingsForGirders[0].Shape == bsRectangular) ? _T("Rectangular") : _T("Round");
