@@ -27,7 +27,6 @@
 #include <ReportManager\ReportManager.h>
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <PsgLib\Keys.h>
-#include <WBFLCore.h>
 #include <IFace/AnalysisResults.h>
 
 
