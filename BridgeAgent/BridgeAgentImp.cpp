@@ -5414,12 +5414,12 @@ void CBridgeAgentImp::LayoutPoiForPrecastDiaphragmLoads(const CSegmentKey& segme
    Float64 first_segment_start_offset = GetSegmentStartBearingOffset(firstSegmentKey) - GetSegmentStartEndDistance(firstSegmentKey);
 
    // layout for diaphragms that are built in the casting yard
-   std::vector<IntermedateDiaphragm> pcDiaphragms( GetPrecastDiaphragms(segmentKey) );
-   std::vector<IntermedateDiaphragm>::iterator iter(pcDiaphragms.begin());
-   std::vector<IntermedateDiaphragm>::iterator end(pcDiaphragms.end());
+   std::vector<IntermediateDiaphragm> pcDiaphragms( GetPrecastDiaphragms(segmentKey) );
+   std::vector<IntermediateDiaphragm>::iterator iter(pcDiaphragms.begin());
+   std::vector<IntermediateDiaphragm>::iterator end(pcDiaphragms.end());
    for ( ; iter != end; iter++ )
    {
-      IntermedateDiaphragm& diaphragm = *iter;
+      IntermediateDiaphragm& diaphragm = *iter;
 
       Float64 Xs  = diaphragm.Location; // location in POI coordinates
       Float64 Xsp = start_offset  + Xs; // location in segment path coordinates
@@ -5434,12 +5434,12 @@ void CBridgeAgentImp::LayoutPoiForIntermediateDiaphragmLoads(const CSpanKey& spa
 {
    // we want to capture "jumps" due to diaphragm loads in the graphical displays
    // get loads for bridge site 
-   std::vector<IntermedateDiaphragm> cipDiaphragms( GetCastInPlaceDiaphragms(spanKey,true/*location only*/) );
-   std::vector<IntermedateDiaphragm>::iterator iter(cipDiaphragms.begin());
-   std::vector<IntermedateDiaphragm>::iterator end(cipDiaphragms.end());
+   std::vector<IntermediateDiaphragm> cipDiaphragms( GetCastInPlaceDiaphragms(spanKey,true/*location only*/) );
+   std::vector<IntermediateDiaphragm>::iterator iter(cipDiaphragms.begin());
+   std::vector<IntermediateDiaphragm>::iterator end(cipDiaphragms.end());
    for ( ; iter != end; iter++ )
    {
-      IntermedateDiaphragm& diaphragm = *iter;
+      IntermediateDiaphragm& diaphragm = *iter;
 
       Float64 Xspan = diaphragm.Location;
 
@@ -10117,7 +10117,7 @@ Float64 CBridgeAgentImp::GetPierDiaphragmLoadLocation(const CSegmentKey& segment
    return dist;
 }
 
-std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetPrecastDiaphragms(const CSegmentKey& segmentKey) const
+std::vector<IntermediateDiaphragm> CBridgeAgentImp::GetPrecastDiaphragms(const CSegmentKey& segmentKey) const
 {
    ASSERT_SEGMENT_KEY(segmentKey);
 
@@ -10160,7 +10160,7 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetPrecastDiaphragms(const CS
    objSkew1->get_Value(&skew1);
    objSkew2->get_Value(&skew2);
 
-   std::vector<IntermedateDiaphragm> diaphragms;
+   std::vector<IntermediateDiaphragm> diaphragms;
 
    const GirderLibraryEntry::DiaphragmLayoutRules& rules = pGirderEntry->GetDiaphragmLayoutRules();
 
@@ -10224,7 +10224,7 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetPrecastDiaphragms(const CS
             break;
          }
 
-         IntermedateDiaphragm diaphragm;
+         IntermediateDiaphragm diaphragm;
          if ( rule.Method == GirderLibraryEntry::dwmInput )
          {
             diaphragm.m_bCompute = false;
@@ -10283,12 +10283,12 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetPrecastDiaphragms(const CS
    return diaphragms;
 }
 
-std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(const CSpanKey& spanKey) const
+std::vector<IntermediateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(const CSpanKey& spanKey) const
 {
    return GetCastInPlaceDiaphragms(spanKey, false);
 }
 
-std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(const CSpanKey& spanKey,bool bLocationOnly) const
+std::vector<IntermediateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(const CSpanKey& spanKey,bool bLocationOnly) const
 {
    // NOTE: in future versions we may want to update the diaphragm model to match the model in TxDOT BGS
    // right now it is assumed that diaphramgs for a straight line. BGS and the Bridge Geometry Model support
@@ -10346,7 +10346,7 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(cons
    objSkew1->get_Value(&skew1);
    objSkew2->get_Value(&skew2);
 
-   std::vector<IntermedateDiaphragm> diaphragms;
+   std::vector<IntermediateDiaphragm> diaphragms;
 
    const GirderLibraryEntry::DiaphragmLayoutRules& rules = pGirderEntry->GetDiaphragmLayoutRules();
 
@@ -10443,7 +10443,7 @@ std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(cons
             break;
          }
 
-         IntermedateDiaphragm diaphragm;
+         IntermediateDiaphragm diaphragm;
 
          // location the diaphragm
          diaphragm.Location = (i == 0 ? location1 : location2);

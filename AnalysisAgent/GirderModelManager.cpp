@@ -14693,7 +14693,7 @@ void CGirderModelManager::GetPrecastDiaphragmLoads(const CSegmentKey& segmentKey
 
    Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
 
-   std::vector<IntermedateDiaphragm> diaphragms = pBridge->GetPrecastDiaphragms(segmentKey);
+   std::vector<IntermediateDiaphragm> diaphragms = pBridge->GetPrecastDiaphragms(segmentKey);
    for(const auto& diaphragm : diaphragms)
    {
       Float64 P;
@@ -14743,7 +14743,7 @@ void CGirderModelManager::GetIntermediateDiaphragmLoads(const CSpanKey& spanKey,
       start_brg_offset = pBridge->GetSegmentStartBearingOffset(segmentKey);
    }
 
-   std::vector<IntermedateDiaphragm> diaphragms = pBridge->GetCastInPlaceDiaphragms(spanKey);
+   std::vector<IntermediateDiaphragm> diaphragms = pBridge->GetCastInPlaceDiaphragms(spanKey);
    for(const auto& diaphragm : diaphragms)
    {
       Float64 P;

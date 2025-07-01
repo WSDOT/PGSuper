@@ -99,9 +99,9 @@ namespace WBFL
 #define INCLUDE_INTERIOR_SURFACE_AREA          1 // surface area of exterior of segment plus surface area of voids
 #define INCLUDE_HALF_INTERIOR_SURFACE_AREA     2 // surface area of exterior of segment plus half the surface area of voids (LRFD 5.4.2.3.2)
 
-struct IntermedateDiaphragm
+struct IntermediateDiaphragm
 {
-   IntermedateDiaphragm() :
+   IntermediateDiaphragm() :
    m_bCompute(false),P(0),H(0),T(0),W(0),Location(0)
    {
    }
@@ -111,7 +111,7 @@ struct IntermedateDiaphragm
    Float64 T; // thickness
    Float64 W; // width
    Float64 Location; // measured from left end of segment if precast or left end of span if cast-in-place
-   bool operator<(const IntermedateDiaphragm& other) const { return Location < other.Location; }
+   bool operator<(const IntermediateDiaphragm& other) const { return Location < other.Location; }
 };
 
 struct SpaceBetweenGirder
@@ -479,10 +479,10 @@ public:
    
    // Returns a vector of intermediate diaphragm loads for diaphragms that are precast with the
    // girder.
-   virtual std::vector<IntermedateDiaphragm> GetPrecastDiaphragms(const CSegmentKey& segmentKey) const = 0;
+   virtual std::vector<IntermediateDiaphragm> GetPrecastDiaphragms(const CSegmentKey& segmentKey) const = 0;
 
    // Returns a vector of intermediate diaphragm loads for diaphragms that are cast at the bridge site.
-   virtual std::vector<IntermedateDiaphragm> GetCastInPlaceDiaphragms(const CSpanKey& spanKey) const = 0;
+   virtual std::vector<IntermediateDiaphragm> GetCastInPlaceDiaphragms(const CSpanKey& spanKey) const = 0;
 
    ///////////////////////////////////////////////////
    // Slab data
@@ -566,7 +566,7 @@ public:
    // passing through the point where the CL pier line intersects the alignment
    virtual Float64 GetRightCurbOffset(PierIndexType pierIdx) const = 0;
 
-   // Offset distances to curbline of interior barrier or sidewalk curb if present
+   // Offset distances to curb line of interior barrier or sidewalk curb if present
    // Xb is in Bridge Line Coordinates
    virtual Float64 GetLeftInteriorCurbOffset(Float64 Xb) const = 0;
    virtual Float64 GetRightInteriorCurbOffset(Float64 Xb) const = 0;
@@ -595,7 +595,7 @@ public:
    virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point) const = 0;
    virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point) const = 0;
 
-   // Distance from Roadway surface to girder top chord. This is adjusted for temp support elev adjustments, if applicable.
+   // Distance from Roadway surface to girder top chord. This is adjusted for temp support elevation adjustments, if applicable.
    virtual Float64 GetRoadwayToTopGirderChordDistance(const pgsPointOfInterest& poi) const = 0;
 
    // Distance from top of slab of girder top chord line. Does not include temporary support elevation chord adjustment. 
@@ -699,7 +699,7 @@ public:
    // bearing cases an extra CL value is inserted at the start of each girder location. For single bearings, only one value is 
    // returned since it is by definition at the CL. All bearings along a bearing line can be requested by setting gdrIdx==ALL_GIRDERS
    // Elevation computation can be a pure geometry comp if bIgnoreUnrecoverableDeformations==true. However, this is not exactly accurate
-   //   because the effect can be significant. However, the ignore option is given to avoid a full structural analysis of the girderline.
+   //   because the effect can be significant. However, the ignore option is given to avoid a full structural analysis of the girder line.
    enum specialBearingIndexType {sbiCLValue=INVALID_INDEX, sbiSingleBearingValue=INVALID_INDEX-1};
    virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face, GirderIndexType gdrIdx, bool bIgnoreUnrecoverableDeformations) const = 0;
 
@@ -962,7 +962,7 @@ public:
    virtual std::_tstring GetDeckRebarName() const = 0;
    virtual void GetDeckRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const = 0;
 
-   // Material Properties Calcluations
+   // Material Properties Calculations
    virtual Float64 GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type) const = 0;
    virtual Float64 GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type) const = 0;
 
@@ -1116,7 +1116,7 @@ DESCRIPTION
    the strand slope and eccentricities.
 *****************************************************************************/
 //
-// Options for development length computation. Approximate was added because the vertical shear design algoritm
+// Options for development length computation. Approximate was added because the vertical shear design algorithm
 // was very slow using the accurate method, but it gave much better results. Hence, a speed/accuracy compromise.
 enum DevelopmentAdjustmentType {dlaNone, dlaApproximate, dlaAccurate};
 
@@ -1302,7 +1302,7 @@ public:
    // this configuration
    virtual void GetDebondConfigurationByRow(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, RowIndexType rowIdx, IndexType configIdx, const GDRCONFIG* pConfig, Float64* pXstart, Float64* pLstrand, Float64* pCgX, Float64* pCgY, StrandIndexType* pnStrands) const = 0;
 
-   // Returns a vector of rectangular regions represententing web width projections within which strands must be bonded per LRFD 9th Edition, 5.9.4.3.3, Items I and J.
+   // Returns a vector of rectangular regions representing web width projections within which strands must be bonded per LRFD 9th Edition, 5.9.4.3.3, Items I and J.
    // If LRFD 5.9.4.3.3 Item I applies (Single web, flange section, eg. I-Beam), the fraction of debonded strands is stored in pFraDebonded and the bottom flange to web width ratio is stored in pBottomFlangeToWebWidthRatio, otherwise
    // these parameters are invalid
    // Strands must be completely within the region for the "most be bonded" requirement to apply
@@ -1363,7 +1363,7 @@ public:
    // Returns the stress points for a section. The controlling stress point index returned by GetStressCoefficients can be used to access the container
    virtual std::vector<WBFL::Geometry::Point2d> GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig = nullptr) const = 0;
 
-   // Get the stress coefficients at the specifed location
+   // Get the stress coefficients at the specified location
    // f = Ca*Axial + Cbx*Mx + Cby*My
    virtual void GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx,Float64* pCby,IndexType* pControllingStressPointIndex=nullptr) const = 0;
    virtual void GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::SectionPropertyType spType, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64* pCbx, Float64* pCby, IndexType* pControllingStressPointIndex = nullptr) const = 0;
@@ -1494,7 +1494,7 @@ public:
 
    // get the slab shape at the given location including haunch parts
    // if bFollowMatingSurfaceProfile is true, the bottom of the haunch will follow the mating surface profile
-   // regardless of hauchDepth
+   // regardless of haunchDepth
    virtual void GetSlabAnalysisShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 haunchDepth,bool bFollowMatingSurfaceProfile,IShape** ppShape) const = 0;
 };
 
@@ -1783,9 +1783,9 @@ public:
    // Positive values means the Y axis of the girder is rotated CW
    virtual Float64 GetOrientation(const CSegmentKey& segmentKey) const = 0;
 
-   // Internally, the girderline work point is always located at top CL girder. However, the UI allows other locations
-   // such as the bottom of the girder. To accomodate for this we shift the work point (layout line) a distance equal to
-   // the orientation * (depth from top of girder to work point) when the bridge goemetry is layed out. 
+   // Internally, the girder line work point is always located at top CL girder. However, the UI allows other locations
+   // such as the bottom of the girder. To accommodate for this we shift the work point (layout line) a distance equal to
+   // the orientation * (depth from top of girder to work point) when the bridge geometry is set out. 
    // This function returns that shift offset distance.
    virtual Float64 GetWorkPointShiftOffset(const CSegmentKey& segmentKey) const = 0;
 
@@ -1915,10 +1915,10 @@ public:
    virtual void GetDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, DuctIndexType ductIdx, const CPTData* pPTData, IPoint2dCollection** ppPoints) const = 0;
    virtual void GetDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CDuctData* pDuctData, IPoint2dCollection** ppPoints) const = 0;
 
-   // returns the location of the centerline of the duct in girder section coordiantes given a location in girder coordinates
+   // returns the location of the centerline of the duct in girder section coordinates given a location in girder coordinates
    virtual void GetGirderDuctPoint(const CGirderKey& girderKey,Float64 Xg,DuctIndexType ductIdx,IPoint2d** ppPoint) const = 0;
 
-   // returns the location of the centerline of the duct in girder section coordiantes given a POI
+   // returns the location of the centerline of the duct in girder section coordinates given a POI
    virtual void GetGirderDuctPoint(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IPoint2d** ppPoint) const = 0;
 
    // returns the diameter of the duct
@@ -2018,10 +2018,10 @@ public:
    virtual void GetDuctCenterline(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, DuctIndexType ductIdx, const CSegmentPTData* pPTData, IPoint2dCollection** ppPoints) const = 0;
    virtual void GetDuctCenterline(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, const CSegmentDuctData* pDuctData, IPoint2dCollection** ppPoints) const = 0;
 
-   // returns the location of the centerline of the duct in girder section coordiantes given a location in segment coordinates
+   // returns the location of the centerline of the duct in girder section coordinates given a location in segment coordinates
    virtual void GetSegmentDuctPoint(const CSegmentKey& segmentKey, Float64 Xs, DuctIndexType ductIdx, IPoint2d** ppPoint) const = 0;
 
-   // returns the location of the centerline of the duct in girder section coordiantes given a POI
+   // returns the location of the centerline of the duct in girder section coordinates given a POI
    virtual void GetSegmentDuctPoint(const pgsPointOfInterest& poi, DuctIndexType ductIdx, IPoint2d** ppPoint) const = 0;
 
    // returns the location of the center of the specified duct for the duct configuration given. use this to plot ducts in the UI for girder cross sections

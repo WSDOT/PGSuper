@@ -1179,15 +1179,15 @@ void CLoadingDetailsChapterBuilder::ReportPrecastDiaphragmLoad(rptChapter* pChap
 
       RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-      std::vector<IntermedateDiaphragm> diaphragms(pBridge->GetPrecastDiaphragms(thisSegmentKey));
+      std::vector<IntermediateDiaphragm> diaphragms(pBridge->GetPrecastDiaphragms(thisSegmentKey));
       ATLASSERT(diaphragms.size() == diaphragm_loads.size());
-      std::vector<IntermedateDiaphragm>::iterator iter( diaphragms.begin() );
-      std::vector<IntermedateDiaphragm>::iterator end( diaphragms.end() );
+      std::vector<IntermediateDiaphragm>::iterator iter( diaphragms.begin() );
+      std::vector<IntermediateDiaphragm>::iterator end( diaphragms.end() );
       std::vector<DiaphragmLoad>::iterator dia_load_iter(diaphragm_loads.begin());
       for ( ; iter != end; iter++,dia_load_iter++ )
       {
          DiaphragmLoad& rLoad = *dia_load_iter;
-         IntermedateDiaphragm& dia = *iter;
+         IntermediateDiaphragm& dia = *iter;
 
          (*p_table)(row,0) << loc.SetValue(rLoad.Loc);
          if ( dia.m_bCompute )
@@ -1241,15 +1241,15 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
       (*p_table)(0,4) << COLHDR(_T("Load"),rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit() );
 
       // this is the raw input from the bridge model
-      std::vector<IntermedateDiaphragm> diaphragms = pBridge->GetCastInPlaceDiaphragms(spanKey);
+      std::vector<IntermediateDiaphragm> diaphragms = pBridge->GetCastInPlaceDiaphragms(spanKey);
       std::sort(diaphragms.begin(),diaphragms.end());
-      std::vector<IntermedateDiaphragm>::iterator iter = diaphragms.begin();
+      std::vector<IntermediateDiaphragm>::iterator iter = diaphragms.begin();
 
       RowIndexType row = p_table->GetNumberOfHeaderRows();
       for (std::vector<DiaphragmLoad>::iterator id = diap_loads.begin(); id!=diap_loads.end(); id++, iter++)
       {
          DiaphragmLoad& rload = *id;
-         IntermedateDiaphragm& dia = *iter;
+         IntermediateDiaphragm& dia = *iter;
 
          ATLASSERT(IsEqual(rload.Loc,dia.Location));
 

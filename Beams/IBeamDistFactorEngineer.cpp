@@ -467,8 +467,8 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* IBeamDistFactorEngineer::GetLLDFPara
    plldf->leftSlabOverhang  = RoundOff(plldf->leftSlabOverhang,0.001);
    plldf->rightSlabOverhang = RoundOff(plldf->rightSlabOverhang,0.001);
 
-   std::vector<IntermedateDiaphragm> diaphragms = pBridge->GetCastInPlaceDiaphragms(CSpanKey(span,gdrIdx));
-   std::vector<IntermedateDiaphragm>::size_type nDiaphragms = diaphragms.size();
+   std::vector<IntermediateDiaphragm> diaphragms = pBridge->GetCastInPlaceDiaphragms(CSpanKey(span,gdrIdx));
+   std::vector<IntermediateDiaphragm>::size_type nDiaphragms = diaphragms.size();
 
    bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) ); 
    bool bSkewMoment = live_load_distribution_criteria.bIgnoreSkewReductionForMoment ? false : bSkew;

@@ -3020,16 +3020,16 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
             CSpanKey spanKey1(spanIdx,gdrIdx);
             CSpanKey spanKey2(spanIdx,gdrIdx+1);
 
-            std::vector<IntermedateDiaphragm> left_diaphragms  = pBridge->GetCastInPlaceDiaphragms(spanKey1);
-            std::vector<IntermedateDiaphragm> right_diaphragms = pBridge->GetCastInPlaceDiaphragms(spanKey2);
+            std::vector<IntermediateDiaphragm> left_diaphragms  = pBridge->GetCastInPlaceDiaphragms(spanKey1);
+            std::vector<IntermediateDiaphragm> right_diaphragms = pBridge->GetCastInPlaceDiaphragms(spanKey2);
 
-            std::vector<IntermedateDiaphragm>::iterator left_iter, right_iter;
+            std::vector<IntermediateDiaphragm>::iterator left_iter, right_iter;
             for ( left_iter = left_diaphragms.begin(), right_iter = right_diaphragms.begin(); 
                   left_iter != left_diaphragms.end() && right_iter != right_diaphragms.end(); 
                   left_iter++, right_iter++ )
             {
-               IntermedateDiaphragm left_diaphragm  = *left_iter;
-               IntermedateDiaphragm right_diaphragm = *right_iter;
+               IntermediateDiaphragm left_diaphragm  = *left_iter;
+               IntermediateDiaphragm right_diaphragm = *right_iter;
             
                // Only add the diaphragm if it has width
                if (!IsZero(left_diaphragm.W) && !IsZero(right_diaphragm.W))
