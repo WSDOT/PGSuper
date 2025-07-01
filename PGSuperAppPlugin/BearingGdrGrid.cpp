@@ -30,11 +30,15 @@
 #include "resource.h"
 #include "BearingGdrByGdrDlg.h"
 
+#include "IFace\Project.h"
+
 #include <System\Tokenizer.h>
 #include "PGSuperUnits.h"
 #include <Units\Measure.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <PsgLib\GirderLabel.h>
+#include <PsgLib\BearingCriteria.h>
+#include <PsgLib\SpecLibraryEntry.h>
 #include <AgentTools.h>
 
 
@@ -412,11 +416,30 @@ void CBearingGdrGrid::WriteBearingRow(ROWCOL row, const CBearingData2& bearingDa
 
     CString strType = (bearingData.DefinitionType == btBasic) ? _T("Basic") : _T("Detailed");
 
-    SetStyleRange(CGXRange(row, m_DGetter.m_BearingDefTypeCol), CGXStyle()
-        .SetReadOnly(FALSE)
-        .SetEnabled(TRUE)
-        .SetValue(strType)
-    );
+    auto pBroker = EAFGetBroker();
+
+    GET_IFACE2(pBroker, ILibrary, pLib);
+    GET_IFACE2(pBroker, ISpecification, pSpec);
+    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+    const BearingCriteria& criteria = pSpecEntry->GetBearingCriteria();
+
+    if (criteria.bCheck)
+    {
+        SetStyleRange(CGXRange(row, m_DGetter.m_BearingDefTypeCol), CGXStyle()
+            .SetReadOnly(FALSE)
+            .SetEnabled(TRUE)
+            .SetValue(strType)
+        );
+    }
+    else
+    {
+        SetStyleRange(CGXRange(row, m_DGetter.m_BearingDefTypeCol), CGXStyle()
+            .SetInterior(GXSYSCOLOR(COLOR_BTNFACE))
+            .SetReadOnly(TRUE)
+            .SetEnabled(FALSE)
+            .SetValue(strType)
+        );
+    }
 
    CString strshape = (bearingData.Shape == bsRectangular) ? _T("Rectangular") : _T("Round");
 
