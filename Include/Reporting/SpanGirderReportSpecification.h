@@ -229,23 +229,3 @@ protected:
    std::vector<CGirderKey> m_GirderKeys;
 };
 
-
-class REPORTINGCLASS CPointOfInterestReportSpecification :
-   public CBrokerReportSpecification
-{
-public:
-   CPointOfInterestReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker>pBroker,const pgsPointOfInterest& poi);
-   CPointOfInterestReportSpecification(const CPointOfInterestReportSpecification& other);
-   ~CPointOfInterestReportSpecification(void);
-
-   virtual std::_tstring GetReportTitle() const override;
-   virtual std::_tstring GetReportContextString() const override;
-
-   void SetPointOfInterest(const pgsPointOfInterest& poi);
-   const pgsPointOfInterest& GetPointOfInterest() const;
-
-   virtual bool IsValid() const override;
-
-protected:
-   pgsPointOfInterest m_POI;
-};

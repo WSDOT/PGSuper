@@ -27,6 +27,7 @@
 #include <Reporting\MultiGirderReportDlg.h>
 #include "GirderMultiViewReportDlg.h"
 #include "SelectPointOfInterestDlg.h"
+#include "MultiViewReportDlg.h"
 
 #include <IFace/Tools.h>
 #include <EAF/EAFDisplayUnits.h>
@@ -671,86 +672,4 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
    rptDesc.ConfigureReportSpecification(pRptSpec);
 
    return pRptSpec;
-}
-
-
-////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////
-
-CPointOfInterestReportSpecificationBuilder::CPointOfInterestReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
-CBrokerReportSpecificationBuilder(pBroker)
-{
-}
-
-CPointOfInterestReportSpecificationBuilder::~CPointOfInterestReportSpecificationBuilder(void)
-{
-}
-
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CPointOfInterestReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   // Prompt for span, girder, and chapter list
-   // initialize dialog for the current cut location
-   GET_IFACE2(GetBroker(),ISelection,pSelection);
-   CSelection selection = pSelection->GetSelection();
-   CSegmentKey segmentKey;
-   if ( selection.Type == CSelection::Girder )
-   {
-      segmentKey.groupIndex   = selection.GroupIdx;
-      segmentKey.girderIndex  = selection.GirderIdx;
-      segmentKey.segmentIndex = 0;
-   }
-   else if ( selection.Type == CSelection::Segment )
-   {
-      segmentKey.groupIndex   = selection.GroupIdx;
-      segmentKey.girderIndex  = selection.GirderIdx;
-      segmentKey.segmentIndex = selection.SegmentIdx;
-   }
-   else
-   {
-      segmentKey.groupIndex   = 0;
-      segmentKey.girderIndex  = 0;
-      segmentKey.segmentIndex = 0;
-   }
-
-   GET_IFACE2(GetBroker(),IPointOfInterest,pPOI);
-   PoiList vPoi;
-   pPOI->GetPointsOfInterest(CSegmentKey(segmentKey.groupIndex, segmentKey.girderIndex, ALL_SEGMENTS), POI_5L | POI_SPAN, &vPoi);
-   const pgsPointOfInterest& initial_poi = vPoi.front();
-
-   std::shared_ptr<CPointOfInterestReportSpecification> pOldGRptSpec( std::dynamic_pointer_cast<CPointOfInterestReportSpecification>(pOldRptSpec) );
-
-   CSelectPointOfInterestDlg dlg(GetBroker(), pOldGRptSpec, initial_poi, POI_SPAN);
-
-   if ( dlg.DoModal() == IDOK )
-   {
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
-      if(pOldGRptSpec)
-      {
-         // Copy old data from old spec
-         std::shared_ptr<CPointOfInterestReportSpecification> pNewGRptSpec(std::make_shared<CPointOfInterestReportSpecification>(*pOldGRptSpec) );
-
-         pNewGRptSpec->SetPointOfInterest(dlg.GetPointOfInterest());
-
-         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
-      }
-      else
-      {
-         pNewRptSpec = std::make_shared<CPointOfInterestReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.GetPointOfInterest());
-      }
-
-      rptDesc.ConfigureReportSpecification(pNewRptSpec);
-
-      return pNewRptSpec;
-   }
-
-   return nullptr;
-}
-
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CPointOfInterestReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
-{
-   // always prompt
-   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>());
 }
