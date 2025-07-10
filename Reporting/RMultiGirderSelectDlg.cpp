@@ -63,13 +63,18 @@ END_MESSAGE_MAP()
 
 BOOL CRMultiGirderSelectDlg::OnInitDialog()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CDialog::OnInitDialog();
 
+   SetWindowText(_T("Select Girder(s)"));
+
  	m_pGrid->SubclassDlgItem(IDC_SELECT_GRID, this);
 
-   auto pBroker = EAFGetBroker();
+    CComboBox* pGroupBox = (CComboBox*)GetDlgItem(IDC_STATIC_MULTI_SELECT_ITEM);
+    pGroupBox->SetWindowTextW(_T("Select Girder(s)"));
+
+    auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridge,pBridge);
 
    // need list of groups/girders

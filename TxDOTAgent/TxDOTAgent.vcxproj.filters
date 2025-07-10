@@ -205,6 +205,9 @@
     <ClCompile Include="TexasLoadRatingSummaryChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\SharedCtrls\MultiSelectGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dllmain.h">
@@ -421,6 +424,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TexasLoadRatingSummaryChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\SharedCtrls\MultiSelectGrid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
