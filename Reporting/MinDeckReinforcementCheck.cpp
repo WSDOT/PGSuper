@@ -73,8 +73,8 @@ void CMinDeckReinforcementCheck::Build(rptChapter* pChapter, std::shared_ptr<WBF
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("Details for Minimum Deck Reinforcement in Negative Moment Region - 9.7.1.6") << rptNewLine;
-   pParagraph->SetName(GetName());
+   pParagraph->SetName(_T("Details for Minimum Deck Reinforcement in Negative Moment Region"));
+   *pParagraph << pParagraph->GetName() << _T(" [9.7.1.6]") << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;

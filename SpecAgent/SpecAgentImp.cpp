@@ -2893,8 +2893,12 @@ void CSpecAgentImp::ReportSplittingChecks(const pgsGirderArtifact* pGirderArtifa
    std::_tstring strName = pgsSplittingCheckEngineer::GetCheckName();
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   std::_tostringstream os;
+   os << strName << _T(" Resistance Check");
+   pPara->SetName(os.str().c_str());
    *pChapter << pPara;
-   (*pPara) << strName << _T(" Resistance Check") << rptNewLine;
+   (*pPara) << pPara->GetName() << rptNewLine;
+
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    std::_tstring strSegment(1 < nSegments ? _T("Segment") : _T("Girder"));

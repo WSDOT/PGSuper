@@ -53,6 +53,8 @@
 
 #include "PGSuperUnits.h"
 
+#include <PsgLib\GirderLabel.h>
+
 
 pgsKdotGirderHaulingChecker::pgsKdotGirderHaulingChecker(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
 {
