@@ -250,8 +250,10 @@ struct SHEARCAPACITYDETAILS
    Float64 fpeptGirder; // average effective prestress in girder tendons
    Float64 fpc;
    Float64 Es;
+   Float64 Kdb;
    Float64 As;
    Float64 Eps;
+   Float64 Kds;
    Float64 Aps;
    Float64 EptSegment;
    Float64 AptSegment;
@@ -275,6 +277,7 @@ struct SHEARCAPACITYDETAILS
    bool bIgnoreMiniumStirrupRequirementForBeta;
 
    // [OUT]
+   Float64 Kdt;
    Float64 fpops; // fpo for strand
    Float64 fpoptSegment; // fpo for segment tendons
    Float64 fpoptGirder; // fpo for girder tendons
