@@ -18685,7 +18685,7 @@ std::vector<CComPtr<IRect2d>> CBridgeAgentImp::GetWebWidthProjectionsForDebondin
       
       // also need to check the bottom flange to web width ratio
       Float64 bf = GetBottomFlangeWidth(poi);
-      Float64 bw = GetBottomFlangeThickness(poi, 0);
+      Float64 bw = GetWebWidth(poi);
       Float64 ratio = bf / bw;
       *pBottomFlangeToWebWidthRatio = ratio;
 
@@ -18693,7 +18693,7 @@ std::vector<CComPtr<IRect2d>> CBridgeAgentImp::GetWebWidthProjectionsForDebondin
       {
          // 9th Edition, LRFD 5.9.4.3.3, Item I
          // 25% or fewer of the strands are debonded and the bottom flange to web width
-         // ratio does not exceed 4... strands may be debonded in the web width projectio
+         // ratio does not exceed 4... strands may be debonded in the web width projection
          return std::vector<CComPtr<IRect2d>>();
       }
    }
