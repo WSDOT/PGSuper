@@ -729,17 +729,20 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
 
    // prestress area - factor for development length per LRFD 5.7.3.4.2
    Float64 apsu = 0;
+   Float64 apst = 0;
    Float64 Aps = 0;
    if (pConfig == nullptr)
    {
       if ( pscd->bTensionBottom )
       {
          apsu = pStrandGeometry->GetApsBottomHalf(poi,dlaAccurate);
+         apst = pStrandGeometry->GetAverageTransferApsHalfDepth(poi, true);
          Aps = pStrandGeometry->GetApsBottomHalf(poi,dlaNone);
       }
       else
       {
          apsu = pStrandGeometry->GetApsTopHalf(poi,dlaAccurate);
+         apst = pStrandGeometry->GetAverageTransferApsHalfDepth(poi, false);
          Aps = pStrandGeometry->GetApsTopHalf(poi,dlaNone);
       }
    }
@@ -751,20 +754,19 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       if ( pscd->bTensionBottom )
       {
          apsu = pStrandGeometry->GetApsBottomHalf(poi,dlaApproximate,pConfig);
+         apst = pStrandGeometry->GetAverageTransferApsHalfDepth(poi, true, pConfig);
          Aps = pStrandGeometry->GetApsBottomHalf(poi,dlaNone,pConfig);
       }
       else                                                             
       {
          apsu = pStrandGeometry->GetApsTopHalf(poi,dlaApproximate,pConfig);
+         apst = pStrandGeometry->GetAverageTransferApsHalfDepth(poi, false, pConfig);
          Aps = pStrandGeometry->GetApsTopHalf(poi,dlaNone,pConfig);
       }
    }
 
    pscd->Kds = apsu / Aps;
-   //if ()
-   //{
-       pscd->Kdt = pscd->Kds;
-   //}
+   pscd->Kdt = apst / Aps;
    pscd->Aps = Aps;
 
    if ( pscd->bTensionBottom )
