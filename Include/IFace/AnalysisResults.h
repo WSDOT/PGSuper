@@ -146,8 +146,8 @@ typedef struct EquivPretensionLoad
    Float64 Xs; // location of start of load from start of segment for uniform loads or location of load from start of segment for point load
    Float64 Xe; // location of end of load from start of segment for uniform loads (not used with point loads)
    Float64 P;  // magnitude of equivalent axial load
-   Float64 ex; // lateral eccentricty
-   Float64 eye; // vertical eccentricty at end of girder
+   Float64 ex; // lateral eccentricity
+   Float64 eye; // vertical eccentricity at end of girder
    Float64 eyh; // vertical eccentricity at harp point
    Float64 eprime;
    Float64 PrecamberAtLoadPoint; // precamber at the location this load is applied
@@ -638,7 +638,7 @@ DESCRIPTION
 
    This is different from user defined loads in that use defined loads are
    created by the end user of the software through the user interface. These
-   loads are created programatically and may or may not be included in the
+   loads are created programmatically and may or may not be included in the
    load cases and limit state combinations.
 *****************************************************************************/
 // {88ECE0F2-6265-4467-B888-D830D293C712}
@@ -733,7 +733,7 @@ class ICamber
 public:
    enum CreepPeriod
    {
-      cpReleaseToDiaphragm, // load applied at release and creep evaluated immediately before time of diaphragam placement and temporary strand removal
+      cpReleaseToDiaphragm, // load applied at release and creep evaluated immediately before time of diaphragm placement and temporary strand removal
       cpReleaseToDeck,      // load applied at release and creep evaluated immediately before time of deck placement and application of superimposed dead loads
       cpReleaseToFinal,     // load applied at release and creep evaluated at end of creep period
 
@@ -943,7 +943,7 @@ public:
                                                    pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,
                                                    Float64* pRmin,Float64* pRmax) const = 0;
 
-   // Returns the bearing reaction due to a limit state combintation.
+   // Returns the bearing reaction due to a limit state combination.
    virtual void GetBearingLimitStateReaction(IntervalIndexType intervalIdx,const ReactionLocation& location,pgsTypes::LimitState limitState,
                                              pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,
                                              Float64* pRmin,Float64* pRmax) const = 0;
@@ -1036,13 +1036,13 @@ public:
    // Functions to get elevations of the deformed structure
    // 
    // Returns the top of girder elevation at the centerline girder FOR DESIGN FOR PGSUPER MODELS WITH ADIM INPUT ONLY. 
-   // If pConfig is nullptr, the slab offset and excess camber from thebridge model are used, otherwise the slab offset from the config
+   // If pConfig is nullptr, the slab offset and excess camber from the bridge model are used, otherwise the slab offset from the config
    // is used and the excess camber is computed using the supplied configuration. 
    virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // Returns the top of girder elevation for the left, center, and right edges of the girder at the specified poi at the time of 
    // the Geometry Control Event (GCE).
-   //  The elevation takes into account slab offsets and excess camber. Direction defines a tranverse line passing through poi. 
+   //  The elevation takes into account slab offsets and excess camber. Direction defines a transverse line passing through poi. 
    // Left and Right elevations are computed where the transverse line intersects the edges of the girder. 
    // If pDirection is nullptr, the transverse line is taken to be normal to the girder
    virtual void GetTopGirderElevation(const pgsPointOfInterest& poi,IDirection* pDirection,Float64* pLeft,Float64* pCenter,Float64* pRight) const = 0;
@@ -1052,7 +1052,7 @@ public:
 
    // Finished elevation, ONLY for NO-DECK girders at time of the GCE
    // Returns the finished top of girder elevation for the left, center, and right edges of the girder at the specified poi. The elevation takes into
-   // account elevation adjustments and excess camber. Direction defines a tranverse line passing through poi. Left and Right elevations are computed
+   // account elevation adjustments and excess camber. Direction defines a transverse line passing through poi. Left and Right elevations are computed
    // where the transverse line intersects the edges of the girder. If pDirection is nullptr, the transverse line is taken to be normal to the girder.
    // The depth of the overlay is included if applied at or before the GCE (future overlays are not included), otherwise this method is the same
    // as GetTopGirderElevation for no-deck bridges
