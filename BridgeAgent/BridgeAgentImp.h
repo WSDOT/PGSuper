@@ -670,8 +670,8 @@ public:
    Float64 GetApsTopHalf(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const override;
    Float64 GetApsBottomHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const override;
 
-   Float64 GetXferApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const override;
-   Float64 GetXferApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const override;
+   Float64 GetXferApsTopHalf(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const override;
+   Float64 GetXferApsBottomHalf(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const override;
 
 
    StrandIndexType GetNumStrandsBottomHalf(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
