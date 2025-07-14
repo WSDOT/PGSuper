@@ -1166,7 +1166,8 @@ public:
    virtual Float64 GetApsBottomHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const = 0; // Fig. 5.8.3.4.2-3
    virtual Float64 GetApsTopHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const = 0; // Fig. 5.8.3.4.2-3
 
-   virtual Float64 GetAverageTransferApsHalfDepth(const pgsPointOfInterest& poi, bool bBottomHalf, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetXferApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetXferApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
 
 
    // needed for debond percentage check

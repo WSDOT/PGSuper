@@ -736,13 +736,13 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       if ( pscd->bTensionBottom )
       {
          apsu = pStrandGeometry->GetApsBottomHalf(poi,dlaAccurate);
-         apst = pStrandGeometry->GetAverageTransferApsHalfDepth(poi, true);
+         apst = pStrandGeometry->GetXferApsBottomHalf(poi);
          Aps = pStrandGeometry->GetApsBottomHalf(poi,dlaNone);
       }
       else
       {
          apsu = pStrandGeometry->GetApsTopHalf(poi,dlaAccurate);
-         apst = pStrandGeometry->GetAverageTransferApsHalfDepth(poi, false);
+         apst = pStrandGeometry->GetXferApsTopHalf(poi);
          Aps = pStrandGeometry->GetApsTopHalf(poi,dlaNone);
       }
    }
@@ -754,13 +754,13 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       if ( pscd->bTensionBottom )
       {
          apsu = pStrandGeometry->GetApsBottomHalf(poi,dlaApproximate,pConfig);
-         apst = pStrandGeometry->GetAverageTransferApsHalfDepth(poi, true, pConfig);
+         apst = pStrandGeometry->GetXferApsBottomHalf(poi, pConfig);
          Aps = pStrandGeometry->GetApsBottomHalf(poi,dlaNone,pConfig);
       }
       else                                                             
       {
          apsu = pStrandGeometry->GetApsTopHalf(poi,dlaApproximate,pConfig);
-         apst = pStrandGeometry->GetAverageTransferApsHalfDepth(poi, false, pConfig);
+         apst = pStrandGeometry->GetXferApsTopHalf(poi, pConfig);
          Aps = pStrandGeometry->GetApsTopHalf(poi,dlaNone,pConfig);
       }
    }

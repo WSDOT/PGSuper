@@ -16539,6 +16539,11 @@ Float64 CBridgeAgentImp::GetApsBottomHalf(const pgsPointOfInterest& poi,Developm
    return GetApsInHalfDepth(poi, devAdjust, true, pConfig );
 }
 
+Float64 CBridgeAgentImp::GetXferApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
+{
+    return GetAverageTransferApsHalfDepth(poi, true, pConfig);
+}
+
 StrandIndexType CBridgeAgentImp::GetNumStrandsBottomHalf(const pgsPointOfInterest & poi, pgsTypes::StrandType strandType, const GDRCONFIG * pConfig) const
 {
    VALIDATE( GIRDER );
@@ -16644,6 +16649,11 @@ StrandIndexType CBridgeAgentImp::GetNumStrandsBottomHalf(const pgsPointOfInteres
 Float64 CBridgeAgentImp::GetApsTopHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,const GDRCONFIG* pConfig) const
 {
    return GetApsInHalfDepth(poi, devAdjust, false, pConfig );
+}
+
+Float64 CBridgeAgentImp::GetXferApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
+{
+    return GetAverageTransferApsHalfDepth(poi, false, pConfig);
 }
 
 ConfigStrandFillVector CBridgeAgentImp::ComputeStrandFill(const CSegmentKey& segmentKey,pgsTypes::StrandType type,StrandIndexType Ns) const
