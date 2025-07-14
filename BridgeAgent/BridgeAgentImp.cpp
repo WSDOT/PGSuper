@@ -16539,9 +16539,9 @@ Float64 CBridgeAgentImp::GetApsBottomHalf(const pgsPointOfInterest& poi,Developm
    return GetApsInHalfDepth(poi, devAdjust, true, pConfig );
 }
 
-Float64 CBridgeAgentImp::GetXferApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
+Float64 CBridgeAgentImp::GetXferApsBottomHalf(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig) const
 {
-    return GetAverageTransferApsHalfDepth(poi, true, pConfig);
+    return GetAverageTransferApsHalfDepth(poi, devAdjust, true, pConfig);
 }
 
 StrandIndexType CBridgeAgentImp::GetNumStrandsBottomHalf(const pgsPointOfInterest & poi, pgsTypes::StrandType strandType, const GDRCONFIG * pConfig) const
@@ -16651,9 +16651,9 @@ Float64 CBridgeAgentImp::GetApsTopHalf(const pgsPointOfInterest& poi,Development
    return GetApsInHalfDepth(poi, devAdjust, false, pConfig );
 }
 
-Float64 CBridgeAgentImp::GetXferApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
+Float64 CBridgeAgentImp::GetXferApsTopHalf(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig) const
 {
-    return GetAverageTransferApsHalfDepth(poi, false, pConfig);
+    return GetAverageTransferApsHalfDepth(poi, devAdjust, false, pConfig);
 }
 
 ConfigStrandFillVector CBridgeAgentImp::ComputeStrandFill(const CSegmentKey& segmentKey,pgsTypes::StrandType type,StrandIndexType Ns) const
@@ -33795,7 +33795,7 @@ Float64 CBridgeAgentImp::GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,
    return As;
 }
 
-Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest& poi, bool bBottomHalf,const GDRCONFIG* pConfig) const
+Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, bool bBottomHalf,const GDRCONFIG* pConfig) const
 {
    VALIDATE( GIRDER );
 
@@ -33826,7 +33826,7 @@ Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest
 
    // Only use approximate bond method if poi is in mid-section of beam (within CSS's).
    Float64 min_dist_from_ends = Min(dist_from_start, segment_length - dist_from_start);
-   //bool use_approximate = (devAdjust == dlaApproximate && fabs(half_depth_elevation)*3.0 < min_dist_from_ends) ? true : false; // Factor here is balance between performance and accuracy.
+   bool use_approximate = (devAdjust == dlaApproximate && fabs(half_depth_elevation)*3.0 < min_dist_from_ends) ? true : false; // Factor here is balance between performance and accuracy.
 
    ////////////////////////////////
    // Straight strands
@@ -33869,44 +33869,42 @@ Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest
          Float64 transfer_factor;
 
 
-         //if(devAdjust == dlaNone || use_approximate)
-         //{
-         //   // Use mid-span development length details to approximate debond factor
-         //   // determine minimum bonded length from poi
-         //   Float64 bond_start, bond_end;
-         //   bool bDebonded = IsStrandDebonded(segmentKey,strandIdx,pgsTypes::Straight,pConfig,&bond_start,&bond_end);
+         if(devAdjust == dlaNone || use_approximate)
+         {
+            // Use mid-span development length details to approximate debond factor
+            // determine minimum bonded length from poi
+            Float64 bond_start, bond_end;
+            bool bDebonded = IsStrandDebonded(segmentKey,strandIdx,pgsTypes::Straight,pConfig,&bond_start,&bond_end);
 
-         //   if (devAdjust == dlaNone)
-         //   {
-         //      debond_factor = (bDebonded && !InRange(bond_start, dist_from_start, bond_end)) ? 0.0 : 1.0;
-         //   }
-         //   else
-         //   {
-         //      // For approximate development length adjustment, take development length information at mid span and use for entire girder
-         //      // adjusted for distance to ends of strands
-         //      PoiList vPoi;
-         //      GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
-         //      ATLASSERT(vPoi.size() == 1);
-         //      const pgsPointOfInterest& mid_span_poi = vPoi.front();
-         //      ATLASSERT(mid_span_poi.IsMidSpan(POI_ERECTED_SEGMENT));
+            if (devAdjust == dlaNone)
+            {
+               transfer_factor = (bDebonded && !InRange(bond_start, dist_from_start, bond_end)) ? 0.0 : 1.0;
+            }
+            else
+            {
+                //For approximate development length adjustment, take development length information at mid span and use for entire girder
+                //adjusted for distance to ends of strands
+               PoiList vPoi;
+               GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
+               ATLASSERT(vPoi.size() == 1);
+               const pgsPointOfInterest& mid_span_poi = vPoi.front();
+               ATLASSERT(mid_span_poi.IsMidSpan(POI_ERECTED_SEGMENT));
 
-         //      GET_IFACE(IPretensionForce, pPSForce);
-         //      auto pDevLength = pPSForce->GetDevelopmentLengthDetails(mid_span_poi, pgsTypes::Straight, false, pConfig);
-         //      Float64 fps = pDevLength->GetFps();
-         //      Float64 fpe = pDevLength->GetFpe();
+               GET_IFACE(IPretensionForce, pPSForce);
 
-         //      debond_factor = pPSForce->GetDevelopmentLengthAdjustment(poi, strandIdx, pgsTypes::Straight, fps, fpe, pConfig);
-         //   }
-         //}
-         //else
-         //{
+               transfer_factor = pPSForce->GetTransferLengthAdjustment(poi, pgsTypes::Straight, 
+                   pgsTypes::TransferLengthType::Minimum, strandIdx, pConfig);
+            }
+         }
+         else
+         {
             // Full adjustment for development
             GET_IFACE(IPretensionForce,pPSForce);
             //debond_factor = pPSForce->GetDevelopmentLengthAdjustment(poi,strandIdx,pgsTypes::Straight,false, pConfig);
             
             transfer_factor = pPSForce->GetTransferLengthAdjustment(poi, pgsTypes::Straight, 
                 pgsTypes::TransferLengthType::Minimum, strandIdx, pConfig);
-         //}
+         }
 
          Aps += transfer_factor*aps;
       }
