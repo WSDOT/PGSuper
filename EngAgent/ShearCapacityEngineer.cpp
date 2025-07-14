@@ -573,12 +573,12 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    if ( bTensionOnBottom )
    {
       pscd->As = pLongRebarGeometry->GetAsBottomHalf(poi,false);
-      pscd->Kdb = pLongRebarGeometry->GetAsBottomHalf(poi,true)/ pscd->As;
+      pscd->Kdb = (pscd->As==0? 0 : pLongRebarGeometry->GetAsBottomHalf(poi,true)/ pscd->As);
    }
    else
    {
       pscd->As = pLongRebarGeometry->GetAsTopHalf(poi,false);
-      pscd->Kdb = pLongRebarGeometry->GetAsTopHalf(poi, true)/ pscd->As;
+      pscd->Kdb = (pscd->As == 0 ? 0 : pLongRebarGeometry->GetAsTopHalf(poi, true)/ pscd->As);
    }
 
    if ( bIsInClosureJoint )
@@ -736,13 +736,13 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       if ( pscd->bTensionBottom )
       {
          apsu = pStrandGeometry->GetApsBottomHalf(poi,dlaAccurate);
-         apst = pStrandGeometry->GetXferApsBottomHalf(poi);
+         apst = pStrandGeometry->GetXferApsBottomHalf(poi, dlaAccurate);
          Aps = pStrandGeometry->GetApsBottomHalf(poi,dlaNone);
       }
       else
       {
          apsu = pStrandGeometry->GetApsTopHalf(poi,dlaAccurate);
-         apst = pStrandGeometry->GetXferApsTopHalf(poi);
+         apst = pStrandGeometry->GetXferApsTopHalf(poi, dlaAccurate);
          Aps = pStrandGeometry->GetApsTopHalf(poi,dlaNone);
       }
    }
@@ -754,19 +754,19 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       if ( pscd->bTensionBottom )
       {
          apsu = pStrandGeometry->GetApsBottomHalf(poi,dlaApproximate,pConfig);
-         apst = pStrandGeometry->GetXferApsBottomHalf(poi, pConfig);
+         apst = pStrandGeometry->GetXferApsBottomHalf(poi, dlaApproximate, pConfig);
          Aps = pStrandGeometry->GetApsBottomHalf(poi,dlaNone,pConfig);
       }
       else                                                             
       {
          apsu = pStrandGeometry->GetApsTopHalf(poi,dlaApproximate,pConfig);
-         apst = pStrandGeometry->GetXferApsTopHalf(poi, pConfig);
+         apst = pStrandGeometry->GetXferApsTopHalf(poi, dlaApproximate, pConfig);
          Aps = pStrandGeometry->GetApsTopHalf(poi,dlaNone,pConfig);
       }
    }
 
-   pscd->Kds = apsu / Aps;
-   pscd->Kdt = apst / Aps;
+   pscd->Kds = (Aps == 0.0 ? 0.0 : apsu / Aps);
+   pscd->Kdt = (Aps == 0.0 ? 0.0 : apst / Aps);
    pscd->Aps = Aps;
 
    if ( pscd->bTensionBottom )
