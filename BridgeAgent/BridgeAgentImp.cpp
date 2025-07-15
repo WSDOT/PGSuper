@@ -33865,30 +33865,7 @@ Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest
         if (bIncludeStrand)
         {
             Float64 transfer_factor = 0.0;
-            if (devAdjust == dlaNone || use_approximate)
-            {
-                // Use mid-span development length details to approximate debond factor
-                // determine minimum bonded length from poi
-                Float64 bond_start, bond_end;
-                bool bDebonded = IsStrandDebonded(segmentKey, strandIdx, pgsTypes::Straight, pConfig, &bond_start, &bond_end);
 
-                if (devAdjust == dlaNone)
-                {
-                    transfer_factor = (bDebonded && !InRange(bond_start, dist_from_start, bond_end)) ? 0.0 : 1.0;
-                }
-                else
-                {
-                    if (!bDebonded || (bDebonded && InRange(bond_start, dist_from_start, bond_end)))
-                    {
-                        GET_IFACE(IPretensionForce, pPSForce);
-                        transfer_factor = pPSForce->GetTransferLengthAdjustment(poi, pgsTypes::Straight,
-                            pgsTypes::TransferLengthType::Minimum, strandIdx, pConfig);
-                    }
-
-                }
-            }
-            else
-            {
                 // Full adjustment for development
 
                 Float64 bond_start, bond_end;
@@ -33901,7 +33878,7 @@ Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest
                     transfer_factor = pPSForce->GetTransferLengthAdjustment(poi, pgsTypes::Straight,
                         pgsTypes::TransferLengthType::Minimum, strandIdx, pConfig);
                 }
-            }
+            
 
             Aps += transfer_factor * aps;
 
@@ -33955,24 +33932,18 @@ Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest
         if (bIncludeStrand)
         {
             Float64 transfer_factor = 0.0;
-            bool use_one = use_approximate || devAdjust == dlaNone;
-            if (use_one)
-            {
-                transfer_factor = 1.0;
-            }
-            else
-            {
-                
-                Float64 bond_start, bond_end;
-                bool bDebonded = IsStrandDebonded(segmentKey, strandIdx, pgsTypes::Harped, pConfig, &bond_start, &bond_end);
 
-                if (!bDebonded || (bDebonded && InRange(bond_start, dist_from_start, bond_end)))
-                {
-                    GET_IFACE(IPretensionForce, pPSForce);
-                    transfer_factor = pPSForce->GetTransferLengthAdjustment(poi, pgsTypes::Harped,
-                        pgsTypes::TransferLengthType::Minimum, strandIdx, pConfig);
-                }
+                
+            Float64 bond_start, bond_end;
+            bool bDebonded = IsStrandDebonded(segmentKey, strandIdx, pgsTypes::Harped, pConfig, &bond_start, &bond_end);
+
+            if (!bDebonded || (bDebonded && InRange(bond_start, dist_from_start, bond_end)))
+            {
+                GET_IFACE(IPretensionForce, pPSForce);
+                transfer_factor = pPSForce->GetTransferLengthAdjustment(poi, pgsTypes::Harped,
+                    pgsTypes::TransferLengthType::Minimum, strandIdx, pConfig);
             }
+            
 
             Aps += transfer_factor * aps;
 
