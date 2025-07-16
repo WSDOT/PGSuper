@@ -77,14 +77,13 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     rptParagraph* p = new rptParagraph;
     *pChapter << p;
 
-    *p << _T("-Live loads do not include impact") << rptNewLine << rptNewLine;
-
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
     *p << CBearingDesignPropertiesTable().BuildBearingDesignPropertiesTable(pBroker, pDisplayUnits) << rptNewLine;
 
-    *p << Sub2(_T("F"), _T("y")) << _T(" = Steel reinforcement yield strength") << rptNewLine;
-    *p << Sub2(_T("F"), _T("th")) << _T(" = Steel reinforcement constant-amplitude fatigue threshold for Detail Category A") << rptNewLine;
+    *p << Sub2(_T("f"), _T("y")) << _T(" = Steel reinforcement yield strength") << rptNewLine;
+    *p << Sub2(_T("(") << symbol(DELTA) << _T("F)"), _T("TH")) << _T(" = Steel reinforcement constant-amplitude fatigue threshold for Detail Category A") << rptNewLine;
+    *p << _T("-Live loads do not include impact") << rptNewLine << rptNewLine;
 
     GET_IFACE2(pBroker, ISpecification, pSpec);
 
