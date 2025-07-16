@@ -476,21 +476,21 @@ void CPierDetailsBearingsPage::OnCbnEditBearingDetails1()
 
     m_details_dlg.SetBearingDetailDlg(m_Bearings[0]);
 
-    bool bRepeatDialog = true;
+    //bool bRepeatDialog = true;
 
-    while (bRepeatDialog)
-    {
+    //while (bRepeatDialog)
+    //{
         if (m_details_dlg.DoModal() == IDOK)
         {
             const auto& computed_height = m_details_dlg.GetComputedHeight();
 
-            if (!IsEqual(computed_height, m_Bearings[0].Height))
-            {
-                CString msg;
-                msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
+            //if (!IsEqual(computed_height, m_Bearings[0].Height))
+            //{
+            //    CString msg;
+            //    msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
 
-                if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
-                {
+            //    if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
+            //    {
                     m_Bearings[0].Height = computed_height;
 
                     (CEdit*)GetDlgItem(IDC_BRG_HEIGHT_1)->EnableWindow(FALSE);
@@ -509,23 +509,23 @@ void CPierDetailsBearingsPage::OnCbnEditBearingDetails1()
                     m_Bearings[0].ShearDeformationOverride = brg_details.ShearDeformationOverride;
 
 
-                    bRepeatDialog = false; // Exit loop
-                }
-                else
-                {
-                    // Loop will repeat
-                }
-            }
-            else
-            {
+            //        bRepeatDialog = false; // Exit loop
+            //    }
+            //    else
+            //    {
+            //        // Loop will repeat
+            //    }
+            //}
+            //else
+            //{
                 m_Bearings[0].Height = computed_height;
-                bRepeatDialog = false;
-            }
-        }
-        else
-        {
-            bRepeatDialog = false; // Dialog cancelled
-        }
+        //        bRepeatDialog = false;
+        //    }
+        //}
+        //else
+        //{
+        //    bRepeatDialog = false; // Dialog cancelled
+        //}
     }
 
     UpdateData(false);
@@ -552,21 +552,21 @@ void CPierDetailsBearingsPage::OnCbnEditBearingDetails2()
 
     m_details_dlg.SetBearingDetailDlg(m_Bearings[1]);
 
-    bool bRepeatDialog = true;
+    //bool bRepeatDialog = true;
 
-    while (bRepeatDialog)
-    {
+    //while (bRepeatDialog)
+    //{
         if (m_details_dlg.DoModal() == IDOK)
         {
             const auto& computed_height = m_details_dlg.GetComputedHeight();
 
-            if (!IsEqual(computed_height, m_Bearings[1].Height))
-            {
-                CString msg;
-                msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
+            //if (!IsEqual(computed_height, m_Bearings[1].Height))
+            //{
+            //    CString msg;
+            //    msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
 
-                if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
-                {
+            //    if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
+            //    {
                     m_Bearings[1].Height = computed_height;
 
                     (CEdit*)GetDlgItem(IDC_BRG_HEIGHT_1)->EnableWindow(FALSE);
@@ -585,23 +585,23 @@ void CPierDetailsBearingsPage::OnCbnEditBearingDetails2()
                     m_Bearings[1].ShearDeformationOverride = brg_details.ShearDeformationOverride;
 
 
-                    bRepeatDialog = false; // Exit loop
-                }
-                else
-                {
-                    // Loop will repeat
-                }
-            }
-            else
-            {
+            //        bRepeatDialog = false; // Exit loop
+            //    }
+            //    else
+            //    {
+            //        // Loop will repeat
+            //    }
+            //}
+            //else
+            //{
                 m_Bearings[1].Height = computed_height;
-                bRepeatDialog = false;
-            }
-        }
-        else
-        {
-            bRepeatDialog = false; // Dialog cancelled
-        }
+        //        bRepeatDialog = false;
+        //    }
+        //}
+        //else
+        //{
+        //    bRepeatDialog = false; // Dialog cancelled
+        //}
     }
 
     UpdateData(false);

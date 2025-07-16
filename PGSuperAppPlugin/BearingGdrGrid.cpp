@@ -908,23 +908,23 @@ void CBearingGdrGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
 
         
 
-        bool bRepeatDialog = true;
+        //bool bRepeatDialog = true;
 
-        while (bRepeatDialog)
-        {
+        //while (bRepeatDialog)
+        //{
             if (m_details_dlg.DoModal() == IDOK)
             {
                 const auto& computed_height = m_details_dlg.GetComputedHeight();
 
                 const auto& brg_details = m_details_dlg.GetBearingDetails();
 
-                if (!IsEqual(computed_height, bd.Height))
-                {
-                    CString msg;
-                    msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
+                //if (!IsEqual(computed_height, bd.Height))
+                //{
+                //    CString msg;
+                //    msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
 
-                    if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
-                    {
+                //    if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
+                //    {
 
                         SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingHeightCol), CGXStyle()
                             .SetEnabled(FALSE)
@@ -935,19 +935,19 @@ void CBearingGdrGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
                             .SetValue(FormatDimension(computed_height, *m_pCompUnit, false))
                         );
 
-                        bRepeatDialog = false; // Exit loop
-                    }
-                    else
-                    {
-                        // Loop will repeat
-                    }
+                //        bRepeatDialog = false; // Exit loop
+                //    }
+                //    else
+                //    {
+                //        // Loop will repeat
+                //    }
 
-                }
-                else
-                {
+                //}
+                //else
+                //{
                     bd.Height = computed_height;
-                    bRepeatDialog = false;
-                }
+                    //bRepeatDialog = false;
+                //}
 
                 SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingLengthCol), CGXStyle()
                     .SetReadOnly(FALSE)
@@ -992,11 +992,11 @@ void CBearingGdrGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
                 m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].ShearDeformationOverride = m_girderBearingDetailData[nRow - 1].ShearDeformationOverride = brg_details.ShearDeformationOverride;
 
             }
-            else
-            {
-                bRepeatDialog = false; // Dialog cancelled
-            }
-        }
+            //else
+            //{
+            //    //bRepeatDialog = false; // Dialog cancelled
+            //}
+        //}
     }
 
 }

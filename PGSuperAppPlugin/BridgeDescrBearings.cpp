@@ -295,21 +295,21 @@ void CBridgeDescrBearings::OnCbnEditBearingDetails()
 
     m_details_dlg.SetBearingDetailDlg(m_BearingInputData.m_SingleBearing);
 
-    bool bRepeatDialog = true;
+    //bool bRepeatDialog = true;
 
-    while (bRepeatDialog)
-    {
+    //while (bRepeatDialog)
+    //{
         if (m_details_dlg.DoModal() == IDOK)
         {
             const auto& computed_height = m_details_dlg.GetComputedHeight();
 
-            if (!IsEqual(computed_height, m_BearingInputData.m_SingleBearing.Height))
+ /*           if (!IsEqual(computed_height, m_BearingInputData.m_SingleBearing.Height))
             {
                 CString msg;
                 msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
 
                 if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
-                {
+                {*/
                     m_BearingInputData.m_SingleBearing.Height = computed_height;
 
                     (CEdit*)GetDlgItem(IDC_BRG_HEIGHT)->EnableWindow(FALSE);
@@ -328,23 +328,23 @@ void CBridgeDescrBearings::OnCbnEditBearingDetails()
                     m_BearingInputData.m_SingleBearing.ShearDeformationOverride = brg_details.ShearDeformationOverride;
 
 
-                    bRepeatDialog = false; // Exit loop
-                }
-                else
-                {
-                    // Loop will repeat
-                }
-            }
-            else
-            {
+            //        bRepeatDialog = false; // Exit loop
+            //    }
+            //    else
+            //    {
+            //        // Loop will repeat
+            //    }
+            //}
+            //else
+            //{
                 m_BearingInputData.m_SingleBearing.Height = computed_height;
-                bRepeatDialog = false;
-            }
-        }
-        else
-        {
-            bRepeatDialog = false; // Dialog cancelled
-        }
+        //        bRepeatDialog = false;
+        //    }
+        //}
+        //else
+        //{
+        //    bRepeatDialog = false; // Dialog cancelled
+        //}
     }
 
     UpdateData(false);
