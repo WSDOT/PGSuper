@@ -218,37 +218,37 @@ void CBearingSame4BridgeDlg::OnCbnEditBearingDetails()
 
     m_details_dlg.SetBearingDetailDlg(m_BearingData);
 
-    bool bRepeatDialog = true;
+    //bool bRepeatDialog = true;
 
-    while (bRepeatDialog)
-    {
+    //while (bRepeatDialog)
+    //{
         if (m_details_dlg.DoModal() == IDOK)
         {
             const auto& computed_height = m_details_dlg.GetComputedHeight();
 
-            if (!IsEqual(computed_height, m_BearingData.Height))
-            {
-                CString msg;
-                msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
+            //if (!IsEqual(computed_height, m_BearingData.Height))
+            //{
+            //    CString msg;
+            //    msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
 
-                if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
-                {
-                    m_BearingData.Height = computed_height;
+            //    if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
+            //    {
+            //        m_BearingData.Height = computed_height;
 
-                    (CEdit*)GetDlgItem(IDC_BRG_HEIGHT)->EnableWindow(FALSE);
+            //        (CEdit*)GetDlgItem(IDC_BRG_HEIGHT)->EnableWindow(FALSE);
 
-                    bRepeatDialog = false; // Exit loop
-                }
-                else
-                {
-                    // Loop will repeat
-                }
-            }
-            else
-            {
+            //        bRepeatDialog = false; // Exit loop
+            //    }
+            //    else
+            //    {
+            //        // Loop will repeat
+            //    }
+            //}
+            //else
+            //{
                 m_BearingData.Height = computed_height;
-                bRepeatDialog = false;
-            }
+                //bRepeatDialog = false;
+            //}
 
             const auto& brg_details = m_details_dlg.GetBearingDetails();
 
@@ -263,11 +263,11 @@ void CBearingSame4BridgeDlg::OnCbnEditBearingDetails()
             m_BearingData.FixedY = brg_details.FixedY;
             m_BearingData.ShearDeformationOverride = brg_details.ShearDeformationOverride;
 
-        }
-        else
-        {
-            bRepeatDialog = false; // Dialog cancelled
-        }
+        //}
+        //else
+        //{
+        //    bRepeatDialog = false; // Dialog cancelled
+        //}
     }
 
     UpdateData(false);
