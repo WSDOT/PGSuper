@@ -16539,9 +16539,9 @@ Float64 CBridgeAgentImp::GetApsBottomHalf(const pgsPointOfInterest& poi,Developm
    return GetApsInHalfDepth(poi, devAdjust, true, pConfig );
 }
 
-Float64 CBridgeAgentImp::GetXferApsBottomHalf(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig) const
+Float64 CBridgeAgentImp::GetXferApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
 {
-    return GetAverageTransferApsHalfDepth(poi, devAdjust, true, pConfig);
+    return GetAverageTransferApsHalfDepth(poi, true, pConfig);
 }
 
 StrandIndexType CBridgeAgentImp::GetNumStrandsBottomHalf(const pgsPointOfInterest & poi, pgsTypes::StrandType strandType, const GDRCONFIG * pConfig) const
@@ -16651,9 +16651,9 @@ Float64 CBridgeAgentImp::GetApsTopHalf(const pgsPointOfInterest& poi,Development
    return GetApsInHalfDepth(poi, devAdjust, false, pConfig );
 }
 
-Float64 CBridgeAgentImp::GetXferApsTopHalf(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig) const
+Float64 CBridgeAgentImp::GetXferApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
 {
-    return GetAverageTransferApsHalfDepth(poi, devAdjust, false, pConfig);
+    return GetAverageTransferApsHalfDepth(poi, false, pConfig);
 }
 
 ConfigStrandFillVector CBridgeAgentImp::ComputeStrandFill(const CSegmentKey& segmentKey,pgsTypes::StrandType type,StrandIndexType Ns) const
@@ -33795,7 +33795,7 @@ Float64 CBridgeAgentImp::GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,
    return As;
 }
 
-Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, bool bBottomHalf,const GDRCONFIG* pConfig) const
+Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest& poi, bool bBottomHalf,const GDRCONFIG* pConfig) const
 {
     VALIDATE(GIRDER);
 
@@ -33821,11 +33821,9 @@ Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest
     CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
 
     Float64 dist_from_start = poi.GetDistFromStart();
-    Float64 segment_length = GetSegmentLength(segmentKey);
 
-    // Only use approximate bond method if poi is in mid-section of beam (within CSS's).
-    Float64 min_dist_from_ends = Min(dist_from_start, segment_length - dist_from_start);
-    bool use_approximate = (devAdjust == dlaApproximate && fabs(half_depth_elevation) * 3.0 < min_dist_from_ends) ? true : false; // Factor here is balance between performance and accuracy.
+
+
 
     ////////////////////////////////
     // Straight strands
