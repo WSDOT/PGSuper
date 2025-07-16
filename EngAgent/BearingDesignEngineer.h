@@ -52,7 +52,7 @@ public:
 	   CGirderKey girderKey, pgsTypes::AnalysisType analysisType, 
 	   bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const;
 
-   void GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEARDEFORMATIONDETAILS* bearing) const;
+   void GetThermalExpansionDetails(BEARINGSHEARDEFORMATIONDETAILS* bearing) const;
 
    Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const;
 
@@ -60,11 +60,18 @@ public:
 
    Float64 GetBearingTimeDependentLosses(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const;
 
+   PoiList GetBearingPoiList(const CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const;
+
    void GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const;
 
-   void CheckBearing(WBFL::EngTools::Bearing* brg, WBFL::EngTools::BearingLoads* brg_loads, WBFL::EngTools::BearingCalculator* brg_calc) const;
+   void SetBearingDesignData(const CBearingData2& brgData, const ReactionLocation& reactionLocation, bool bFlexural, 
+	   WBFL::EngTools::Bearing* bearing, WBFL::EngTools::BearingLoads* loads);
 
 private:
    std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
    inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
+   StatusGroupIDType m_StatusGroupID;
+
+   std::vector<StatusItemIDType> m_CurrentBearingDesignStatusItems;
 };

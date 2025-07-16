@@ -1466,20 +1466,21 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    // Roadway elevations
    DDX_UnitValueAndTag(pDX, IDC_ELEVATION_TOLERANCE, IDC_ELEVATION_TOLERANCE_UNIT, m_Entry.m_pImpl->m_SlabOffsetCriteria.FinishedElevationTolerance, pDisplayUnits->ComponentDim);
    DDV_UnitValueZeroOrMore(pDX, IDC_ELEVATION_TOLERANCE, m_Entry.m_pImpl->m_SlabOffsetCriteria.FinishedElevationTolerance, pDisplayUnits->ComponentDim);
+
+   DDX_Check_Bool(pDX, IDC_CHECK_BEARING, m_Entry.m_pImpl->m_BearingCriteria.bCheck);
 }
 
 void CSpecMainSheet::ExchangeBearingsData(CDataExchange* pDX)
 {
-    CEAFApp* pApp = EAFGetApp();
-    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   CEAFApp* pApp = EAFGetApp();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Check_Bool(pDX, IDC_TAPERED_SOLE_PLATE_REQUIRED, m_Entry.m_pImpl->m_BearingCriteria.bAlertTaperedSolePlateRequirement);
    DDX_Text(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_pImpl->m_BearingCriteria.TaperedSolePlateInclinationThreshold);
    DDV_LimitOrMore(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_pImpl->m_BearingCriteria.TaperedSolePlateInclinationThreshold, 0.0);
    DDX_Check_Bool(pDX, IDC_BEARING_REACTION_IMPACT, m_Entry.m_pImpl->m_BearingCriteria.bUseImpactForBearingReactions);
 
-   int value = (int)m_Entry.m_pImpl->m_BearingCriteria.BearingDesignMethod;
-   DDX_Radio(pDX, IDC_BEARING_METHOD_A, value);
+   DDX_Radio(pDX, IDC_BEARING_METHOD_A, (int&)m_Entry.m_pImpl->m_BearingCriteria.AnalysisMethod);
 
    DDX_UnitValueAndTag(pDX, IDC_SHEAR_MOD_MIN_LIMIT, IDC_SHEAR_MOD_MIN_LIMIT_UNIT,
        m_Entry.m_pImpl->m_BearingCriteria.MinimumElastomerShearModulus, pDisplayUnits->ModE);
@@ -1510,7 +1511,7 @@ void CSpecMainSheet::ExchangeBearingsData(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_MAX_LL_DEF_LIMIT, IDC_MAX_LL_DEF_LIMIT_UNIT,
        m_Entry.m_pImpl->m_BearingCriteria.MaximumLiveLoadDeflection, pDisplayUnits->ComponentDim);
 
-   DDX_Check_Bool(pDX, IDC_MAX_TOTAL_BEARING_LOAD_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bRequiredBearingEdgeToGirderEdgeDistance);
+   DDX_Check_Bool(pDX, IDC_MAX_TOTAL_BEARING_LOAD_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMaximumTotalLoad);
    DDX_UnitValueAndTag(pDX, IDC_MAX_BEARING_TL, IDC_MAX_TL_UNIT,
        m_Entry.m_pImpl->m_BearingCriteria.MaximumTotalLoad, pDisplayUnits->GeneralForce);
 
