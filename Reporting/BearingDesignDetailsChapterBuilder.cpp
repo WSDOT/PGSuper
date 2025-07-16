@@ -113,9 +113,9 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << _T("Bearing Design Properties") << rptNewLine;
     p = new rptParagraph;
     *pChapter << p;
-    *p << Sub2(_T("F"), _T("y")) << _T(" = ") << stress.SetValue(details.Fy);
+    *p << Sub2(_T("f"), _T("y")) << _T(" = ") << stress.SetValue(details.Fy);
     *p << _T(" for steel shims per AASHTO M251 (ASTM A 1011 Gr. 36)") << rptNewLine;
-    *p << Sub2(_T("F"), _T("th")) << _T(" = ") << stress.SetValue(details.Fth);
+    *p << Sub2(_T("(") << symbol(DELTA) << _T("F)"), _T("TH")) << _T(" = ") << stress.SetValue(details.Fth);
     *p << _T(" LRFD Article 6.6 (Table 6.6.1.2.3-1 for Category A)") << rptNewLine;
     *p << _T("Method B is used per WSDOT Policy (BDM Ch. 9.2)") << rptNewLine;
 
