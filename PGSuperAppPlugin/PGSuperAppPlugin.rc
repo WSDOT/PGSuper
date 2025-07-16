@@ -3951,7 +3951,7 @@ BEGIN
     LTEXT           "Intermediate Elastomer Thickness",IDC_STATIC,14,49,107,8
     EDITTEXT        IDC_EDIT_INT_ELASTOMER_THICK,126,48,42,12,ES_AUTOHSCROLL
     LTEXT           "Unit",IDC_EDIT_INT_ELASTOMER_THICK_UNIT,175,50,14,8
-    LTEXT           "No. Intermediate  Elastomer Layers",IDC_STATIC,9,67,112,8
+    LTEXT           "No. Intermediate  Elastomer Layers",IDC_STATIC,9,67,116,8
     EDITTEXT        IDC_NUMBER_INT_LAYERS,126,66,42,12,ES_AUTOHSCROLL
     LTEXT           "Elastomer Cover Thickness",IDC_STATIC,36,85,85,8
     EDITTEXT        IDC_EDIT_COVER_ELASTOMER_THICK,126,84,42,12,ES_AUTOHSCROLL
@@ -5581,5 +5581,4 @@ END
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
-
 
