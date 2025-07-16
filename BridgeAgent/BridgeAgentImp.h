@@ -670,8 +670,8 @@ public:
    Float64 GetApsTopHalf(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const override;
    Float64 GetApsBottomHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const override;
 
-   Float64 GetXferApsTopHalf(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const override;
-   Float64 GetXferApsBottomHalf(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, const GDRCONFIG* pConfig = nullptr) const override;
+   Float64 GetXferApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const override;
+   Float64 GetXferApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const override;
 
 
    StrandIndexType GetNumStrandsBottomHalf(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
@@ -1597,7 +1597,7 @@ private:
 
    Float64 GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,bool bDevAdjust,bool bTensionTop) const;
    Float64 GetApsInHalfDepth(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,bool bBottomHalf, const GDRCONFIG* pConfig=nullptr) const;
-   Float64 GetAverageTransferApsHalfDepth(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, bool bBottomHalf, const GDRCONFIG* pConfig=nullptr) const;
+   Float64 GetAverageTransferApsHalfDepth(const pgsPointOfInterest& poi, bool bBottomHalf, const GDRCONFIG* pConfig=nullptr) const;
 
    Float64 GetGirderAptTensionSide(const pgsPointOfInterest& poi,bool bTensionTop) const;
    Float64 GetSegmentAptTensionSide(const pgsPointOfInterest& poi, bool bTensionTop) const;
