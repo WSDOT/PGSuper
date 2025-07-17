@@ -1589,7 +1589,7 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
       nCol += 3;
    }
 
-   *pParagraph << Sub2(_T("K"), _T("db")) << _T(" = adjustment factor for bar development ") << rptNewLine;
+   *pParagraph << rptNewLine << Sub2(_T("K"), _T("db")) << _T(" = adjustment factor for bar development ") << rptNewLine;
    *pParagraph << Sub2(_T("K"), _T("ds")) << _T(" = adjustment factor for strand development ") << rptNewLine;
    *pParagraph << Sub2(_T("K"), _T("dt")) << _T(" = adjustment factor for prestressing force transfer ") << rptNewLine;
 
