@@ -33823,8 +33823,6 @@ Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest
     Float64 dist_from_start = poi.GetDistFromStart();
 
 
-
-
     ////////////////////////////////
     // Straight strands
     ////////////////////////////////
@@ -33870,7 +33868,7 @@ Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest
                 bool bDebonded = IsStrandDebonded(segmentKey, strandIdx, pgsTypes::Straight, pConfig, &bond_start, &bond_end);
 
                 
-                if (!bDebonded || (bDebonded && InRange(bond_start, dist_from_start, bond_end)))
+                if ((bond_start < dist_from_start) && (dist_from_start < bond_end))
                 {
                     GET_IFACE(IPretensionForce, pPSForce);
                     transfer_factor = pPSForce->GetTransferLengthAdjustment(poi, pgsTypes::Straight,
@@ -33932,15 +33930,9 @@ Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest
             Float64 transfer_factor = 0.0;
 
                 
-            Float64 bond_start, bond_end;
-            bool bDebonded = IsStrandDebonded(segmentKey, strandIdx, pgsTypes::Harped, pConfig, &bond_start, &bond_end);
-
-            if (!bDebonded || (bDebonded && InRange(bond_start, dist_from_start, bond_end)))
-            {
-                GET_IFACE(IPretensionForce, pPSForce);
-                transfer_factor = pPSForce->GetTransferLengthAdjustment(poi, pgsTypes::Harped,
-                    pgsTypes::TransferLengthType::Minimum, strandIdx, pConfig);
-            }
+            GET_IFACE(IPretensionForce, pPSForce);
+            transfer_factor = pPSForce->GetTransferLengthAdjustment(poi, pgsTypes::Harped,
+                pgsTypes::TransferLengthType::Minimum, strandIdx, pConfig);
             
 
             Aps += transfer_factor * aps;
