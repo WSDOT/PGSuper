@@ -57,10 +57,10 @@ rptRcTable* CBearingDesignPropertiesTable::BuildBearingDesignPropertiesTable(std
     p_table->SetRowSpan(0, col, 2);
     (*p_table)(0, col++) << _T("");
     p_table->SetRowSpan(0, col, 2);
-    (*p_table)(0, col++) << COLHDR(Sub2(_T("f"), _T("y")),
+    (*p_table)(0, col++) << COLHDR(Sub2(_T("F"), _T("y")),
         rptStressUnitTag, pDisplayUnits->GetStressUnit());
     p_table->SetRowSpan(0, col, 2);
-    (*p_table)(0, col++) << COLHDR(Sub2(_T("(") << symbol(DELTA) << _T("F)"), _T("TH")),
+    (*p_table)(0, col++) << COLHDR(Sub2(_T("") << symbol(DELTA) << _T("F"), _T("TH")),
         rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
 
