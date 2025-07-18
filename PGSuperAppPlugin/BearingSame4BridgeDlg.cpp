@@ -80,15 +80,17 @@ void CBearingSame4BridgeDlg::DoDataExchange(CDataExchange* pDX)
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    const BearingCriteria& criteria = pSpecEntry->GetBearingCriteria();
 
-   if (m_BearingData.DefinitionType == BearingDefinitionType::btBasic || !criteria.bCheck)
+   if (m_BearingData.DefinitionType == BearingDefinitionType::btBasic /*|| !criteria.bCheck*/)
    {
        ((CComboBox*)GetDlgItem(IDC_BUTTON_EDIT_BEARING_DETAIL))->EnableWindow(FALSE);
        (CEdit*)GetDlgItem(IDC_BRG_HEIGHT)->EnableWindow(TRUE);
 
-       if (!criteria.bCheck)
-       {
-           ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE))->EnableWindow(FALSE);
-       }
+       ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE))->EnableWindow(TRUE);
+
+       //if (!criteria.bCheck)
+       //{
+       //    ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE))->EnableWindow(FALSE);
+       //}
    }
    else
    {

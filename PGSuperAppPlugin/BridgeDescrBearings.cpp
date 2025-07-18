@@ -97,15 +97,15 @@ void CBridgeDescrBearings::DoDataExchange(CDataExchange* pDX)
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    const BearingCriteria& criteria = pSpecEntry->GetBearingCriteria();
 
-   if (m_BearingInputData.m_SingleBearing.DefinitionType == BearingDefinitionType::btBasic || !criteria.bCheck)
+   if (m_BearingInputData.m_SingleBearing.DefinitionType == BearingDefinitionType::btBasic/* || !criteria.bCheck*/)
    {
        ((CComboBox*)GetDlgItem(IDC_BUTTON_EDIT_BEARING_DETAIL))->EnableWindow(FALSE);
        (CEdit*)GetDlgItem(IDC_BRG_HEIGHT)->EnableWindow(TRUE);
 
-       if (!criteria.bCheck)
-       {
-           ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE))->EnableWindow(FALSE);
-       }
+       //if (!criteria.bCheck)
+       //{
+       //    ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE))->EnableWindow(FALSE);
+       //}
    }
    else
    {

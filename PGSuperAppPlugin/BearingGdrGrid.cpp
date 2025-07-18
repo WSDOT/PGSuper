@@ -423,23 +423,23 @@ void CBearingGdrGrid::WriteBearingRow(ROWCOL row, const CBearingData2& bearingDa
     const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
     const BearingCriteria& criteria = pSpecEntry->GetBearingCriteria();
 
-    if (criteria.bCheck)
-    {
+    //if (criteria.bCheck)
+    //{
         SetStyleRange(CGXRange(row, m_DGetter.m_BearingDefTypeCol), CGXStyle()
             .SetReadOnly(FALSE)
             .SetEnabled(TRUE)
             .SetValue(strType)
         );
-    }
-    else
-    {
-        SetStyleRange(CGXRange(row, m_DGetter.m_BearingDefTypeCol), CGXStyle()
-            .SetInterior(GXSYSCOLOR(COLOR_BTNFACE))
-            .SetReadOnly(TRUE)
-            .SetEnabled(FALSE)
-            .SetValue(strType)
-        );
-    }
+    //}
+    //else
+    //{
+    //    SetStyleRange(CGXRange(row, m_DGetter.m_BearingDefTypeCol), CGXStyle()
+    //        .SetInterior(GXSYSCOLOR(COLOR_BTNFACE))
+    //        .SetReadOnly(TRUE)
+    //        .SetEnabled(FALSE)
+    //        .SetValue(strType)
+    //    );
+    //}
 
    CString strshape = (bearingData.Shape == bsRectangular) ? _T("Rectangular") : _T("Round");
 

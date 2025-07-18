@@ -207,15 +207,15 @@ void CSpanGdrDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    const BearingCriteria& criteria = pSpecEntry->GetBearingCriteria();
 
-   if (B1Dat.DefinitionType == BearingDefinitionType::btBasic || !criteria.bCheck)
+   if (B1Dat.DefinitionType == BearingDefinitionType::btBasic/* || !criteria.bCheck*/)
    {
        ((CComboBox*)GetDlgItem(IDC_BUTTON_EDIT_BEARING_DETAIL_1))->EnableWindow(FALSE);
        (CEdit*)GetDlgItem(IDC_BRG_HEIGHT_1)->EnableWindow(TRUE);
 
-       if (!criteria.bCheck)
-       {
-           ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE_1))->EnableWindow(FALSE);
-       }
+       //if (!criteria.bCheck)
+       //{
+       //    ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE_1))->EnableWindow(FALSE);
+       //}
    }
    else
    {
@@ -253,15 +253,15 @@ void CSpanGdrDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBIndex(pDX, IDC_BRG_DEF_TYPE_2, (int&)B2Dat.DefinitionType);
 
-   if (B2Dat.DefinitionType == BearingDefinitionType::btBasic || !criteria.bCheck)
+   if (B2Dat.DefinitionType == BearingDefinitionType::btBasic/* || !criteria.bCheck*/)
    {
        ((CComboBox*)GetDlgItem(IDC_BUTTON_EDIT_BEARING_DETAIL_2))->EnableWindow(FALSE);
        (CEdit*)GetDlgItem(IDC_BRG_HEIGHT_2)->EnableWindow(TRUE);
 
-       if (!criteria.bCheck)
-       {
-           ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE_2))->EnableWindow(FALSE);
-       }
+       //if (!criteria.bCheck)
+       //{
+       //    ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE_2))->EnableWindow(FALSE);
+       //}
    }
    else
    {
