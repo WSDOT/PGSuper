@@ -3639,7 +3639,7 @@ BEGIN
     CONTROL         "Custom1",IDC_HAUNCH_GRID,"GXWND",WS_BORDER | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP,2,0,500,94
 END
 
-IDD_EDIT_BEARINGS DIALOGEX 0, 0, 825, 280
+IDD_EDIT_BEARINGS DIALOGEX 0, 0, 825, 301
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Edit Bearing Description"
@@ -3651,13 +3651,14 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,715,259,50,14
     PUSHBUTTON      "Help",ID_HELP,768,259,50,14
     CONTROL         "",IDC_BEARING,"Static",SS_ENHMETAFILE,635,7,183,126
+    LTEXT           "*Basic type only includes input used to determine recess, deducts, and face of support locations. When ""Detailed""  is selected, the edit detail button is enabled, so the user can enter sufficient data to perform a specification check on the bearing.",IDC_STATIC,10,264,497,26
 END
 
-IDD_BEARINGSAME4_BRIDGE DIALOGEX 0, 0, 596, 90
+IDD_BEARINGSAME4_BRIDGE DIALOGEX 0, 0, 596, 89
 STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_SYSMENU
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Data for all Bearings in the Bridge",IDC_STATIC,7,7,582,76
+    GROUPBOX        "Data for all Bearings in the Bridge",IDC_STATIC,7,7,582,75
     LTEXT           "Bearing Shape",IDC_STATIC,102,38,47,8
     COMBOBOX        IDC_BRG_SHAPE,93,54,63,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CTEXT           "Number of Bearings per Girder End",IDC_STATIC,169,20,36,31
@@ -3684,7 +3685,7 @@ BEGIN
     CTEXT           "unit",IDC_BRG_SOLEPLATE_UNIT,497,44,13,8
     EDITTEXT        IDC_BRG_SOLEPLATE,481,54,42,14,ES_RIGHT | ES_AUTOHSCROLL
     COMBOBOX        IDC_BRG_DEF_TYPE,21,54,63,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Bearing Type",IDC_STATIC,33,38,47,8
+    LTEXT           "Bearing Type*",IDC_STATIC,33,38,47,8
     LTEXT           "Detail",IDC_STATIC,544,43,20,8
     PUSHBUTTON      "Edit",IDC_BUTTON_EDIT_BEARING_DETAIL,529,54,50,14
 END
@@ -3756,9 +3757,10 @@ BEGIN
     EDITTEXT        IDC_BRG_SOLEPLATE,418,91,42,14,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "",IDC_BEARING,"Static",SS_ENHMETAFILE,276,111,183,126,WS_EX_CLIENTEDGE
     COMBOBOX        IDC_BRG_DEF_TYPE,16,125,63,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Bearing Type",IDC_STATIC_DEF,28,111,47,8
+    LTEXT           "Bearing Type*",IDC_STATIC_DEF,28,111,47,8
     LTEXT           "Detail",IDC_STATIC_DETAIL,108,111,20,8
     PUSHBUTTON      "Edit",IDC_BUTTON_EDIT_BEARING_DETAIL,93,124,50,13
+    LTEXT           "*Basic type only includes input used to determine recess, deducts, and face of support locations. When ""Detailed""  is selected, the edit detail button is enabled, so the user can enter sufficient data to perform a specification check on the bearing.",IDC_STATIC_BRG_NOTE,16,152,241,42
 END
 
 IDD_PIER_BEARINGS_PAGE DIALOGEX 0, 0, 608, 258
@@ -3807,11 +3809,12 @@ BEGIN
     LTEXT           "Ahead",IDC_BRG2_STATIC,14,105,24,8
     CONTROL         "",IDC_BEARING,"Static",SS_ENHMETAFILE,415,123,183,126
     COMBOBOX        IDC_BRG_DEF_TYPE_1,49,81,63,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Bearing Type",IDC_STATIC_DEF,61,70,47,8
+    LTEXT           "Bearing Type*",IDC_STATIC_DEF,61,70,47,8
     LTEXT           "Detail",IDC_STATIC_DETAIL,561,68,20,8
     PUSHBUTTON      "Edit",IDC_BUTTON_EDIT_BEARING_DETAIL_1,546,81,50,13
     PUSHBUTTON      "Edit",IDC_BUTTON_EDIT_BEARING_DETAIL_2,546,104,50,13
     COMBOBOX        IDC_BRG_DEF_TYPE_2,48,103,63,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "*Basic type only includes input used to determine recess, deducts, and face of support locations. When ""Detailed""  is selected, the edit detail button is enabled, so the user can enter sufficient data to perform a specification check on the bearing.",IDC_STATIC_BRG_NOTE,19,136,284,25
 END
 
 IDD_SELECT_BOUNDARY_CONDITION DIALOGEX 0, 0, 309, 176
@@ -3970,7 +3973,7 @@ BEGIN
     LTEXT           "Total Estimated Weight: ###",IDC_BRG_WEIGHT,207,123,104,8
     DEFPUSHBUTTON   "OK",IDOK,210,153,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,264,153,50,14
-    LTEXT           "NOTE: Enter the actual shear deformation or enter the keyword ""Compute"" to have the shear deformation computed based on an apparent point of fixty",IDC_STATIC,17,137,189,24
+    LTEXT           "NOTE: Enter the actual shear deformation or enter the keyword ""Compute"" to have the shear deformation computed based on an apparent point of fixity",IDC_STATIC,17,137,189,24
 END
 
 IDD_COPY_BEARING_PROPERTIES DIALOGEX 0, 0, 635, 300
@@ -4356,6 +4359,7 @@ BEGIN
 
     IDD_EDIT_BEARINGS, DIALOG
     BEGIN
+        BOTTOMMARGIN, 280
     END
 
     IDD_BEARINGSAME4_BRIDGE, DIALOG
@@ -4363,7 +4367,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 589
         TOPMARGIN, 7
-        BOTTOMMARGIN, 83
+        BOTTOMMARGIN, 82
     END
 
     IDD_BEARING_PIER_BY_PIER, DIALOG

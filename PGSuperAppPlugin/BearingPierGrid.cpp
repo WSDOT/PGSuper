@@ -304,7 +304,7 @@ void CBearingPierGrid::CustomInit()
         .SetHorizontalAlignment(DT_CENTER)
         .SetVerticalAlignment(DT_TOP)
         .SetEnabled(FALSE)          // disables usage as current cell
-        .SetValue(_T("\nType\n "))
+        .SetValue(_T("\nType*\n "))
     );
 
     col ++;
