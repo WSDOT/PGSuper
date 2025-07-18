@@ -1589,9 +1589,12 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
       nCol += 3;
    }
 
-   *pParagraph << rptNewLine << Sub2(_T("K"), _T("db")) << _T(" = adjustment factor for bar development ") << rptNewLine;
-   *pParagraph << Sub2(_T("K"), _T("ds")) << _T(" = adjustment factor for strand development ") << rptNewLine;
-   *pParagraph << Sub2(_T("K"), _T("dt")) << _T(" = adjustment factor for prestressing force transfer ") << rptNewLine;
+   *pParagraph << rptNewLine;
+   *pParagraph << _T("where:") << rptNewLine;
+   *pParagraph << _T("All areas and corresponding adjustment factors used in this equation are based on the tension side of the girder section") << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("db")) << _T(" = equivalent adjustment factor for bar development ") << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("ds")) << _T(" = equivalent adjustment factor for strand development ") << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("dt")) << _T(" = equivalent adjustment factor for prestressing force transfer ") << rptNewLine;
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol);
 
