@@ -37,12 +37,12 @@
 
 // CSpanGirderReportDlg dialog
 
-IMPLEMENT_DYNAMIC(CSpanGirderReportDlg, CDialog)
+IMPLEMENT_DYNAMIC(CSpanGirderReportDlg, CSpanItemReportDlg)
 
 CSpanGirderReportDlg::CSpanGirderReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
-	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec), m_Mode(mode)
+	: CSpanItemReportDlg(pBroker, rptDesc, mode, pRptSpec, nIDTemplate, pParent)
 {
-   m_pBroker = pBroker;
+
 }
 
 CSpanGirderReportDlg::~CSpanGirderReportDlg()
@@ -53,113 +53,67 @@ void CSpanGirderReportDlg::DoDataExchange(CDataExchange* pDX)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	CDialog::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_LIST, m_ChList);
-
-   if ( m_Mode == Mode::GroupAndChapters || m_Mode == Mode::GroupGirderAndChapters || m_Mode == Mode::GroupGirderSegmentAndChapters)
+   if (m_Mode == Mode::GroupAndChapters || m_Mode == Mode::GroupGirderAndChapters)
    {
-	   DDX_CBIndex(pDX, IDC_SPAN, (int&)m_SegmentKey.groupIndex);
+       DDX_CBIndex(pDX, IDC_SPAN, (int&)m_SegmentKey.groupIndex);
    }
 
-   if ( m_Mode == Mode::GroupGirderAndChapters || m_Mode == Mode::GroupGirderSegmentAndChapters || m_Mode == Mode::GirderAndChapters )
+   if (m_Mode == Mode::GroupGirderAndChapters || m_Mode == Mode::GirderAndChapters)
    {
-      DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_SegmentKey.girderIndex);
+       DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_SegmentKey.girderIndex);
    }
 
    if ( m_Mode == Mode::GroupGirderSegmentAndChapters)
    {
-      DDX_CBIndex(pDX, IDC_SEGMENT, (int&)m_SegmentKey.segmentIndex);
+      DDX_CBIndex(pDX, IDC_SPAN_ITEM, (int&)m_SegmentKey.segmentIndex);
    }
 
-   if ( pDX->m_bSaveAndValidate )
-   {
-      m_ChapterList.clear();
+   CSpanItemReportDlg::DoDataExchange(pDX);
 
-      int cSelChapters = 0;
-      int cChapters = m_ChList.GetCount();
-      for ( int ch = 0; ch < cChapters; ch++ )
-      {
-         if ( m_ChList.GetCheck( ch ) == 1 )
-         {
-            cSelChapters++;
-
-            CString strChapter;
-            m_ChList.GetText(ch,strChapter);
-
-            // m_ChapterList needs to hold the Key name for the chapter information
-            // but the chapter list box has the display name
-            // Look up the chapter display name to get the chapter key
-            std::vector<WBFL::Reporting::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
-            for (const auto& chInfo : chInfos)
-            {
-               if (chInfo.Name == std::_tstring(strChapter))
-               {
-                  m_ChapterList.push_back(chInfo.Key);
-                  break;
-               }
-            }
-         }
-      }
-
-      if ( cSelChapters == 0 )
-      {
-         pDX->PrepareCtrl(IDC_LIST);
-         AfxMessageBox(IDS_E_NOCHAPTERS);
-         pDX->Fail();
-      }
-   }
 }
 
-
-BEGIN_MESSAGE_MAP(CSpanGirderReportDlg, CDialog)
-	ON_COMMAND(IDHELP, OnHelp)
-   ON_COMMAND(IDC_SELECT_ALL,OnSelectAll)
-   ON_COMMAND(IDC_DESELECT_ALL,OnDeselectAll)
-	ON_CBN_SELCHANGE(IDC_SPAN, OnGroupChanged)
-   ON_CBN_SELCHANGE(IDC_GIRDER, OnGirderChanged)
+BEGIN_MESSAGE_MAP(CSpanGirderReportDlg, CSpanItemReportDlg)
+    ON_CBN_SELCHANGE(IDC_SPAN, OnGroupChanged)
+    ON_CBN_SELCHANGE(IDC_GIRDER, OnGirderChanged)
 END_MESSAGE_MAP()
 
 
 // CSpanGirderReportDlg message handlers
 void CSpanGirderReportDlg::UpdateGirderComboBox()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   if ( m_Mode == Mode::ChaptersOnly || m_Mode == Mode::GroupAndChapters )
-   {
-      return;
-   }
-
-   GET_IFACE( IBridge, pBridge );
+   CSpanItemReportDlg::UpdateGirderComboBox();
 
    CComboBox* pGdrBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
    Uint16 curSel = pGdrBox->GetCurSel();
    pGdrBox->ResetContent();
 
+   GET_IFACE(IBridge, pBridge);
+
    GirderIndexType cGirders = 0;
-   if ( m_SegmentKey.groupIndex == ALL_GROUPS )
+   if (m_SegmentKey.groupIndex == ALL_GROUPS)
    {
-      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-      for ( GroupIndexType i = 0; i < nGroups; i++ )
-      {
-         cGirders = Max(cGirders,pBridge->GetGirderCount(i));
-      }
+       GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+       for (GroupIndexType i = 0; i < nGroups; i++)
+       {
+           cGirders = Max(cGirders, pBridge->GetGirderCount(i));
+       }
    }
    else
    {
-      cGirders = pBridge->GetGirderCount( m_SegmentKey.groupIndex );
+       cGirders = pBridge->GetGirderCount(m_SegmentKey.groupIndex);
    }
 
-   for ( GirderIndexType j = 0; j < cGirders; j++ )
+   for (GirderIndexType j = 0; j < cGirders; j++)
    {
-      CString strGdr;
-      strGdr.Format( _T("Girder %s"), LABEL_GIRDER(j));
-      pGdrBox->AddString( strGdr );
+       CString strGdr;
+       strGdr.Format(_T("Girder %s"), LABEL_GIRDER(j));
+       pGdrBox->AddString(strGdr);
    }
 
-   if ( pGdrBox->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR )
+   if (pGdrBox->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR)
    {
-      pGdrBox->SetCurSel(0);
+       pGdrBox->SetCurSel(0);
    }
 
    UpdateSegmentComboBox();
@@ -182,7 +136,7 @@ void CSpanGirderReportDlg::UpdateSegmentComboBox()
    CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
    GirderIndexType gdrIdx = (GirderIndexType)pcbGirder->GetCurSel();
 
-   CComboBox* pcbSegment = (CComboBox*)GetDlgItem(IDC_SEGMENT);
+   CComboBox* pcbSegment = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
    Uint16 curSel = pcbSegment->GetCurSel();
    pcbSegment->ResetContent();
 
@@ -198,34 +152,6 @@ void CSpanGirderReportDlg::UpdateSegmentComboBox()
    {
       pcbSegment->SetCurSel(0);
    }
-}
-
-void CSpanGirderReportDlg::UpdateChapterList()
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   // Clear out the list box
-   m_ChList.ResetContent();
-
-   // Get the chapters in the report
-   std::vector<WBFL::Reporting::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
-
-   // Populate the list box with the names of the chapters
-   std::vector<WBFL::Reporting::ChapterInfo>::iterator iter;
-   for ( iter = chInfos.begin(); iter != chInfos.end(); iter++ )
-   {
-      WBFL::Reporting::ChapterInfo chInfo = *iter;
-
-      int idx = m_ChList.AddString( chInfo.Name.c_str() );
-      if ( idx != LB_ERR ) // no error
-      {
-         m_ChList.SetCheck( idx, chInfo.Select ? 1 : 0 ); // turn the check on
-         m_ChList.SetItemData( idx, chInfo.MaxLevel );
-      }
-   }
-
-   // don't select any items in the chapter list
-   m_ChList.SetCurSel(-1);
 }
 
 BOOL CSpanGirderReportDlg::OnInitDialog()
@@ -285,7 +211,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
 
       if (m_Mode == Mode::GroupAndChapters || m_Mode == Mode::GroupGirderAndChapters)
       {
-         CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SEGMENT);
+         CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
          pSegmentBox->ShowWindow(SW_HIDE);
          pSegmentBox->EnableWindow(FALSE);
       }
@@ -294,7 +220,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
          if (bIsPGSuper)
          {
             m_SegmentKey.segmentIndex = 0;
-            CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SEGMENT);
+            CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
             pSegmentBox->ShowWindow(SW_HIDE);
             pSegmentBox->EnableWindow(FALSE);
          }
@@ -317,7 +243,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
       pGirderBox->ShowWindow( SW_HIDE );
       pGirderBox->EnableWindow( FALSE );
 
-      CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SEGMENT);
+      CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
       pSegmentBox->ShowWindow(SW_HIDE);
       pSegmentBox->EnableWindow(FALSE);
 
@@ -351,7 +277,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
       pSpanBox->EnableWindow( FALSE );
 
 
-      CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SEGMENT);
+      CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
       if (pSegmentBox)
       {
          pSegmentBox->ShowWindow(SW_HIDE);
@@ -381,7 +307,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
       pSpanBox->ShowWindow( SW_HIDE );
       pSpanBox->EnableWindow( FALSE );
 
-      CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SEGMENT);
+      CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
       if (pSegmentBox)
       {
          pSegmentBox->ShowWindow(SW_HIDE);
@@ -403,7 +329,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
       CRect rList;
       pList->GetWindowRect(&rList);
 
-      // capture the distance between the bototm of the lable and the top of the list so we can maintain this distnace
+      // capture the distance between the bottom of the label and the top of the list so we can maintain this distance
       int dy = rList.top - rLabel.bottom;
 
       // move label to where the top of the group box is
@@ -419,69 +345,26 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
       pList->MoveWindow(&rList);
    }
 
-   CDialog::OnInitDialog();
-
-   UpdateChapterList();
-
-   if ( m_pInitRptSpec )
-   {
-      InitFromRptSpec();
-   }
+   CSpanItemReportDlg::OnInitDialog();
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-void CSpanGirderReportDlg::OnHelp() 
+void CSpanGirderReportDlg::OnGroupChanged()
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_REPORT );
-}
+    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SPAN);
+    m_SegmentKey.groupIndex = GroupIndexType(pCB->GetCurSel());
 
-void CSpanGirderReportDlg::OnGroupChanged() 
-{
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SPAN);
-   m_SegmentKey.groupIndex = GroupIndexType(pCB->GetCurSel());
-
-   UpdateGirderComboBox();
+    UpdateGirderComboBox();
 }
 
 void CSpanGirderReportDlg::OnGirderChanged()
 {
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER);
-   m_SegmentKey.girderIndex = GirderIndexType(pCB->GetCurSel());
+    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER);
+    m_SegmentKey.girderIndex = GirderIndexType(pCB->GetCurSel());
 
-   UpdateSegmentComboBox();
-}
-
-void CSpanGirderReportDlg::ClearChapterCheckMarks(BOOL bClear)
-{
-   int cChapters = m_ChList.GetCount();
-   for ( int ch = 0; ch < cChapters; ch++ )
-   {
-      m_ChList.SetCheck(ch,bClear ? BST_UNCHECKED : BST_CHECKED);
-   }
-}
-
-void CSpanGirderReportDlg::InitChapterListFromSpec()
-{
-   ClearChapterCheckMarks();
-   std::vector<WBFL::Reporting::ChapterInfo> chInfo = m_pInitRptSpec->GetChapterInfo();
-   std::vector<WBFL::Reporting::ChapterInfo>::iterator iter;
-   for ( iter = chInfo.begin(); iter != chInfo.end(); iter++ )
-   {
-      WBFL::Reporting::ChapterInfo& ch = *iter;
-      int cChapters = m_ChList.GetCount();
-      for ( int idx = 0; idx < cChapters; idx++ )
-      {
-         CString strChapter;
-         m_ChList.GetText(idx,strChapter);
-         if ( strChapter == ch.Name.c_str() )
-         {
-            m_ChList.SetCheck(idx,1);
-            break;
-         }
-      }
-   }
+    UpdateSegmentComboBox();
 }
 
 void CSpanGirderReportDlg::InitFromRptSpec()
@@ -522,12 +405,3 @@ void CSpanGirderReportDlg::InitFromRptSpec()
    InitChapterListFromSpec();
 }
 
-void CSpanGirderReportDlg::OnSelectAll()
-{
-   ClearChapterCheckMarks(FALSE);
-}
-
-void CSpanGirderReportDlg::OnDeselectAll()
-{
-   ClearChapterCheckMarks();
-}

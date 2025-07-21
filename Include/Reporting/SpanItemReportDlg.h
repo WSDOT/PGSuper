@@ -39,7 +39,8 @@ public:
       GroupAndChapters = 1,
       GirderAndChapters = 2,
       GroupGirderAndChapters = 3,
-	  GroupGirderSegmentAndChapters = 4
+	  GroupGirderSegmentAndChapters = 4,
+	  GroupGirderBearingAndChapters = 5
    };
    
    CSpanItemReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_SPANITEMREPORT,CWnd* pParent = nullptr);   // standard constructor
@@ -76,7 +77,7 @@ public:
 	//{{AFX_MSG(CReportDlg)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnHelp();
-	afx_msg void OnGroupChanged();
+	afx_msg virtual void OnGroupChanged();
    afx_msg virtual void OnGirderChanged();
    afx_msg void OnSelectAll();
    afx_msg void OnDeselectAll();

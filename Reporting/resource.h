@@ -15,6 +15,7 @@
 #define IDD_LOADRATINGREPORT            2999
 #define IDD_SPANGIRDERREPORT            3000
 #define IDC_LIST                        3000
+#define IDD_SPANITEMREPORT              3000
 #define IDC_SPAN                        3001
 #define IDC_GIRDER                      3002
 #define IDC_GROUP                       3003
@@ -24,6 +25,7 @@
 #define IDC_GIRDER2                     3004
 #define IDC_SEGMENT                     3004
 #define IDC_GROUP_BEARING_SELECT        3004
+#define IDC_SPAN_ITEM                   3004
 #define IDC_LABEL                       3005
 #define IDS_E_NOGIRDERS                 3005
 #define IDD_MULTIVIEWREPORT             3005

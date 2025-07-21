@@ -23,25 +23,19 @@
 #pragma once
 
 #include <ReportManager\ReportManager.h>
-#include <Reporting\SpanGirderReportDlg.h>
+#include <Reporting\SpanItemReportDlg.h>
 #include "resource.h"
+#include <IFace/AnalysisResults.h>
 
 // CSpanGirderReportDlg dialog
 
 
-class CSpanGirderBearingReportDlg : public CSpanGirderReportDlg
+class CSpanGirderBearingReportDlg : public CSpanItemReportDlg
 {
 	DECLARE_DYNAMIC(CSpanGirderBearingReportDlg)
 
 public:
-   enum class Mode
-   {
-      ChaptersOnly = 0,
-      GroupAndChapters = 1,
-      GirderAndChapters = 2,
-      GroupGirderAndChapters = 3,
-      GroupGirderSegmentAndChapters = 4
-   };
+
    
    CSpanGirderBearingReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_SPANGIRDERREPORT,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CSpanGirderBearingReportDlg();
@@ -49,35 +43,23 @@ public:
 // Dialog Data
 
    CSegmentKey m_SegmentKey;
+   ReactionLocation m_Bearing;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
-   virtual void UpdateChapterList();
-   virtual void UpdateGirderComboBox();
-   virtual void UpdateSegmentComboBox();
+   virtual void UpdateGirderComboBox() override;
+   virtual void UpdateBearingComboBox();
 
-   virtual void ClearChapterCheckMarks(BOOL bClear=TRUE);
-   virtual void InitChapterListFromSpec();
-   virtual void InitFromRptSpec();
+   virtual void InitFromRptSpec() override;
 
-   CCheckListBox	m_ChList;
-
-   const WBFL::Reporting::ReportDescription& m_RptDesc;
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
-   Mode m_Mode;
-
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 
 public:
 	// Generated message map functions
 	//{{AFX_MSG(CReportDlg)
-	virtual BOOL OnInitDialog();
-	afx_msg void OnHelp();
-	afx_msg void OnGroupChanged();
-   afx_msg void OnGirderChanged();
-   afx_msg void OnSelectAll();
-   afx_msg void OnDeselectAll();
+	BOOL OnInitDialog() override;
+	afx_msg void OnGroupChanged() override;
+   afx_msg void OnGirderChanged() override;
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

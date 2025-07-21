@@ -655,6 +655,12 @@
     <ClCompile Include="CopyBearingPropertiesReportSpecificationBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SpanGirderBearingReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpanItemReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h">
@@ -1020,7 +1026,7 @@
     <ClInclude Include="..\Include\Reporting\SpanDataChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Reporting\SpanGirderReportDlg.h">
+    <ClInclude Include="..\Include\Reporting\SpanItemReportDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\SpanGirderReportSpecification.h">
@@ -1318,6 +1324,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\CopyBearingPropertiesReportSpecificationBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SpanGirderReportDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

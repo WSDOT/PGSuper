@@ -202,8 +202,10 @@
     <ClCompile Include="ReinforcementFatigueCheck.cpp" />
     <ClCompile Include="ReportNotes.cpp" />
     <ClCompile Include="RMultiBearingSelectDlg.cpp" />
+    <ClCompile Include="SpanGirderBearingReportDlg.cpp" />
     <ClCompile Include="SpanGirderBearingReportSpecification.cpp" />
     <ClCompile Include="SpanGirderBearingReportSpecificationBuilder.cpp" />
+    <ClCompile Include="SpanItemReportDlg.cpp" />
     <ClCompile Include="SplittingCheckDetailsChapterBuilder.cpp" />
     <ClCompile Include="CamberChapterBuilder.cpp" />
     <ClCompile Include="CamberTable.cpp" />
@@ -554,9 +556,11 @@
     <ClInclude Include="..\Include\Reporting\ShearCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\ShrinkageStrainChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\SpanDataChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\SpanGirderReportDlg.h" />
+    <ClInclude Include="..\Include\Reporting\SpanItemReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\SpanGirderReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\SpanGirderReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\SpecCheckChapterBuilder.h" />
