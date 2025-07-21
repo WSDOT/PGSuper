@@ -116,38 +116,6 @@ void CSpanItemReportDlg::UpdateGirderComboBox()
       return;
    }
 
-   GET_IFACE( IBridge, pBridge );
-
-   CComboBox* pGdrBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
-   Uint16 curSel = pGdrBox->GetCurSel();
-   pGdrBox->ResetContent();
-
-   GirderIndexType cGirders = 0;
-   if ( m_GirderKey.groupIndex == ALL_GROUPS )
-   {
-      GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-      for ( GroupIndexType i = 0; i < nGroups; i++ )
-      {
-         cGirders = Max(cGirders,pBridge->GetGirderCount(i));
-      }
-   }
-   else
-   {
-      cGirders = pBridge->GetGirderCount( m_GirderKey.groupIndex );
-   }
-
-   for ( GirderIndexType j = 0; j < cGirders; j++ )
-   {
-      CString strGdr;
-      strGdr.Format( _T("Girder %s"), LABEL_GIRDER(j));
-      pGdrBox->AddString( strGdr );
-   }
-
-   if ( pGdrBox->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR )
-   {
-      pGdrBox->SetCurSel(0);
-   }
-
 }
 
 
@@ -203,16 +171,11 @@ void CSpanItemReportDlg::OnHelp()
 
 void CSpanItemReportDlg::OnGroupChanged() 
 {
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_SPAN);
-   m_GirderKey.groupIndex = GroupIndexType(pCB->GetCurSel());
 
-   UpdateGirderComboBox();
 }
 
 void CSpanItemReportDlg::OnGirderChanged()
 {
-   CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER);
-   m_GirderKey.girderIndex = GirderIndexType(pCB->GetCurSel());
 
 }
 

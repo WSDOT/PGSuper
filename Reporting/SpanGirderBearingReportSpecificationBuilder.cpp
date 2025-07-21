@@ -34,6 +34,7 @@
 #include <PsgLib\BridgeDescription2.h>
 #include <Reporting/ReactionInterfaceAdapters.h>
 #include <AgentTools.h>
+#include <Reporting/SpanGirderBearingReportDlg.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -62,7 +63,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingReportSpecificatio
 
 
 
-    //CSpanGirderReportDlg dlg(m_pBroker, rptDesc, CSpanGirderReportDlg::Mode::GroupGirderAndChapters, pOldRptSpec);
+    //CSpanGirderBearingReportDlg dlg(GetBroker(), rptDesc, CSpanItemReportDlg::Mode::GroupGirderBearingAndChapters, pOldRptSpec);
     //dlg.m_SegmentKey = CSegmentKey(girderKey, ALL_SEGMENTS);
 
     //if (dlg.DoModal() == IDOK)
