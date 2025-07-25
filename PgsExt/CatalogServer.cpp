@@ -1548,7 +1548,7 @@ bool CIniCatalogServer::TestServer(CString& errorMessage) const
    }
    else if ( res==gwNotFound )
    {
-      errorMessage.Format(_T("Error - Unable to find catalog file: %s on the server."),catalog_fileurl);
+      errorMessage.Format(_T("Error - Unable to find catalog file: \"%s\". Please check that the server address is correct and that the file is available on the server."),catalog_fileurl);
       return false;
    }
    else
@@ -1569,45 +1569,23 @@ CHttpCatalogServer::CHttpCatalogServer(LPCTSTR strAppName, const CString& strExt
    Init();
 }
 
+// Custom deleter for CHttpFile
+struct CHttpFileDeleter {
+   void operator()(CHttpFile* pFile) const {
+      if (pFile != nullptr) {
+         pFile->Close();
+         delete pFile;
+      }
+   }
+};
 
 CIniCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& strFileURL, const CString& strLocalTargetFile)const
 {
-	DWORD dwAccessType = PRE_CONFIG_INTERNET_ACCESS;
-	DWORD dwHttpRequestFlags = INTERNET_FLAG_EXISTING_CONNECT | INTERNET_FLAG_DONT_CACHE;
-
 	/*string containing the application name that is used to refer
 	  client making the request. If this nullptr the frame work will
 	  call  the global function AfxGetAppName which returns the application
 	  name.*/
-	//LPCTSTR pstrAgent = _T("Pgsuper");
 	LPCTSTR pstrAgent = m_AppName;
-
-	//the verb we will be using for this connection
-	//if nullptr then GET is assumed
-	LPCTSTR pstrVerb = _T("GET");
-	
-	//the address of the url in the request was obtained from
-	LPCTSTR pstrReferer = nullptr;
-
-	//Http version we are using; nullptr = HTTP/1.0
-	LPCTSTR pstrVersion = nullptr;
-
-	//For the Accept request headers if we need them later on
-	LPCTSTR pstrAcceptTypes = nullptr;
-	CString szHeaders = _T("Accept: audio/x-aiff, audio/basic, audio/midi, audio/mpeg, audio/wav, image/jpeg, image/gif, image/jpg, image/png, image/mng, image/bmp, text/plain, text/html, text/htm\r\n");
-
-	//Username we will use if a secure site comes into play
-	LPCTSTR pstrUserName = nullptr; 
-	//The password we will use
-	LPCTSTR pstrPassword = nullptr;
-
-	//CInternetSession flags if we need them
-	//DWORD dwFlags = INTERNET_FLAG_ASYNC;
-	DWORD dwFlags = 0;
-
-	//Proxy setting if we need them
-	LPCTSTR pstrProxyName = nullptr;
-	LPCTSTR pstrProxyBypass = nullptr;
 
    // see if url parses before going further
    DWORD dwServiceType;
@@ -1615,107 +1593,43 @@ CIniCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& strFil
    INTERNET_PORT nPort;
 
    BOOL bSuccess = AfxParseURL(strFileURL,dwServiceType,strServer,strObject,nPort);
-   if ( !bSuccess || dwServiceType != AFX_INET_SERVICE_HTTP )
+   if ( !bSuccess || (dwServiceType != AFX_INET_SERVICE_HTTP && dwServiceType != AFX_INET_SERVICE_HTTPS))
    {
       return gwInvalidUrl;
    }
 
-	CInternetSession	session(pstrAgent, 1, dwAccessType, pstrProxyName, pstrProxyBypass, dwFlags);
+   CIniCatalogServer::gwResult retVal = gwOk;
 
-	//Set any CInternetSession options we  may need
-	int ntimeOut = 30;
-	session.SetOption(INTERNET_OPTION_CONNECT_TIMEOUT,1000* ntimeOut);
-	session.SetOption(INTERNET_OPTION_CONNECT_BACKOFF,1000);
-	session.SetOption(INTERNET_OPTION_CONNECT_RETRIES,1);
+   // Defaults seem to work well. Previous version of this function attempted to tweak HTTP settings
+   // and caused HTTPS connections to fail.
+   CInternetSession	session(pstrAgent); 
 
-	//Enable or disable status callbacks
-	//session.EnableStatusCallback(FALSE);
-   gwResult retVal = gwConnectionError;
-
-	CHttpConnection*	pServer = nullptr;   
-	CHttpFile* pFile = nullptr;
-	DWORD dwRet;
 	try 
    {		
-		pServer = session.GetHttpConnection(strServer, nPort, 
-			pstrUserName, pstrPassword);
-		pFile = pServer->OpenRequest(pstrVerb, strObject, pstrReferer, 
-			1, &pstrAcceptTypes, pstrVersion, dwHttpRequestFlags);
-
-		pFile->AddRequestHeaders(szHeaders);
-      CString strHeader;
-      strHeader.Format(_T("User-Agent: %s/3.3/r/n"),m_AppName);
-		pFile->AddRequestHeaders(strHeader, HTTP_ADDREQ_FLAG_ADD_IF_NEW);
-		pFile->SendRequest();
-
-		pFile->QueryInfoStatusCode(dwRet);//Check wininet.h for info
-										  //about the status codes
-
-
-		if (dwRet == HTTP_STATUS_DENIED)
+      // Use a unique_ptr with the custom deleter
+      std::unique_ptr<CHttpFile, CHttpFileDeleter> pFile(static_cast<CHttpFile*>(session.OpenURL(strFileURL)));
+      if (pFile)
 		{
-			return gwConnectionError;
-		}
-
-		if (dwRet == HTTP_STATUS_MOVED ||
-			dwRet == HTTP_STATUS_REDIRECT ||
-			dwRet == HTTP_STATUS_REDIRECT_METHOD)
-		{
-			CString strNewAddress;
-			//again check wininet.h for info on the query info codes
-			//there is alot one can do and re-act to based on these codes
-			pFile->QueryInfo(HTTP_QUERY_RAW_HEADERS_CRLF, strNewAddress);
+         // Code above doesn't always throw on 404. Check manually
+         DWORD dwStatus;
+         pFile->QueryInfoStatusCode(dwStatus);
 			
-			int nPos = strNewAddress.Find(_T("Location: "));
-			if (nPos == -1)
+         if (dwStatus == HTTP_STATUS_NOT_FOUND)
 			{
+            // Handle 404 error specifically
 				return gwNotFound;
 			}
-
-			strNewAddress = strNewAddress.Mid(nPos + 10);
-			nPos = strNewAddress.Find('\n');
-			if (0 < nPos)
-         {
-				strNewAddress = strNewAddress.Left(nPos);
-         }
-
-			pFile->Close();      
-			delete pFile;
-			pServer->Close();  
-			delete pServer;
-
-			CString strServerName;
-			CString strObject;
-			INTERNET_PORT nNewPort;
-			DWORD dwServiceType;
-
-			if (!AfxParseURL(strNewAddress, dwServiceType, strServerName, strObject, nNewPort))
+         else if (dwStatus != HTTP_STATUS_OK)
 			{
-				return gwInvalidUrl;
-			}
-
-			pServer = session.GetHttpConnection(strServerName, nNewPort, 
-				pstrUserName, pstrPassword);
-			pFile = pServer->OpenRequest(pstrVerb, strObject, 
-				pstrReferer, 1, &pstrAcceptTypes, pstrVersion, dwHttpRequestFlags);
-			pFile->AddRequestHeaders(szHeaders);
-			pFile->SendRequest();
-
-			pFile->QueryInfoStatusCode(dwRet);
-			if (dwRet != HTTP_STATUS_OK)
-			{
-				return gwNotFound;
-			}
+            return gwConnectionError;
 		}
 
-		if(dwRet == HTTP_STATUS_OK)
-      {
-         // Copy file
+         // Copy file contents to local file
 			ULONGLONG len = pFile->GetLength();
 			TCHAR buf[2000];
 			int numread;
-			CFile myfile(strLocalTargetFile, CFile::modeCreate|CFile::modeWrite|CFile::typeBinary);
-			while ((numread = pFile->Read(buf,sizeof(buf)/sizeof(TCHAR)-1)) > 0)
+         CFile myfile(strLocalTargetFile, CFile::modeCreate | CFile::modeWrite | CFile::typeBinary);
+         while ((numread = pFile->Read(buf, sizeof(buf) / sizeof(TCHAR) - 1)) > 0)
 			{
 				buf[numread] = _T('\0');
 				strObject += buf;
@@ -1726,39 +1640,13 @@ CIniCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& strFil
 
         retVal = gwOk; // only good exit
 		}
-      else
-      {
-         retVal = gwNotFound;
-      }
-
-		pFile->Close();      
-		delete pFile;
-		pServer->Close();  
-		delete pServer;
-		session.Close();
-
 	}
 	catch (CInternetException* pEx) 
 	{
-      // catch any exceptions from WinINet      
-		TCHAR szErr[1024];
-		szErr[0] = _T('\0');
-      if(!pEx->GetErrorMessage(szErr, 1024))
-      {
-			_tcscpy_s(szErr,1024,_T("Some crazy unknown error"));
-      }
-//		LOG(_T("File transfer failed!!"));      
+      TCHAR szErr[256];
+      pEx->GetErrorMessage(szErr, 256);
+      AfxMessageBox(szErr);
 		pEx->Delete();
-		if(pFile)
-      {
-			delete pFile;
-      }
-		if(pServer)
-      {
-			delete pServer;
-      }
-		session.Close(); 
-
       retVal = gwNotFound;
 	}
 
