@@ -202,8 +202,8 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
 
    if (!IsServerDefined(_T("TxDOT")) && m_AppName != _T("PGSplice")) // TxDOT does not have a PGSplice server
    {
-      CString url = CString("ftp://ftp.dot.state.tx.us/pub/txdot-info/brg/") + CString(m_AppName).MakeLower() + CString("/");
-      m_Servers.insert( ServerPtr( new CFtpCatalogServer(m_AppName,CString("TxDOT"),url,m_strExt) ) );
+      CString url = CString("https://ftp.dot.state.tx.us/pub/txdot-info/brg/") + CString(m_AppName).MakeLower() + CString("/");
+      m_Servers.insert( ServerPtr( new CHttpCatalogServer(m_AppName,CString("TxDOT"),url,m_strExt) ) );
    }
 }
 
