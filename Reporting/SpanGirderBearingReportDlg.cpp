@@ -62,86 +62,88 @@
 
     DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_SegmentKey.girderIndex);
 
-    GET_IFACE(IBearingDesign, pBearingDesign);
-    GET_IFACE(IIntervals, pIntervals);
-    GET_IFACE(IBridge, pBridge);
-    GET_IFACE(IBridgeDescription, pIBridgeDesc);
+    DDX_CBIndex(pDX, IDC_SPAN_ITEM, (int&)m_Bearing.PierIdx);
 
-    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+    //GET_IFACE(IBearingDesign, pBearingDesign);
+    //GET_IFACE(IIntervals, pIntervals);
+    //GET_IFACE(IBridge, pBridge);
+    //GET_IFACE(IBridgeDescription, pIBridgeDesc);
 
-    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+    //const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex)));
+    //IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
-    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
-    iter.First();
-    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
+    //std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex)));
 
-    CComboBox* pBrgBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
+    //ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+    //iter.First();
+    //PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
-    m_RLmenuItems.clear();
+    //CComboBox* pBrgBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
 
-    // Use iterator to walk locations
-    for (iter.First(); !iter.IsDone(); iter.Next())
-    {
+    //m_RLmenuItems.clear();
 
-        const ReactionLocation& reactionLocation(iter.CurrentItem());
+    //// Use iterator to walk locations
+    //for (iter.First(); !iter.IsDone(); iter.Next())
+    //{
 
-        m_RLmenuItems.emplace_back(reactionLocation);
+    //    const ReactionLocation& reactionLocation(iter.CurrentItem());
 
-
-        const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
-        CString bcType;
-
-        if (pPier->IsBoundaryPier())
-        {
-            bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
-            bcType = CPierData2::AsString(pPier->GetBoundaryConditionType(), bNoDeck);
-        }
-        else
-        {
-            bcType = CPierData2::AsString(pPier->GetSegmentConnectionType());
-        }
+    //    m_RLmenuItems.emplace_back(reactionLocation);
 
 
+    //    const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
+    //    CString bcType;
 
-        CString strBrg = reactionLocation.PierLabel.c_str();
+    //    if (pPier->IsBoundaryPier())
+    //    {
+    //        bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
+    //        bcType = CPierData2::AsString(pPier->GetBoundaryConditionType(), bNoDeck);
+    //    }
+    //    else
+    //    {
+    //        bcType = CPierData2::AsString(pPier->GetSegmentConnectionType());
+    //    }
 
-        if (bcType == _T("Hinge"))
-        {
-            CString hingeBrgStr;
-            hingeBrgStr.Format(_T("%s (Xc)"), strBrg);
-            pBrgBox->AddString(hingeBrgStr);
-        }
-        else
-        {
-            pBrgBox->AddString(strBrg);
-        }
 
-    }
 
-    if (pDX->m_bSaveAndValidate)
-    {
-        IndexType idx;
-        DDX_CBIndex(pDX, IDC_SPAN_ITEM, (int&)idx); // why is this invalid??
+    //    CString strBrg = reactionLocation.PierLabel.c_str();
 
-        m_Bearing = m_RLmenuItems[idx];
+    //    if (bcType == _T("Hinge"))
+    //    {
+    //        CString hingeBrgStr;
+    //        hingeBrgStr.Format(_T("%s (Xc)"), strBrg);
+    //        pBrgBox->AddString(hingeBrgStr);
+    //    }
+    //    else
+    //    {
+    //        pBrgBox->AddString(strBrg);
+    //    }
 
-        // Girder list
-        // Make list of one if single girder is checked
-        BOOL enab_sgl = IsDlgButtonChecked(IDC_RADIO1) == BST_CHECKED ? TRUE : FALSE;
-        if (enab_sgl)
-        {
-            m_Bearings.clear();
-            m_Bearings.push_back(m_Bearing);
-        }
-        else if (m_Bearings.empty())
-        {
-            AfxMessageBox(_T("You must select at least one bearing"));
-            pDX->Fail();
-        }
+    //}
 
-    }
+    //if (pDX->m_bSaveAndValidate)
+    //{
+    //    IndexType idx;
+    //    DDX_CBIndex(pDX, IDC_SPAN_ITEM, (int&)idx); // why is this invalid??
+
+    //    m_Bearing = m_RLmenuItems[idx];
+
+    //    // Girder list
+    //    // Make list of one if single girder is checked
+    //    BOOL enab_sgl = IsDlgButtonChecked(IDC_RADIO1) == BST_CHECKED ? TRUE : FALSE;
+    //    if (enab_sgl)
+    //    {
+    //        m_Bearings.clear();
+    //        m_Bearings.push_back(m_Bearing);
+    //    }
+    //    else if (m_Bearings.empty())
+    //    {
+    //        AfxMessageBox(_T("You must select at least one bearing"));
+    //        pDX->Fail();
+    //    }
+
+    //}
 
     CSpanItemReportDlg::DoDataExchange(pDX);
 
@@ -196,70 +198,77 @@
 
  void CSpanGirderBearingReportDlg::UpdateBearingComboBox()
  {
-     //AFX_MANAGE_STATE(AfxGetStaticModuleState());
+     AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-     //CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_SPAN);
-     //GroupIndexType grpIdx = (GroupIndexType)pcbGroup->GetCurSel();
+     CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_SPAN);
+     GroupIndexType grpIdx = (GroupIndexType)pcbGroup->GetCurSel();
 
-     //CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
-     //GirderIndexType gdrIdx = (GirderIndexType)pcbGirder->GetCurSel();
+     CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
+     GirderIndexType gdrIdx = (GirderIndexType)pcbGirder->GetCurSel();
 
-     //GET_IFACE(IBearingDesign, pBearingDesign);
-     //GET_IFACE(IIntervals, pIntervals);
-     //GET_IFACE(IBridge, pBridge);
-     //GET_IFACE(IBridgeDescription, pIBridgeDesc);
+     GET_IFACE(IBearingDesign, pBearingDesign);
+     GET_IFACE(IIntervals, pIntervals);
+     GET_IFACE(IBridge, pBridge);
+     GET_IFACE(IBridgeDescription, pIBridgeDesc);
 
-     //const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+     const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-     //IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+     IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
-     //std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex)));
+     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex)));
 
-     //ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
-     //iter.First();
-     //PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
+     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+     iter.First();
+     PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
-     //CComboBox* pBrgBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
+     CComboBox* pBrgBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
+     Uint16 curSel = pBrgBox->GetCurSel();
+     pBrgBox->ResetContent();
 
-     //m_RLmenuItems.clear();
+     m_RLmenuItems.clear();
 
-     //// Use iterator to walk locations
-     //for (iter.First(); !iter.IsDone(); iter.Next())
-     //{
+     // Use iterator to walk locations
+     for (iter.First(); !iter.IsDone(); iter.Next())
+     {
 
-     //    const ReactionLocation& reactionLocation(iter.CurrentItem());
+         const ReactionLocation& reactionLocation(iter.CurrentItem());
 
-     //    m_RLmenuItems.emplace_back(reactionLocation);
-
-
-     //    const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
-     //    CString bcType;
-
-     //    if (pPier->IsBoundaryPier())
-     //    {
-     //        bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
-     //        bcType = CPierData2::AsString(pPier->GetBoundaryConditionType(), bNoDeck);
-     //    }
-     //    else
-     //    {
-     //        bcType = CPierData2::AsString(pPier->GetSegmentConnectionType());
-     //    }
+         m_RLmenuItems.emplace_back(reactionLocation);
 
 
-     //    CString strBrg = reactionLocation.PierLabel.c_str();
+         const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
+         CString bcType;
 
-     //    if (bcType == _T("Hinge"))
-     //    {
-     //        CString hingeBrgStr;
-     //        hingeBrgStr.Format(_T("%s (Xc)"), strBrg);
-     //        pBrgBox->AddString(hingeBrgStr);
-     //    }
-     //    else
-     //    {
-     //        pBrgBox->AddString(strBrg);
-     //    }
+         if (pPier->IsBoundaryPier())
+         {
+             bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
+             bcType = CPierData2::AsString(pPier->GetBoundaryConditionType(), bNoDeck);
+         }
+         else
+         {
+             bcType = CPierData2::AsString(pPier->GetSegmentConnectionType());
+         }
 
-     //}
+
+         CString strBrg = reactionLocation.PierLabel.c_str();
+
+         if (bcType == _T("Hinge"))
+         {
+             CString hingeBrgStr;
+             hingeBrgStr.Format(_T("%s (Xc)"), strBrg);
+             pBrgBox->AddString(hingeBrgStr);
+         }
+         else
+         {
+             pBrgBox->AddString(strBrg);
+         }
+
+     }
+
+     if (pBrgBox->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR)
+     {
+         pBrgBox->SetCurSel(0);
+     }
 
  }
 
