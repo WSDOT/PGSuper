@@ -1637,7 +1637,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
    } // next group
 }
 
-void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, const CAnalysisResultsGraphDefinition& graphDef, ActionType actionType, IntervalIndexType intervalIdx, bool bIsFinalShear, std::array<IndexType, 4>* pDataSeriesID, std::array<pgsTypes::BridgeAnalysisType, 4>* pBat, std::array<pgsTypes::StressLocation,4>* pStressLocations, IndexType* pAnalysisTypeCount)
+void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, const CAnalysisResultsGraphDefinition& graphDef, ActionType actionType, IntervalIndexType intervalIdx, bool bIsFinalShear, std::array<IndexType, 8>* pDataSeriesID, std::array<pgsTypes::BridgeAnalysisType, 8>* pBat, std::array<pgsTypes::StressLocation,8>* pStressLocations, IndexType* pAnalysisTypeCount)
 {
    CGirderKey girderKey(m_pGraphController->GetGirderKey());
    if (girderKey.groupIndex == ALL_GROUPS)
@@ -1737,7 +1737,10 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, const CAn
 
             if (analysisType == pgsTypes::Envelope)
             {
-               (*pBat)[*pAnalysisTypeCount] = bat[stressLocation];
+               (*pBat)[*pAnalysisTypeCount] = pgsTypes::MaxSimpleContinuousEnvelope;
+               (*pAnalysisTypeCount)++;
+               (*pBat)[*pAnalysisTypeCount] = pgsTypes::MinSimpleContinuousEnvelope;
+               (*pStressLocations)[*pAnalysisTypeCount] = stressLocation;
             }
             else
             {
@@ -1775,9 +1778,9 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
       // Product forces
       GET_IFACE(IProductForces2, pForces);
 
-      std::array<IndexType, 4> data_series_id;
-      std::array<pgsTypes::BridgeAnalysisType, 4> bat;
-      std::array<pgsTypes::StressLocation, 4> stressLocation;
+      std::array<IndexType, 8> data_series_id;
+      std::array<pgsTypes::BridgeAnalysisType, 8> bat;
+      std::array<pgsTypes::StressLocation, 8> stressLocation;
       IndexType nAnalysisTypes;
       InitializeGraph(graphIdx, graphDef, actionType, intervalIdx, bIsFinalShear, &data_series_id, &bat, &stressLocation, &nAnalysisTypes);
 
@@ -1869,9 +1872,9 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
    
    pgsTypes::AnalysisType analysisType = GetAnalysisType();
 
-   std::array<IndexType, 4> data_series_id;
-   std::array<pgsTypes::BridgeAnalysisType, 4> bat;
-   std::array<pgsTypes::StressLocation, 4> stressLocation;
+   std::array<IndexType, 8> data_series_id;
+   std::array<pgsTypes::BridgeAnalysisType, 8> bat;
+   std::array<pgsTypes::StressLocation, 8> stressLocation;
    IndexType nAnalysisTypes;
    InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,bIsFinalShear,&data_series_id,&bat,&stressLocation,&nAnalysisTypes);
 
@@ -2273,10 +2276,10 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
                   if ( analysisType == pgsTypes::Envelope )
                   {
                      std::vector<Float64> dummy;
-                     pForces->GetStress( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, bIncPrestress, topLocation, &dummy,   &fTopMax);
-                     pForces->GetStress( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, bIncPrestress, topLocation, &fTopMin, &dummy);
-                     pForces->GetStress( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, bIncPrestress, botLocation, &dummy,   &fBotMax);
-                     pForces->GetStress( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, bIncPrestress, botLocation, &fBotMin, &dummy);
+                     pForces->GetStress( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, bIncPrestress, topLocation, &dummy,   &fTopMax);
+                     pForces->GetStress( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, bIncPrestress, topLocation, &fTopMin, &dummy);
+                     pForces->GetStress( intervalIdx, limitState, vPoi, pgsTypes::MinSimpleContinuousEnvelope, bIncPrestress, botLocation, &dummy,   &fBotMax);
+                     pForces->GetStress( intervalIdx, limitState, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, bIncPrestress, botLocation, &fBotMin, &dummy);
                   }
                   else
                   {
@@ -2506,7 +2509,9 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
                pgsTypes::StressLocation botLocation = (IsGirderStressLocation(stressLocation) ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
                if ( analysisType == pgsTypes::Envelope )
                {
-                  pForces->GetCombinedLiveLoadStress(intervalIdx, llType, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, topLocation, botLocation, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+                  std::vector<Float64> dummy1, dummy2;
+                  pForces->GetCombinedLiveLoadStress(intervalIdx, llType, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, topLocation, botLocation, &fTopMin, &dummy1, &fBotMin, &dummy2 );
+                  pForces->GetCombinedLiveLoadStress(intervalIdx, llType, vPoi, pgsTypes::MinSimpleContinuousEnvelope, topLocation, botLocation, &dummy1, &fTopMax, &dummy2, &fBotMax);
                }
                else
                {
@@ -2853,11 +2858,15 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
                {
                   if ( vehicleIdx != INVALID_INDEX )
                   {
-                     pForces->GetVehicularLiveLoadStress(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, topLocation, botLocation, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+                     std::vector<Float64> dummy1, dummy2;
+                     pForces->GetVehicularLiveLoadStress(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, topLocation, botLocation, &dummy1, &fTopMax, &dummy2, &fBotMax);
+                     pForces->GetVehicularLiveLoadStress(intervalIdx, llType, vehicleIdx, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, topLocation, botLocation, &fTopMin, &dummy1, &fBotMin, &dummy2);
                   }
                   else
                   {
-                     pForces->GetLiveLoadStress(intervalIdx, llType, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, topLocation, botLocation, &fTopMin, &fTopMax, &fBotMin, &fBotMax );
+                     std::vector<Float64> dummy1, dummy2;
+                     pForces->GetLiveLoadStress(intervalIdx, llType, vPoi, pgsTypes::MinSimpleContinuousEnvelope, true, false, topLocation, botLocation, &dummy1, &fTopMax, &dummy2, &fBotMax);
+                     pForces->GetLiveLoadStress(intervalIdx, llType, vPoi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, topLocation, botLocation, &fTopMin, &dummy1, &fBotMin, &dummy2);
                   }
                }
                else
@@ -3076,9 +3085,9 @@ void CAnalysisResultsGraphBuilder::ProductReactionGraph(IndexType graphIdx,const
 
    GET_IFACE(IReactions,pReactions);
 
-   std::array<IndexType, 4> data_series_id;
-   std::array<pgsTypes::BridgeAnalysisType, 4> bat;
-   std::array<pgsTypes::StressLocation, 4> stressLocation;
+   std::array<IndexType, 8> data_series_id;
+   std::array<pgsTypes::BridgeAnalysisType, 8> bat;
+   std::array<pgsTypes::StressLocation, 8> stressLocation;
    IndexType nAnalysisTypes;
    InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,false,&data_series_id,&bat,&stressLocation,&nAnalysisTypes);
 
@@ -3175,9 +3184,9 @@ void CAnalysisResultsGraphBuilder::CombinedReactionGraph(IndexType graphIdx,cons
 
    GET_IFACE(IReactions,pReactions);
 
-   std::array<IndexType, 4> data_series_id;
-   std::array<pgsTypes::BridgeAnalysisType, 4> bat;
-   std::array<pgsTypes::StressLocation, 4> stressLocation;
+   std::array<IndexType, 8> data_series_id;
+   std::array<pgsTypes::BridgeAnalysisType, 8> bat;
+   std::array<pgsTypes::StressLocation, 8> stressLocation;
    IndexType nAnalysisTypes;
    InitializeGraph(graphIdx,graphDef,actionType,intervalIdx,false,&data_series_id,&bat,&stressLocation,&nAnalysisTypes);
 
