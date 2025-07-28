@@ -63,88 +63,16 @@
 
     DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_SegmentKey.girderIndex);
 
-    DDX_CBIndex(pDX, IDC_SPAN_ITEM, (int&)m_Bearing.PierIdx);
+    IndexType idx = 0;
+    for (idx = 0; idx < m_RLmenuItems.size(); idx++)
+    {
+        if (m_Bearing == m_RLmenuItems[idx])
+            break;
+    }
 
-    //GET_IFACE(IBearingDesign, pBearingDesign);
-    //GET_IFACE(IIntervals, pIntervals);
-    //GET_IFACE(IBridge, pBridge);
-    //GET_IFACE(IBridgeDescription, pIBridgeDesc);
+    DDX_CBIndex(pDX, IDC_SPAN_ITEM, (int&)idx);
 
-    //const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-    //IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
-
-    //std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex)));
-
-    //ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
-    //iter.First();
-    //PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
-
-    //CComboBox* pBrgBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
-
-    //m_RLmenuItems.clear();
-
-    //// Use iterator to walk locations
-    //for (iter.First(); !iter.IsDone(); iter.Next())
-    //{
-
-    //    const ReactionLocation& reactionLocation(iter.CurrentItem());
-
-    //    m_RLmenuItems.emplace_back(reactionLocation);
-
-
-    //    const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
-    //    CString bcType;
-
-    //    if (pPier->IsBoundaryPier())
-    //    {
-    //        bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
-    //        bcType = CPierData2::AsString(pPier->GetBoundaryConditionType(), bNoDeck);
-    //    }
-    //    else
-    //    {
-    //        bcType = CPierData2::AsString(pPier->GetSegmentConnectionType());
-    //    }
-
-
-
-    //    CString strBrg = reactionLocation.PierLabel.c_str();
-
-    //    if (bcType == _T("Hinge"))
-    //    {
-    //        CString hingeBrgStr;
-    //        hingeBrgStr.Format(_T("%s (Xc)"), strBrg);
-    //        pBrgBox->AddString(hingeBrgStr);
-    //    }
-    //    else
-    //    {
-    //        pBrgBox->AddString(strBrg);
-    //    }
-
-    //}
-
-    //if (pDX->m_bSaveAndValidate)
-    //{
-    //    IndexType idx;
-    //    DDX_CBIndex(pDX, IDC_SPAN_ITEM, (int&)idx); // why is this invalid??
-
-    //    m_Bearing = m_RLmenuItems[idx];
-
-    //    // Girder list
-    //    // Make list of one if single girder is checked
-    //    BOOL enab_sgl = IsDlgButtonChecked(IDC_RADIO1) == BST_CHECKED ? TRUE : FALSE;
-    //    if (enab_sgl)
-    //    {
-    //        m_Bearings.clear();
-    //        m_Bearings.push_back(m_Bearing);
-    //    }
-    //    else if (m_Bearings.empty())
-    //    {
-    //        AfxMessageBox(_T("You must select at least one bearing"));
-    //        pDX->Fail();
-    //    }
-
-    //}
+    m_Bearing = m_RLmenuItems[idx];
 
     CSpanItemReportDlg::DoDataExchange(pDX);
 
