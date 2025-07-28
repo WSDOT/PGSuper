@@ -59,38 +59,35 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingReportSpecificatio
 {
     AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-    ReactionLocation reactionLocation(m_ReactionLocation);
+    CSpanGirderBearingReportDlg dlg(GetBroker(), rptDesc, CSpanItemReportDlg::Mode::GroupGirderBearingAndChapters, pOldRptSpec);
 
+    dlg.m_Bearing = m_ReactionLocation;
 
+    if (dlg.DoModal() == IDOK)
+    {
+        m_ReactionLocation = dlg.m_Bearing;
 
-    //CSpanGirderBearingReportDlg dlg(GetBroker(), rptDesc, CSpanItemReportDlg::Mode::GroupGirderBearingAndChapters, pOldRptSpec);
-    //dlg.m_SegmentKey = CSegmentKey(girderKey, ALL_SEGMENTS);
+        // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
+        std::shared_ptr<CBearingReportSpecification> pOldBRptSpec = std::dynamic_pointer_cast<CBearingReportSpecification>(pOldRptSpec);
 
-    //if (dlg.DoModal() == IDOK)
-    //{
-    //    girderKey = dlg.m_SegmentKey;
+        std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+        if (pOldBRptSpec)
+        {
+            std::shared_ptr<CBearingReportSpecification> pNewBRptSpec(std::make_shared<CBearingReportSpecification>(*pOldBRptSpec));
+            pNewBRptSpec->SetReactionLocation(dlg.m_Bearing);
 
-    //    // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
-    //    std::shared_ptr<CGirderReportSpecification> pOldGRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification>(pOldRptSpec);
+            pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewBRptSpec);
+        }
+        else
+        {
+            pNewRptSpec = std::make_shared<CBearingReportSpecification>(rptDesc.GetReportName(), m_pBroker, dlg.m_Bearing);
+        }
 
-    //    std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
-    //    if (pOldGRptSpec)
-    //    {
-    //        std::shared_ptr<CGirderReportSpecification> pNewGRptSpec(std::make_shared<CGirderReportSpecification>(*pOldGRptSpec));
-    //        pNewGRptSpec->SetGirderKey(girderKey);
+        std::vector<std::_tstring> chList = dlg.m_ChapterList;
+        rptDesc.ConfigureReportSpecification(chList, pNewRptSpec);
 
-    //        pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
-    //    }
-    //    else
-    //    {
-    //        pNewRptSpec = std::make_shared<CGirderReportSpecification>(rptDesc.GetReportName(), m_pBroker, girderKey);
-    //    }
-
-    //    std::vector<std::_tstring> chList = dlg.m_ChapterList;
-    //    rptDesc.ConfigureReportSpecification(chList, pNewRptSpec);
-
-    //    return pNewRptSpec;
-    //}
+        return pNewRptSpec;
+    }
 
     return nullptr;
 }
