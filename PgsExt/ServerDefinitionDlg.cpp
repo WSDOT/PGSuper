@@ -162,7 +162,7 @@ BOOL CServerDefinitionDlg::OnInitDialog()
    ASSERT(ptype_ctrl!=0);
    int idx = ptype_ctrl->AddString(_T("Internet FTP Server"));
    ptype_ctrl->SetItemData(idx,srtInternetFtp);
-   idx = ptype_ctrl->AddString(_T("Internet HTTP Server"));
+   idx = ptype_ctrl->AddString(_T("Internet HTTP/HTTPS Server"));
    ptype_ctrl->SetItemData(idx,srtInternetHttp);
    idx = ptype_ctrl->AddString(_T("Local or Network File System"));
    ptype_ctrl->SetItemData(idx,srtLocal);
