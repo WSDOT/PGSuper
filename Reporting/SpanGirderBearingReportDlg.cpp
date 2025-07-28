@@ -28,11 +28,15 @@
 
 #include <IFace\Tools.h>
 #include <IFace\Bridge.h>
+#include <IFace\Intervals.h>
+#include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 
 #include <PsgLib\GirderLabel.h>
 #include <EAF\EAFDocument.h>
 #include "..\Documentation\PGSuper.hh"
+#include <Reporting/ReactionInterfaceAdapters.h>
+#include <PsgLib\BridgeDescription2.h>
 
 
  // CSpanBearingReportDlg dialog
@@ -52,24 +56,94 @@
 
  void CSpanGirderBearingReportDlg::DoDataExchange(CDataExchange* pDX)
  {
-     AFX_MANAGE_STATE(AfxGetStaticModuleState());
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-     //if (m_Mode == Mode::GroupAndChapters || m_Mode == Mode::GroupGirderAndChapters)
-     //{
-     //    DDX_CBIndex(pDX, IDC_SPAN, (int&)m_SegmentKey.groupIndex);
-     //}
+    DDX_CBIndex(pDX, IDC_SPAN, (int&)m_SegmentKey.groupIndex);
 
-     //if (m_Mode == Mode::GroupGirderAndChapters || m_Mode == Mode::GirderAndChapters)
-     //{
-     //    DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_SegmentKey.girderIndex);
-     //}
+    DDX_CBIndex(pDX, IDC_GIRDER, (int&)m_SegmentKey.girderIndex);
 
-     //if (m_Mode == Mode::GroupGirderBearingAndChapters)
-     //{
-     //    DDX_CBIndex(pDX, IDC_SPAN_ITEM, (int&)m_SegmentKey.segmentIndex);
-     //}
+    GET_IFACE(IBearingDesign, pBearingDesign);
+    GET_IFACE(IIntervals, pIntervals);
+    GET_IFACE(IBridge, pBridge);
+    GET_IFACE(IBridgeDescription, pIBridgeDesc);
 
-     CSpanItemReportDlg::DoDataExchange(pDX);
+    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+
+    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex)));
+
+    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+    iter.First();
+    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
+
+    CComboBox* pBrgBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
+
+    m_RLmenuItems.clear();
+
+    // Use iterator to walk locations
+    for (iter.First(); !iter.IsDone(); iter.Next())
+    {
+
+        const ReactionLocation& reactionLocation(iter.CurrentItem());
+
+        m_RLmenuItems.emplace_back(reactionLocation);
+
+
+        const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
+        CString bcType;
+
+        if (pPier->IsBoundaryPier())
+        {
+            bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
+            bcType = CPierData2::AsString(pPier->GetBoundaryConditionType(), bNoDeck);
+        }
+        else
+        {
+            bcType = CPierData2::AsString(pPier->GetSegmentConnectionType());
+        }
+
+
+
+        CString strBrg = reactionLocation.PierLabel.c_str();
+
+        if (bcType == _T("Hinge"))
+        {
+            CString hingeBrgStr;
+            hingeBrgStr.Format(_T("%s (Xc)"), strBrg);
+            pBrgBox->AddString(hingeBrgStr);
+        }
+        else
+        {
+            pBrgBox->AddString(strBrg);
+        }
+
+    }
+
+    if (pDX->m_bSaveAndValidate)
+    {
+        IndexType idx;
+        DDX_CBIndex(pDX, IDC_SPAN_ITEM, (int&)idx); // why is this invalid??
+
+        m_Bearing = m_RLmenuItems[idx];
+
+        // Girder list
+        // Make list of one if single girder is checked
+        BOOL enab_sgl = IsDlgButtonChecked(IDC_RADIO1) == BST_CHECKED ? TRUE : FALSE;
+        if (enab_sgl)
+        {
+            m_Bearings.clear();
+            m_Bearings.push_back(m_Bearing);
+        }
+        else if (m_Bearings.empty())
+        {
+            AfxMessageBox(_T("You must select at least one bearing"));
+            pDX->Fail();
+        }
+
+    }
+
+    CSpanItemReportDlg::DoDataExchange(pDX);
 
  }
 
@@ -122,37 +196,71 @@
 
  void CSpanGirderBearingReportDlg::UpdateBearingComboBox()
  {
-     AFX_MANAGE_STATE(AfxGetStaticModuleState());
+     //AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-     if (m_Mode == Mode::ChaptersOnly || m_Mode == Mode::GroupAndChapters || m_Mode == Mode::GirderAndChapters)
-     {
-         return;
-     }
+     //CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_SPAN);
+     //GroupIndexType grpIdx = (GroupIndexType)pcbGroup->GetCurSel();
 
-     GET_IFACE(IBridge, pBridge);
+     //CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
+     //GirderIndexType gdrIdx = (GirderIndexType)pcbGirder->GetCurSel();
 
-     CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_SPAN);
-     GroupIndexType grpIdx = (GroupIndexType)pcbGroup->GetCurSel();
+     //GET_IFACE(IBearingDesign, pBearingDesign);
+     //GET_IFACE(IIntervals, pIntervals);
+     //GET_IFACE(IBridge, pBridge);
+     //GET_IFACE(IBridgeDescription, pIBridgeDesc);
 
-     CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
-     GirderIndexType gdrIdx = (GirderIndexType)pcbGirder->GetCurSel();
+     //const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-     CComboBox* pcbSegment = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
-     Uint16 curSel = pcbSegment->GetCurSel();
-     pcbSegment->ResetContent();
+     //IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
-     SegmentIndexType nSegments = pBridge->GetSegmentCount(grpIdx, gdrIdx);
-     for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
-     {
-         CString strLabel;
-         strLabel.Format(_T("Segment %d"), LABEL_SEGMENT(segIdx));
-         pcbSegment->AddString(strLabel);
-     }
+     //std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex)));
 
-     if (pcbSegment->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR)
-     {
-         pcbSegment->SetCurSel(0);
-     }
+     //ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+     //iter.First();
+     //PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
+
+     //CComboBox* pBrgBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
+
+     //m_RLmenuItems.clear();
+
+     //// Use iterator to walk locations
+     //for (iter.First(); !iter.IsDone(); iter.Next())
+     //{
+
+     //    const ReactionLocation& reactionLocation(iter.CurrentItem());
+
+     //    m_RLmenuItems.emplace_back(reactionLocation);
+
+
+     //    const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
+     //    CString bcType;
+
+     //    if (pPier->IsBoundaryPier())
+     //    {
+     //        bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
+     //        bcType = CPierData2::AsString(pPier->GetBoundaryConditionType(), bNoDeck);
+     //    }
+     //    else
+     //    {
+     //        bcType = CPierData2::AsString(pPier->GetSegmentConnectionType());
+     //    }
+
+
+     //    CString strBrg = reactionLocation.PierLabel.c_str();
+
+     //    if (bcType == _T("Hinge"))
+     //    {
+     //        CString hingeBrgStr;
+     //        hingeBrgStr.Format(_T("%s (Xc)"), strBrg);
+     //        pBrgBox->AddString(hingeBrgStr);
+     //    }
+     //    else
+     //    {
+     //        pBrgBox->AddString(strBrg);
+     //    }
+
+     //}
+
  }
 
  BOOL CSpanGirderBearingReportDlg::OnInitDialog()
@@ -173,24 +281,20 @@
      }
 
      // Fill up the span and girder combo boxes
-     if (m_Mode == Mode::GroupAndChapters || m_Mode == Mode::GroupGirderAndChapters || m_Mode == Mode::GroupGirderSegmentAndChapters)
+     if (m_Mode == Mode::GroupGirderBearingAndChapters)
      {
-         // make sure we are starting off with a valid segment key
-         if (m_Mode == Mode::GroupAndChapters)
-         {
-             if (m_SegmentKey.groupIndex == ALL_GROUPS) m_SegmentKey.groupIndex = 0;
-         }
-         else if (m_Mode == Mode::GroupGirderAndChapters)
-         {
-             if (m_SegmentKey.groupIndex == ALL_GROUPS) m_SegmentKey.groupIndex = 0;
-             if (m_SegmentKey.girderIndex == ALL_GIRDERS) m_SegmentKey.girderIndex = 0;
-         }
-         else if (m_Mode == Mode::GroupGirderSegmentAndChapters)
-         {
-             if (m_SegmentKey.groupIndex == ALL_GROUPS) m_SegmentKey.groupIndex = 0;
-             if (m_SegmentKey.girderIndex == ALL_GIRDERS) m_SegmentKey.girderIndex = 0;
-             if (m_SegmentKey.segmentIndex == ALL_SEGMENTS) m_SegmentKey.segmentIndex = 0;
-         }
+
+        if (m_SegmentKey.groupIndex == ALL_GROUPS) m_SegmentKey.groupIndex = 0;
+        if (m_SegmentKey.girderIndex == ALL_GIRDERS) m_SegmentKey.girderIndex = 0;
+        if (m_Bearing.PierIdx == ALL_BEARINGS)
+        {
+            m_Bearing.PierIdx = m_Bearing.GirderKey.groupIndex = m_Bearing.GirderKey.girderIndex = 0;
+            m_Bearing.Face = PierReactionFaceType::rftAhead;
+        }
+         
+        //IndexType firstRL;
+        //sel = m_ToBearing.GetCurSel();
+        //firstRL = (IndexType)m_ToBearing.GetItemData(sel);
 
          // fill up the group list box
          CComboBox* pGroupBox = (CComboBox*)GetDlgItem(IDC_SPAN);
@@ -210,140 +314,7 @@
          }
          pGroupBox->SetCurSel((int)m_SegmentKey.groupIndex);
 
-         if (m_Mode == Mode::GroupAndChapters || m_Mode == Mode::GroupGirderAndChapters)
-         {
-             CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
-             pSegmentBox->ShowWindow(SW_HIDE);
-             pSegmentBox->EnableWindow(FALSE);
-         }
-         else
-         {
-             if (bIsPGSuper)
-             {
-                 m_SegmentKey.segmentIndex = 0;
-                 CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
-                 pSegmentBox->ShowWindow(SW_HIDE);
-                 pSegmentBox->EnableWindow(FALSE);
-             }
-             else
-             {
-                 ASSERT(m_Mode == Mode::GroupGirderSegmentAndChapters);
-                 CWnd* pGroupBox = GetDlgItem(IDC_GROUP);
-                 pGroupBox->SetWindowText(_T("Select a Segment"));
-             }
-         }
-
          UpdateGirderComboBox();
-     }
-     else if (m_Mode == Mode::GroupAndChapters)
-     {
-         if (m_SegmentKey.groupIndex == ALL_GROUPS) m_SegmentKey.groupIndex = 0;
-
-         // hide the girder combo box
-         CComboBox* pGirderBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
-         pGirderBox->ShowWindow(SW_HIDE);
-         pGirderBox->EnableWindow(FALSE);
-
-         CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
-         pSegmentBox->ShowWindow(SW_HIDE);
-         pSegmentBox->EnableWindow(FALSE);
-
-         CWnd* pGroupBox = GetDlgItem(IDC_GROUP);
-         CString str;
-         if (bIsPGSuper)
-         {
-             str = _T("Select a Span");
-         }
-         else
-         {
-             str = _T("Select a Group");
-         }
-
-         pGroupBox->SetWindowText(str);
-     }
-     else if (m_Mode == Mode::GirderAndChapters)
-     {
-         if (m_SegmentKey.girderIndex == ALL_GIRDERS) m_SegmentKey.girderIndex = 0;
-
-         m_SegmentKey.groupIndex = ALL_GROUPS;
-         UpdateGirderComboBox();
-
-         CWnd* pGroupBox = GetDlgItem(IDC_GROUP);
-         pGroupBox->SetWindowText(_T("Select a Girder Line"));
-
-         CComboBox* pSpanBox = (CComboBox*)GetDlgItem(IDC_SPAN);
-         CRect rSpan;
-         pSpanBox->GetWindowRect(&rSpan);
-         pSpanBox->ShowWindow(SW_HIDE);
-         pSpanBox->EnableWindow(FALSE);
-
-
-         CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
-         if (pSegmentBox)
-         {
-             pSegmentBox->ShowWindow(SW_HIDE);
-             pSegmentBox->EnableWindow(FALSE);
-         }
-
-         CComboBox* pGirderBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
-         CRect rGirder;
-         pGirderBox->GetWindowRect(&rGirder);
-         rGirder.left = rSpan.left;
-
-         ScreenToClient(&rGirder);
-
-         pGirderBox->MoveWindow(&rGirder);
-     }
-     else if (m_Mode == Mode::ChaptersOnly)
-     {
-         // hide the span and girder combo boxes, the group box,
-         // and resize the chapter list
-
-         CWnd* pSpanBox = GetDlgItem(IDC_SPAN);
-         CWnd* pGirderBox = GetDlgItem(IDC_GIRDER);
-         CWnd* pGroupBox = GetDlgItem(IDC_GROUP);
-         CWnd* pLabel = GetDlgItem(IDC_LABEL);
-         CWnd* pList = GetDlgItem(IDC_LIST);
-
-         pSpanBox->ShowWindow(SW_HIDE);
-         pSpanBox->EnableWindow(FALSE);
-
-         CComboBox* pSegmentBox = (CComboBox*)GetDlgItem(IDC_SPAN_ITEM);
-         if (pSegmentBox)
-         {
-             pSegmentBox->ShowWindow(SW_HIDE);
-             pSegmentBox->EnableWindow(FALSE);
-         }
-
-         pGirderBox->ShowWindow(SW_HIDE);
-         pGirderBox->EnableWindow(FALSE);
-
-         pGroupBox->ShowWindow(SW_HIDE);
-         pGroupBox->EnableWindow(FALSE);
-
-         CRect rGroup;
-         pGroupBox->GetWindowRect(&rGroup);
-
-         CRect rLabel;
-         pLabel->GetWindowRect(&rLabel);
-
-         CRect rList;
-         pList->GetWindowRect(&rList);
-
-         // capture the distance between the bottom of the label and the top of the list so we can maintain this distance
-         int dy = rList.top - rLabel.bottom;
-
-         // move label to where the top of the group box is
-         int h = rLabel.Height();
-         rLabel.top = rGroup.top;
-         rLabel.bottom = rLabel.top + h;
-         rList.top = rLabel.bottom + dy;
-
-         ScreenToClient(&rLabel);
-         ScreenToClient(&rList);
-
-         pLabel->MoveWindow(&rLabel);
-         pList->MoveWindow(&rList);
      }
 
      CSpanItemReportDlg::OnInitDialog();

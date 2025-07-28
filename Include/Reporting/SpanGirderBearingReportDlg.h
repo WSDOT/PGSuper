@@ -44,6 +44,8 @@ public:
 
    CSegmentKey m_SegmentKey;
    ReactionLocation m_Bearing;
+   std::vector<ReactionLocation> m_Bearings;
+   std::vector<ReactionLocation> m_RLmenuItems;
 
 protected:
 	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support

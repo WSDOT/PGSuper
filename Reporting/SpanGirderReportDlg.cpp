@@ -345,6 +345,11 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
       pList->MoveWindow(&rList);
    }
 
+   if (m_pInitRptSpec)
+   {
+       InitFromRptSpec();
+   }
+
    CSpanItemReportDlg::OnInitDialog();
 
    return TRUE;  // return TRUE unless you set the focus to a control

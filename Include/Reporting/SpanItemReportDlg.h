@@ -53,7 +53,6 @@ public:
 
 protected:
 
-	CGirderKey m_GirderKey;
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
