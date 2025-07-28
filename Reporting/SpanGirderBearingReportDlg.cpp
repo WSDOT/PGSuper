@@ -37,6 +37,7 @@
 #include "..\Documentation\PGSuper.hh"
 #include <Reporting/ReactionInterfaceAdapters.h>
 #include <PsgLib\BridgeDescription2.h>
+#include <Reporting/SpanGirderBearingReportSpecification.h>
 
 
  // CSpanBearingReportDlg dialog
@@ -326,6 +327,11 @@
          UpdateGirderComboBox();
      }
 
+     if (m_pInitRptSpec)
+     {
+         InitFromRptSpec();
+     }
+
      CSpanItemReportDlg::OnInitDialog();
 
      return TRUE;  // return TRUE unless you set the focus to a control
@@ -350,36 +356,11 @@
 
  void CSpanGirderBearingReportDlg::InitFromRptSpec()
  {
-     if (m_Mode == Mode::GroupAndChapters)
-     {
-         std::shared_ptr<CSpanReportSpecification> pRptSpec = std::dynamic_pointer_cast<CSpanReportSpecification>(m_pInitRptSpec);
-         m_SegmentKey.groupIndex = pRptSpec->GetSpan();
-     }
-     else if (m_Mode == Mode::GroupGirderAndChapters)
-     {
-         std::shared_ptr<CGirderReportSpecification> pRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification>(m_pInitRptSpec);
-         const CGirderKey& girderKey(pRptSpec->GetGirderKey());
-         m_SegmentKey = CSegmentKey(girderKey, INVALID_INDEX);
-     }
-     else if (m_Mode == Mode::GroupGirderSegmentAndChapters)
-     {
-         std::shared_ptr<CSegmentReportSpecification> pRptSpec = std::dynamic_pointer_cast<CSegmentReportSpecification>(m_pInitRptSpec);
-         m_SegmentKey = pRptSpec->GetSegmentKey();
-     }
-     else if (m_Mode == Mode::GirderAndChapters)
-     {
-         std::shared_ptr<CGirderLineReportSpecification> pRptSpec = std::dynamic_pointer_cast<CGirderLineReportSpecification>(m_pInitRptSpec);
-         m_SegmentKey.girderIndex = int(pRptSpec->GetGirderIndex());
-     }
-     else if (m_Mode == Mode::ChaptersOnly)
-     {
-         m_SegmentKey = CSegmentKey(INVALID_INDEX, INVALID_INDEX, INVALID_INDEX);
-     }
-     else
-     {
-         ATLASSERT(false); // is there a new mode?
-         m_SegmentKey = CSegmentKey(0, 0, 0);
-     }
+
+     std::shared_ptr<CBearingReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBearingReportSpecification>(m_pInitRptSpec);
+
+     m_Bearing = pRptSpec->GetReactionLocation();
+     m_SegmentKey = CSegmentKey(m_Bearing.GirderKey.groupIndex, m_Bearing.GirderKey.girderIndex, 0);
 
      UpdateData(FALSE);
 
