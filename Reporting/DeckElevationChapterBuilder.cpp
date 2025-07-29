@@ -344,7 +344,7 @@ void CDeckElevationChapterBuilder::BuildNoDeckElevationContent(rptChapter * pCha
       pTable->SetColumnSpan(0, col, 2);
       col += 2;
 
-      (*pTable)(0, col++) << _T("CL Brg");
+      (*pTable)(0, col++) << Sub2(_T("0.0L"), _T("s"));
       (*pTable)(0, col++) << Sub2(_T("0.1L"), _T("s"));
       (*pTable)(0, col++) << Sub2(_T("0.2L"), _T("s"));
       (*pTable)(0, col++) << Sub2(_T("0.3L"), _T("s"));
@@ -354,7 +354,7 @@ void CDeckElevationChapterBuilder::BuildNoDeckElevationContent(rptChapter * pCha
       (*pTable)(0, col++) << Sub2(_T("0.7L"), _T("s"));
       (*pTable)(0, col++) << Sub2(_T("0.8L"), _T("s"));
       (*pTable)(0, col++) << Sub2(_T("0.9L"), _T("s"));
-      (*pTable)(0, col++) << _T("CL Brg");
+      (*pTable)(0, col++) << Sub2(_T("1.0L"), _T("s"));
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
 
