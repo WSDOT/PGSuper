@@ -51,7 +51,7 @@ protected:
 	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
    virtual void UpdateGirderComboBox() override;
-   virtual void UpdateBearingComboBox();
+   void UpdateBearingComboBox();
 
    virtual void InitFromRptSpec() override;
 
