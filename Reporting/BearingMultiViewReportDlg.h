@@ -46,12 +46,15 @@ public:
 	std::vector<ReactionLocation> GetReactionLocations() const;
 
 	void OnBnClickedRadio() override;
+
+	void UpdateBearingComboBox();
 	
 	DECLARE_MESSAGE_MAP()
 
 
 
-	//afx_msg void OnCbnSelchangeSpan();
+	afx_msg void UpdateGirderComboBox();
+	afx_msg void UpdateSpanComboBox();
 	//afx_msg void OnHelp();
 	//afx_msg void OnBnClickedRadio();
 	afx_msg void OnBnClickedSelectMultipleButton();

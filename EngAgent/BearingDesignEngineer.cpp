@@ -1405,13 +1405,18 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(BEARINGSHEARDEFORMATIO
          {
              GET_IFACE2(GetBroker(), IEnvironment, pEnvironment);
 
+             IndexType bearingIdx = (reactionLocation.PierIdx - startPierIdx);
+             if ((reactionLocation.PierIdx - startPierIdx) == sdefDetails.brg_details.size())
+                 bearingIdx--; // no bearing at start pier
+                 
+
              if (pEnvironment->GetClimateCondition() == pgsTypes::ClimateCondition::Moderate)
              {
-                 pLoads->SetShearDeformation(sdefDetails.brg_details[reactionLocation.PierIdx - startPierIdx].total_shear_deformation_moderate);
+                 pLoads->SetShearDeformation(sdefDetails.brg_details[bearingIdx].total_shear_deformation_moderate);
              }
              else
              {
-                 pLoads->SetShearDeformation(sdefDetails.brg_details[reactionLocation.PierIdx - startPierIdx].total_shear_deformation_cold);
+                 pLoads->SetShearDeformation(sdefDetails.brg_details[bearingIdx].total_shear_deformation_cold);
              }
          }
          else

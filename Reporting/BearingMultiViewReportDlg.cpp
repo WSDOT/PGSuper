@@ -222,6 +222,8 @@ std::vector<ReactionLocation> CBearingMultiViewReportDlg::GetReactionLocations()
 
 
 BEGIN_MESSAGE_MAP(CBearingMultiViewReportDlg, CMultiViewReportDlg)
+    ON_CBN_SELCHANGE(IDC_SPAN, &CBearingMultiViewReportDlg::UpdateSpanComboBox)
+    ON_CBN_SELCHANGE(IDC_GIRDER, &CBearingMultiViewReportDlg::UpdateGirderComboBox)
     ON_BN_CLICKED(IDC_RADIO1, &CBearingMultiViewReportDlg::OnBnClickedRadio)
     ON_BN_CLICKED(IDC_RADIO2, &CBearingMultiViewReportDlg::OnBnClickedRadio)
     ON_BN_CLICKED(IDC_SELECT_MULTIPLE_BUTTON, &CBearingMultiViewReportDlg::OnBnClickedSelectMultipleButton)
@@ -246,6 +248,100 @@ void CBearingMultiViewReportDlg::OnBnClickedRadio()
       OnBnClickedSelectMultipleButton();
    }
 }
+
+void CBearingMultiViewReportDlg::UpdateSpanComboBox()
+{
+    CMultiViewReportDlg::OnCbnSelchangeSpan();
+
+    UpdateGirderComboBox();
+}
+
+void CBearingMultiViewReportDlg::UpdateGirderComboBox()
+{
+    CMultiViewReportDlg::UpdateGirderComboBox(m_ReactionLocation.GirderKey.groupIndex);
+
+    UpdateBearingComboBox();
+}
+
+
+
+void CBearingMultiViewReportDlg::UpdateBearingComboBox()
+{
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+    CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_SPAN);
+    GroupIndexType grpIdx = (GroupIndexType)pcbGroup->GetCurSel();
+
+    CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
+    GirderIndexType gdrIdx = (GirderIndexType)pcbGirder->GetCurSel();
+
+    GET_IFACE(IBearingDesign, pBearingDesign);
+    GET_IFACE(IIntervals, pIntervals);
+    GET_IFACE(IBridge, pBridge);
+    GET_IFACE(IBridgeDescription, pIBridgeDesc);
+
+    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+
+    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, 
+        lastCompositeDeckIntervalIdx, CGirderKey(grpIdx, gdrIdx)));
+
+    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+    iter.First();
+    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
+
+    CComboBox* pBrgBox = (CComboBox*)GetDlgItem(IDC_FACE);
+    Uint16 curSel = pBrgBox->GetCurSel();
+    pBrgBox->ResetContent();
+
+    m_RLmenuItems.clear();
+
+    // Use iterator to walk locations
+    for (iter.First(); !iter.IsDone(); iter.Next())
+    {
+
+        const ReactionLocation& reactionLocation(iter.CurrentItem());
+
+        m_RLmenuItems.emplace_back(reactionLocation);
+
+
+        const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
+        CString bcType;
+
+        if (pPier->IsBoundaryPier())
+        {
+            bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
+            bcType = CPierData2::AsString(pPier->GetBoundaryConditionType(), bNoDeck);
+        }
+        else
+        {
+            bcType = CPierData2::AsString(pPier->GetSegmentConnectionType());
+        }
+
+
+        CString strBrg = reactionLocation.PierLabel.c_str();
+
+        if (bcType == _T("Hinge"))
+        {
+            CString hingeBrgStr;
+            hingeBrgStr.Format(_T("%s (Xc)"), strBrg);
+            pBrgBox->AddString(hingeBrgStr);
+        }
+        else
+        {
+            pBrgBox->AddString(strBrg);
+        }
+
+    }
+
+    if (pBrgBox->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR)
+    {
+        pBrgBox->SetCurSel(0);
+    }
+
+}
+
 
 
 void CBearingMultiViewReportDlg::OnBnClickedSelectMultipleButton()

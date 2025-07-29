@@ -72,6 +72,9 @@
 
     DDX_CBIndex(pDX, IDC_SPAN_ITEM, (int&)idx);
 
+    if (idx == m_RLmenuItems.size())
+        idx--; // no bearing at start pier
+
     m_Bearing = m_RLmenuItems[idx];
 
     CSpanItemReportDlg::DoDataExchange(pDX);
@@ -144,7 +147,7 @@
 
      IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
-     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex)));
+     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(grpIdx, gdrIdx)));
 
      ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
      iter.First();
@@ -291,6 +294,8 @@
      m_SegmentKey = CSegmentKey(m_Bearing.GirderKey.groupIndex, m_Bearing.GirderKey.girderIndex, 0);
 
      UpdateData(FALSE);
+
+     OnGroupChanged();
 
      InitChapterListFromSpec();
  }
