@@ -576,7 +576,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
       }
       else if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment || selection.Type == CSelection::ClosureJoint )
       {
-         girderKey.groupIndex  = selection.GroupIdx;
+         girderKey.groupIndex = (selection.GroupIdx == INVALID_INDEX ? 0 : selection.GroupIdx);
          girderKey.girderIndex = selection.GirderIdx;
       }
       else
