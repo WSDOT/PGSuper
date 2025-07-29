@@ -85,7 +85,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(const std::shared_pt
    }
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-   *pPara << _T("Deck Elevations over Girder Webs") << rptNewLine;
+   *pPara << _T("Deck Elevations") << rptNewLine;
    (*pChapter) << pPara;
 
    pPara = new rptParagraph();
@@ -135,7 +135,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(const std::shared_pt
       (*pTable)(0, col++) << _T("Girder");
       (*pTable)(0, col++) << _T("Web");
       (*pTable)(0, col++) << _T("");
-      (*pTable)(0, col++) << _T("CL Brg");
+      (*pTable)(0, col++) << Sub2(_T("0.0L"), _T("s"));
       (*pTable)(0, col++) << Sub2(_T("0.1L"), _T("s"));
       (*pTable)(0, col++) << Sub2(_T("0.2L"), _T("s"));
       (*pTable)(0, col++) << Sub2(_T("0.3L"), _T("s"));
@@ -145,7 +145,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(const std::shared_pt
       (*pTable)(0, col++) << Sub2(_T("0.7L"), _T("s"));
       (*pTable)(0, col++) << Sub2(_T("0.8L"), _T("s"));
       (*pTable)(0, col++) << Sub2(_T("0.9L"), _T("s"));
-      (*pTable)(0, col++) << _T("CL Brg");
+      (*pTable)(0, col++) << Sub2(_T("1.0L"), _T("s"));
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
       col = 0;
