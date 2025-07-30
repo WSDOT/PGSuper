@@ -204,9 +204,15 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
     {
         GirderIndexType nGirders = groupGirderCollection[grpIdx].size();
 
-        for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+        for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++) // for each girder, check if an RL in vRL exists for it. If so, get the girder-relative index of it
         {
-            IndexType nRLs = groupGirderCollection[grpIdx][gdrIdx].size();
+
+            GET_IFACE2(pBroker, IIntervals, pIntervals);
+            IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+            std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
+                pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(grpIdx, gdrIdx)));
+
+            ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
 
             for (IndexType rlIdx = 0; rlIdx < vRL.size(); rlIdx++)
             {
@@ -214,13 +220,24 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
                 ROWCOL nCol = ROWCOL(rlIdx + 1);
                 ROWCOL nRow = ROWCOL(nGirdersTotal + 1);
 
-                if (rlIdx < nRLs)
+                IndexType grlIdx = 0;
+                bool found = false;
+                for (iter.First(); !iter.IsDone(); iter.Next())
                 {
+                    if (iter.CurrentItem().PierLabel == vRL[rlIdx].PierLabel) // trying to find the RL index relative to the girder, not vRL
+                    {
+                        found = true;
+                        break;
+                    }
+                    grlIdx++;
+                }
 
-                    UINT enabled = groupGirderCollection[grpIdx][gdrIdx][rlIdx] ? 1 : 0;
+                if (found)
+                {
+                    UINT enabled = groupGirderCollection[grpIdx][gdrIdx][grlIdx] ? 1 : 0;
                     // unchecked check box for bearing
                     SetStyleRange(CGXRange(nRow, nCol), CGXStyle()
-                        .SetControl(GX_IDS_CTRL_CHECKBOX3D)  //
+                        .SetControl(GX_IDS_CTRL_CHECKBOX3D)
                         .SetValue(enabled)
                         .SetHorizontalAlignment(DT_CENTER)
                     );
