@@ -46,6 +46,8 @@
 #include <IFace/Intervals.h>
 #include <Reporting/ReactionInterfaceAdapters.h>
 #include <psgLib\GirderLabel.h>
+#include <unordered_set>
+
 
 
 
@@ -74,9 +76,9 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
     GET_IFACE2(pBroker, IIntervals, pIntervals);
 
     GirderIndexType nGirdersTotal = 0;
-    IndexType maxRLs = 0;
-    CGirderKey gkeyMaxRL(0, 0); // girderKey with max no. RLs
+    CGirderKey gkey(0, 0); // girderKey with max no. RLs
     std::vector<ReactionLocation> vRL;
+    std::unordered_set<std::_tstring> seen;
 
     for (GroupIndexType igg = 0; igg < groupGirderCollection.size(); igg++)
     {
@@ -84,32 +86,33 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
         {
             nGirdersTotal += 1;
             auto grlSize = groupGirderCollection[igg][igRL].size();
-            if (grlSize > maxRLs)
+
+            gkey = CGirderKey(igg, igRL);
+
+            IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+
+            std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
+                pBearingDesign, lastCompositeDeckIntervalIdx, gkey));
+
+            ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+
+            for (iter.First(); !iter.IsDone(); iter.Next())
             {
-                maxRLs = grlSize;
-
-                gkeyMaxRL = CGirderKey(igg, igRL);
-
-                IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
-
-                std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
-                    pBearingDesign, lastCompositeDeckIntervalIdx, gkeyMaxRL));
-
-                ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
-
-                vRL.clear();
-                for (iter.First(); !iter.IsDone(); iter.Next())
+                if (seen.insert(iter.CurrentItem().PierLabel).second)
                 {
                     vRL.emplace_back(iter.CurrentItem());
                 }
             }
+            
 
         }
     }
 
 
+
+
     const ROWCOL num_rows = (ROWCOL)nGirdersTotal;
-    const ROWCOL num_cols = (ROWCOL)maxRLs;
+    const ROWCOL num_cols = (ROWCOL)vRL.size();
 
     SetRowCount(num_rows);
     SetColCount(num_cols);
@@ -205,7 +208,7 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
         {
             IndexType nRLs = groupGirderCollection[grpIdx][gdrIdx].size();
 
-            for (IndexType rlIdx = 0; rlIdx < maxRLs; rlIdx++)
+            for (IndexType rlIdx = 0; rlIdx < vRL.size(); rlIdx++)
             {
 
                 ROWCOL nCol = ROWCOL(rlIdx + 1);
