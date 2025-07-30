@@ -25,7 +25,7 @@
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\SpanGirderReportDlg.h>
 #include <Reporting\MultiGirderReportDlg.h>
-#include "MultiViewReportDlg.h"
+#include "GirderMultiViewReportDlg.h"
 #include "SelectPointOfInterestDlg.h"
 
 #include <IFace/Tools.h>
@@ -576,7 +576,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
       }
       else if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment || selection.Type == CSelection::ClosureJoint )
       {
-         girderKey.groupIndex  = selection.GroupIdx;
+         girderKey.groupIndex = (selection.GroupIdx == INVALID_INDEX ? 0 : selection.GroupIdx);
          girderKey.girderIndex = selection.GirderIdx;
       }
       else
@@ -585,7 +585,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
          girderKey.girderIndex = 0;
       }
 
-      CMultiViewReportDlg dlg(GetBroker(), rptDesc, pOldRptSpec, girderKey);
+      CGirderMultiViewReportDlg dlg(girderKey, GetBroker(), rptDesc, pOldRptSpec);
 
       if ( dlg.DoModal() == IDOK )
       {

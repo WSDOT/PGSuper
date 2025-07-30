@@ -33,6 +33,8 @@
 #include <EAF\EAFDocument.h>
 #include "PGSuperUnits.h"
 
+#include <IFace\Project.h>
+#include <psgLib\BearingCriteria.h>
 
 
 // CBridgeDescrBearings dialog
@@ -88,6 +90,29 @@ void CBridgeDescrBearings::DoDataExchange(CDataExchange* pDX)
    auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
+   DDX_CBIndex(pDX, IDC_BRG_DEF_TYPE, (int&)m_BearingInputData.m_SingleBearing.DefinitionType);
+
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   const BearingCriteria& criteria = pSpecEntry->GetBearingCriteria();
+
+   if (m_BearingInputData.m_SingleBearing.DefinitionType == BearingDefinitionType::btBasic/* || !criteria.bCheck*/)
+   {
+       ((CComboBox*)GetDlgItem(IDC_BUTTON_EDIT_BEARING_DETAIL))->EnableWindow(FALSE);
+       (CEdit*)GetDlgItem(IDC_BRG_HEIGHT)->EnableWindow(TRUE);
+
+       //if (!criteria.bCheck)
+       //{
+       //    ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE))->EnableWindow(FALSE);
+       //}
+   }
+   else
+   {
+       ((CComboBox*)GetDlgItem(IDC_BUTTON_EDIT_BEARING_DETAIL))->EnableWindow(TRUE);
+       (CEdit*)GetDlgItem(IDC_BRG_HEIGHT)->EnableWindow(FALSE);
+   }
+
    DDX_MetaFileStatic(pDX, IDC_BEARING, m_Bearing, _T("BEARINGDIMENSIONS"), _T("Metafile"), EMF_FIT);
 
    DDX_CBItemData(pDX, IDC_BRG_TYPE, m_BearingInputData.m_BearingType);
@@ -140,8 +165,10 @@ BEGIN_MESSAGE_MAP(CBridgeDescrBearings, CPropertyPage)
    ON_BN_CLICKED(IDC_EDIT_BEARINGS, &CBridgeDescrBearings::OnBnClickedEditBearings)
    ON_CBN_SELCHANGE(IDC_BRG_TYPE, &CBridgeDescrBearings::OnCbnSelchangeBrgType)
    ON_CBN_SELCHANGE(IDC_BRG_COUNT, &CBridgeDescrBearings::OnCbnSelchangeBrgCount)
-   ON_CBN_SELCHANGE(IDC_BRG_SHAPE, &CBearingSame4BridgeDlg::OnCbnSelchangeBrgShape)
-	ON_COMMAND(ID_HELP, OnHelp)
+   ON_CBN_SELCHANGE(IDC_BRG_SHAPE, &CBridgeDescrBearings::OnCbnSelchangeBrgShape)
+   ON_CBN_SELCHANGE(IDC_BRG_DEF_TYPE, &CBridgeDescrBearings::OnCbnSelchangeBrgDefType)
+   ON_BN_CLICKED(IDC_BUTTON_EDIT_BEARING_DETAIL, &CBridgeDescrBearings::OnCbnEditBearingDetails)
+   ON_COMMAND(ID_HELP, OnHelp)
 END_MESSAGE_MAP()
 
 
@@ -183,9 +210,10 @@ void CBridgeDescrBearings::OnCbnSelchangeBrgType()
    int sw = m_BearingInputData.m_BearingType == pgsTypes::sotBridge ? SW_SHOW : SW_HIDE;
 
    const int ctls[] = { IDC_BRG_SHAPE, IDC_STATIC_B1, IDC_STATIC_B2, IDC_BRG_SPACING, IDC_BRG_SPACING_STATIC, IDC_BRG_SPACING_UNIT, IDC_BRG_LENGTH,
-                IDC_BRG_LENGTH_STATIC, IDC_BRG_LENGTH_UNIT, IDC_BRG_WIDTH, IDC_BRG_WIDTH_STATIC, IDC_BRG_WIDTH_UNIT, IDC_BRG_HEIGHT,
-                IDC_STATIC_B3, IDC_BRG_HEIGHT_UNIT, IDC_BRG_RECESS, IDC_STATIC_B4, IDC_BRG_RECESS_UNIT, IDC_BRG_SOLEPLATE,
-                IDC_STATIC_B6, IDC_BRG_SOLEPLATE_UNIT, IDC_BRG_COUNT, IDC_BRG_RECESS_LENGTH, IDC_STATIC_B5, IDC_BRG_RECESS_LENGTH_UNIT, IDC_BEARING, -1 };
+                IDC_BRG_LENGTH_STATIC, IDC_BRG_LENGTH_UNIT, IDC_BRG_WIDTH, IDC_BRG_WIDTH_STATIC, IDC_BRG_WIDTH_UNIT, IDC_BRG_HEIGHT, IDC_BUTTON_EDIT_BEARING_DETAIL,
+                IDC_STATIC_B3, IDC_BRG_HEIGHT_UNIT, IDC_BRG_RECESS, IDC_STATIC_B4, IDC_BRG_RECESS_UNIT, IDC_BRG_SOLEPLATE, IDC_BRG_DEF_TYPE, IDC_STATIC_DEF,
+                IDC_STATIC_DETAIL, IDC_STATIC_B6, IDC_BRG_SOLEPLATE_UNIT, IDC_BRG_COUNT, IDC_BRG_RECESS_LENGTH, IDC_STATIC_B5, 
+                IDC_BRG_RECESS_LENGTH_UNIT, IDC_BEARING, IDC_STATIC_BRG_NOTE, -1 };
    int i = 0;
    while (ctls[i] != -1)
    {
@@ -248,6 +276,95 @@ void CBridgeDescrBearings::OnCbnSelchangeBrgCount()
    pwnd = (CWnd*)GetDlgItem(IDC_BRG_SPACING_STATIC);
    pwnd->EnableWindow(benable);
 }
+
+void CBridgeDescrBearings::OnCbnSelchangeBrgDefType()
+{
+
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+    CDataExchange dx(this, TRUE);
+    DoDataExchange(&dx);
+
+}
+
+void CBridgeDescrBearings::OnCbnEditBearingDetails()
+{
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+    CDataExchange dx(this, TRUE);
+    DoDataExchange(&dx);
+
+    m_details_dlg.SetBearingDetailDlg(m_BearingInputData.m_SingleBearing);
+
+    //bool bRepeatDialog = true;
+
+    //while (bRepeatDialog)
+    //{
+        if (m_details_dlg.DoModal() == IDOK)
+        {
+            const auto& computed_height = m_details_dlg.GetComputedHeight();
+
+ /*           if (!IsEqual(computed_height, m_BearingInputData.m_SingleBearing.Height))
+            {
+                CString msg;
+                msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
+
+                if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
+                {*/
+                    m_BearingInputData.m_SingleBearing.Height = computed_height;
+
+                    (CEdit*)GetDlgItem(IDC_BRG_HEIGHT)->EnableWindow(FALSE);
+
+                    const auto& brg_details = m_details_dlg.GetBearingDetails();
+
+                    m_BearingInputData.m_SingleBearing.Length = brg_details.Length;
+                    m_BearingInputData.m_SingleBearing.Width = brg_details.Width;
+                    m_BearingInputData.m_SingleBearing.ElastomerThickness = brg_details.ElastomerThickness;
+                    m_BearingInputData.m_SingleBearing.CoverThickness = brg_details.CoverThickness;
+                    m_BearingInputData.m_SingleBearing.ShimThickness = brg_details.ShimThickness;
+                    m_BearingInputData.m_SingleBearing.NumIntLayers = brg_details.NumIntLayers;
+                    m_BearingInputData.m_SingleBearing.UseExtPlates = brg_details.UseExtPlates;
+                    m_BearingInputData.m_SingleBearing.FixedX = brg_details.FixedX;
+                    m_BearingInputData.m_SingleBearing.FixedY = brg_details.FixedY;
+                    m_BearingInputData.m_SingleBearing.ShearDeformationOverride = brg_details.ShearDeformationOverride;
+
+
+            //        bRepeatDialog = false; // Exit loop
+            //    }
+            //    else
+            //    {
+            //        // Loop will repeat
+            //    }
+            //}
+            //else
+            //{
+                m_BearingInputData.m_SingleBearing.Height = computed_height;
+        //        bRepeatDialog = false;
+        //    }
+        //}
+        //else
+        //{
+        //    bRepeatDialog = false; // Dialog cancelled
+        //}
+    }
+
+    UpdateData(false);
+
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+    DDX_UnitValueAndTag(&dx, IDC_BRG_LENGTH, IDC_BRG_LENGTH_UNIT, m_BearingInputData.m_SingleBearing.Length, pDisplayUnits->GetComponentDimUnit());
+    DDV_UnitValueZeroOrMore(&dx, IDC_BRG_LENGTH, m_BearingInputData.m_SingleBearing.Length, pDisplayUnits->GetComponentDimUnit());
+    if (!(dx.m_bSaveAndValidate && m_BearingInputData.m_SingleBearing.Shape == bsRound))
+    {
+        DDX_UnitValueAndTag(&dx, IDC_BRG_WIDTH, IDC_BRG_WIDTH_UNIT, m_BearingInputData.m_SingleBearing.Width, pDisplayUnits->GetComponentDimUnit());
+        DDV_UnitValueZeroOrMore(&dx, IDC_BRG_WIDTH, m_BearingInputData.m_SingleBearing.Width, pDisplayUnits->GetComponentDimUnit());
+    }
+
+}
+
+
+
 
 void CBridgeDescrBearings::OnHelp()
 {

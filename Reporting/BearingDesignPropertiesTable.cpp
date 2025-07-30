@@ -60,7 +60,7 @@ rptRcTable* CBearingDesignPropertiesTable::BuildBearingDesignPropertiesTable(std
     (*p_table)(0, col++) << COLHDR(Sub2(_T("F"), _T("y")),
         rptStressUnitTag, pDisplayUnits->GetStressUnit());
     p_table->SetRowSpan(0, col, 2);
-    (*p_table)(0, col++) << COLHDR(Sub2(_T("F"), _T("th")),
+    (*p_table)(0, col++) << COLHDR(Sub2(_T("") << symbol(DELTA) << _T("F"), _T("TH")),
         rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
 
