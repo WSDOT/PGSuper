@@ -253,7 +253,7 @@ void CBearingMultiViewReportDlg::UpdateSpanComboBox()
 {
     CMultiViewReportDlg::OnCbnSelchangeSpan();
 
-    UpdateGirderComboBox();
+    UpdateBearingComboBox();
 }
 
 void CBearingMultiViewReportDlg::UpdateGirderComboBox()
