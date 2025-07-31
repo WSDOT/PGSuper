@@ -195,6 +195,7 @@ rptChapter* CBearingSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<
             {
                 const auto& reactionLocation(*it);
 
+                *pParagraph << rptNewLine;
                 *pParagraph << _T("Results for ") << GIRDER_LABEL(reactionLocation.GirderKey);
                 *pParagraph << _T(" - ") << reactionLocation.PierLabel;
                 *pParagraph << rptNewLine;
@@ -235,15 +236,15 @@ rptChapter* CBearingSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<
 
                 if (spec < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
                 {
-                    *pParagraph << rptNewLine << _T("Bearing specification check not available for the selected BDS version");
+                    *pParagraph << _T("Bearing specification check not available for the selected BDS version");
                 }
                 else if (pBearingData->Shape == BearingShape::bsRound)
                 {
-                    *pParagraph << rptNewLine << _T("Bearing specification check not available for round bearings");
+                    *pParagraph << _T("Bearing specification check not available for round bearings");
                 }
                 else if (pBearingData->DefinitionType == BearingDefinitionType::btBasic)
                 {
-                    *pParagraph << rptNewLine << _T("Could not evaluate bearing because it is not defined in sufficient detail");
+                    *pParagraph << _T("Could not evaluate bearing because it is not defined in sufficient detail");
                 }
                 else
                 {
@@ -262,8 +263,10 @@ rptChapter* CBearingSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<
         }
         else
         {
-            *pParagraph << rptNewLine << _T("Bearing Spec Check is not enabled. See 'Spec Checking & Design' tab in Project Criteria Library");
+            *pParagraph << _T("Bearing Spec Check is not enabled. See 'Spec Checking & Design' tab in Project Criteria Library");
         }
+
+        *pParagraph << rptNewLine << rptNewLine;
 
     }
 
