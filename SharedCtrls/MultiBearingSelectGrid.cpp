@@ -77,7 +77,7 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
 
     GirderIndexType nGirdersTotal = 0;
     CGirderKey gkey(0, 0); // girderKey with max no. RLs
-    std::vector<ReactionLocation> vRL;
+
     std::unordered_set<std::_tstring> seen;
 
     for (GroupIndexType igg = 0; igg < groupGirderCollection.size(); igg++)
@@ -100,7 +100,7 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
             {
                 if (seen.insert(iter.CurrentItem().PierLabel).second)
                 {
-                    vRL.emplace_back(iter.CurrentItem());
+                    m_vRL.emplace_back(iter.CurrentItem());
                 }
             }
             
@@ -112,7 +112,7 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
 
 
     const ROWCOL num_rows = (ROWCOL)nGirdersTotal;
-    const ROWCOL num_cols = (ROWCOL)vRL.size();
+    const ROWCOL num_cols = (ROWCOL)m_vRL.size();
 
     SetRowCount(num_rows);
     SetColCount(num_cols);
@@ -143,7 +143,7 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
 
 
     auto idx = 0;
-    for (const auto& rl : vRL)
+    for (const auto& rl : m_vRL)
     {
         CString lbl = rl.PierLabel.c_str();
 
@@ -214,7 +214,7 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
 
             ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
 
-            for (IndexType rlIdx = 0; rlIdx < vRL.size(); rlIdx++)
+            for (IndexType rlIdx = 0; rlIdx < m_vRL.size(); rlIdx++)
             {
 
                 ROWCOL nCol = ROWCOL(rlIdx + 1);
@@ -224,7 +224,7 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
                 bool found = false;
                 for (iter.First(); !iter.IsDone(); iter.Next())
                 {
-                    if (iter.CurrentItem().PierLabel == vRL[rlIdx].PierLabel) // trying to find the RL index relative to the girder, not vRL
+                    if (iter.CurrentItem().PierLabel == m_vRL[rlIdx].PierLabel) // trying to find the RL index relative to the girder, not vRL
                     {
                         found = true;
                         break;
@@ -291,8 +291,6 @@ std::vector<ReactionLocation> CMultiBearingSelectGrid::GetData()
                 GET_IFACE2(pBroker, IBridge, pBridge);
                 IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
-                RowIndexType iRow = 0;
-
                 GroupIndexType nGroups = pBridge->GetGirderGroupCount();
                 for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
                 {
@@ -306,22 +304,18 @@ std::vector<ReactionLocation> CMultiBearingSelectGrid::GetData()
 
                         ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
 
-                        ColumnIndexType iCol = 0;
 
                         for (iter.First(); !iter.IsDone(); iter.Next())
                         {
 
-                            if (iCol == col && iRow == row)
+                            if (iter.CurrentItem() == m_vRL[col])
                             {
                                 const ReactionLocation& reactionLocation(iter.CurrentItem());
                                 data.push_back(reactionLocation);
                             }
 
-                            ++iCol;
 
                         }
-
-                        ++iRow;
 
                     }
                 }

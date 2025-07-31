@@ -51,13 +51,14 @@ class CMultiBearingSelectGrid : public CMultiSelectGrid
 public:
 	CMultiBearingSelectGrid();
 
-
-public:
 	// custom stuff for grid
 	void CustomInit(const GroupGirderCollection& groupGirderCollection);
 
 	// Vector of items turned on (checked)
 	std::vector<ReactionLocation> GetData();
+
+private:
+	std::vector<ReactionLocation> m_vRL;
 
 };
 
