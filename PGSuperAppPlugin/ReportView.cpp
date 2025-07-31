@@ -110,11 +110,12 @@ void CPGSuperReportView::OnInitialUpdate()
    ASSERT(pCreateData != nullptr);
    std::vector<std::_tstring> rptNames(pCreateData->m_pRptMgr->GetReportNames());
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pCreateData->m_pRptMgr->GetReportSpecificationBuilder(rptNames[pCreateData->m_RptIdx]);
-   CMultiViewSpanGirderReportSpecificationBuilder* pMultiViewRptSpecBuilder(dynamic_cast<CMultiViewSpanGirderReportSpecificationBuilder*>(pRptSpecBuilder.get()));
+   CMultiViewSpanGirderReportSpecificationBuilder* pGMultiViewRptSpecBuilder(dynamic_cast<CMultiViewSpanGirderReportSpecificationBuilder*>(pRptSpecBuilder.get()));
+   CMultiViewSpanGirderBearingReportSpecificationBuilder* pBMultiViewRptSpecBuilder(dynamic_cast<CMultiViewSpanGirderBearingReportSpecificationBuilder*>(pRptSpecBuilder.get()));
 
    // if autocalc is turned on, or this is not a multi-view report, just process this normally
    // by calling the base class OnInitialUpdate method
-   if ( pAutoCalcDoc->IsAutoCalcEnabled() || pMultiViewRptSpecBuilder == nullptr )
+   if ( pAutoCalcDoc->IsAutoCalcEnabled() || (pGMultiViewRptSpecBuilder == nullptr && pBMultiViewRptSpecBuilder == nullptr))
    {
       CEAFAutoCalcReportView::OnInitialUpdate();
    }
