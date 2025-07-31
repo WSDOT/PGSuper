@@ -155,15 +155,15 @@ rptChapter* CBearingSpecCheckChapterBuilder::Build(const std::shared_ptr<const W
 
         if (spec < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
         {
-            *pPara << rptNewLine << _T("Bearing specification check not available for the selected BDS version");
+            *pPara << _T("Bearing specification check not available for the selected BDS version") << rptNewLine;
         }
         else if (pBearingData->Shape == BearingShape::bsRound)
         {
-            *pPara << rptNewLine << _T("Bearing specification check not available for round bearings");
+            *pPara << _T("Bearing specification check not available for round bearings") << rptNewLine;
         }
         else if (pBearingData->DefinitionType == BearingDefinitionType::btBasic)
         {
-            *pPara << rptNewLine << _T("Could not evaluate bearing because it is not defined in sufficient detail");
+            *pPara << _T("Could not evaluate bearing because it is not defined in sufficient detail") << rptNewLine;
         }
         else
         {
@@ -189,7 +189,7 @@ rptChapter* CBearingSpecCheckChapterBuilder::Build(const std::shared_ptr<const W
    }
    else
    {
-       *pPara << rptNewLine << _T("Bearing Spec Check is not enabled. See 'Spec Checking & Design' tab in Project Criteria Library");
+       *pPara << _T("Bearing Spec Check is not enabled. See 'Spec Checking & Design' tab in Project Criteria Library") << rptNewLine;
    }
 
    return pChapter;
