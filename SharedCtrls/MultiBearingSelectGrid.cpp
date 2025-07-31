@@ -291,6 +291,8 @@ std::vector<ReactionLocation> CMultiBearingSelectGrid::GetData()
                 GET_IFACE2(pBroker, IBridge, pBridge);
                 IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
+                IndexType ggIdx = 0;
+
                 GroupIndexType nGroups = pBridge->GetGirderGroupCount();
                 for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
                 {
@@ -308,7 +310,7 @@ std::vector<ReactionLocation> CMultiBearingSelectGrid::GetData()
                         for (iter.First(); !iter.IsDone(); iter.Next())
                         {
 
-                            if (iter.CurrentItem() == m_vRL[col])
+                            if (iter.CurrentItem().PierLabel == m_vRL[col].PierLabel && row == ggIdx)
                             {
                                 const ReactionLocation& reactionLocation(iter.CurrentItem());
                                 data.push_back(reactionLocation);
@@ -316,6 +318,8 @@ std::vector<ReactionLocation> CMultiBearingSelectGrid::GetData()
 
 
                         }
+
+                        ggIdx++;
 
                     }
                 }
