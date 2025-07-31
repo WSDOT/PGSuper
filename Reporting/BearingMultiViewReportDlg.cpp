@@ -195,6 +195,7 @@ BOOL CBearingMultiViewReportDlg::OnInitDialog()
 
    CComboBox* pButton = (CComboBox*)GetDlgItem(IDC_SELECT_MULTIPLE_BUTTON);
    pButton->SetWindowText(_T("Select Bearings\n(0 Selected)"));
+   pButton->EnableWindow(bMultiSelect);
 
    CComboBox* pBrgBox = (CComboBox*)GetDlgItem(IDC_FACE);
 
