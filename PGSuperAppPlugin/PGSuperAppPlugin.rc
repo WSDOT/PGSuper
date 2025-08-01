@@ -3973,7 +3973,7 @@ BEGIN
     LTEXT           "Total Estimated Weight: ###",IDC_BRG_WEIGHT,207,123,104,8
     DEFPUSHBUTTON   "OK",IDOK,210,153,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,264,153,50,14
-    LTEXT           "NOTE: Enter the actual shear deformation or enter the keyword ""Compute"" to have the shear deformation computed based on an apparent point of fixity",IDC_STATIC,17,137,189,24
+    LTEXT           "NOTE: Enter the actual shear deformation or enter the keyword ""Compute"" to have the shear deformation computed based on the distance from the hinge support",IDC_STATIC,17,137,189,24
 END
 
 IDD_COPY_BEARING_PROPERTIES DIALOGEX 0, 0, 635, 300
