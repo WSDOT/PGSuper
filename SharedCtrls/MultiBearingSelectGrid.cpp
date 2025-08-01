@@ -33,9 +33,11 @@
 
 #include "SharedCTrls\MultiBearingSelectGrid.h" 
 #include <PsgLib\Keys.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <EAF\EAFUtilities.h>
 #include <IFace\Tools.h>
+#include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 
 #if defined _DEBUG
@@ -142,10 +144,37 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
     // top row labels
 
 
+    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+
+    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+
     auto idx = 0;
     for (const auto& rl : m_vRL)
     {
+
+        const CPierData2* pPier = pBridgeDesc->GetPier(rl.PierIdx);
+        CString bcType;
+
+        if (pPier->IsBoundaryPier())
+        {
+            bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
+            bcType = CPierData2::AsString(pPier->GetBoundaryConditionType(), bNoDeck);
+        }
+        else
+        {
+            bcType = CPierData2::AsString(pPier->GetSegmentConnectionType());
+        }
+
+
         CString lbl = rl.PierLabel.c_str();
+
+        if (bcType == _T("Hinge"))
+        {
+            CString hingeBrgStr;
+            hingeBrgStr.Format(_T("%s (Hinge)"), lbl);
+            lbl = hingeBrgStr;
+        }
 
         SetStyleRange(CGXRange(0, ROWCOL(idx + 1)), CGXStyle()
             .SetWrapText(TRUE)

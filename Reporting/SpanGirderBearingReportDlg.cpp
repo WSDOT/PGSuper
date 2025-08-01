@@ -187,7 +187,7 @@
          if (bcType == _T("Hinge"))
          {
              CString hingeBrgStr;
-             hingeBrgStr.Format(_T("%s (Xc)"), strBrg);
+             hingeBrgStr.Format(_T("%s (Hinge)"), strBrg);
              pBrgBox->AddString(hingeBrgStr);
          }
          else
