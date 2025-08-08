@@ -32,21 +32,6 @@ m_GirderKey(girderKey)
 {
 }
 
-pgsGirderArtifact::pgsGirderArtifact(const pgsGirderArtifact& other)
-{
-   MakeCopy(other);
-}
-
-pgsGirderArtifact& pgsGirderArtifact::operator= (const pgsGirderArtifact& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
 const CGirderKey& pgsGirderArtifact::GetGirderKey() const
 {
    return m_GirderKey;
@@ -184,7 +169,7 @@ void pgsGirderArtifact::AddDeflectionCheckArtifact(const pgsDeflectionCheckArtif
    m_DeflectionCheckArtifact.push_back(artifact);
 }
 
-IndexType pgsGirderArtifact::GetDeflectionCheckArtifactCount()
+IndexType pgsGirderArtifact::GetDeflectionCheckArtifactCount() const
 {
    return m_DeflectionCheckArtifact.size();
 }
@@ -198,6 +183,22 @@ const pgsDeflectionCheckArtifact* pgsGirderArtifact::GetDeflectionCheckArtifact(
 {
    return &m_DeflectionCheckArtifact[idx];
 }
+
+void pgsGirderArtifact::AddHorizontalTensionTieArtifact(const pgsHorizontalTieForceArtifact& artifact)
+{
+   m_HorizTensionTieArtifacts.push_back(artifact);
+}
+
+IndexType pgsGirderArtifact::GetHorizontalTensionTieArtifactCount() const
+{
+   return m_HorizTensionTieArtifacts.size();
+}
+
+const pgsHorizontalTieForceArtifact* pgsGirderArtifact::GetHorizontalTensionTieArtifact(IndexType idx) const
+{
+   return &m_HorizTensionTieArtifacts[idx];
+}
+
 
 bool pgsGirderArtifact::WasWithRebarAllowableStressUsed(const StressCheckTask& task,pgsTypes::StressLocation stressLocation) const
 {
@@ -458,31 +459,14 @@ bool pgsGirderArtifact::Passed() const
       }
    }
 
-   return true;
-}
-
-void pgsGirderArtifact::MakeCopy(const pgsGirderArtifact& rOther)
-{
-   m_GirderKey                 = rOther.m_GirderKey;
-   m_TendonStressArtifacts     = rOther.m_TendonStressArtifacts;
-   m_DuctSizeArtifacts         = rOther.m_DuctSizeArtifacts;
-
-   for ( IndexType lsIdx = 0; lsIdx < (IndexType)(pgsTypes::LimitStateCount); lsIdx++ )
+   for (const auto& artifact : m_HorizTensionTieArtifacts)
    {
-      m_FlexuralCapacityArtifacts[POSITIVE][lsIdx] = rOther.m_FlexuralCapacityArtifacts[POSITIVE][lsIdx];
-      m_FlexuralCapacityArtifacts[NEGATIVE][lsIdx] = rOther.m_FlexuralCapacityArtifacts[NEGATIVE][lsIdx];
+      if (!artifact.Passed())
+         return false;
    }
 
-   m_SegmentArtifacts          = rOther.m_SegmentArtifacts;
-   m_ConstructabilityArtifact  = rOther.m_ConstructabilityArtifact;
-   m_DeflectionCheckArtifact   = rOther.m_DeflectionCheckArtifact;
+   return true;
 }
-
-void pgsGirderArtifact::MakeAssignment(const pgsGirderArtifact& rOther)
-{
-   MakeCopy( rOther );
-}
-
 
 void pgsGirderArtifact::AddFlexuralCapacityArtifact(FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx, const pgsFlexuralCapacityArtifact& artifact)
 {

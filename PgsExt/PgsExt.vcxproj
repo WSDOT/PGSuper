@@ -226,6 +226,7 @@
     <ClCompile Include="DesignConfigUtil.cpp" />
     <ClCompile Include="DuctSizeArtifact.cpp" />
     <ClCompile Include="EditBridge.cpp" />
+    <ClCompile Include="HorizontalTieForceArtifact.cpp" />
     <ClCompile Include="ReportCreepCoefficient.cpp" />
     <ClCompile Include="UHPCConcretePage.cpp" />
     <ClCompile Include="FlexuralCapacityArtifact.cpp" />
@@ -319,6 +320,7 @@
     <ClInclude Include="..\Include\PgsExt\EditBridge.h" />
     <ClInclude Include="..\Include\PgsExt\HaulingCriteria.h" />
     <ClInclude Include="..\Include\PgsExt\HorizontalInterfaceZoneData.h" />
+    <ClInclude Include="..\Include\PgsExt\HorizontalTieForceArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\ReportCreepCoefficient.h" />
     <ClInclude Include="..\Include\PgsExt\ShearZoneData2.h" />
     <ClInclude Include="..\Include\PgsExt\SlabOffsetCriteria.h" />

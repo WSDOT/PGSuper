@@ -778,6 +778,8 @@ public:
    void GetDebondConfigurationByRow(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, RowIndexType rowIdx, IndexType configIdx, const GDRCONFIG* pConfig, Float64* pXstart, Float64* pLstrand, Float64* pCgX, Float64* pCgY, StrandIndexType* pnStrands) const override;
 
    std::vector<CComPtr<IRect2d>> GetWebWidthProjectionsForDebonding(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType, Float64* pfraDebonded, Float64* pBottomFlangeToWebWidthRatio) const override;
+   std::vector<CComPtr<IRect2d>> GetWebWidthProjectionsForDebonding(const pgsPointOfInterest& poi, bool bAlwaysReturnWebRegions, Float64* pFraDebonded, Float64* pBottomFlangeToWebWidthRatio) const override;
+   std::vector<CComPtr<IRect2d>> GetWebWidthProjections(const pgsPointOfInterest& poi) const override;
 
    Float64 ComputeAbsoluteHarpedOffsetEnd(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset) const override;
    Float64 ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,pgsTypes::MemberEndType endType,pgsTypes::AdjustableStrandType adjType,Float64 HgStart,Float64 HgHp1,Float64 HgHp2,Float64 HgEnd,const ConfigStrandFillVector& rHarpedFillArray, HarpedStrandOffsetType measurementType, Float64 offset) const override;

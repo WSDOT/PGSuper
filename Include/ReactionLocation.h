@@ -22,18 +22,29 @@
 
 #pragma once
 
-#include <PgsExt\ConstructabilityArtifact.h>
-#include <PgsExt\GirderDesignArtifact.h>
-#include <PgsExt\SegmentDesignArtifact.h>
-#include <PgsExt\FlexuralCapacityArtifact.h>
-#include <PgsExt\FlexuralStressArtifact.h>
-#include <PgsExt\GirderArtifact.h>
-#include <PgsExt\HoldDownForceArtifact.h>
-#include <PgsExt\PoiArtifactKey.h>
-#include <PgsExt\PoiMgr.h>
-#include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\StrandSlopeArtifact.h>
-#include <PgsExt\StrandStressArtifact.h>
-#include <PgsExt\PrincipalTensionStressArtifact.h>
-#include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\ReinforcementFatigueArtifact.h>
+#include <PsgLib/PointOfInterest.h>
+
+
+// Simple span bearing reactions can occur at back/ahead. Continuous and pier reactions are at mid
+typedef enum PierReactionFaceType
+{
+   rftBack,
+   rftMid,
+   rftAhead
+} PierReactionFaceType;
+
+struct ReactionLocation
+{
+   PierIndexType        PierIdx;   // Index of the pier where reactions are reported
+   PierReactionFaceType Face;      // Face of pier that reaction applies to
+   CGirderKey           GirderKey; // GirderKey for the girder that provides the reaction
+   pgsPointOfInterest   poi; // Point of interest for the reaction location (bearing)
+   std::_tstring        PierLabel; // Label (Abutment 1, Pier 2, etc)
+
+   bool operator==(const ReactionLocation& r) const
+   {
+      return ::IsEqual(PierIdx, r.PierIdx) && Face == r.Face && GirderKey == r.GirderKey ? true : false;
+   };
+
+};
+

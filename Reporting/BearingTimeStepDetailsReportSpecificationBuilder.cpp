@@ -79,10 +79,11 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
        }
 
        GET_IFACE2(GetBroker(),IBearingDesign, pBearingDesign);
+       GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
 
        IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
        std::unique_ptr<CmbLsBearingDesignReactionAdapter> pForces(std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
-       ReactionLocationContainer vReactionLocations = pForces->GetBearingReactionLocations(lastCompositeDeckIntervalIdx, girderKey, pBridge, pBearingDesign);
+       ReactionLocationContainer vReactionLocations = pForces->GetBearingReactionLocations(lastCompositeDeckIntervalIdx, girderKey, pBridge, pPoi, pBearingDesign);
        initial_location = vReactionLocations.front();   //get first location based on girder
    }
    

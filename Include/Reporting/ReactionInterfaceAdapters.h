@@ -27,6 +27,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 
 /*****************************************************************************
@@ -72,7 +73,7 @@ class IProductReactionAdapter
 {
 public:
    virtual ~IProductReactionAdapter() {};
-   virtual ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge)=0;
+   virtual ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IPointOfInterest> pPoi) = 0;
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey)=0;
 
    virtual Float64 GetReaction(IntervalIndexType intervalIdx, const ReactionLocation& rLocation, pgsTypes::ProductForceType pfType, pgsTypes::BridgeAnalysisType bat) = 0;
@@ -92,12 +93,12 @@ public:
    ProductForcesReactionAdapter(std::weak_ptr<IReactions> pReactions,const CGirderKey& girderKey);
    virtual ~ProductForcesReactionAdapter();
 
-   virtual ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge);
-   virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
-   virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfTy,pgsTypes::BridgeAnalysisType bat);
-   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
+   ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IPointOfInterest> pPoi) override;
+   bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey) override;
+   Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfTy,pgsTypes::BridgeAnalysisType bat) override;
+   void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
-                                    VehicleIndexType* pMinConfig=nullptr, VehicleIndexType* pMaxConfig=nullptr);
+                                    VehicleIndexType* pMinConfig=nullptr, VehicleIndexType* pMaxConfig=nullptr) override;
 
 private:
    std::weak_ptr<IReactions> m_pReactions;
@@ -116,12 +117,12 @@ public:
    BearingDesignProductReactionAdapter(std::weak_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey);
    virtual ~BearingDesignProductReactionAdapter();
 
-   ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge) override;
-   virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
-   virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfTy,pgsTypes::BridgeAnalysisType bat);
-   virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
+   ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IPointOfInterest> pPoi) override;
+   bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey) override;
+   Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfTy,pgsTypes::BridgeAnalysisType bat) override;
+   void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
-                                    VehicleIndexType* pMinConfig=nullptr, VehicleIndexType* pMaxConfig=nullptr);
+                                    VehicleIndexType* pMinConfig=nullptr, VehicleIndexType* pMaxConfig=nullptr) override;
 private:
    std::weak_ptr<IBearingDesign> m_pBearingDesign;
    CGirderKey m_GirderKey;
@@ -146,7 +147,7 @@ class ICmbLsReactionAdapter
 {
 public:
    virtual ~ICmbLsReactionAdapter() {};
-   virtual ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge)=0;
+   virtual ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IPointOfInterest> pPoi) = 0;
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey)=0;
 
    // From ICombinedForces
@@ -160,10 +161,10 @@ public:
    CombinedLsForcesReactionAdapter(std::weak_ptr<IReactions> pReactions, std::weak_ptr<ILimitStateForces> pForces, const CGirderKey& girderKey);
    virtual ~CombinedLsForcesReactionAdapter();
 
-   virtual ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge);
-   virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
-   virtual Float64 GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType type);
-   virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
+   ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IPointOfInterest> pPoi) override;
+   bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey) override;
+   Float64 GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType type) override;
+   void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) override;
 
 private:
    std::weak_ptr<IReactions> m_pReactions;
@@ -181,13 +182,13 @@ public:
    CmbLsBearingDesignReactionAdapter(std::weak_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey);
    virtual ~CmbLsBearingDesignReactionAdapter();
 
-   ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge) override;
-   virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
+   ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IPointOfInterest> pPoi) override;
+   bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey) override;
 
-   virtual Float64 GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType type);
-   virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
+   Float64 GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType type) override;
+   void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax) override;
 
-   static ReactionLocationContainer GetBearingReactionLocations(IntervalIndexType intervalIdx, const CGirderKey& girderKey, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IBearingDesign> pBearing);
+   static ReactionLocationContainer GetBearingReactionLocations(IntervalIndexType intervalIdx, const CGirderKey& girderKey, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IPointOfInterest> pPoi, std::shared_ptr<IBearingDesign> pBearing);
 
 private:
    std::weak_ptr<IBearingDesign> m_pBearingDesign;

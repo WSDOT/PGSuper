@@ -42,6 +42,7 @@
 #include <IFace\Project.h>
 #include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF/EAFProgress.h>
 #include <IFace\EditByUI.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\ResistanceFactors.h>
@@ -51,7 +52,7 @@
 #include <IFace\DocumentType.h>
 #include <IFace\Views.h>
 #include <IFace\SplittingChecks.h>
-
+#include <IFace\HorizontalTensionTieChecks.h>
 
 #include <WBFLGeometry_i.c>
 #include <WBFLFem2d_i.c>

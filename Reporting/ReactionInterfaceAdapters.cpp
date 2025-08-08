@@ -24,6 +24,7 @@
 #include <Reporting\ReactionInterfaceAdapters.h>
 #include <EAF\EAFUtilities.h>
 #include <IFace\Bridge.h>
+#include <IFace/PointOfInterest.h>
 #include <sstream>
 
 
@@ -54,12 +55,13 @@ void LabelPier(std::_tostringstream& os, PierIndexType pierIdx, PierIndexType nP
    }
 }         
 
-ReactionLocation MakeReactionLocation(PierIndexType pierIdx, PierIndexType nPiers, PierReactionFaceType face, const CGirderKey& girderKey)
+ReactionLocation MakeReactionLocation(PierIndexType pierIdx, PierIndexType nPiers, PierReactionFaceType face, const CGirderKey& girderKey, const pgsPointOfInterest& poi)
 {
    ReactionLocation location;
    location.PierIdx = pierIdx;
    location.Face = face;
    location.GirderKey = girderKey; // analysis agent should sort out if pier has different # girders framing into it
+   location.poi = poi;
 
    std::_tostringstream os;
    LabelPier(os, pierIdx, nPiers, location.Face);
@@ -70,11 +72,12 @@ ReactionLocation MakeReactionLocation(PierIndexType pierIdx, PierIndexType nPier
 }
 
 ReactionLocationContainer CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(IntervalIndexType intervalIdx,const CGirderKey& girderKey, 
-                                                      std::shared_ptr<IBridge> pBridge, std::shared_ptr<IBearingDesign> pBearing)
+                                                      std::shared_ptr<IBridge> pBridge, std::shared_ptr<IPointOfInterest> pPoi, std::shared_ptr<IBearingDesign> pBearing)
 {
    ReactionLocationContainer container;
 
    PierIndexType nPiers = pBridge->GetPierCount();
+   SpanIndexType nSpans = pBridge->GetSpanCount();
 
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
@@ -87,20 +90,31 @@ ReactionLocationContainer CmbLsBearingDesignReactionAdapter::GetBearingReactionL
       for (const auto& pierIdx : vPiers)
       {
          PierReactionFaceType face;
+         PoiAttributeType poi_attributes = POI_SPAN;
          if ( pierIdx == startPierIdx )
          {
             face = rftAhead;
+            poi_attributes |= POI_0L;
          }
          else if ( pierIdx == endPierIdx )
          {
             face = rftBack;
+            poi_attributes |= POI_10L;
          }
          else
          {
             face = rftMid;
+            poi_attributes |= POI_0L;
          }
 
-         ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey);
+         PoiList poi_list;
+         SpanIndexType spanIdx = min(pierIdx, nSpans - 1);
+         CSpanKey spanKey(spanIdx, thisGirderKey.girderIndex);
+         pPoi->GetPointsOfInterest(spanKey, poi_attributes, &poi_list);
+         ASSERT(poi_list.size() == 1);
+         pgsPointOfInterest poi = poi_list[0];
+
+         ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey, poi);
          container.push_back( location );
       }
    }
@@ -108,7 +122,7 @@ ReactionLocationContainer CmbLsBearingDesignReactionAdapter::GetBearingReactionL
    return container;
 }
 
-ReactionLocationContainer GetPierReactionLocations(const CGirderKey& girderKey, std::shared_ptr<IBridge> pBridge)
+ReactionLocationContainer GetPierReactionLocations(const CGirderKey& girderKey, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IPointOfInterest> pPoi)
 {
    ReactionLocationContainer container;
 
@@ -137,8 +151,16 @@ ReactionLocationContainer GetPierReactionLocations(const CGirderKey& girderKey, 
       ATLASSERT(vGirderKeys.size() == 1);
       const auto& thisGirderKey = vGirderKeys.front();
 
+      SpanIndexType spanIdx = min(pierIdx, nPiers - 2);
+      CSpanKey spanKey(spanIdx, thisGirderKey.girderIndex);
+      PoiAttributeType poi_attribute = POI_SPAN | (pierIdx == nPiers-1 ? POI_10L : POI_0L);
+      PoiList poi_list;
+      pPoi->GetPointsOfInterest(spanKey, poi_attribute, &poi_list);
+      ASSERT(poi_list.size() == 1);
+      pgsPointOfInterest poi = poi_list[0];
+
       PierReactionFaceType face = (pierIdx == 0 ? rftAhead : (pierIdx == nPiers - 1 ? rftBack : rftMid));
-      ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey);
+      ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey, poi);
       container.push_back( location );
    }
 
@@ -192,11 +214,11 @@ ProductForcesReactionAdapter::~ProductForcesReactionAdapter()
    m_Locations.clear();
 }
 
-ReactionLocationIter ProductForcesReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge)
+ReactionLocationIter ProductForcesReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge,std::shared_ptr<IPointOfInterest> poi)
 {
    if (m_Locations.empty())
    {
-      m_Locations = GetPierReactionLocations(m_GirderKey, pBridge);
+      m_Locations = GetPierReactionLocations(m_GirderKey, pBridge, poi);
    }
 
    return ReactionLocationIter(m_Locations);
@@ -238,9 +260,9 @@ BearingDesignProductReactionAdapter::~BearingDesignProductReactionAdapter()
    m_Locations.clear();
 }
 
-ReactionLocationIter BearingDesignProductReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge)
+ReactionLocationIter BearingDesignProductReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IPointOfInterest> pPoi)
 {
-   m_Locations = CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(m_IntervalIdx, m_GirderKey, pBridge, m_pBearingDesign.lock());
+   m_Locations = CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(m_IntervalIdx, m_GirderKey, pBridge, pPoi, m_pBearingDesign.lock());
 
    return ReactionLocationIter(m_Locations);
 }
@@ -276,11 +298,11 @@ CombinedLsForcesReactionAdapter::~CombinedLsForcesReactionAdapter()
    m_Locations.clear();
 }
 
-ReactionLocationIter CombinedLsForcesReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge)
+ReactionLocationIter CombinedLsForcesReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IPointOfInterest> pPoi)
 {
    if (m_Locations.empty())
    {
-      m_Locations = GetPierReactionLocations(m_GirderKey, pBridge);
+      m_Locations = GetPierReactionLocations(m_GirderKey, pBridge, pPoi);
    }
 
    return ReactionLocationIter(m_Locations);
@@ -316,9 +338,9 @@ CmbLsBearingDesignReactionAdapter::~CmbLsBearingDesignReactionAdapter()
    m_Locations.clear();
 }
 
-ReactionLocationIter CmbLsBearingDesignReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge)
+ReactionLocationIter CmbLsBearingDesignReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IPointOfInterest> pPoi)
 {
-   m_Locations = GetBearingReactionLocations(m_IntervalIdx, m_GirderKey, pBridge, m_pBearingDesign.lock());
+   m_Locations = GetBearingReactionLocations(m_IntervalIdx, m_GirderKey, pBridge, pPoi, m_pBearingDesign.lock());
 
    return ReactionLocationIter(m_Locations);
 }

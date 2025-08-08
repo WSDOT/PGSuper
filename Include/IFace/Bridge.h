@@ -1307,6 +1307,9 @@ public:
    // these parameters are invalid
    // Strands must be completely within the region for the "most be bonded" requirement to apply
    virtual std::vector<CComPtr<IRect2d>> GetWebWidthProjectionsForDebonding(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType,Float64* pFraDebonded,Float64* pBottomFlangeToWebWidthRatio) const = 0;
+   virtual std::vector<CComPtr<IRect2d>> GetWebWidthProjectionsForDebonding(const pgsPointOfInterest& poi, bool bAlwaysReturnWebRegions, Float64* pFraDebonded, Float64* pBottomFlangeToWebWidthRatio) const = 0;
+
+   virtual std::vector<CComPtr<IRect2d>> GetWebWidthProjections(const pgsPointOfInterest& poi) const = 0;
 
    // Functions to compute harped strand offsets based on available measurement types
    // Absolute offset is distance that raw strand grid locations are to be moved.

@@ -57,6 +57,7 @@ void PGSEXTFUNC ListDebondingFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker
 void PGSEXTFUNC ListMinimumDeckReinforcementFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact);
 void PGSEXTFUNC ListSplittingZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact);
 void PGSEXTFUNC ListConfinementZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact);
+void PGSEXTFUNC ListHorizontalTensionTieFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact);
 void PGSEXTFUNC ListVariousFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,bool referToDetails);
 
 #endif // INCLUDED_PGSEXT_GIRDERARTIFACTTOOL_H_

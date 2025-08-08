@@ -37,6 +37,7 @@
 #include <IFace\Constructability.h>
 #include <IFace\TransverseReinforcementSpec.h>
 #include <IFace\SplittingChecks.h>
+#include <IFace\HorizontalTensionTieChecks.h>
 #include <IFace\PrecastIGirderDetailsSpec.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandling.h>
@@ -46,8 +47,11 @@
 
 #include <IFace\DocumentType.h>
 
+#include <EAF/AutoProgress.h>
+
 #include "Designer2.h"
 #include "PsForceEng.h"
+#include "HorizTieForceEng.h"
 #include "GirderHandlingChecker.h"
 #include "GirderLiftingChecker.h"
 #include "PrincipalWebStressEngineer.h"
@@ -943,6 +947,9 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey) const
 
    pProgress->UpdateMessage(_T("Checking minimum deck reinforcement for tensile stress"));
    CheckMinimumDeckReinforcement(girderKey, pGdrArtifact.get());
+
+   pProgress->UpdateMessage(_T("Checking horizontal transverse tension tie reinforcement"));
+   CheckHorizontalTensionTie(girderKey, pGdrArtifact.get());
 
    // add the artifact to the cache
    m_CheckArtifacts.insert( std::make_pair(girderKey,pGdrArtifact) );
@@ -4858,6 +4865,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
    // Splitting zone check
    pStirrupArtifact->SetSplittingCheckArtifact(CheckSplittingZone(segmentKey,pConfig));
 
+
    // poi-based shear check
    GET_IFACE2(GetBroker(),ILimitStateForces, pLimitStateForces);
    GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
@@ -6246,6 +6254,12 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
    // NOTE: Restriction I, check for debonding furthest from vertical centerline, is not evaluated
    // NOTE: Restriction J and K, check uniformity of debond spacing, is not evaluated
    // NOTE: Restriction J, check debonding from vertical centerline outward (from notation in Fig C5.9.4.3.3-2), is not evaluated
+}
+
+void pgsDesigner2::CheckHorizontalTensionTie(const CGirderKey& girderKey, pgsGirderArtifact* pGdrArtifact) const
+{
+   GET_IFACE2(GetBroker(), IHorizontalTensionTieChecks, pChecks);
+   pChecks->CheckHorizontalTensionTieForce(girderKey, pGdrArtifact);
 }
 
 void pgsDesigner2::CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentKey, pgsPrincipalTensionStressArtifact* pArtifact) const

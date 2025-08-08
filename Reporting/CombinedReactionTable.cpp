@@ -136,6 +136,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::B
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -162,7 +163,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::B
    }
 
    // Use iterator to walk locations
-   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge,pPoi);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -328,6 +329,7 @@ void CCombinedReactionTable::BuildLiveLoad(std::shared_ptr<WBFL::EAF::Broker> pB
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
 
@@ -337,7 +339,7 @@ void CCombinedReactionTable::BuildLiveLoad(std::shared_ptr<WBFL::EAF::Broker> pB
    std::unique_ptr<ICmbLsReactionAdapter> pForces =  std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, intervalIdx, girderKey);
 
    // Use iterator to walk locations
-   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
 
    // Use first location to determine if ped load is applied
    iter.First();
@@ -683,6 +685,7 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(std::shared_ptr<WBFL::E
    ReactionUnitValueTool reaction(BearingReactionsTable, reactu);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
@@ -712,7 +715,7 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(std::shared_ptr<WBFL::E
 
    Float64 min, max;
    // use adapter's static function to get locations
-   ReactionLocationContainer Locations = CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(intervalIdx, girderKey, pBridge, pBearingDesign);
+   ReactionLocationContainer Locations = CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(intervalIdx, girderKey, pBridge, pPoi, pBearingDesign);
    ReactionLocationIter iter(Locations);
    for (iter.First(); !iter.IsDone(); iter.Next())
    {

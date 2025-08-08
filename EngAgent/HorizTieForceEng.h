@@ -22,18 +22,25 @@
 
 #pragma once
 
-#include <PgsExt\ConstructabilityArtifact.h>
-#include <PgsExt\GirderDesignArtifact.h>
-#include <PgsExt\SegmentDesignArtifact.h>
-#include <PgsExt\FlexuralCapacityArtifact.h>
-#include <PgsExt\FlexuralStressArtifact.h>
-#include <PgsExt\GirderArtifact.h>
-#include <PgsExt\HoldDownForceArtifact.h>
-#include <PgsExt\PoiArtifactKey.h>
-#include <PgsExt\PoiMgr.h>
-#include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\StrandSlopeArtifact.h>
-#include <PgsExt\StrandStressArtifact.h>
-#include <PgsExt\PrincipalTensionStressArtifact.h>
-#include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\ReinforcementFatigueArtifact.h>
+#include <EAF\Broker.h>
+#include <PgsExt\HorizontalTieForceArtifact.h>
+
+class pgsGirderArtifact;
+
+class pgsHorizTieForceEng
+{
+public:
+   pgsHorizTieForceEng(std::weak_ptr<WBFL::EAF::Broker> broker,StatusGroupIDType statusGroupID);
+   ~pgsHorizTieForceEng() = default;
+
+   void Check(const CGirderKey& girderKey, pgsGirderArtifact* pGdrArtifact) const;
+
+   void ReportHorizontalTensionTieForceChecks(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const;
+   void ReportHorizontalTensionTieForceCheckDetails(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const;
+
+private:
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
+   StatusGroupIDType m_StatusGroupID;
+};
