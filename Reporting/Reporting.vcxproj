@@ -188,6 +188,7 @@
     <ClCompile Include="BridgeDescDetailsChapterBuilder.cpp" />
     <ClCompile Include="BrokerReportSpecification.cpp" />
     <ClCompile Include="BrokerReportSpecificationBuilder.cpp" />
+    <ClCompile Include="HorizontalTensionTieCheckDetailsChapterBuilder.cpp" />
     <ClCompile Include="MinDeckReinforcementCheck.cpp" />
     <ClCompile Include="ReinforcementFatigueCheck.cpp" />
     <ClCompile Include="ReportNotes.cpp" />
@@ -457,6 +458,7 @@
     <ClInclude Include="..\Include\Reporting\HaulingCheckDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\HoldDownForceCheck.h" />
     <ClInclude Include="..\Include\Reporting\HorizontalInterfaceShearCapacityDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\HorizontalTensionTieCheckDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\InitialStrainAnalysisChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\InitialStrainAnalysisReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\InitialStrainAnalysisReportSpecificationBuilder.h" />

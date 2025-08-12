@@ -45,7 +45,7 @@ typedef Uint64 PoiAttributeType;
 // Reference
 #define POI_RELEASED_SEGMENT       0x80000000 // segment at time of release
 #define POI_LIFT_SEGMENT           0x40000000 // segment is being lifted
-#define POI_STORAGE_SEGMENT        0x20000000 // segment during storage (not necessiarly stored at ends)
+#define POI_STORAGE_SEGMENT        0x20000000 // segment during storage (not necessarily stored at ends)
 #define POI_HAUL_SEGMENT           0x10000000 // segment is being hauled
 #define POI_ERECTED_SEGMENT        0x08000000 // erected segment before assembly into a girder
 #define POI_SPAN                   0x04000000 // location in fully assembled girder

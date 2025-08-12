@@ -53,6 +53,8 @@ rptRcTable* CProductReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBro
    bool bFutureOverlay = pBridge->IsFutureOverlay();
    PierIndexType nPiers = pBridge->GetPierCount();
 
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+
    bool bIncludeLLDF = false; // this table never distributes live load
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -99,7 +101,7 @@ rptRcTable* CProductReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBro
       pForces =  std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, diaphragmIntervalIdx, girderKey);
    }
 
-   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
 
    for (iter.First(); !iter.IsDone(); iter.Next())
    {

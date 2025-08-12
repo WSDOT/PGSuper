@@ -22,18 +22,18 @@
 
 #pragma once
 
-#include <PgsExt\ConstructabilityArtifact.h>
-#include <PgsExt\GirderDesignArtifact.h>
-#include <PgsExt\SegmentDesignArtifact.h>
-#include <PgsExt\FlexuralCapacityArtifact.h>
-#include <PgsExt\FlexuralStressArtifact.h>
-#include <PgsExt\GirderArtifact.h>
-#include <PgsExt\HoldDownForceArtifact.h>
-#include <PgsExt\PoiArtifactKey.h>
-#include <PgsExt\PoiMgr.h>
-#include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\StrandSlopeArtifact.h>
-#include <PgsExt\StrandStressArtifact.h>
-#include <PgsExt\PrincipalTensionStressArtifact.h>
-#include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\ReinforcementFatigueArtifact.h>
+class pgsHorizontalTieForceArtifact;
+class pgsGirderArtifact;
+
+// {7A373E6A-2EA1-4343-A240-09A93F38F420}
+DEFINE_GUID(IID_IHorizontalTensionTieChecks,
+   0x7a373e6a, 0x2ea1, 0x4343, 0xa2, 0x40, 0x9, 0xa9, 0x3f, 0x38, 0xf4, 0x20);
+
+class IHorizontalTensionTieChecks
+{
+public:
+   virtual void CheckHorizontalTensionTieForce(const CGirderKey& girderKey, pgsGirderArtifact* pGdrArtifact) const = 0;
+   virtual void ReportHorizontalTensionTieForceChecks(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const = 0;
+   virtual void ReportHorizontalTensionTieForceCheckDetails(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const = 0;
+};
+

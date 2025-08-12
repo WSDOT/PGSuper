@@ -583,6 +583,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="..\Include\Hints.h" />
     <ClInclude Include="..\Include\PGSuperUIUtil.h" />
     <ClInclude Include="..\Include\Plugins\PGSuperIEPlugin.h" />
+    <ClInclude Include="..\Include\ReactionLocation.h" />
     <ClInclude Include="AbutmentConnectionsPage.h" />
     <ClInclude Include="AlignmentDescriptionDlg.h" />
     <ClInclude Include="AlignmentDisplayObjectEvents.h" />

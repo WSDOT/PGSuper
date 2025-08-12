@@ -60,6 +60,7 @@
 #include <IFace/PrincipalWebStress.h>
 #include <IFace/ResistanceFactors.h>
 #include <IFace/SplittingChecks.h>
+#include <IFace/HorizontalTensionTieChecks.h>
 #include <EAF/EAFProgress.h>
 #include <EAF/EAFStatusCenter.h>
 #include <EAF/EAFUIIntegration.h>

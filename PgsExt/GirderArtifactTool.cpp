@@ -499,6 +499,21 @@ void ListConfinementZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,Fail
    } // next segment
 }
 
+void ListHorizontalTensionTieFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact)
+{
+   auto nArtifacts = pGirderArtifact->GetHorizontalTensionTieArtifactCount();
+   for(IndexType idx = 0; idx < nArtifacts; idx++)
+   {
+      const auto* artifact = pGirderArtifact->GetHorizontalTensionTieArtifact(idx);
+      if (!artifact->Passed())
+      {
+         std::_tostringstream os;
+         os << _T("Horizontal transverse tension tie reinforcement check failed for ") << artifact->GetReactionLocation().PierLabel << _T(", ") << GetLimitStateString(artifact->GetLimitState()) << _T(" Limit State");
+         rFailures.emplace_back(os.str());
+      }
+   }
+}
+
 void ListVariousFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,bool referToDetails)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);

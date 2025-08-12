@@ -197,6 +197,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, std::s
       ListDebondingFailures(pBroker,failures,pGirderArtifact);
       ListSplittingZoneFailures(pBroker,failures,pGirderArtifact);
       ListConfinementZoneFailures(pBroker,failures,pGirderArtifact);
+      ListHorizontalTensionTieFailures(pBroker, failures, pGirderArtifact);
       ListMinimumDeckReinforcementFailures(pBroker, failures, pGirderArtifact);
       ListVariousFailures(pBroker,failures,pGirderArtifact,m_ReferToDetailsReport);
 

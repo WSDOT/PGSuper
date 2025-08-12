@@ -644,7 +644,9 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(std::shared_ptr<WBF
     GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
     pForces = std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
-    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+
+    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge,pPoi);
 
     // Use iterator to walk locations
     for (iter.First(); !iter.IsDone(); iter.Next())

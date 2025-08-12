@@ -27,6 +27,7 @@
 #include <vector>
 #include <PGSuperTypes.h>
 #include "Details.h"
+#include "ReactionLocation.h"
 #include <pgsExt\CamberMultipliers.h>
 
 // PROJECT INCLUDES
@@ -159,29 +160,6 @@ typedef struct EquivPretensionLoad
    Float64 My; // magnitude of equivalent moment about the y-axis (lateral bending)
    Float64 wy; // magnitude of equivalent uniform vertical load from Xs to Xe (vertical bending)
 } EquivPretensionLoad;
-
-
-// Simple span bearing reactions can occur at back/ahead. Continuous and pier reactions are at mid
-typedef enum PierReactionFaceType 
-{
-   rftBack,
-   rftMid,
-   rftAhead
-} PierReactionFaceType;
-
-struct ReactionLocation
-{
-   PierIndexType        PierIdx;   // Index of the pier where reactions are reported
-   PierReactionFaceType Face;      // Face of pier that reaction applies to
-   CGirderKey           GirderKey; // GirderKey for the girder that provides the reaction
-   std::_tstring        PierLabel; // Label (Abutment 1, Pier 2, etc)
-
-   bool operator==(const ReactionLocation& r) const
-   {
-       return ::IsEqual(PierIdx, r.PierIdx) && Face == r.Face && GirderKey == r.GirderKey ? true : false;
-   };
-
-};
 
 typedef struct REACTION
 {

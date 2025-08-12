@@ -198,6 +198,7 @@
     <ClCompile Include="EngAgentImp.cpp" />
     <ClCompile Include="GirderHandlingChecker.cpp" />
     <ClCompile Include="GirderLiftingChecker.cpp" />
+    <ClCompile Include="HorizTieForceEng.cpp" />
     <ClCompile Include="KdotGirderHaulingChecker.cpp" />
     <ClCompile Include="LoadRater.cpp" />
     <ClCompile Include="MomentCapacityEngineer.cpp" />
@@ -228,6 +229,7 @@
     <ClInclude Include="..\Include\IFace\Constructability.h" />
     <ClInclude Include="..\Include\IFace\CrackedSection.h" />
     <ClInclude Include="..\Include\IFace\DistributionFactors.h" />
+    <ClInclude Include="..\Include\IFace\HorizontalTensionTieChecks.h" />
     <ClInclude Include="..\Include\IFace\MomentCapacity.h" />
     <ClInclude Include="..\Include\IFace\PrestressForce.h" />
     <ClInclude Include="..\Include\IFace\PrincipalWebStress.h" />
@@ -242,6 +244,7 @@
     <ClInclude Include="EngAgentImp.h" />
     <ClInclude Include="GirderHandlingChecker.h" />
     <ClInclude Include="GirderLiftingChecker.h" />
+    <ClInclude Include="HorizTieForceEng.h" />
     <ClInclude Include="KdotGirderHaulingChecker.h" />
     <ClInclude Include="LoadRater.h" />
     <ClInclude Include="MomentCapacityEngineer.h" />

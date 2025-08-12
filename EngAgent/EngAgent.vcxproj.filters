@@ -67,6 +67,9 @@
     <ClCompile Include="BearingDesignEngineer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HorizTieForceEng.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\IFace\MomentCapacity.h">
@@ -167,6 +170,12 @@
     </ClInclude>
     <ClInclude Include="BearingDesignEngineer.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HorizTieForceEng.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\HorizontalTensionTieChecks.h">
+      <Filter>IFace</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

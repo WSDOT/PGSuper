@@ -33,6 +33,7 @@
 #include "DevelopmentLengthEngineer.h"
 #include "BearingDesignEngineer.h"
 #include "PrincipalWebStressEngineer.h"
+#include "HorizTieForceEng.h"
 
 #include <IFace\MomentCapacity.h>
 #include <IFace\ShearCapacity.h>
@@ -41,6 +42,7 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\CrackedSection.h>
 #include <IFace\PrincipalWebStress.h>
+#include <IFace\HorizontalTensionTieChecks.h>
 
 
 #include <PgsExt\PoiKey.h>
@@ -133,7 +135,8 @@ class CEngAgentImp : public WBFL::EAF::Agent,
    public ILoadModifiersEventSink,
    public IEnvironmentEventSink,
    public ILossParametersEventSink,
-   public ICrackedSection
+   public ICrackedSection,
+   public IHorizontalTensionTieChecks
 {
 public:
    CEngAgentImp();
@@ -389,6 +392,12 @@ public:
    const CRACKEDSECTIONDETAILS* GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const override;
    std::vector<const CRACKEDSECTIONDETAILS*> GetCrackedSectionDetails(const PoiList& vPoi,bool bPositiveMoment) const override;
 
+// IHorizontalTensionTieChecks
+public:
+   void CheckHorizontalTensionTieForce(const CGirderKey& girderKey, pgsGirderArtifact* pGdrArtifact) const override;
+   void ReportHorizontalTensionTieForceChecks(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const override;
+   void ReportHorizontalTensionTieForceCheckDetails(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const override;
+
 // IBridgeDescriptionEventSink
 public:
    HRESULT OnBridgeChanged(CBridgeChangedHint* pHint) override;
@@ -461,6 +470,7 @@ private:
    std::unique_ptr<pgsLoadRater>  m_LoadRater;
    std::unique_ptr<pgsShearCapacityEngineer> m_ShearCapEngineer;
    std::unique_ptr<pgsBearingDesignEngineer> m_BearingEngineer;
+   std::unique_ptr<pgsHorizTieForceEng> m_HorizTieForceEngineer;
    
    mutable bool m_bAreDistFactorEngineersValidated;
    mutable std::unique_ptr<PGS::Beams::DistFactorEngineer> m_pDistFactorEngineer; // assigned a polymorphic object during validation (must be mutable for delayed assignment)

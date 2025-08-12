@@ -3,7 +3,7 @@
  27.83    5   6.00                     1     1    WF66G    *     38  0.6  270  28.65  14.44  11.25  11.25                                              10  62.0  4.0  4.900  5.900   3.795    -3.976     9402   0.553  0.671   4.424 -1.557 -0.213 -0.302 -2.071 147.47  267.81    3.00    5.50    5.50    1.85    2.19    2.40    2.91    1.50 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -11,7 +11,7 @@ The Specification Check was Successful
  27.83    5   6.00                     1     2    WF66G    *     38  0.6  270  28.65  14.44  11.25  11.25                                              10  62.0  4.0  4.900  5.900   3.806    -3.986     9421   0.553  0.671   4.349 -1.572 -0.213 -0.302 -2.087 147.47  267.09    3.00    5.50    5.50    1.85    2.18    2.39    2.90    1.49 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -19,6 +19,6 @@ The Specification Check was Successful
  27.83    5   6.00                     1     3    WF66G    *     38  0.6  270  28.65  14.44  11.25  11.25                                              10  62.0  4.0  4.900  5.900   3.806    -3.986     9421   0.553  0.671   4.349 -1.572 -0.213 -0.302 -2.087 147.47  267.09    3.00    5.50    5.50    1.85    2.18    2.39    2.90    1.49 
 
 
-The Specification Check was Successful
+The Specification Check was Not Successful
 
 

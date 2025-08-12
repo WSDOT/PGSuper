@@ -62,6 +62,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\SplittingChecks.h>
+#include <IFace\HorizontalTensionTieChecks.h>
 
 #include <PgsExt\GirderArtifact.h>
 
@@ -77,6 +78,11 @@ static void write_confinement_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                     const pgsGirderArtifact* pGirderArtifact,
                                     rptChapter* pChapter);
+
+void write_horizontal_transverse_tension_tie_reinforcement_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+   const pgsGirderArtifact* pGirderArtifact,
+   rptChapter* pChapter);
 
 
 CSpecCheckChapterBuilder::CSpecCheckChapterBuilder(bool bSelect) :
@@ -393,6 +399,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
       // confinement check
       write_confinement_check(pBroker,pDisplayUnits,pGirderArtifact,pChapter);
    }
+   
+   write_horizontal_transverse_tension_tie_reinforcement_check(pBroker, pDisplayUnits, pGirderArtifact, pChapter);
 
    // Optional live load deflection
    COptionalDeflectionCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
@@ -565,8 +573,9 @@ void write_confinement_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,    pDisplayUnits->GetComponentDimUnit(), true );
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   pPara->SetName(_T("Confinement Stirrup Check"));
    *pChapter << pPara;
-   (*pPara) << _T("Confinement Stirrup Check [") << WBFL::LRFD::LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) << _T("]") << rptNewLine;
+   (*pPara) << pPara->GetName() << _T(" [") << WBFL::LRFD::LrfdCw8th(_T("5.10.10.2"), _T("5.9.4.4.2")) << _T("]") << rptNewLine;
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -626,4 +635,14 @@ void write_confinement_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
          (*pPara) << RPT_FAIL;
       }
    } // next segment
+}
+
+
+void write_horizontal_transverse_tension_tie_reinforcement_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+   const pgsGirderArtifact* pGirderArtifact,
+   rptChapter* pChapter)
+{
+   GET_IFACE2(pBroker, IHorizontalTensionTieChecks, pChecks);
+   pChecks->ReportHorizontalTensionTieForceChecks(pGirderArtifact, pChapter);
 }

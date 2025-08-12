@@ -616,6 +616,7 @@
     <ClCompile Include="MinDeckReinforcementCheck.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HorizontalTensionTieCheckDetailsChapterBuilder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h">
@@ -1241,7 +1242,11 @@
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\MinDeckReinforcementCheck.h">
       <Filter>Header Files</Filter>
-    </ClInclude>  </ItemGroup>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\HorizontalTensionTieCheckDetailsChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
   <ItemGroup>
     <None Include="Reporting.def" />
     <None Include="res\Reporting.rc2">

@@ -101,7 +101,7 @@ rptRcTable* CUserRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker
 
    // Fill up the table
 
-   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPOI);
    iter.First();
    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 

@@ -36,25 +36,6 @@ m_SegmentKey(segmentKey)
    m_pHaulingAnalysisArtifact = nullptr;
 }
 
-pgsSegmentArtifact::pgsSegmentArtifact(const pgsSegmentArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsSegmentArtifact::~pgsSegmentArtifact()
-{
-}
-
-pgsSegmentArtifact& pgsSegmentArtifact::operator= (const pgsSegmentArtifact& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
 bool pgsSegmentArtifact::operator<(const pgsSegmentArtifact& rOther) const
 {
    return m_SegmentKey < rOther.m_SegmentKey;
@@ -1040,36 +1021,6 @@ const CSegmentKey& pgsSegmentArtifact::GetSegmentKey() const
    return m_SegmentKey;
 }
 
-void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
-{
-   m_SegmentKey = rOther.m_SegmentKey;
-
-   m_StrandStressArtifact            = rOther.m_StrandStressArtifact;
-   m_FlexuralStressArtifacts         = rOther.m_FlexuralStressArtifacts;
-   m_StirrupCheckArtifact            = rOther.m_StirrupCheckArtifact;
-   m_PrecastIGirderDetailingArtifact = rOther.m_PrecastIGirderDetailingArtifact;
-   m_StrandSlopeArtifact             = rOther.m_StrandSlopeArtifact;
-   m_HoldDownForceArtifact           = rOther.m_HoldDownForceArtifact;
-   m_PlantHandlingWeightArtifact = rOther.m_PlantHandlingWeightArtifact;
-   m_StabilityArtifact               = rOther.m_StabilityArtifact;
-
-   m_pLiftingCheckArtifact    = rOther.m_pLiftingCheckArtifact;
-   m_pHaulingAnalysisArtifact = rOther.m_pHaulingAnalysisArtifact;
-
-   m_DebondArtifact = rOther.m_DebondArtifact;
-
-   m_DeckReinforcementCheckArtifact = rOther.m_DeckReinforcementCheckArtifact;
-
-   m_TendonStressArtifacts = rOther.m_TendonStressArtifacts;
-   m_DuctSizeArtifacts = rOther.m_DuctSizeArtifacts;
-
-   m_PrincipalTensionStressArtifact = rOther.m_PrincipalTensionStressArtifact;
-}
-
-void pgsSegmentArtifact::MakeAssignment(const pgsSegmentArtifact& rOther)
-{
-   MakeCopy( rOther );
-}
 
 std::vector<pgsFlexuralStressArtifact>& pgsSegmentArtifact::GetFlexuralStressArtifacts(const StressCheckTask& task) const
 {

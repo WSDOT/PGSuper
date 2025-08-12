@@ -18673,11 +18673,16 @@ std::vector<CComPtr<IRect2d>> CBridgeAgentImp::GetWebWidthProjectionsForDebondin
    PoiList vPoi;
    GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT | (endType == pgsTypes::metStart ? POI_0L : POI_10L), &vPoi);
    ATLASSERT(vPoi.size() == 1);
+   const pgsPointOfInterest& poi(vPoi.front());
 
+   return GetWebWidthProjectionsForDebonding(poi, false, pFraDebonded, pBottomFlangeToWebWidthRatio);
+}
+
+std::vector<CComPtr<IRect2d>> CBridgeAgentImp::GetWebWidthProjectionsForDebonding(const pgsPointOfInterest& poi, bool bAlwaysReturnWebRegions, Float64* pFraDebonded, Float64* pBottomFlangeToWebWidthRatio) const
+{
    *pFraDebonded = -1; // -1 indicates invalid value
    *pBottomFlangeToWebWidthRatio = -1; // -1 indicates invalid value
 
-   const pgsPointOfInterest& poi(vPoi.front());
    CComPtr<IGirderSection> girder_section;
    HRESULT hr = GetGirderSection(poi, &girder_section);
    ATLASSERT(SUCCEEDED(hr));
@@ -18686,6 +18691,7 @@ std::vector<CComPtr<IRect2d>> CBridgeAgentImp::GetWebWidthProjectionsForDebondin
       return std::vector<CComPtr<IRect2d>>();
    }
 
+   const auto& segmentKey = poi.GetSegmentKey();
    IndexType nWebs = GetWebCount(segmentKey);
    IndexType nFlanges = GetBottomFlangeCount(segmentKey);
    if (nWebs == 1 && nFlanges == 1)
@@ -18708,7 +18714,13 @@ std::vector<CComPtr<IRect2d>> CBridgeAgentImp::GetWebWidthProjectionsForDebondin
          // 9th Edition, LRFD 5.9.4.3.3, Item I
          // 25% or fewer of the strands are debonded and the bottom flange to web width
          // ratio does not exceed 4... strands may be debonded in the web width projection
-         return std::vector<CComPtr<IRect2d>>();
+         //
+         // Only return the empty vector if bAlwaysReturnWebRegions is false. This will be the case for
+         // debond criteria checks. This same function is used for checking horizontal transverse tension
+         // tie force (beginning with LRFD 10th edition). In that case, bAlwaysReturnWebRegions will be
+         // true and we don't want return here.
+         if (!bAlwaysReturnWebRegions)
+            return std::vector<CComPtr<IRect2d>>();
       }
    }
 
@@ -18731,6 +18743,13 @@ std::vector<CComPtr<IRect2d>> CBridgeAgentImp::GetWebWidthProjectionsForDebondin
    }
 
    return vRegions;
+}
+
+std::vector<CComPtr<IRect2d>> CBridgeAgentImp::GetWebWidthProjections(const pgsPointOfInterest& poi) const
+{
+   Float64 fra;
+   Float64 ratio;
+   return GetWebWidthProjectionsForDebonding(poi, true, &fra, &ratio);
 }
 
 //-----------------------------------------------------------------------------
