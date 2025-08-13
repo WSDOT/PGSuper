@@ -16539,6 +16539,11 @@ Float64 CBridgeAgentImp::GetApsBottomHalf(const pgsPointOfInterest& poi,Developm
    return GetApsInHalfDepth(poi, devAdjust, true, pConfig );
 }
 
+Float64 CBridgeAgentImp::GetXferApsBottomHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
+{
+    return GetAverageTransferApsHalfDepth(poi, true, pConfig);
+}
+
 StrandIndexType CBridgeAgentImp::GetNumStrandsBottomHalf(const pgsPointOfInterest & poi, pgsTypes::StrandType strandType, const GDRCONFIG * pConfig) const
 {
    VALIDATE( GIRDER );
@@ -16644,6 +16649,11 @@ StrandIndexType CBridgeAgentImp::GetNumStrandsBottomHalf(const pgsPointOfInteres
 Float64 CBridgeAgentImp::GetApsTopHalf(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,const GDRCONFIG* pConfig) const
 {
    return GetApsInHalfDepth(poi, devAdjust, false, pConfig );
+}
+
+Float64 CBridgeAgentImp::GetXferApsTopHalf(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
+{
+    return GetAverageTransferApsHalfDepth(poi, false, pConfig);
 }
 
 ConfigStrandFillVector CBridgeAgentImp::ComputeStrandFill(const CSegmentKey& segmentKey,pgsTypes::StrandType type,StrandIndexType Ns) const
@@ -33785,181 +33795,336 @@ Float64 CBridgeAgentImp::GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,
    return As;
 }
 
-Float64 CBridgeAgentImp::GetApsInHalfDepth(const pgsPointOfInterest& poi,DevelopmentAdjustmentType devAdjust,bool bBottomHalf,const GDRCONFIG* pConfig) const
+Float64 CBridgeAgentImp::GetAverageTransferApsHalfDepth(const pgsPointOfInterest& poi, bool bBottomHalf,const GDRCONFIG* pConfig) const
 {
-   VALIDATE( GIRDER );
+    VALIDATE(GIRDER);
 
-   Float64 Aps = 0.0;
-   if ( !IsOnSegment(poi) )
-   {
-      return Aps;
-   }
+    Float64 Aps = 0.0;
+    if (!IsOnSegment(poi))
+    {
+        return Aps;
+    }
+
+    IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(poi.GetSegmentKey());
+    Float64 Hg = GetHg(releaseIntervalIdx, poi);
+
+    Float64 half_depth_elevation = GetHalfElevation(poi); // y=0 at top of girder... measured in Girder Section Coordinates
+    half_depth_elevation += Hg; // now measured up from bottom of girder
+
+    const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+    CComPtr<IPrecastGirder> girder;
+    GetGirder(segmentKey, &girder);
+
+    CComPtr<IStrandModel> strandModel;
+    girder->get_StrandModel(&strandModel);
+    CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
+
+    Float64 dist_from_start = poi.GetDistFromStart();
 
 
-   IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(poi.GetSegmentKey());
-   Float64 Hg = GetHg(releaseIntervalIdx,poi);
+    ////////////////////////////////
+    // Straight strands
+    ////////////////////////////////
+    const auto* pStrand = GetStrandMaterial(segmentKey, pgsTypes::Straight);
+    Float64 aps = pStrand->GetNominalArea();
 
-   Float64 half_depth_elevation = GetHalfElevation(poi); // y=0 at top of girder... measured in Girder Section Coordinates
-   half_depth_elevation += Hg; // now measured up from bottom of girder
+    // Get straight strand locations
+    CComPtr<IPoint2dCollection> strand_points;
+    if (pConfig)
+    {
+        CIndexArrayWrapper strand_fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Straight));
+        strandGridModel->GetStrandPositionsEx(Straight, dist_from_start, &strand_fill, &strand_points);
+    }
+    else
+    {
+        strandModel->GetStrandPositions(Straight, dist_from_start, &strand_points);
+    }
 
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
+    StrandIndexType Ns;
+    strand_points->get_Count(&Ns);
 
-   CComPtr<IPrecastGirder> girder;
-   GetGirder(segmentKey,&girder);
+    StrandIndexType strandIdx;
+    for (strandIdx = 0; strandIdx < Ns; strandIdx++)
+    {
+        CComPtr<IPoint2d> strand_point;
+        strand_points->get_Item(strandIdx, &strand_point);
 
-   CComPtr<IStrandModel> strandModel;
-   girder->get_StrandModel(&strandModel);
-   CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
+        Float64 y;
+        strand_point->get_Y(&y); // measured in Girder Section Coordinates
+        y += Hg; // now measured up from bottom
 
-   Float64 dist_from_start = poi.GetDistFromStart();
-   Float64 segment_length = GetSegmentLength(segmentKey);
+        // include bar if top half and y is greater than centerline or if
+        // bottom half and y is less than centerline
+        bool bIncludeStrand = ((!bBottomHalf && half_depth_elevation < y) || (bBottomHalf && y <= half_depth_elevation)) ? true : false;
 
-   // Only use approximate bond method if poi is in mid-section of beam (within CSS's).
-   Float64 min_dist_from_ends = Min(dist_from_start, segment_length - dist_from_start);
-   bool use_approximate = (devAdjust == dlaApproximate && fabs(half_depth_elevation)*3.0 < min_dist_from_ends) ? true : false; // Factor here is balance between performance and accuracy.
+        if (bIncludeStrand)
+        {
+            Float64 transfer_factor = 0.0;
 
-   ////////////////////////////////
-   // Straight strands
-   ////////////////////////////////
-   const auto* pStrand = GetStrandMaterial(segmentKey,pgsTypes::Straight);
-   Float64 aps = pStrand->GetNominalArea();
+                // Full adjustment for development
 
-   // Get straight strand locations
-   CComPtr<IPoint2dCollection> strand_points;
-   if( pConfig )
-   {
-      CIndexArrayWrapper strand_fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Straight));
-      strandGridModel->GetStrandPositionsEx(Straight,dist_from_start,&strand_fill,&strand_points);
-   }
-   else
-   {
-      strandModel->GetStrandPositions(Straight,dist_from_start,&strand_points);
-   }
+                Float64 bond_start, bond_end;
+                bool bDebonded = IsStrandDebonded(segmentKey, strandIdx, pgsTypes::Straight, pConfig, &bond_start, &bond_end);
 
-   StrandIndexType Ns;
-   strand_points->get_Count(&Ns);
+                
+                if ((bond_start < dist_from_start) && (dist_from_start < bond_end))
+                {
+                    GET_IFACE(IPretensionForce, pPSForce);
+                    transfer_factor = pPSForce->GetTransferLengthAdjustment(poi, pgsTypes::Straight,
+                        pgsTypes::TransferLengthType::Minimum, strandIdx, pConfig);
+                }
+            
 
-   StrandIndexType strandIdx;
-   for(strandIdx = 0; strandIdx < Ns; strandIdx++)
-   {
-      CComPtr<IPoint2d> strand_point;
-      strand_points->get_Item(strandIdx, &strand_point);
+            Aps += transfer_factor * aps;
 
-      Float64 y;
-      strand_point->get_Y(&y); // measured in Girder Section Coordinates
-      y += Hg; // now measured up from bottom
+        }
+    }
 
-      // include bar if top half and y is greater than centerline or if
-      // bottom half and y is less than centerline
-      bool bIncludeStrand = ( (!bBottomHalf && half_depth_elevation < y) || (bBottomHalf && y <= half_depth_elevation) ) ? true : false;
+    ////////////////////////////////
+    // Harped strands
+    ////////////////////////////////
+    pStrand = GetStrandMaterial(segmentKey, pgsTypes::Harped);
+    aps = pStrand->GetNominalArea();
 
-      if ( bIncludeStrand )
-      {
-         Float64 debond_factor;
-         if(devAdjust == dlaNone || use_approximate)
-         {
-            // Use mid-span development length details to approximate debond factor
-            // determine minimum bonded length from poi
-            Float64 bond_start, bond_end;
-            bool bDebonded = IsStrandDebonded(segmentKey,strandIdx,pgsTypes::Straight,pConfig,&bond_start,&bond_end);
+    GET_IFACE(IStrandGeometry, pStrandGeom);
+    StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped, pConfig);
 
-            if (devAdjust == dlaNone)
+    strand_points.Release();
+    if (pConfig)
+    {
+        CIndexArrayWrapper strand_fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Harped));
+        // Use CStrandMoverSwapper to temporarily swap out girder's strand mover and harping offset limits
+        //  for design
+        IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
+        Float64 Hg = GetHg(releaseIntervalIdx, poi);
+
+        GET_IFACE(IBridgeDescription, pIBridgeDesc);
+        CStrandMoverSwapper swapper(segmentKey, Hg, pConfig->PrestressConfig, this, strandGridModel, pIBridgeDesc);
+        strandGridModel->GetStrandPositionsEx(Harped, dist_from_start, &strand_fill, &strand_points);
+    }
+    else
+    {
+        strandModel->GetStrandPositions(Harped, dist_from_start, &strand_points);
+    }
+
+    StrandIndexType nstst; // reality test
+    strand_points->get_Count(&nstst);
+    ATLASSERT(nstst == Nh);
+
+    for (strandIdx = 0; strandIdx < Nh; strandIdx++)
+    {
+        CComPtr<IPoint2d> strand_point;
+        strand_points->get_Item(strandIdx, &strand_point);
+
+        Float64 y;
+        strand_point->get_Y(&y); // measured in Girder Section Coordinates
+        y += Hg; // now measured up from bottom
+
+        // include bar if top half and y is greater than centerline or if
+        // bottom half and y is less than centerline
+        bool bIncludeStrand = ((!bBottomHalf && IsLT(half_depth_elevation, y)) || (bBottomHalf && IsLE(y, half_depth_elevation))) ? true : false;
+
+        if (bIncludeStrand)
+        {
+            Float64 transfer_factor = 0.0;
+
+                
+            GET_IFACE(IPretensionForce, pPSForce);
+            transfer_factor = pPSForce->GetTransferLengthAdjustment(poi, pgsTypes::Harped,
+                pgsTypes::TransferLengthType::Minimum, strandIdx, pConfig);
+            
+
+            Aps += transfer_factor * aps;
+
+        }
+    }
+
+    return Aps;
+}
+
+//////////////////////////
+
+Float64 CBridgeAgentImp::GetApsInHalfDepth(const pgsPointOfInterest& poi, DevelopmentAdjustmentType devAdjust, bool bBottomHalf, const GDRCONFIG* pConfig) const
+{
+    VALIDATE(GIRDER);
+
+    Float64 Aps = 0.0;
+    if (!IsOnSegment(poi))
+    {
+        return Aps;
+    }
+
+    IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(poi.GetSegmentKey());
+    Float64 Hg = GetHg(releaseIntervalIdx, poi);
+
+    Float64 half_depth_elevation = GetHalfElevation(poi); // y=0 at top of girder... measured in Girder Section Coordinates
+    half_depth_elevation += Hg; // now measured up from bottom of girder
+
+    const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+    CComPtr<IPrecastGirder> girder;
+    GetGirder(segmentKey, &girder);
+
+    CComPtr<IStrandModel> strandModel;
+    girder->get_StrandModel(&strandModel);
+    CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
+
+    Float64 dist_from_start = poi.GetDistFromStart();
+    Float64 segment_length = GetSegmentLength(segmentKey);
+
+    // Only use approximate bond method if poi is in mid-section of beam (within CSS's).
+    Float64 min_dist_from_ends = Min(dist_from_start, segment_length - dist_from_start);
+    bool use_approximate = (devAdjust == dlaApproximate && fabs(half_depth_elevation) * 3.0 < min_dist_from_ends) ? true : false; // Factor here is balance between performance and accuracy.
+
+    ////////////////////////////////
+    // Straight strands
+    ////////////////////////////////
+    const auto* pStrand = GetStrandMaterial(segmentKey, pgsTypes::Straight);
+    Float64 aps = pStrand->GetNominalArea();
+
+    // Get straight strand locations
+    CComPtr<IPoint2dCollection> strand_points;
+    if (pConfig)
+    {
+        CIndexArrayWrapper strand_fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Straight));
+        strandGridModel->GetStrandPositionsEx(Straight, dist_from_start, &strand_fill, &strand_points);
+    }
+    else
+    {
+        strandModel->GetStrandPositions(Straight, dist_from_start, &strand_points);
+    }
+
+    StrandIndexType Ns;
+    strand_points->get_Count(&Ns);
+
+    StrandIndexType strandIdx;
+    for (strandIdx = 0; strandIdx < Ns; strandIdx++)
+    {
+        CComPtr<IPoint2d> strand_point;
+        strand_points->get_Item(strandIdx, &strand_point);
+
+        Float64 y;
+        strand_point->get_Y(&y); // measured in Girder Section Coordinates
+        y += Hg; // now measured up from bottom
+
+        // include bar if top half and y is greater than centerline or if
+        // bottom half and y is less than centerline
+        bool bIncludeStrand = ((!bBottomHalf && half_depth_elevation < y) || (bBottomHalf && y <= half_depth_elevation)) ? true : false;
+
+        if (bIncludeStrand)
+        {
+            Float64 debond_factor;
+            if (devAdjust == dlaNone || use_approximate)
             {
-               debond_factor = (bDebonded && !InRange(bond_start, dist_from_start, bond_end)) ? 0.0 : 1.0;
+                // Use mid-span development length details to approximate debond factor
+                // determine minimum bonded length from poi
+                Float64 bond_start, bond_end;
+                bool bDebonded = IsStrandDebonded(segmentKey, strandIdx, pgsTypes::Straight, pConfig, &bond_start, &bond_end);
+
+                if (devAdjust == dlaNone)
+                {
+                    debond_factor = (bDebonded && !InRange(bond_start, dist_from_start, bond_end)) ? 0.0 : 1.0;
+                }
+                else
+                {
+                    // For approximate development length adjustment, take development length information at mid span and use for entire girder
+                    // adjusted for distance to ends of strands
+                    PoiList vPoi;
+                    GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
+                    ATLASSERT(vPoi.size() == 1);
+                    const pgsPointOfInterest& mid_span_poi = vPoi.front();
+                    ATLASSERT(mid_span_poi.IsMidSpan(POI_ERECTED_SEGMENT));
+
+                    GET_IFACE(IPretensionForce, pPSForce);
+                    auto pDevLength = pPSForce->GetDevelopmentLengthDetails(mid_span_poi, pgsTypes::Straight, false, pConfig);
+                    Float64 fps = pDevLength->GetFps();
+                    Float64 fpe = pDevLength->GetFpe();
+
+                    debond_factor = pPSForce->GetDevelopmentLengthAdjustment(poi, strandIdx, pgsTypes::Straight, fps, fpe, pConfig);
+                }
             }
             else
             {
-               // For approximate development length adjustment, take development length information at mid span and use for entire girder
-               // adjusted for distance to ends of strands
-               PoiList vPoi;
-               GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
-               ATLASSERT(vPoi.size() == 1);
-               const pgsPointOfInterest& mid_span_poi = vPoi.front();
-               ATLASSERT(mid_span_poi.IsMidSpan(POI_ERECTED_SEGMENT));
-
-               GET_IFACE(IPretensionForce, pPSForce);
-               auto pDevLength = pPSForce->GetDevelopmentLengthDetails(mid_span_poi, pgsTypes::Straight, false, pConfig);
-               Float64 fps = pDevLength->GetFps();
-               Float64 fpe = pDevLength->GetFpe();
-
-               debond_factor = pPSForce->GetDevelopmentLengthAdjustment(poi, strandIdx, pgsTypes::Straight, fps, fpe, pConfig);
+                // Full adjustment for development
+                GET_IFACE(IPretensionForce, pPSForce);
+                debond_factor = pPSForce->GetDevelopmentLengthAdjustment(poi, strandIdx, pgsTypes::Straight, false, pConfig);
             }
-         }
-         else
-         {
-            // Full adjustment for development
-            GET_IFACE(IPretensionForce,pPSForce);
-            debond_factor = pPSForce->GetDevelopmentLengthAdjustment(poi,strandIdx,pgsTypes::Straight,false, pConfig);
-         }
 
-         Aps += debond_factor*aps;
-      }
-   }
+            Aps += debond_factor * aps;
 
-   ////////////////////////////////
-   // Harped strands
-   ////////////////////////////////
-   pStrand = GetStrandMaterial(segmentKey,pgsTypes::Harped);
-   aps = pStrand->GetNominalArea();
+        }
+    }
 
-   GET_IFACE(IStrandGeometry, pStrandGeom);
-   StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Harped,pConfig);
+    ////////////////////////////////
+    // Harped strands
+    ////////////////////////////////
+    pStrand = GetStrandMaterial(segmentKey, pgsTypes::Harped);
+    aps = pStrand->GetNominalArea();
 
-   strand_points.Release();
-   if(pConfig)
-   {
-      CIndexArrayWrapper strand_fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Harped));
-      // Use CStrandMoverSwapper to temporarily swap out girder's strand mover and harping offset limits
-      //  for design
-      IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
-      Float64 Hg = GetHg(releaseIntervalIdx,poi);
+    GET_IFACE(IStrandGeometry, pStrandGeom);
+    StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped, pConfig);
 
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
-      CStrandMoverSwapper swapper(segmentKey, Hg, pConfig->PrestressConfig, this, strandGridModel, pIBridgeDesc);
-      strandGridModel->GetStrandPositionsEx(Harped, dist_from_start, &strand_fill, &strand_points);
-   }
-   else
-   {
-      strandModel->GetStrandPositions(Harped,dist_from_start,&strand_points);
-   }
+    strand_points.Release();
+    if (pConfig)
+    {
+        CIndexArrayWrapper strand_fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Harped));
+        // Use CStrandMoverSwapper to temporarily swap out girder's strand mover and harping offset limits
+        //  for design
+        IntervalIndexType releaseIntervalIdx = GetPrestressReleaseInterval(segmentKey);
+        Float64 Hg = GetHg(releaseIntervalIdx, poi);
 
-   StrandIndexType nstst; // reality test
-   strand_points->get_Count(&nstst);
-   ATLASSERT(nstst==Nh);
+        GET_IFACE(IBridgeDescription, pIBridgeDesc);
+        CStrandMoverSwapper swapper(segmentKey, Hg, pConfig->PrestressConfig, this, strandGridModel, pIBridgeDesc);
+        strandGridModel->GetStrandPositionsEx(Harped, dist_from_start, &strand_fill, &strand_points);
+    }
+    else
+    {
+        strandModel->GetStrandPositions(Harped, dist_from_start, &strand_points);
+    }
 
-   for(strandIdx = 0; strandIdx < Nh; strandIdx++)
-   {
-      CComPtr<IPoint2d> strand_point;
-      strand_points->get_Item(strandIdx, &strand_point);
+    StrandIndexType nstst; // reality test
+    strand_points->get_Count(&nstst);
+    ATLASSERT(nstst == Nh);
 
-      Float64 y;
-      strand_point->get_Y(&y); // measured in Girder Section Coordinates
-      y += Hg; // now measured up from bottom
+    for (strandIdx = 0; strandIdx < Nh; strandIdx++)
+    {
+        CComPtr<IPoint2d> strand_point;
+        strand_points->get_Item(strandIdx, &strand_point);
 
-      // include bar if top half and y is greater than centerline or if
-      // bottom half and y is less than centerline
-      bool bIncludeStrand = ( (!bBottomHalf && IsLT(half_depth_elevation,y)) || (bBottomHalf && IsLE(y,half_depth_elevation)) ) ? true : false;
+        Float64 y;
+        strand_point->get_Y(&y); // measured in Girder Section Coordinates
+        y += Hg; // now measured up from bottom
 
-      if ( bIncludeStrand )
-      {
-         Float64 debond_factor = 1.;
-         bool use_one = use_approximate || devAdjust==dlaNone;
-         if ( use_one )
-         {
-            debond_factor = 1.0;
-         }
-         else
-         {
-            GET_IFACE(IPretensionForce,pPSForce);
-            debond_factor = pPSForce->GetDevelopmentLengthAdjustment(poi,strandIdx,pgsTypes::Harped,false,pConfig);
-         }
+        // include bar if top half and y is greater than centerline or if
+        // bottom half and y is less than centerline
+        bool bIncludeStrand = ((!bBottomHalf && IsLT(half_depth_elevation, y)) || (bBottomHalf && IsLE(y, half_depth_elevation))) ? true : false;
 
-         Aps += debond_factor*aps;
-      }
-   }
+        if (bIncludeStrand)
+        {
+            Float64 debond_factor = 1.;
+            bool use_one = use_approximate || devAdjust == dlaNone;
+            if (use_one)
+            {
+                debond_factor = 1.0;
+            }
+            else
+            {
+                GET_IFACE(IPretensionForce, pPSForce);
+                debond_factor = pPSForce->GetDevelopmentLengthAdjustment(poi, strandIdx, pgsTypes::Harped, false, pConfig);
+            }
 
-   return Aps;
+            Aps += debond_factor * aps;
+
+        }
+    }
+
+
+
+    return Aps;
 }
+
+//////////////////////////
 
 Float64 CBridgeAgentImp::GetGirderAptTensionSide(const pgsPointOfInterest& poi,bool bTensionTop) const
 {
