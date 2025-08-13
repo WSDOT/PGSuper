@@ -37,7 +37,7 @@ public:
 	virtual ~CRMultiGirderSelectDlg();
 
 // Dialog Data
-	enum { IDD = IDD_MULTI_GIRDER_SELECT };
+	enum { IDD = IDD_MULTI_SELECT };
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

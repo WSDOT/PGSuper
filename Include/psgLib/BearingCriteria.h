@@ -24,44 +24,41 @@
 
 
 #include "PsgLibLib.h"
+#include <PsgLib\SpecLibraryEntry.h>
+#include <EngTools/BearingDesignCriteria.h>
 
 
 class rptChapter;
 class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
-namespace PGS {namespace Library{class DifferenceItem;};};
 
-struct PSGLIBCLASS BearingCriteria
+struct PSGLIBCLASS BearingCriteria : public WBFL::EngTools::BearingProjectCriteria
 {
-   bool bAlertTaperedSolePlateRequirement = true; ///< Option to enable/disable tapered sole plat check
-   Float64 TaperedSolePlateInclinationThreshold = 0.01; ///< Inclination threshold per LRFD 14.8.2 (radian)
-   bool bUseImpactForBearingReactions = false; ///< See LRFD 14.4.1
-   bool bCheck = false;
-   pgsTypes::BearingDesignMethod BearingDesignMethod = pgsTypes::BearingDesignMethod::MethodB; ///< AASHTO Bearing Design Method
-   Float64 MinimumElastomerShearModulus = WBFL::Units::ConvertToSysUnits(0.080, WBFL::Units::Measure::KSI); ///< See LRFD 14.7.5.2
-   Float64 MaximumElastomerShearModulus = WBFL::Units::ConvertToSysUnits(0.175, WBFL::Units::Measure::KSI); ///< See LRFD 14.7.5.2
-   bool bRequiredIntermediateElastomerThickness = false;
-   Float64 RequiredIntermediateElastomerThickness = WBFL::Units::ConvertToSysUnits(0.5, WBFL::Units::Measure::Inch);
-   bool bMinimumTotalBearingHeight = false;
-   Float64 MinimumTotalBearingHeight = WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Inch);
-   bool bMinimumBearingEdgeToGirderEdgeDistance = false;
-   Float64 MinimumBearingEdgeToGirderEdgeDistance = WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Inch);
-   bool bMaximumBearingEdgeToGirderEdgeDistance = false;
-   Float64 MaximumBearingEdgeToGirderEdgeDistance = WBFL::Units::ConvertToSysUnits(9.0, WBFL::Units::Measure::Inch);
-   bool bRequiredBearingEdgeToGirderEdgeDistance = false;
-   Float64 RequiredBearingEdgeToGirderEdgeDistance = WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Inch);
-   Float64 MaximumLiveLoadDeflection = WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch);
-   bool bMaximumTotalLoad = false;
-   Float64 MaximumTotalLoad = WBFL::Units::ConvertToSysUnits(800.0, WBFL::Units::Measure::Kip);
+    BearingCriteria()
+    {
+        bRequiredIntermediateElastomerThickness = true;
+        bMinimumTotalBearingHeight = true;
+        bMinimumBearingEdgeToGirderEdgeDistance = true;
+        bMaximumBearingEdgeToGirderEdgeDistance = true;
+        bRequiredBearingEdgeToGirderEdgeDistance = false;
+        bMaximumTotalLoad = true;
+    }
+
+    bool bCheck = true;
+
+    bool bAlertTaperedSolePlateRequirement = true; ///< Option to enable/disable tapered sole plate check
+    Float64 TaperedSolePlateInclinationThreshold = 0.01; ///< Inclination threshold per LRFD 14.8.2 (radian)
+    bool bUseImpactForBearingReactions = false; ///< See LRFD 14.4.1
 
 
-   bool operator==(const BearingCriteria& other) const;
-   bool operator!=(const BearingCriteria& other) const;
-   bool Compare(const BearingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+
+    bool operator==(const BearingCriteria& other) const;
+    bool operator!=(const BearingCriteria& other) const;
+    bool Compare(const BearingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
-   void Save(WBFL::System::IStructuredSave* pSave) const;
-   void Load(WBFL::System::IStructuredLoad* pLoad);
+    void Save(WBFL::System::IStructuredSave* pSave) const;
+    void Load(WBFL::System::IStructuredLoad* pLoad);
 };
 

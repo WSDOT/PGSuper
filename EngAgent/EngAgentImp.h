@@ -353,18 +353,21 @@ public:
    void GetBearingReactionDetails(const ReactionLocation& reactionLocation,
        CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const override;
 
-   void GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEARDEFORMATIONDETAILS* bearing) const override;
+   void GetThermalExpansionDetails(BEARINGSHEARDEFORMATIONDETAILS* bearing) const override;
 
    Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
    void GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const override;
+
+   PoiList GetBearingPoiList(const CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
 private:
     void GetLongitudinalPointOfFixity(const CGirderKey& girderKey, BEARINGPARAMETERS* pDetails) const;
 
     std::array<Float64, 2> GetTimeDependentComponentShearDeformation(Float64 loss, BEARINGSHEARDEFORMATIONDETAILS* bearing) const;
 
-    void CheckBearing(WBFL::EngTools::Bearing* brg, WBFL::EngTools::BearingLoads* brg_loads, WBFL::EngTools::BearingCalculator* brg_calc) const;
+    void SetBearingDesignData(const CBearingData2& brgData, const ReactionLocation& reactionLocation, bool bFlexural,
+        WBFL::EngTools::Bearing* pBearing, WBFL::EngTools::BearingLoads* pLoads) override;
 
 // IFabricationOptimization
 public:

@@ -48,7 +48,9 @@ protected:
    void CreateHaulingReport(std::shared_ptr<IEAFReportManager> pRptMgr);
    void CreateLiftingReport(std::shared_ptr<IEAFReportManager> pRptMgr);
    void CreateMultiGirderSpecCheckReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateMultiBearingSpecCheckReport(std::shared_ptr<IEAFReportManager> pRptMgr);
    void CreateSpecChecReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateBearingSpecCheckReport(std::shared_ptr<IEAFReportManager> pRptMgr);
    void CreateDistributionFactorSummaryReport(std::shared_ptr<IEAFReportManager> pRptMgr);
    void CreateMultiHaunchGeometryReport(std::shared_ptr<IEAFReportManager> pRptMgr);
 
@@ -64,6 +66,7 @@ protected:
    void CreatePierReactionsReport(std::shared_ptr<IEAFReportManager> pRptMgr);
    void CreateTimelineReport(std::shared_ptr<IEAFReportManager> pRptMgr);
    void CreateCopyGirderPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateCopyBearingPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr);
    void CreateCopyPierPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr);
    void CreateCopyTempSupportPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr);
 

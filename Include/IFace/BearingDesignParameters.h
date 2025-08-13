@@ -21,6 +21,10 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 #include "AnalysisResults.h"
+#include <EngTools/Bearing.h>
+#include <EngTools/BearingLoads.h>
+#include <EngTools/BearingCalculator.h>
+#include "PsgLib\BearingData2.h"
 
 struct BEARINGPARAMETERS
 {
@@ -184,7 +188,7 @@ struct BEARINGSHEARDEFORMATIONDETAILS  //results per bearing
 	Float64 creep{ 0.0 };
 	Float64 tendon_creep{ 0.0 };
 	Float64 shrinkage{ 0.0 };
-	Float64 tendon_shrinkage;
+	Float64 tendon_shrinkage{ 0.0 };
 	Float64 relaxation{ 0.0 };
 	Float64 tendon_relaxation{ 0.0 };
 	std::vector<TSSHEARDEFORMATIONDETAILS> timestep_details;  /// timestep method for td losses
@@ -224,6 +228,7 @@ DEFINE_GUID(IID_IBearingDesignParameters,
 class IBearingDesignParameters
 {
 public:
+
 	virtual void GetBearingParameters(CGirderKey girderKey, BEARINGPARAMETERS* pDetails) const = 0;
 
 	virtual void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, 
@@ -234,13 +239,18 @@ public:
 		CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact,
 		bool bIncludeLLDF, REACTIONDETAILS* pDetails) const = 0;
 
-	virtual void GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEARDEFORMATIONDETAILS* bearing) const = 0;
+	virtual void GetThermalExpansionDetails(BEARINGSHEARDEFORMATIONDETAILS* bearing) const = 0;
 
 	virtual Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
+
+	virtual PoiList GetBearingPoiList(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
 	virtual void GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
 	virtual void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const = 0;
+
+	virtual void SetBearingDesignData(const CBearingData2& brgData, const ReactionLocation& reactionLocation, bool bFlexural,
+		WBFL::EngTools::Bearing* pBearing, WBFL::EngTools::BearingLoads* pLoads) = 0;
 
 };
 

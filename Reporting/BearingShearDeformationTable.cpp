@@ -227,7 +227,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(std
     for (auto& bearing:details->brg_details)
 
     {
-        pBearing->GetThermalExpansionDetails(girderKey, &bearing);
+        pBearing->GetThermalExpansionDetails(&bearing);
 
         ColumnIndexType col = 0;
 

@@ -616,6 +616,51 @@
     <ClCompile Include="MinDeckReinforcementCheck.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CopyBearingPropertiesReportSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RMultiBearingSelectDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyBearingPropertiesChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingSpecCheckChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingSpecCheckSummaryChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedCtrls\MultiBearingSelectGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedCtrls\MultiSelectGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GirderMultiViewReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingMultiViewReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpanGirderBearingReportSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpanGirderBearingReportSpecificationBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiBearingReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyBearingPropertiesReportSpecificationBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpanGirderBearingReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpanItemReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h">
@@ -981,7 +1026,7 @@
     <ClInclude Include="..\Include\Reporting\SpanDataChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Reporting\SpanGirderReportDlg.h">
+    <ClInclude Include="..\Include\Reporting\SpanItemReportDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\SpanGirderReportSpecification.h">
@@ -1241,7 +1286,53 @@
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\MinDeckReinforcementCheck.h">
       <Filter>Header Files</Filter>
-    </ClInclude>  </ItemGroup>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyBearingPropertiesReportSpecification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RMultiBearingSelectDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyBearingPropertiesChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingSpecCheckChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingSpecCheckSummaryChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\SharedCtrls\MultiBearingSelectGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\SharedCtrls\MultiSelectGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GirderMultiViewReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BearingMultiViewReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportSpecification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportSpecificationBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\MultiBearingReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyBearingPropertiesReportSpecificationBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SpanGirderReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
   <ItemGroup>
     <None Include="Reporting.def" />
     <None Include="res\Reporting.rc2">

@@ -521,7 +521,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
         else
         {
             p_table->SetColumnSpan(0, col, 2);
-            (*p_table)(0, col) << _T("*") << Sub2(_T("P"), _T("LL"));
+            (*p_table)(0, col) << _T("*") << Sub2(_T("P"), _T("Design LL"));
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
             (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
 

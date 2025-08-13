@@ -699,7 +699,7 @@ bool CTestAgentImp::RunBearingTest(std::_tofstream& resultsFile, std::_tofstream
         Float64 static_rotation = rotationDetails.staticRotation;
         Float64 cyclic_rotation = rotationDetails.cyclicRotation;
 
-        pBearingDesignParameters->GetThermalExpansionDetails(segmentKey, &brg);
+        pBearingDesignParameters->GetThermalExpansionDetails(&brg);
         Float64 total_shear_deformation_cold = WBFL::Units::ConvertFromSysUnits(brg.total_shear_deformation_cold, WBFL::Units::Measure::Inch);
 
         resultsFile << bridgeId << _T(", ") << pid << _T(", 70000, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(total_shear_deformation_cold) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;

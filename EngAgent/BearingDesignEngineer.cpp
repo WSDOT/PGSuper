@@ -25,8 +25,8 @@
 #include <algorithm>
 #include "BearingDesignEngineer.h"
 #include <Units\Convert.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <PGSuperException.h>
-
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\ShearCapacity.h>
@@ -36,12 +36,12 @@
 #include <IFace\ResistanceFactors.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\RatingSpecification.h>
-#include <IFace\EditByUI.h>
+
 #include <IFace\Intervals.h>
 #include <IFace/Limits.h>
-#include <IFace/PointOfInterest.h>
-
 #include <LRFD\Rebar.h>
+
+#include "StatusItems.h"
 
 #include <Reporting\ReactionInterfaceAdapters.h>
 
@@ -49,6 +49,7 @@
 #include <psgLib/ThermalMovementCriteria.h>
 #include <psgLib/ShearCapacityCriteria.h>
 #include <psgLib/LimitStateConcreteStrengthCriteria.h>
+#include <psgLib/BearingCriteria.h>
 
 #include <PgsExt\statusitem.h>
 #include <PsgLib\LoadFactors.h>
@@ -83,7 +84,7 @@ Float64 pgsBearingDesignEngineer::BearingSkewFactor(const ReactionLocation& reac
     //skew factor
     CComPtr<IAngle> pSkew;
     pBridge->GetPierSkew(reactionLocation.PierIdx, &pSkew);
-    Float64 skew;
+    Float64 skew = 0;
     pSkew->get_Value(&skew);
 
     Float64 skewFactor;
@@ -308,9 +309,7 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
 
     const CGirderKey& girderKey(poi_brg.GetSegmentKey());
 
-    GET_IFACE2(GetBroker(),IBearingDesignParameters, pBearingDesignParameters);
-
-    pBearingDesignParameters->GetBearingParameters(girderKey, pDetails);
+    GetBearingParameters(girderKey, pDetails);
 
     CSegmentKey segmentKey = pDetails->poi_fixity.GetSegmentKey();
     Float64 gpcBrgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
@@ -495,27 +494,21 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
 }
 
 
-
-void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
+PoiList pgsBearingDesignEngineer::GetBearingPoiList(const CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
 {
+    // get poi where reactions occur
+    PoiList vPoi;
 
-    GET_IFACE2(GetBroker(),IIntervals, pIntervals);
-    GET_IFACE2(GetBroker(),IBridgeDescription, pBridgeDesc);
-    
-    
-    GET_IFACE2(GetBroker(),IBridge, pBridge);
-    GET_IFACE2(GetBroker(),IPointOfInterest, pPOI);
-    GET_IFACE2(GetBroker(),IBearingDesign, pBearingDesign);
-    GET_IFACE2(GetBroker(),IBearingDesignParameters, pBearingDesignParameters);
+    GET_IFACE2(GetBroker(), IIntervals, pIntervals);
+    GET_IFACE2(GetBroker(), IBridge, pBridge);
+    GET_IFACE2(GetBroker(), IPointOfInterest, pPOI);
+    GET_IFACE2(GetBroker(), IBearingDesign, pBearingDesign);
 
-    pBearingDesignParameters->GetBearingParameters(girderKey, pDetails);
+    GetBearingParameters(girderKey, pDetails);
 
 
     IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
-
-    // get poi where reactions occur
-    PoiList vPoi;
 
     if (pBridge->IsInteriorPier(1))
     {
@@ -562,6 +555,24 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
         }
     }
 
+    return vPoi;
+}
+
+
+
+void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
+{
+
+    GET_IFACE2(GetBroker(), IIntervals, pIntervals);
+    GET_IFACE2(GetBroker(),IBridgeDescription, pBridgeDesc);
+    GET_IFACE2(GetBroker(),IBridge, pBridge);
+    GET_IFACE2(GetBroker(),IBearingDesign, pBearingDesign);
+
+    GetBearingParameters(girderKey, pDetails);
+
+
+    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
     const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
     PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
@@ -579,6 +590,8 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
         brg_details.reactionLocation = reactionLocation;
 
         const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
+
+        PoiList vPoi = GetBearingPoiList(girderKey, pDetails);
 
         const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
 
@@ -613,8 +626,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
             PrestressLossCriteria::LossMethodType lossMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod;
             bool bTimeStepMethod = lossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
-            GET_IFACE2(GetBroker(),IBearingDesignParameters, pBearing);
-            brg_details.length_pf = pBearing->GetDistanceToPointOfFixity(poi, pDetails);
+            brg_details.length_pf = GetDistanceToPointOfFixity(poi, pDetails);
 
             const CSegmentKey& segmentKey(poi.GetSegmentKey());
             const CPrecastSegmentData* pSegment = pBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -861,8 +873,6 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 }
 
 
-
-
 void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
     const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const
 {
@@ -876,8 +886,7 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     GET_IFACE2(GetBroker(),ILossParameters, pLossParams);
     GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
 
-    GET_IFACE2(GetBroker(),IBearingDesignParameters, pBearingDesignParameters);
-    pBearingDesignParameters->GetBearingParameters(girderKey, pDetails);
+    GetBearingParameters(girderKey, pDetails);
 
     Float64 min, max, DcreepErect, RcreepErect, DcreepFinal, RcreepFinal;
     VehicleIndexType minConfig, maxConfig;
@@ -1067,8 +1076,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
 
 {
-    GET_IFACE2(GetBroker(),IBearingDesignParameters, pBearingDesignParameters);
-    pBearingDesignParameters->GetBearingParameters(girderKey, pDetails);
+    GetBearingParameters(girderKey, pDetails);
 
     GET_IFACE2(GetBroker(),IProductForces, pProdForces);
     pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
@@ -1242,7 +1250,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 }
 
 
-void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEARDEFORMATIONDETAILS* bearing) const
+void pgsBearingDesignEngineer::GetThermalExpansionDetails(BEARINGSHEARDEFORMATIONDETAILS* bearing) const
 {
 
 
@@ -1285,9 +1293,266 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, 
 
 }
 
-void pgsBearingDesignEngineer::CheckBearing(WBFL::EngTools::Bearing* brg,
-    WBFL::EngTools::BearingLoads* brg_loads, WBFL::EngTools::BearingCalculator* brg_calc) const
+ void pgsBearingDesignEngineer::SetBearingDesignData(const CBearingData2& brgData, const ReactionLocation& reactionLocation, bool bFlexural,
+         WBFL::EngTools::Bearing* pBearing, WBFL::EngTools::BearingLoads* pLoads)
 {
+
+
+     if (bFlexural)
+     {
+         pBearing->SetLength(brgData.Length);
+         pBearing->SetWidth(brgData.Width);
+     }
+     else
+     {
+         pBearing->SetLength(brgData.Width);
+         pBearing->SetWidth(brgData.Length);
+     }
+
+     pBearing->SetIntermediateLayerThickness(brgData.ElastomerThickness);
+     pBearing->SetCoverThickness(brgData.CoverThickness);
+     pBearing->SetSteelShimThickness(brgData.ShimThickness);
+     pBearing->SetNumIntLayers(brgData.NumIntLayers);
+
+
+     pBearing->SetUseExternalPlates(brgData.UseExtPlates);
+
+
+     pLoads->SetFixedTranslationX(brgData.FixedX);
+     pLoads->SetFixedTranslationY(brgData.FixedY);
+
+     GET_IFACE2(GetBroker(), ILibrary, pLib);
+     GET_IFACE2(GetBroker(), ISpecification, pSpec);
+     const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+     const auto& criteria = pSpecEntry->GetBearingCriteria();
+
+     pBearing->SetShearModulusMinimum(criteria.MinimumElastomerShearModulus);
+     pBearing->SetShearModulusMaximum(criteria.MaximumElastomerShearModulus);
+
+     REACTIONDETAILS reactionDetails;
+
+     CGirderKey girderKey = reactionLocation.GirderKey;
+
+     pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+
+     GET_IFACE2(GetBroker(), IBearingDesign, pBearingDesign);
+
+     bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
+
+     GetBearingReactionDetails(reactionLocation, girderKey, analysisType, bIncludeImpact, true, &reactionDetails);
+
+     pLoads->SetDeadLoad(reactionDetails.totalDLreaction);
+     pLoads->SetLiveLoad(reactionDetails.maxComboDesignLLReaction);
+
+     SHEARDEFORMATIONDETAILS sdefDetails;
+     PoiList vPoi = GetBearingPoiList(girderKey, &sdefDetails);
+
+     GET_IFACE2(GetBroker(), IBridgeDescription, pBridgeDesc);
+
+     const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+     PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+
+     const auto& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
+
+     GET_IFACE2(GetBroker(), IGirder, pGirder);
+
+     Float64 flgWidth = pGirder->GetBottomFlangeWidth(poi);
+
+     GET_IFACE2(GetBroker(), IBridge, pBridge);
+     CComPtr<IAngle> pSkew;
+     pBridge->GetPierSkew(reactionLocation.PierIdx, &pSkew);
+     Float64 skew;
+     pSkew->get_Value(&skew);
+
+     Float64 dist = (flgWidth - (brgData.Spacing * (brgData.BearingCount - 1) * cos(skew) + brgData.Width)) / 2.0;
+
+     pBearing->SetBearingToGirderFlangeDistance(dist);
+
+     ROTATIONDETAILS rotationDetails;
+
+     if (criteria.AnalysisMethod == WBFL::EngTools::BearingAnalysisMethod::MethodA)
+     {
+         GetBearingRotationDetails(analysisType, poi, reactionLocation, girderKey, bIncludeImpact, true, true, &rotationDetails);
+         pLoads->SetRotationX(rotationDetails.totalRotation);
+         GetBearingRotationDetails(analysisType, poi, reactionLocation, girderKey, bIncludeImpact, true, false, &rotationDetails);
+         pLoads->SetRotationY(rotationDetails.totalRotation);
+     }
+     else
+     {
+         GetBearingRotationDetails(analysisType, poi, reactionLocation, girderKey, bIncludeImpact, true, bFlexural, &rotationDetails);
+     }
+
+     pLoads->SetStaticRotation(rotationDetails.staticRotation);
+
+     if (!bFlexural && 0.010 > abs(rotationDetails.staticRotation))
+     {
+         pLoads->SetStaticRotation(0.010);
+     }
+
+     pLoads->SetCyclicRotation(rotationDetails.cyclicRotation);
+
+
+     GetTimeDependentShearDeformation(girderKey, &sdefDetails);
+
+     for (auto& bearing : sdefDetails.brg_details)
+     {
+         GetThermalExpansionDetails(&bearing);
+     }
+
+     if (bFlexural)
+     {
+         if (brgData.ShearDeformationOverride == -1)
+         {
+             GET_IFACE2(GetBroker(), IEnvironment, pEnvironment);
+
+             IndexType bearingIdx = (reactionLocation.PierIdx - startPierIdx);
+             if ((reactionLocation.PierIdx - startPierIdx) == sdefDetails.brg_details.size())
+                 bearingIdx--; // no bearing at start pier
+                 
+
+             if (pEnvironment->GetClimateCondition() == pgsTypes::ClimateCondition::Moderate)
+             {
+                 pLoads->SetShearDeformation(sdefDetails.brg_details[bearingIdx].total_shear_deformation_moderate);
+             }
+             else
+             {
+                 pLoads->SetShearDeformation(sdefDetails.brg_details[bearingIdx].total_shear_deformation_cold);
+             }
+         }
+         else
+         {
+             pLoads->SetShearDeformation(brgData.ShearDeformationOverride);
+         }
+     }
+     else
+     {
+         pLoads->SetShearDeformation(0);
+     }
+
+
+     if (!m_CurrentBearingDesignStatusItems.empty())
+     {
+         GET_IFACE2(GetBroker(), IEAFStatusCenter, pStatusCenter);
+
+         auto it = m_CurrentBearingDesignStatusItems.begin();
+         auto itend = m_CurrentBearingDesignStatusItems.end();
+         for (; it != itend; it++)
+         {
+             pStatusCenter->RemoveByID(*it);
+         }
+
+         m_CurrentBearingDesignStatusItems.clear();
+     }
+
+     if (criteria.bCheck && brgData.DefinitionType == BearingDefinitionType::btDetailed)
+     {
+
+         GET_IFACE2(GetBroker(), IEAFStatusCenter, pStatusCenter);
+
+         StatusCallbackIDType scidBearingWarning = pStatusCenter->RegisterCallback(std::make_shared<pgsBridgeDescriptionStatusCallback>(WBFL::EAF::StatusSeverityType::Warning));
+
+         StatusGroupIDType statusGroupID = pStatusCenter->CreateStatusGroupID();
+
+         WBFL::EngTools::BearingCalculator brgCalc;
+
+         const auto& spec = WBFL::LRFD::BDSManager::GetEdition();
+
+         const auto& llDef = brgCalc.GetInstantaneousLiveLoadDeflectionMethodA(*pBearing, *pLoads, spec);
+
+         if (criteria.AnalysisMethod == WBFL::EngTools::BearingAnalysisMethod::MethodB)
+         {
+             const auto& llDef = brgCalc.GetInstantaneousLiveLoadDeflectionMethodB(*pBearing, *pLoads, spec);
+         }
+
+         Float64 computedHeight = brgCalc.ComputeBearingHeight(*pBearing);
+         if (!IsEqual(brgData.Height, computedHeight, 0.0001))
+         {
+             CString msg;
+             msg.Format(_T("Bearing height input (%s) does not equal the computed height. The computed height is used in the spec check report."),
+                 reactionLocation.PierLabel.c_str());
+             std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem = std::make_shared<pgsBridgeDescriptionStatusItem>(
+                 m_StatusGroupID, scidBearingWarning, pgsBridgeDescriptionStatusItem::Bearings, msg);
+             pStatusCenter->Add(pStatusItem);
+             m_CurrentBearingDesignStatusItems.emplace_back(pStatusItem->GetID());
+         }
+
+         if (llDef > criteria.MaximumLiveLoadDeflection)
+         {
+             CString msg;
+             msg.Format(_T("Instantaneous live load deflection (%s) exceeds the recommended limit."), 
+                 reactionLocation.PierLabel.c_str());
+             std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem = std::make_shared<pgsBridgeDescriptionStatusItem>(
+                 m_StatusGroupID, scidBearingWarning, pgsBridgeDescriptionStatusItem::Bearings, msg);
+             pStatusCenter->Add(pStatusItem);
+             m_CurrentBearingDesignStatusItems.emplace_back(pStatusItem->GetID());
+         }
+
+         if (reactionDetails.totalReaction > criteria.MaximumTotalLoad)
+         {
+             CString msg;
+             msg.Format(_T("The total vertical load (%s) exceeds the maximum limit."), reactionLocation.PierLabel.c_str());
+             std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem = std::make_shared<pgsBridgeDescriptionStatusItem>(
+                 m_StatusGroupID, scidBearingWarning, pgsBridgeDescriptionStatusItem::Bearings, msg);
+             pStatusCenter->Add(pStatusItem);
+             m_CurrentBearingDesignStatusItems.emplace_back(pStatusItem->GetID());
+         }
+
+        if (criteria.bRequiredIntermediateElastomerThickness &&
+            brgData.ElastomerThickness != criteria.RequiredIntermediateElastomerThickness)
+        {
+            CString msg;
+            msg.Format(_T("Intermediate elastomer thickness (%s) does not equal the required thickness."), reactionLocation.PierLabel.c_str());
+            std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem = std::make_shared<pgsBridgeDescriptionStatusItem>(
+                m_StatusGroupID, scidBearingWarning, pgsBridgeDescriptionStatusItem::Bearings, msg);
+            GET_IFACE2(GetBroker(), IEAFStatusCenter, pStatusCenter);
+            pStatusCenter->Add(pStatusItem);
+            m_CurrentBearingDesignStatusItems.emplace_back(pStatusItem->GetID());
+        }
+        if (criteria.bMinimumTotalBearingHeight &&
+            brgData.Height < criteria.MinimumTotalBearingHeight)
+        {
+            CString msg;
+            msg.Format(_T("Total bearing height (%s) is below the minimum limit."), reactionLocation.PierLabel.c_str());
+            std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem = std::make_shared<pgsBridgeDescriptionStatusItem>(
+                m_StatusGroupID, scidBearingWarning, pgsBridgeDescriptionStatusItem::Bearings, msg);
+            GET_IFACE2(GetBroker(), IEAFStatusCenter, pStatusCenter);
+            pStatusCenter->Add(pStatusItem);
+            m_CurrentBearingDesignStatusItems.emplace_back(pStatusItem->GetID());
+        }
+
+
+        if ((criteria.bMinimumBearingEdgeToGirderEdgeDistance && dist < criteria.MinimumBearingEdgeToGirderEdgeDistance) ||
+            (criteria.bMaximumBearingEdgeToGirderEdgeDistance && dist > criteria.MaximumBearingEdgeToGirderEdgeDistance))
+        {
+            CString msg;
+            GET_IFACE2(GetBroker(), IEAFDisplayUnits, pDisplayUnits);
+            msg.Format(_T("Distance (%s) from edge of bearing to edge of %s bottom flange is outside of the acceptable range."),
+                FormatDimension(dist, pDisplayUnits->GetDeflectionUnit()),
+                pgsGirderLabel::GetGirderLabel(girderKey).c_str());
+            std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem = std::make_shared<pgsBridgeDescriptionStatusItem>(
+                m_StatusGroupID, scidBearingWarning, pgsBridgeDescriptionStatusItem::Bearings, msg);
+            GET_IFACE2(GetBroker(), IEAFStatusCenter, pStatusCenter);
+            pStatusCenter->Add(pStatusItem);
+            m_CurrentBearingDesignStatusItems.emplace_back(pStatusItem->GetID());
+        }
+
+        if (criteria.bRequiredBearingEdgeToGirderEdgeDistance &&
+            !::IsEqual(dist, criteria.RequiredBearingEdgeToGirderEdgeDistance))
+        {
+            CString msg;
+            GET_IFACE2(GetBroker(), IEAFDisplayUnits, pDisplayUnits);
+            msg.Format(_T("Distance (%s) from edge of bearing to edge of %s bottom flange does not equal the required distance."),
+                FormatDimension(dist, pDisplayUnits->GetDeflectionUnit()),
+                pgsGirderLabel::GetGirderLabel(girderKey).c_str());
+            std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem = std::make_shared<pgsBridgeDescriptionStatusItem>(
+                m_StatusGroupID, scidBearingWarning, pgsBridgeDescriptionStatusItem::Bearings, msg);
+            GET_IFACE2(GetBroker(), IEAFStatusCenter, pStatusCenter);
+            pStatusCenter->Add(pStatusItem);
+            m_CurrentBearingDesignStatusItems.emplace_back(pStatusItem->GetID());
+        }
+
+
+     }
 
 }
 

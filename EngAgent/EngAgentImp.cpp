@@ -3457,6 +3457,11 @@ void CEngAgentImp::GetLongitudinalPointOfFixity(const CGirderKey& girderKey, BEA
     m_BearingEngineer->GetLongitudinalPointOfFixity(girderKey, pDetails);
 }
 
+PoiList CEngAgentImp::GetBearingPoiList(const CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
+{
+    return m_BearingEngineer->GetBearingPoiList(girderKey, pDetails);
+}
+
 void CEngAgentImp::GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const
 {
     m_BearingEngineer->GetBearingDesignProperties(pDetails);
@@ -3475,9 +3480,9 @@ void CEngAgentImp::GetBearingReactionDetails(const ReactionLocation& reactionLoc
     m_BearingEngineer->GetBearingReactionDetails(reactionLocation, girderKey, analysisType, bIncludeImpact, bIncludeLLDF, pDetails);
 }
 
-void CEngAgentImp::GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEARDEFORMATIONDETAILS* bearing) const
+void CEngAgentImp::GetThermalExpansionDetails(BEARINGSHEARDEFORMATIONDETAILS* bearing) const
 {
-    m_BearingEngineer->GetThermalExpansionDetails(girderKey, bearing);
+    m_BearingEngineer->GetThermalExpansionDetails(bearing);
 }
 
 Float64 CEngAgentImp::GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const
@@ -3495,10 +3500,10 @@ void CEngAgentImp::GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARD
     m_BearingEngineer->GetTimeDependentShearDeformation(girderKey, pDetails);
 }
 
-void CEngAgentImp::CheckBearing(WBFL::EngTools::Bearing * brg, WBFL::EngTools::BearingLoads * brg_loads,
-    WBFL::EngTools::BearingCalculator * brg_calc) const
+void CEngAgentImp::SetBearingDesignData(const CBearingData2& brgData, const ReactionLocation& reactionLocation, bool bFlexural,
+    WBFL::EngTools::Bearing* pBearing, WBFL::EngTools::BearingLoads* pLoads)
 {
-    return m_BearingEngineer->CheckBearing(brg, brg_loads, brg_calc);
+    m_BearingEngineer->SetBearingDesignData(brgData, reactionLocation, bFlexural, pBearing, pLoads);
 }
 
 

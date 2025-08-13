@@ -31,7 +31,11 @@
 #include <Units\Measure.h>
 
 #include <IFace/Tools.h>
+#include <IFace/Project.h>
+
 #include <EAF\EAFDisplayUnits.h>
+#include <psgLib/SpecLibraryEntry.h>
+#include <psgLib/BearingCriteria.h>
 
 
 
@@ -198,7 +202,7 @@ void BearingInputData::CopyFromBridgeDescription(const CBridgeDescription2* pBri
 }
 
 const ROWCOL _STARTCOL = 1;
-const ROWCOL _STARTNCOLS = 11;
+const ROWCOL _STARTNCOLS = 13;
 
 GRID_IMPLEMENT_REGISTER(CBearingPierGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -237,10 +241,10 @@ int CBearingPierGrid::GetColWidth(ROWCOL nCol)
    {
    case 0:
    case 1:
-      return (int)(rect.Width( )*(Float64)2/nspc);
    case 2:
    case 3:
-      return (int)(rect.Width( )*(Float64)2/nspc);
+   case 4:
+      return (int)(rect.Width( )*(Float64)2/(nspc + 2));
    default:
       return (int)(rect.Width( )/nspc);
    }
@@ -293,15 +297,25 @@ void CBearingPierGrid::CustomInit()
 			.SetValue(_T("\nLocation\n")) // two rows so we expand properly
 		);
 
-   col+=2;
-  m_DGetter.m_BearingShapeCol = col;
-	SetStyleRange(CGXRange(0,col), CGXStyle()
-      .SetWrapText(TRUE)
-      .SetHorizontalAlignment(DT_CENTER)
-      .SetVerticalAlignment(DT_TOP)
-		.SetEnabled(FALSE)          // disables usage as current cell
-		.SetValue(_T("\nShape\n "))
-		);
+    col += 2;
+    m_DGetter.m_BearingDefTypeCol = col;
+    SetStyleRange(CGXRange(0, col), CGXStyle()
+        .SetWrapText(TRUE)
+        .SetHorizontalAlignment(DT_CENTER)
+        .SetVerticalAlignment(DT_TOP)
+        .SetEnabled(FALSE)          // disables usage as current cell
+        .SetValue(_T("\nType*\n "))
+    );
+
+    col ++;
+    m_DGetter.m_BearingShapeCol = col;
+    SetStyleRange(CGXRange(0, col), CGXStyle()
+        .SetWrapText(TRUE)
+        .SetHorizontalAlignment(DT_CENTER)
+        .SetVerticalAlignment(DT_TOP)
+        .SetEnabled(FALSE)          // disables usage as current cell
+        .SetValue(_T("\nShape\n "))
+    );
 
    col++;
    m_DGetter.m_BearingCountCol = col;
@@ -392,6 +406,17 @@ void CBearingPierGrid::CustomInit()
 		.SetValue(strLabel)
 		);
 
+    col++;
+    m_DGetter.m_BearingDetailButtonCol = col;
+    strLabel = _T("Detail");
+    SetStyleRange(CGXRange(0, col), CGXStyle()
+        .SetWrapText(TRUE)
+        .SetHorizontalAlignment(DT_CENTER)
+        .SetVerticalAlignment(DT_VCENTER)
+        .SetEnabled(FALSE)          // disables usage as current cell
+        .SetValue(strLabel)
+    );
+
    // make it so that text fits correctly in header row
 	this->ResizeRowHeightsToFit(CGXRange(0,0,0,GetColCount()));
 
@@ -413,13 +438,24 @@ void CBearingPierGrid::SetRowStyle(ROWCOL nRow)
 			.SetHorizontalAlignment(DT_CENTER)
 			.SetVerticalAlignment(DT_VCENTER)
 		);
-
-	this->SetStyleRange(CGXRange(nRow,_STARTCOL+2), CGXStyle()
+    this->SetStyleRange(CGXRange(nRow, _STARTCOL + 2), CGXStyle()
+        .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
+        .SetChoiceList(_T("Basic\nDetailed"))
+        .SetValue(_T("Basic"))
+        .SetHorizontalAlignment(DT_RIGHT)
+    );
+	this->SetStyleRange(CGXRange(nRow,_STARTCOL+3), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
 			.SetChoiceList(_T("Rectangular\nRound"))
 			.SetValue(_T("Rectangular"))
          .SetHorizontalAlignment(DT_RIGHT)
          );
+    this->SetStyleRange(CGXRange(nRow, _STARTCOL + 12), CGXStyle()
+        .SetControl(GX_IDS_CTRL_PUSHBTN)
+        .SetChoiceList(_T("Edit"))
+        .SetHorizontalAlignment(DT_LEFT)
+        .SetEnabled(TRUE)
+    );
 
    // available number of bearings
    CString choicelist;
@@ -430,7 +466,7 @@ void CBearingPierGrid::SetRowStyle(ROWCOL nRow)
       choicelist += choice;
    }
 
-	this->SetStyleRange(CGXRange(nRow,_STARTCOL+3), CGXStyle()
+	this->SetStyleRange(CGXRange(nRow,_STARTCOL+4), CGXStyle()
 			.SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
 			.SetChoiceList(choicelist)
 			.SetValue(_T("1"))
@@ -452,6 +488,7 @@ void CBearingPierGrid::FillGrid(const BearingInputData& BearingData)
 
    // One row for each bearing line
    ROWCOL numRows = (ROWCOL)BearingData.m_Bearings.size();
+
    ROWCOL row = 1;
    InsertRows(row, numRows);
 
@@ -460,6 +497,9 @@ void CBearingPierGrid::FillGrid(const BearingInputData& BearingData)
    for (; row<=numRows; row++  )
    {
       const BearingPierData& hp = *iter;
+
+      m_BearingPierDetailData.emplace_back(hp.m_BearingsForGirders[0]);
+
       ATLASSERT(PierNo - 1 == hp.m_PierIndex);
 
       SetRowStyle(row);
@@ -506,6 +546,33 @@ void CBearingPierGrid::FillGrid(const BearingInputData& BearingData)
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetValue(crow));
 
+      CString strType = (hp.m_BearingsForGirders[0].DefinitionType == btBasic) ? _T("Basic") : _T("Detailed");
+
+      auto pBroker = EAFGetBroker();
+
+      GET_IFACE2(pBroker, ILibrary, pLib);
+      GET_IFACE2(pBroker, ISpecification, pSpec);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+      const BearingCriteria& criteria = pSpecEntry->GetBearingCriteria();
+
+      //if (criteria.bCheck)
+      //{
+          SetStyleRange(CGXRange(row, col++), CGXStyle()
+              .SetReadOnly(FALSE)
+              .SetEnabled(TRUE)
+              .SetValue(strType)
+          );
+      //}
+      //else
+      //{
+      //    SetStyleRange(CGXRange(row, col++), CGXStyle()
+      //        .SetInterior(GXSYSCOLOR(COLOR_BTNFACE))
+      //        .SetReadOnly(TRUE)
+      //        .SetEnabled(FALSE)
+      //        .SetValue(strType)
+      //    );
+      //}
+
       // We use slot (girder) zero for piers
       CString strshape = (hp.m_BearingsForGirders[0].Shape == bsRectangular) ? _T("Rectangular") : _T("Round");
 
@@ -548,13 +615,30 @@ void CBearingPierGrid::FillGrid(const BearingInputData& BearingData)
          .SetValue(FormatDimension(hp.m_BearingsForGirders[0].Width,*m_pCompUnit, false))
          );
 
-      SetStyleRange(CGXRange(row,col++), CGXStyle()
-         .SetReadOnly(FALSE)
-         .SetEnabled(TRUE)
-         .SetHorizontalAlignment(DT_RIGHT)
-         .SetVerticalAlignment(DT_TOP)
-         .SetValue(FormatDimension(hp.m_BearingsForGirders[0].Height,*m_pCompUnit, false))
-         );
+      if (hp.m_BearingsForGirders[0].DefinitionType == btDetailed)
+      {
+          SetStyleRange(CGXRange(row, col++), CGXStyle()
+           //   .SetReadOnly(TRUE)
+              .SetEnabled(FALSE)
+              .SetHorizontalAlignment(DT_RIGHT)
+              .SetVerticalAlignment(DT_TOP)
+              .SetInterior(::GetSysColor(COLOR_BTNFACE))
+              .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+              .SetValue(FormatDimension(hp.m_BearingsForGirders[0].Height, *m_pCompUnit, false))
+          );
+      }
+      else
+      {
+          SetStyleRange(CGXRange(row, col++), CGXStyle()
+              .SetReadOnly(FALSE)
+              .SetEnabled(TRUE)
+              .SetHorizontalAlignment(DT_RIGHT)
+              .SetVerticalAlignment(DT_TOP)
+              .SetInterior(::GetSysColor(COLOR_WINDOW))
+              .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+              .SetValue(FormatDimension(hp.m_BearingsForGirders[0].Height, *m_pCompUnit, false))
+          );
+      }
 
       SetStyleRange(CGXRange(row,col++), CGXStyle()
          .SetReadOnly(FALSE)
@@ -581,6 +665,7 @@ void CBearingPierGrid::FillGrid(const BearingInputData& BearingData)
          );
 
       // Disable columns if needed
+      OnModifyCell(row, m_DGetter.m_BearingDefTypeCol);
       OnModifyCell(row, m_DGetter.m_BearingShapeCol);
       OnModifyCell(row, m_DGetter.m_BearingCountCol);
 
@@ -627,6 +712,16 @@ void CBearingPierGrid::GetData(BearingInputData* pData, CDataExchange* pDX)
 
       // use utility class
       CBearingData2 bd = m_DGetter.GetBrgData(this, row, m_pCompUnit, pDX);
+
+      bd.ElastomerThickness = m_BearingPierDetailData[row-1].ElastomerThickness;
+      bd.CoverThickness = m_BearingPierDetailData[row-1].CoverThickness;
+      bd.ShimThickness = m_BearingPierDetailData[row-1].ShimThickness;
+      bd.NumIntLayers = m_BearingPierDetailData[row-1].NumIntLayers;
+      bd.UseExtPlates = m_BearingPierDetailData[row-1].UseExtPlates;
+      bd.FixedX = m_BearingPierDetailData[row-1].FixedX;
+      bd.FixedY = m_BearingPierDetailData[row-1].FixedY;
+      bd.FixedY = m_BearingPierDetailData[row-1].FixedY;
+      bd.ShearDeformationOverride = m_BearingPierDetailData[row-1].ShearDeformationOverride;
 
       if (hp.m_BearingsForGirders.empty())
       {
@@ -699,6 +794,36 @@ void CBearingPierGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
             .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
             );
       }
+   }
+   else if (nCol == m_DGetter.m_BearingDefTypeCol)
+   {
+       CString strDef = GetCellValue(nRow, nCol);
+       if (strDef == _T("Detailed"))
+       {
+           SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingDetailButtonCol), CGXStyle()
+               .SetEnabled(TRUE)
+               .SetReadOnly(FALSE)
+               .SetInterior(::GetSysColor(COLOR_WINDOW))
+               .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+           );
+       }
+       else
+       {
+           SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingDetailButtonCol), CGXStyle()
+               .SetEnabled(FALSE)
+               .SetReadOnly(TRUE)
+               .SetInterior(::GetSysColor(COLOR_BTNFACE))
+               .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+           );
+
+           SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingHeightCol), CGXStyle()
+               .SetEnabled(TRUE)
+               .SetReadOnly(FALSE)
+               .SetInterior(::GetSysColor(COLOR_WINDOW))
+               .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+           );
+       }
+
    }
 
    GetParam()->SetLockReadOnly(TRUE);
@@ -843,4 +968,108 @@ BOOL CBearingPierGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    }
 
 	return CGXGridWnd::OnValidateCell(nRow, nCol);
+}
+
+void CBearingPierGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
+{
+
+    if (nCol == 13)
+    {
+        AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+        CDataExchange dx(this, TRUE);
+        DoDataExchange(&dx);
+
+        CBearingData2 bd = m_DGetter.GetBrgData(this, nRow, m_pCompUnit, &dx);
+
+        bd.ElastomerThickness = m_BearingPierDetailData[nRow - 1].ElastomerThickness;
+        bd.ShimThickness = m_BearingPierDetailData[nRow - 1].ShimThickness;
+        bd.CoverThickness = m_BearingPierDetailData[nRow - 1].CoverThickness;
+        bd.NumIntLayers = m_BearingPierDetailData[nRow - 1].NumIntLayers;
+        bd.FixedX = m_BearingPierDetailData[nRow - 1].FixedX;
+        bd.FixedY = m_BearingPierDetailData[nRow - 1].FixedY;
+        bd.UseExtPlates = m_BearingPierDetailData[nRow - 1].UseExtPlates;
+        bd.ShearDeformationOverride = m_BearingPierDetailData[nRow - 1].ShearDeformationOverride;
+
+        m_details_dlg.SetBearingDetailDlg(bd);
+
+        //bool bRepeatDialog = true;
+
+        //while (bRepeatDialog)
+        //{
+            if (m_details_dlg.DoModal() == IDOK)
+            {
+                const auto& computed_height = m_details_dlg.GetComputedHeight();
+
+                const auto& brg_details = m_details_dlg.GetBearingDetails();
+
+                //if (!IsEqual(computed_height, bd.Height))
+                //{
+                //    CString msg;
+                //    msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
+
+                //    if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
+                //    {
+                        
+
+
+                        SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingHeightCol), CGXStyle()
+                            .SetEnabled(FALSE)
+                            .SetHorizontalAlignment(DT_RIGHT)
+                            .SetVerticalAlignment(DT_TOP)
+                            .SetInterior(::GetSysColor(COLOR_BTNFACE))
+                            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+                            .SetValue(FormatDimension(computed_height, *m_pCompUnit, false))
+                        );
+
+                        
+
+
+                //       bRepeatDialog = false; // Exit loop
+                //    }
+                //    else
+                //    {
+                //        // Loop will repeat
+                //    }
+                //}
+                //else
+                //{
+                    bd.Height = computed_height;
+                //    bRepeatDialog = false;
+                //}
+
+                SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingLengthCol), CGXStyle()
+                    .SetReadOnly(FALSE)
+                    .SetEnabled(TRUE)
+                    .SetHorizontalAlignment(DT_RIGHT)
+                    .SetVerticalAlignment(DT_TOP)
+                    .SetValue(FormatDimension(brg_details.Length, *m_pCompUnit, false))
+                );
+
+                SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingWidthCol), CGXStyle()
+                    .SetReadOnly(FALSE)
+                    .SetEnabled(TRUE)
+                    .SetHorizontalAlignment(DT_RIGHT)
+                    .SetVerticalAlignment(DT_TOP)
+                    .SetValue(FormatDimension(brg_details.Width, *m_pCompUnit, false))
+                );
+
+                m_BearingPierDetailData[0].ElastomerThickness = brg_details.ElastomerThickness;
+                m_BearingPierDetailData[0].CoverThickness = brg_details.CoverThickness;
+                m_BearingPierDetailData[0].ShimThickness = brg_details.ShimThickness;
+                m_BearingPierDetailData[0].NumIntLayers = brg_details.NumIntLayers;
+                m_BearingPierDetailData[0].UseExtPlates = brg_details.UseExtPlates;
+                m_BearingPierDetailData[0].FixedX = brg_details.FixedX;
+                m_BearingPierDetailData[0].FixedY = brg_details.FixedY;
+                m_BearingPierDetailData[0].ShearDeformationOverride = brg_details.ShearDeformationOverride;
+
+
+            }
+            //else
+            //{
+            //    bRepeatDialog = false; // Dialog cancelled
+            //}
+        //}
+    }
+
 }

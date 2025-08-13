@@ -199,6 +199,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\SharedCtrls\MultiSelectGrid.cpp" />
     <ClCompile Include="ExportDlg.cpp" />
     <ClCompile Include="KDOTComponentInfo.cpp" />
     <ClCompile Include="KDOTExport.cpp" />

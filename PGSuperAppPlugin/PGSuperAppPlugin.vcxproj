@@ -195,11 +195,14 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\SharedCtrls\MultiBearingSelectGrid.cpp" />
+    <ClCompile Include="..\SharedCtrls\MultiSelectGrid.cpp" />
     <ClCompile Include="AbutmentConnectionsPage.cpp" />
     <ClCompile Include="AlignmentDescriptionDlg.cpp" />
     <ClCompile Include="AlignmentDisplayObjectEvents.cpp" />
     <ClCompile Include="AlignmentPlanView.cpp" />
     <ClCompile Include="AlignmentProfileView.cpp" />
+    <ClCompile Include="BearingDetailsDlg.cpp" />
     <ClCompile Include="BridgeDescDeckDetailsPage.cpp" />
     <ClCompile Include="BridgeDescDeckPointGrid.cpp" />
     <ClCompile Include="BridgeDescDeckRebarGrid.cpp" />
@@ -209,6 +212,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="BridgeDescFramingGrid.cpp" />
     <ClCompile Include="BridgeDescFramingPage.cpp" />
     <ClCompile Include="BridgeDescGeneralPage.cpp" />
+    <ClCompile Include="CopyBearingDlg.cpp" />
     <ClCompile Include="CopyPierDlg.cpp" />
     <ClCompile Include="CopyPierPropertiesCallbacks.cpp" />
     <ClCompile Include="CopyTempSupportDlg.cpp" />
@@ -322,6 +326,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="mfcdual.cpp" />
     <ClCompile Include="MomentLoadDrawStrategyImpl.cpp" />
     <ClCompile Include="MovePierDlg.cpp" />
+    <ClCompile Include="MultiBearingSelectDlg.cpp" />
     <ClCompile Include="MultiGirderSelectDlg.cpp" />
     <ClCompile Include="DeckRegionGrid.cpp" />
     <ClCompile Include="PermitRatingPage.cpp" />
@@ -583,11 +588,14 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="..\Include\Hints.h" />
     <ClInclude Include="..\Include\PGSuperUIUtil.h" />
     <ClInclude Include="..\Include\Plugins\PGSuperIEPlugin.h" />
+    <ClInclude Include="..\Include\SharedCtrls\MultiBearingSelectGrid.h" />
+    <ClInclude Include="..\Include\SharedCtrls\MultiSelectGrid.h" />
     <ClInclude Include="AbutmentConnectionsPage.h" />
     <ClInclude Include="AlignmentDescriptionDlg.h" />
     <ClInclude Include="AlignmentDisplayObjectEvents.h" />
     <ClInclude Include="AlignmentPlanView.h" />
     <ClInclude Include="AlignmentProfileView.h" />
+    <ClInclude Include="BearingDetailsDlg.h" />
     <ClInclude Include="BridgeDescDeckDetailsPage.h" />
     <ClInclude Include="BridgeDescDeckPointGrid.h" />
     <ClInclude Include="BridgeDescDeckRebarGrid.h" />
@@ -598,6 +606,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="BridgeDescFramingPage.h" />
     <ClInclude Include="BridgeDescGeneralPage.h" />
     <ClInclude Include="CLSID.h" />
+    <ClInclude Include="CopyBearingDlg.h" />
     <ClInclude Include="CopyPierDlg.h" />
     <ClInclude Include="CopyPierPropertiesCallbacks.h" />
     <ClInclude Include="CopyTempSupportDlg.h" />
@@ -739,6 +748,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="MomentLoadDrawStrategy.h" />
     <ClInclude Include="MomentLoadDrawStrategyImpl.h" />
     <ClInclude Include="MovePierDlg.h" />
+    <ClInclude Include="MultiBearingSelectDlg.h" />
     <ClInclude Include="MultiGirderSelectDlg.h" />
     <ClInclude Include="DeckRegionGrid.h" />
     <ClInclude Include="PermitRatingPage.h" />

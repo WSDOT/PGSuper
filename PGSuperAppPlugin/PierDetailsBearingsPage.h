@@ -63,6 +63,8 @@ private:
 
    CBearingData2 m_Bearings[2]; // bearing data for each line in dialog
 
+   CBearingDetailsDlg m_details_dlg;
+
    PierIndexType m_PierIdx;
    bool m_IsBoundaryPier;
    bool m_IsAbutment;
@@ -74,9 +76,12 @@ public:
    virtual BOOL OnInitDialog();
    afx_msg void OnBnClickedEditBearings();
    afx_msg void OnCbnSelchangeBrgType();
+   afx_msg void OnCbnSelchangeBrgDefType();
    afx_msg void OnCbnSelchangeBrgShape1();
    afx_msg void OnCbnSelchangeBrgCount1();
+   afx_msg void OnCbnEditBearingDetails1();
    afx_msg void OnCbnSelchangeBrgShape2();
    afx_msg void OnCbnSelchangeBrgCount2();
+   afx_msg void OnCbnEditBearingDetails2();
    afx_msg void OnHelp();
 };
