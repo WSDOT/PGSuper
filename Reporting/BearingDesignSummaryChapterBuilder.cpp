@@ -83,7 +83,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     *p << Sub2(_T("F"), _T("y")) << _T(" = Steel reinforcement yield strength") << rptNewLine;
     *p << Sub2(_T("") << symbol(DELTA) << _T("F"), _T("TH")) << _T(" = Steel reinforcement constant-amplitude fatigue threshold for Detail Category A") << rptNewLine;
-    *p << _T("-Live loads do not include impact") << rptNewLine << rptNewLine;
+    *p << rptNewLine;
 
     GET_IFACE2(pBroker, ISpecification, pSpec);
 
@@ -93,6 +93,10 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     *p << Sub2(_T("P"), _T("D")) << _T(" = Dead Load") << rptNewLine;
 
     *p << Sub2(_T("P"), _T("L")) << _T(" = Vertical Live Load") << rptNewLine;
+
+    *p << _T("*Live loads do not include impact") << rptNewLine;
+
+    *p << rptNewLine;
 
     GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     SHEARDEFORMATIONDETAILS sfDetails;
@@ -105,6 +109,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     *p << Sub2(symbol(theta), _T("s-cy")) << _T(" = cyclic component of maximum service limit design rotation") << rptNewLine;
     *p << Sub2(symbol(theta), _T("s")) << _T(" = maximum total service limit design rotation") << rptNewLine;
     *p << _T("*Static rotations include ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
+    *p << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, false, false) << rptNewLine;
@@ -113,7 +118,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     *p << Sub2(symbol(theta), _T("s-cy")) << _T(" = cyclic component of maximum service limit design rotation") << rptNewLine;
     *p << Sub2(symbol(theta), _T("s")) << _T(" = maximum total service limit design rotation") << rptNewLine;
     *p << _T("*Static rotations include ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
-
+    *p << rptNewLine;
 
     bool bCold;
     GET_IFACE2(pBroker, IEnvironment, pEnvironment);

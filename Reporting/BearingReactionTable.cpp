@@ -514,7 +514,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
 
         if (!bDetail)
         {
-            (*p_table)(0, col++) << COLHDR(Sub2(_T("P"), _T("L")), M, unitT);
+            (*p_table)(0, col++) << COLHDR(Sub2(_T("*P"), _T("L")), M, unitT);
         }
 
 
