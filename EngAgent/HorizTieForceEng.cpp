@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2025  Washington State Department of Transportation
+// Copyright Â© 1999-2025  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -372,7 +372,7 @@ void pgsHorizTieForceEng::ReportHorizontalTensionTieForceCheckDetails(const pgsG
       (*pTable)(0, col++) << COLHDR(Sub2(_T("y"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
       if (!bIsSymmetric) pTable->SetRowSpan(0, col, 2);
-      (*pTable)(0, col++) << COLHDR(Sub2(_T("c"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(0, col++) << COLHDR(Sub2(_T("c"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    }
    else
    {
@@ -381,14 +381,14 @@ void pgsHorizTieForceEng::ReportHorizontalTensionTieForceCheckDetails(const pgsG
       (*pTable)(1, col++) << Sub2(_T("n"), _T("f"));
       (*pTable)(1, col++) << COLHDR(Sub2(_T("x"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(1, col++) << COLHDR(Sub2(_T("y"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*pTable)(1, col++) << COLHDR(Sub2(_T("c"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(1, col++) << COLHDR(Sub2(_T("c"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
       pTable->SetColumnSpan(0, col, 4);
       (*pTable)(0, col) << _T("Right Side");
       (*pTable)(1, col++) << Sub2(_T("n"), _T("f"));
       (*pTable)(1, col++) << COLHDR(Sub2(_T("x"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       (*pTable)(1, col++) << COLHDR(Sub2(_T("y"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
-      (*pTable)(1, col++) << COLHDR(Sub2(_T("c"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(1, col++) << COLHDR(Sub2(_T("c"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
    }
 
    if (!bIsSymmetric) pTable->SetRowSpan(0, col, 2);
