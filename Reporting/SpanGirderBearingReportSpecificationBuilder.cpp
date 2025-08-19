@@ -222,29 +222,6 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiBearingReportSpecifi
         }
     }
 
-    //if (reactionLocations.size() == 1 && (girderKeys.front().groupIndex == ALL_GROUPS || girderKeys.front().girderIndex == ALL_GIRDERS))
-    //{
-    //    // multiple girders are selected... fill up the girder key vector
-    //    CGirderKey girderKey = girderKeys.front();
-    //    girderKeys.clear();
-    //    GET_IFACE(IBridge, pBridge);
-    //    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-    //    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-    //    GroupIndexType lastGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
-    //    for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
-    //    {
-    //        GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-    //        GirderIndexType firstGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex);
-    //        GirderIndexType lastGirderIdx = (girderKey.girderIndex == ALL_GIRDERS ? nGirders - 1 : firstGirderIdx);
-    //        for (GirderIndexType gdrIdx = firstGirderIdx; gdrIdx <= lastGirderIdx; gdrIdx++)
-    //        {
-    //            girderKeys.emplace_back(grpIdx, gdrIdx);
-    //        }
-    //    }
-    //}
-
-
-
     // Prompt for span, girder, and chapter list
     CMultiBearingReportDlg dlg(GetBroker(), rptDesc, pOldRptSpec);
     dlg.m_Bearings = reactionLocations;
