@@ -1464,17 +1464,17 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(BEARINGSHEARDEFORMATIO
              const auto& llDef = brgCalc.GetInstantaneousLiveLoadDeflectionMethodB(*pBearing, *pLoads, spec);
          }
 
-         Float64 computedHeight = brgCalc.ComputeBearingHeight(*pBearing);
-         if (!IsEqual(brgData.Height, computedHeight, 0.0001))
-         {
-             CString msg;
-             msg.Format(_T("Bearing height input (%s) does not equal the computed height. The computed height is used in the spec check report."),
-                 reactionLocation.PierLabel.c_str());
-             std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem = std::make_shared<pgsBridgeDescriptionStatusItem>(
-                 m_StatusGroupID, scidBearingWarning, pgsBridgeDescriptionStatusItem::Bearings, msg);
-             pStatusCenter->Add(pStatusItem);
-             m_CurrentBearingDesignStatusItems.emplace_back(pStatusItem->GetID());
-         }
+         //Float64 computedHeight = brgCalc.ComputeBearingHeight(*pBearing);
+         //if (!IsEqual(brgData.Height, computedHeight, 0.0001))
+         //{
+         //    CString msg;
+         //    msg.Format(_T("Bearing height input (%s) does not equal the computed height. The computed height is used in the spec check report."),
+         //        reactionLocation.PierLabel.c_str());
+         //    std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem = std::make_shared<pgsBridgeDescriptionStatusItem>(
+         //        m_StatusGroupID, scidBearingWarning, pgsBridgeDescriptionStatusItem::Bearings, msg);
+         //    pStatusCenter->Add(pStatusItem);
+         //    m_CurrentBearingDesignStatusItems.emplace_back(pStatusItem->GetID());
+         //}
 
          if (llDef > criteria.MaximumLiveLoadDeflection)
          {
