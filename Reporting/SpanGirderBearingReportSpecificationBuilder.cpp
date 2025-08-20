@@ -356,62 +356,77 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderBearin
     }
 }
 
-//std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderBearingReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
-//{
-//    GET_IFACE(ISelection, pSelection);
-//    CSelection selection = pSelection->GetSelection();
-//
-//    CGirderKey girderKey;
-//
-//    CBearingData2 bearing;
-// 
-//    if (selection.Type == CSelection::Span)
-//    {
-//        GET_IFACE(IBridge, pBridge);
-//        girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
-//        girderKey.girderIndex = 0;
-//    }
-//    else if (selection.Type == CSelection::Girder || selection.Type == CSelection::Segment || selection.Type == CSelection::ClosureJoint)
-//    {
-//        girderKey.groupIndex = selection.GroupIdx;
-//        girderKey.girderIndex = selection.GirderIdx;
-//    }
-//    else
-//    {
-//        girderKey.groupIndex = 0;
-//        girderKey.girderIndex = 0;
-//    }
-//
-//    GET_IFACE(IBridge, pBridge);
-//    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-//    if (girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex != ALL_GIRDERS && nGroups == 1)
-//    {
-//        // there is exactly one group and we have a valid girder number so take ALL_GROUPS to mean group 0... no prompting required
-//        girderKey.groupIndex = 0;
-//    }
-//    else if (girderKey.groupIndex == ALL_GROUPS || girderKey.girderIndex == ALL_GIRDERS)
-//    {
-//        AFX_MANAGE_STATE(AfxGetStaticModuleState());
-//        // we don't have a proper girder key.... prompt the user
-//        CSpanGirderReportDlg dlg(m_pBroker, rptDesc, CSpanGirderReportDlg::Mode::GroupGirderAndChapters, std::shared_ptr<WBFL::Reporting::ReportSpecification>());
-//        dlg.m_SegmentKey.groupIndex = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
-//        dlg.m_SegmentKey.girderIndex = girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex;
-//
-//        if (dlg.DoModal() == IDOK)
-//        {
-//            girderKey = dlg.m_SegmentKey;
-//        }
-//        else
-//        {
-//            return nullptr;
-//        }
-//    }
-//
-//    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CBearingReportSpecification>(rptDesc.GetReportName(), m_pBroker, bearing));
-//
-//    rptDesc.ConfigureReportSpecification(pRptSpec);
-//
-//    return pRptSpec;
-//}
-//
-//
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderBearingReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+{
+    
+    GET_IFACE2(GetBroker(), ISelection, pSelection);
+    CSelection selection = pSelection->GetSelection();
+
+    CGirderKey girderKey;
+    if (selection.Type == CSelection::Span)
+    {
+        GET_IFACE2(GetBroker(), IBridge, pBridge);
+        girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
+        girderKey.girderIndex = 0;
+    }
+    else if (selection.Type == CSelection::Girder || selection.Type == CSelection::Segment || selection.Type == CSelection::ClosureJoint)
+    {
+        girderKey.groupIndex = (selection.GroupIdx == INVALID_INDEX ? 0 : selection.GroupIdx);
+        girderKey.girderIndex = selection.GirderIdx;
+    }
+    else
+    {
+        girderKey.groupIndex = 0;
+        girderKey.girderIndex = 0;
+    }
+
+    GET_IFACE2(GetBroker(), IBearingDesign, pBearingDesign);
+    GET_IFACE2(GetBroker(), IIntervals, pIntervals);
+    GET_IFACE2(GetBroker(), IBridge, pBridge);
+
+    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+
+    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
+
+    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+    iter.First();
+    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
+
+    std::vector<ReactionLocation> data;
+
+    // Use iterator to walk locations
+    for (iter.First(); !iter.IsDone(); iter.Next())
+    {
+
+        const ReactionLocation& reactionLocation(iter.CurrentItem());
+
+        data.push_back(reactionLocation);
+
+    }
+
+    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CBearingReportSpecification>(rptDesc.GetReportName(), m_pBroker, data[0]));
+
+
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+    CSpanGirderBearingReportDlg dlg(GetBroker(), rptDesc, CSpanItemReportDlg::Mode::GroupGirderBearingAndChapters, pRptSpec);
+
+    dlg.m_Bearing = data[0];
+
+    if (dlg.DoModal() == IDOK)
+    {
+
+        std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+
+        pNewRptSpec = std::make_shared<CBearingReportSpecification>(rptDesc.GetReportName(), m_pBroker, dlg.m_Bearing);
+        
+
+        std::vector<std::_tstring> chList = dlg.m_ChapterList;
+        rptDesc.ConfigureReportSpecification(chList, pNewRptSpec);
+
+        return pNewRptSpec;
+    }
+
+    return nullptr;
+
+}
