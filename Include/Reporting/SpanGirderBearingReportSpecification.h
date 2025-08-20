@@ -83,8 +83,8 @@ public:
    CMultiBearingReportSpecification(const CMultiBearingReportSpecification& other);
    ~CMultiBearingReportSpecification(void);
 
-   //virtual std::_tstring GetReportTitle() const override;
-   //virtual std::_tstring GetReportContextString() const override;
+   virtual std::_tstring GetReportTitle() const override;
+   virtual std::_tstring GetReportContextString() const override;
 
    void SetReactionLocations(const std::vector<ReactionLocation>& reactionLocations);
    const std::vector<ReactionLocation>& GetReactionLocations() const;

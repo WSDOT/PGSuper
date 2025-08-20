@@ -22,74 +22,9 @@
 //
 #include "stdafx.h"
 #include <Reporting\SpanGirderBearingReportSpecification.h>
-//#include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 #include <AgentTools.h>
-//
-//
 
-//
-//
-//
-//
-///////////////////////////////////////////////////////////////////////////////////////////////
-//
-//CBearingReportHint::CBearingReportHint()
-//{
-//   m_Hint    = 0;
-//}
-//
-//CBearingReportHint::CBearingReportHint(const CBearingData2& bearing,Uint32 lHint) :
-//m_Bearing(bearing),m_Hint(lHint)
-//{
-//}
-//
-//void CBearingReportHint::SetHint(Uint32 lHint)
-//{
-//   m_Hint = lHint;
-//}
-//
-//Uint32 CBearingReportHint::GetHint()
-//{
-//   return m_Hint;
-//}
-//
-//void CBearingReportHint::SetBearing(const CBearingData2& bearing)
-//{
-//   m_Bearing = bearing;
-//}
-//
-//const CBearingData2& CBearingReportHint::GetBearing() const
-//{
-//   return m_Bearing;
-//}
-//
-//int CBearingReportHint::IsMyBearing(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, 
-//    const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec)
-//{
-//   auto pBearingRptHint = std::dynamic_pointer_cast<const CBearingReportHint>(pHint);
-//   if ( pBearingRptHint == nullptr )
-//   {
-//      return -1;
-//   }
-//
-//   auto pBearingRptSpec = std::dynamic_pointer_cast<const CBearingReportSpecification>(pRptSpec);
-//   if ( pBearingRptSpec != nullptr )
-//   {
-//      return (pBearingRptHint->m_Bearing == pBearingRptSpec->GetBearing() ? 1 : 0);
-//   }
-//   else
-//   {
-//      auto pMultiBearingRptSpec = std::dynamic_pointer_cast<const CMultiBearingReportSpecification>(pRptSpec);
-//      if ( pMultiBearingRptSpec != nullptr )
-//      {
-//         return pMultiBearingRptSpec->IsMyBearing(pBearingRptHint->m_Bearing);
-//      }
-//   }
-//
-//   return -1;
-//}
-//
 CBearingReportSpecification::CBearingReportSpecification(const std::_tstring& strReportName, 
     std::weak_ptr<WBFL::EAF::Broker> pBroker, const ReactionLocation& reactionLocation) :
 CBrokerReportSpecification(strReportName,pBroker)
@@ -156,27 +91,7 @@ std::_tstring CBearingReportSpecification::GetReportContextString() const
 
    return std::_tstring(msg);
 }
-//
-//void CBearingReportSpecification::SetGroupIndex(GroupIndexType grpIdx)
-//{
-//   //m_GirderKey.groupIndex = grpIdx;
-//}
-//
-////GroupIndexType CBearingReportSpecification::GetGroupIndex() const
-////{
-////   //return m_GirderKey.groupIndex;
-////}
-//
-//void CBearingReportSpecification::SetGirderIndex(GirderIndexType gdrIdx)
-//{
-//   //m_GirderKey.girderIndex = gdrIdx;
-//}
-//
-////GirderIndexType CBearingReportSpecification::GetGirderIndex() const
-////{
-////   //return m_GirderKey.girderIndex;
-////}
-//
+
 void CBearingReportSpecification::SetReactionLocation(const ReactionLocation& reactionLocation)
 {
    m_ReactionLocation = reactionLocation;
@@ -189,32 +104,6 @@ const ReactionLocation& CBearingReportSpecification::GetReactionLocation() const
 
 bool CBearingReportSpecification::IsValid() const
 {
-   //GET_IFACE(IBridge,pBridge);
-
-   //GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-   //if (nGroups <= m_GirderKey.groupIndex && m_GirderKey.groupIndex != ALL_GROUPS)
-   //{
-   //   // the group index is out of range (group probably got deleted)
-   //   return false;
-   //}
-
-   //GirderIndexType nGirders = 0;
-   //if (m_GirderKey.groupIndex == ALL_GROUPS)
-   //{
-   //   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
-   //   {
-   //      nGirders = Max(nGirders, pBridge->GetGirderCount(grpIdx));
-   //   }
-   //}
-   //else
-   //{
-   //   nGirders = pBridge->GetGirderCount(m_GirderKey.groupIndex);
-   //}
-
-   //if ( nGirders <= m_GirderKey.girderIndex )
-   //{
-   //   return false;
-   //}
 
    return CBrokerReportSpecification::IsValid();
 }
@@ -239,73 +128,74 @@ CMultiBearingReportSpecification::~CMultiBearingReportSpecification(void)
 {
 }
 
-////std::_tstring CMultiGirderReportSpecification::GetReportTitle() const
-////{
-////   return GetReportName() + _T(" - ") + GetReportContextString();
-////}
-////
-////// comparator to sort girderkeys
-////struct gkeyComparer
-////{
-////   bool operator() (CGirderKey i, CGirderKey j)
-////   {
-////      if (i.groupIndex == j.groupIndex)
-////      {
-////         return i.girderIndex < j.girderIndex;
-////      }
-////      else
-////      {
-////         return i.groupIndex < j.groupIndex;
-////      }
-////   }
-////};
-////
-////std::_tstring CMultiGirderReportSpecification::GetReportContextString() const
-////{
-////   GET_IFACE(IDocumentType,pDocType);
-////   bool bIsPGSuper = pDocType->IsPGSuperDocument();
-////
-////   // sort so that keys are grouped by span
-////   std::vector<CGirderKey> Keys(m_GirderKeys);
-////   gkeyComparer comp;
-////   std::sort(Keys.begin(), Keys.end(), comp);
-////
-////   std::_tostringstream os;
-////   bool bFirstGrp(true);
-////   GroupIndexType curGrp = Keys.front().groupIndex;
-////   for (auto& key : Keys)
-////   {
-////      if (bFirstGrp || key.groupIndex != curGrp)
-////      {
-////         if (!bFirstGrp)
-////         {
-////            os << _T("), ");
-////         }
-////
-////         if (bIsPGSuper)
-////         {
-////            os << _T("Span ") << LABEL_SPAN(key.groupIndex) << _T(" (Girder ") << LABEL_GIRDER(key.girderIndex);
-////         }
-////         else
-////         {
-////            os << _T("Group ") << LABEL_GROUP(key.groupIndex) << _T(" (Girder ") << LABEL_GIRDER(key.girderIndex);
-////         }
-////
-////         curGrp = key.groupIndex;
-////      }
-////      else
-////      {
-////         os << _T(",") << LABEL_GIRDER(key.girderIndex);
-////      }
-////
-////      bFirstGrp = false;
-////   }
-////
-////   os << _T(")");
-////
-////   return os.str();
-////}
-////
+std::_tstring CMultiBearingReportSpecification::GetReportTitle() const
+{
+   return GetReportName() + _T(" - ") + GetReportContextString();
+}
+
+
+// comparator to sort girder keys
+struct rlComparer
+{
+    bool operator() (ReactionLocation i, ReactionLocation j)
+    {
+        if (i.GirderKey.groupIndex == j.GirderKey.groupIndex)
+        {
+            return i.GirderKey.girderIndex < j.GirderKey.girderIndex;
+        }
+        else
+        {
+            return i.GirderKey.groupIndex < j.GirderKey.groupIndex;
+        }
+    }
+};
+
+std::_tstring CMultiBearingReportSpecification::GetReportContextString() const
+{
+   GET_IFACE2(GetBroker(), IDocumentType,pDocType);
+   bool bIsPGSuper = pDocType->IsPGSuperDocument();
+
+   // sort so that reaction locations are grouped by span/girder
+   std::vector<ReactionLocation> rls(m_ReactionLocations);
+   rlComparer comp;
+   std::sort(rls.begin(), rls.end(), comp);
+
+   std::_tostringstream os;
+   bool bFirstGrp(true);
+   GroupIndexType curGrp = m_ReactionLocations.front().GirderKey.groupIndex;
+   for (auto& rl : rls)
+   {
+      if (bFirstGrp || rl.GirderKey.groupIndex != curGrp)
+      {
+         if (!bFirstGrp)
+         {
+            os << _T("), ");
+         }
+
+         if (bIsPGSuper)
+         {
+            os << _T("Span ") << LABEL_SPAN(rl.GirderKey.groupIndex) << _T(" (Girder ") << LABEL_GIRDER(rl.GirderKey.girderIndex) << _T(" - ") << rl.PierLabel.c_str();
+         }
+         else
+         {
+            os << _T("Group ") << LABEL_GROUP(rl.GirderKey.groupIndex) << _T(" (Girder ") << LABEL_GIRDER(rl.GirderKey.girderIndex) << _T(" - ") << rl.PierLabel.c_str();
+         }
+
+         curGrp = rl.GirderKey.groupIndex;
+      }
+      else
+      {
+         os << _T(",") << _T(" Girder ") << LABEL_GIRDER(rl.GirderKey.girderIndex) << _T(" - ") << rl.PierLabel.c_str();
+      }
+
+      bFirstGrp = false;
+   }
+
+   os << _T(")");
+
+   return os.str();
+}
+
 void CMultiBearingReportSpecification::SetReactionLocations(const std::vector<ReactionLocation>& reactionLocations)
 {
    m_ReactionLocations = reactionLocations;
@@ -315,41 +205,6 @@ const std::vector<ReactionLocation>& CMultiBearingReportSpecification::GetReacti
 {
    return m_ReactionLocations;
 }
-////
-////bool CMultiGirderReportSpecification::IsMyGirder(const CGirderKey& girderKey) const
-////{
-////   std::vector<CGirderKey>::const_iterator it = std::find(m_GirderKeys.begin(), m_GirderKeys.end(), girderKey);
-////
-////   return (it != m_GirderKeys.end()) ? true : false;
-////}
-////
-////bool CMultiGirderReportSpecification::IsValid() const
-////{
-////   GET_IFACE(IBridge,pBridge);
-////   GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-////   std::vector<CGirderKey>::const_iterator iter(m_GirderKeys.begin());
-////   std::vector<CGirderKey>::const_iterator end(m_GirderKeys.end());
-////   for ( ; iter != end; iter++ )
-////   {
-////      const CGirderKey& girderKey(*iter);
-////
-////      if ( nGroups <= girderKey.groupIndex )
-////      {
-////         return false;
-////      }
-////
-////      GirderIndexType nGirders = pBridge->GetGirderCount(girderKey.groupIndex);
-////      if ( nGirders <= girderKey.girderIndex )
-////      {
-////         return false;
-////      }
-////   }
-////
-////   return CBrokerReportSpecification::IsValid();
-////}
-//
-////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////
 
 CMultiViewSpanGirderBearingReportSpecification::CMultiViewSpanGirderBearingReportSpecification(const std::_tstring& strReportName,
     std::weak_ptr<WBFL::EAF::Broker> pBroker, const std::vector<ReactionLocation>& reactionLocations) :
@@ -368,16 +223,6 @@ CMultiViewSpanGirderBearingReportSpecification::~CMultiViewSpanGirderBearingRepo
 {
 }
 
-//std::_tstring CMultiViewSpanGirderBearingReportSpecification::GetReportTitle() const
-//{
-//   return GetReportName();
-//}
-//
-//std::_tstring CMultiViewSpanGirderBearingReportSpecification::GetReportContextString() const
-//{
-//   return std::_tstring(); // may want to revisit
-//}
-//
 void CMultiViewSpanGirderBearingReportSpecification::SetReactionLocations(const std::vector<ReactionLocation>& reactionLocations)
 {
    m_ReactionLocations = reactionLocations;
@@ -387,38 +232,4 @@ const std::vector<ReactionLocation>& CMultiViewSpanGirderBearingReportSpecificat
 {
    return m_ReactionLocations;
 }
-//
-//int CMultiViewSpanGirderBearingReportSpecification::IsMyBearing(const CBearingData2& bearing) const
-//{
-//   std::vector<CBearingData2>::const_iterator it = std::find(m_Bearings.begin(), m_Bearings.end(), bearing);
-//
-//   return (it != m_Bearings.end()) ? 1 : 0;
-//}
-//
-//bool CMultiViewSpanGirderBearingReportSpecification::IsValid() const
-//{
-//   //GET_IFACE(IBridge,pBridge);
-//   //GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-//
-//   //std::vector<CGirderKey>::const_iterator iter(m_GirderKeys.begin());
-//   //std::vector<CGirderKey>::const_iterator end(m_GirderKeys.end());
-//   //for ( ; iter != end; iter++ )
-//   //{
-//   //   const CGirderKey& girderKey(*iter);
-//
-//   //   if ( nGroups <= girderKey.groupIndex )
-//   //   {
-//   //      return false;
-//   //   }
-//
-//   //   GirderIndexType nGdrs = pBridge->GetGirderCount(girderKey.groupIndex);
-//
-//   //   if ( nGdrs <= girderKey.groupIndex )
-//   //   {
-//   //      return false;
-//   //   }
-//   //}
-//
-//   return CBrokerReportSpecification::IsValid();
-//}
-//
+
