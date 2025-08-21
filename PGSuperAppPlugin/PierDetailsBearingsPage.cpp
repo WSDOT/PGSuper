@@ -303,11 +303,11 @@ BEGIN_MESSAGE_MAP(CPierDetailsBearingsPage, CPropertyPage)
    ON_CBN_SELCHANGE(IDC_BRG_TYPE, &CPierDetailsBearingsPage::OnCbnSelchangeBrgType)
    ON_CBN_SELCHANGE(IDC_BRG_SHAPE_1, &CPierDetailsBearingsPage::OnCbnSelchangeBrgShape1)
    ON_CBN_SELCHANGE(IDC_BRG_COUNT_1, &CPierDetailsBearingsPage::OnCbnSelchangeBrgCount1)
-   ON_CBN_SELCHANGE(IDC_BRG_DEF_TYPE_1, &CPierDetailsBearingsPage::OnCbnSelchangeBrgDefType)
+   ON_CBN_SELCHANGE(IDC_BRG_DEF_TYPE_1, &CPierDetailsBearingsPage::OnCbnSelchangeBrgDefType1)
    ON_BN_CLICKED(IDC_BUTTON_EDIT_BEARING_DETAIL_1, &CPierDetailsBearingsPage::OnCbnEditBearingDetails1)
    ON_CBN_SELCHANGE(IDC_BRG_SHAPE_2, &CPierDetailsBearingsPage::OnCbnSelchangeBrgShape2)
    ON_CBN_SELCHANGE(IDC_BRG_COUNT_2, &CPierDetailsBearingsPage::OnCbnSelchangeBrgCount2)
-   ON_CBN_SELCHANGE(IDC_BRG_DEF_TYPE_2, &CPierDetailsBearingsPage::OnCbnSelchangeBrgDefType)
+   ON_CBN_SELCHANGE(IDC_BRG_DEF_TYPE_2, &CPierDetailsBearingsPage::OnCbnSelchangeBrgDefType2)
    ON_BN_CLICKED(IDC_BUTTON_EDIT_BEARING_DETAIL_2, &CPierDetailsBearingsPage::OnCbnEditBearingDetails2)
    ON_COMMAND(ID_HELP, OnHelp)
 END_MESSAGE_MAP()
@@ -392,14 +392,14 @@ void  CPierDetailsBearingsPage::ShowCtrls()
    {
       OnCbnSelchangeBrgShape1();
       OnCbnSelchangeBrgCount1();
-      OnCbnSelchangeBrgDefType();
+      //OnCbnSelchangeBrgDefType();
    }
 
    if (sw2 == SW_SHOW)
    {
       OnCbnSelchangeBrgShape2();
       OnCbnSelchangeBrgCount2();
-      OnCbnSelchangeBrgDefType();
+      //OnCbnSelchangeBrgDefType();
    }
 
    GetDlgItem(IDC_BEARING)->ShowWindow(swh);
@@ -421,7 +421,7 @@ void CPierDetailsBearingsPage::OnCbnSelchangeBrgShape1()
    pwnd->EnableWindow(benable);
 }
 
-void CPierDetailsBearingsPage::OnCbnSelchangeBrgDefType()
+void CPierDetailsBearingsPage::OnCbnSelchangeBrgDefType1()
 {
 
     AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -429,7 +429,28 @@ void CPierDetailsBearingsPage::OnCbnSelchangeBrgDefType()
     CDataExchange dx(this, TRUE);
     DoDataExchange(&dx);
 
+    if (m_Bearings[pgsTypes::metStart].DefinitionType == BearingDefinitionType::btDetailed)
+    {
+        OnCbnEditBearingDetails1();
+    }
+
 }
+
+void CPierDetailsBearingsPage::OnCbnSelchangeBrgDefType2()
+{
+
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+    CDataExchange dx(this, TRUE);
+    DoDataExchange(&dx);
+
+    if (m_Bearings[pgsTypes::metEnd].DefinitionType == BearingDefinitionType::btDetailed)
+    {
+        OnCbnEditBearingDetails2();
+    }
+
+}
+
 
 void CPierDetailsBearingsPage::OnCbnSelchangeBrgCount1()
 {
@@ -476,56 +497,27 @@ void CPierDetailsBearingsPage::OnCbnEditBearingDetails1()
 
     m_details_dlg.SetBearingDetailDlg(m_Bearings[0]);
 
-    //bool bRepeatDialog = true;
+    if (m_details_dlg.DoModal() == IDOK)
+    {
+        const auto& computed_height = m_details_dlg.GetComputedHeight();
 
-    //while (bRepeatDialog)
-    //{
-        if (m_details_dlg.DoModal() == IDOK)
-        {
-            const auto& computed_height = m_details_dlg.GetComputedHeight();
+        m_Bearings[0].Height = computed_height;
 
-            //if (!IsEqual(computed_height, m_Bearings[0].Height))
-            //{
-            //    CString msg;
-            //    msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
+        (CEdit*)GetDlgItem(IDC_BRG_HEIGHT_1)->EnableWindow(FALSE);
 
-            //    if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
-            //    {
-                    m_Bearings[0].Height = computed_height;
+        const auto& brg_details = m_details_dlg.GetBearingDetails();
 
-                    (CEdit*)GetDlgItem(IDC_BRG_HEIGHT_1)->EnableWindow(FALSE);
-
-                    const auto& brg_details = m_details_dlg.GetBearingDetails();
-
-                    m_Bearings[0].Length = brg_details.Length;
-                    m_Bearings[0].Width = brg_details.Width;
-                    m_Bearings[0].ElastomerThickness = brg_details.ElastomerThickness;
-                    m_Bearings[0].CoverThickness = brg_details.CoverThickness;
-                    m_Bearings[0].ShimThickness = brg_details.ShimThickness;
-                    m_Bearings[0].NumIntLayers = brg_details.NumIntLayers;
-                    m_Bearings[0].UseExtPlates = brg_details.UseExtPlates;
-                    m_Bearings[0].FixedX = brg_details.FixedX;
-                    m_Bearings[0].FixedY = brg_details.FixedY;
-                    m_Bearings[0].ShearDeformationOverride = brg_details.ShearDeformationOverride;
-
-
-            //        bRepeatDialog = false; // Exit loop
-            //    }
-            //    else
-            //    {
-            //        // Loop will repeat
-            //    }
-            //}
-            //else
-            //{
-                m_Bearings[0].Height = computed_height;
-        //        bRepeatDialog = false;
-        //    }
-        //}
-        //else
-        //{
-        //    bRepeatDialog = false; // Dialog cancelled
-        //}
+        m_Bearings[0].Length = brg_details.Length;
+        m_Bearings[0].Width = brg_details.Width;
+        m_Bearings[0].ElastomerThickness = brg_details.ElastomerThickness;
+        m_Bearings[0].CoverThickness = brg_details.CoverThickness;
+        m_Bearings[0].ShimThickness = brg_details.ShimThickness;
+        m_Bearings[0].NumIntLayers = brg_details.NumIntLayers;
+        m_Bearings[0].UseExtPlates = brg_details.UseExtPlates;
+        m_Bearings[0].FixedX = brg_details.FixedX;
+        m_Bearings[0].FixedY = brg_details.FixedY;
+        m_Bearings[0].ShearDeformationOverride = brg_details.ShearDeformationOverride;
+        m_Bearings[0].Height = computed_height;
     }
 
     UpdateData(false);
@@ -552,56 +544,27 @@ void CPierDetailsBearingsPage::OnCbnEditBearingDetails2()
 
     m_details_dlg.SetBearingDetailDlg(m_Bearings[1]);
 
-    //bool bRepeatDialog = true;
+    if (m_details_dlg.DoModal() == IDOK)
+    {
+        const auto& computed_height = m_details_dlg.GetComputedHeight();
 
-    //while (bRepeatDialog)
-    //{
-        if (m_details_dlg.DoModal() == IDOK)
-        {
-            const auto& computed_height = m_details_dlg.GetComputedHeight();
+        m_Bearings[1].Height = computed_height;
 
-            //if (!IsEqual(computed_height, m_Bearings[1].Height))
-            //{
-            //    CString msg;
-            //    msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
+        (CEdit*)GetDlgItem(IDC_BRG_HEIGHT_1)->EnableWindow(FALSE);
 
-            //    if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
-            //    {
-                    m_Bearings[1].Height = computed_height;
+        const auto& brg_details = m_details_dlg.GetBearingDetails();
 
-                    (CEdit*)GetDlgItem(IDC_BRG_HEIGHT_1)->EnableWindow(FALSE);
-
-                    const auto& brg_details = m_details_dlg.GetBearingDetails();
-
-                    m_Bearings[1].Length = brg_details.Length;
-                    m_Bearings[1].Width = brg_details.Width;
-                    m_Bearings[1].ElastomerThickness = brg_details.ElastomerThickness;
-                    m_Bearings[1].CoverThickness = brg_details.CoverThickness;
-                    m_Bearings[1].ShimThickness = brg_details.ShimThickness;
-                    m_Bearings[1].NumIntLayers = brg_details.NumIntLayers;
-                    m_Bearings[1].UseExtPlates = brg_details.UseExtPlates;
-                    m_Bearings[1].FixedX = brg_details.FixedX;
-                    m_Bearings[1].FixedY = brg_details.FixedY;
-                    m_Bearings[1].ShearDeformationOverride = brg_details.ShearDeformationOverride;
-
-
-            //        bRepeatDialog = false; // Exit loop
-            //    }
-            //    else
-            //    {
-            //        // Loop will repeat
-            //    }
-            //}
-            //else
-            //{
-                m_Bearings[1].Height = computed_height;
-        //        bRepeatDialog = false;
-        //    }
-        //}
-        //else
-        //{
-        //    bRepeatDialog = false; // Dialog cancelled
-        //}
+        m_Bearings[1].Length = brg_details.Length;
+        m_Bearings[1].Width = brg_details.Width;
+        m_Bearings[1].ElastomerThickness = brg_details.ElastomerThickness;
+        m_Bearings[1].CoverThickness = brg_details.CoverThickness;
+        m_Bearings[1].ShimThickness = brg_details.ShimThickness;
+        m_Bearings[1].NumIntLayers = brg_details.NumIntLayers;
+        m_Bearings[1].UseExtPlates = brg_details.UseExtPlates;
+        m_Bearings[1].FixedX = brg_details.FixedX;
+        m_Bearings[1].FixedY = brg_details.FixedY;
+        m_Bearings[1].ShearDeformationOverride = brg_details.ShearDeformationOverride;
+        m_Bearings[1].Height = computed_height;
     }
 
     UpdateData(false);

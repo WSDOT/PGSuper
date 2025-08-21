@@ -55,7 +55,8 @@ protected:
 	//{{AFX_MSG(CBearingGdrGrid)
 		// NOTE - the ClassWizard will add and remove member functions here.
    afx_msg LRESULT ChangeTabName( WPARAM wParam, LPARAM lParam );
-   afx_msg void OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol);
+   afx_msg void OnSelectionChange();
+   void OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

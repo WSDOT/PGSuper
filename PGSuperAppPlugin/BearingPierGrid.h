@@ -122,7 +122,8 @@ protected:
    virtual int GetColWidth(ROWCOL nCol);
    virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
    virtual BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
-   afx_msg void OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol);
+   afx_msg void OnSelectionChange();
+   void OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol);
 
 public:
    // custom init for grid

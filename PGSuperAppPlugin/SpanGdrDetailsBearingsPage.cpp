@@ -311,11 +311,11 @@ void CSpanGdrDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CSpanGdrDetailsBearingsPage, CPropertyPage)
    ON_BN_CLICKED(IDC_EDIT_BEARINGS, &CSpanGdrDetailsBearingsPage::OnBnClickedEditBearings)
    ON_CBN_SELCHANGE(IDC_BRG_TYPE, &CSpanGdrDetailsBearingsPage::OnCbnSelchangeBrgType)
-    ON_CBN_SELCHANGE(IDC_BRG_DEF_TYPE_1, &CSpanGdrDetailsBearingsPage::OnCbnSelchangeBrgDefType)
+    ON_CBN_SELCHANGE(IDC_BRG_DEF_TYPE_1, &CSpanGdrDetailsBearingsPage::OnCbnSelchangeBrgDefType1)
    ON_CBN_SELCHANGE(IDC_BRG_SHAPE_1, &CSpanGdrDetailsBearingsPage::OnCbnSelchangeBrgShape1)
    ON_CBN_SELCHANGE(IDC_BRG_COUNT_1, &CSpanGdrDetailsBearingsPage::OnCbnSelchangeBrgCount1)
     ON_BN_CLICKED(IDC_BUTTON_EDIT_BEARING_DETAIL_1, &CSpanGdrDetailsBearingsPage::OnCbnEditBearingDetails1)
-    ON_CBN_SELCHANGE(IDC_BRG_DEF_TYPE_2, &CSpanGdrDetailsBearingsPage::OnCbnSelchangeBrgDefType)
+    ON_CBN_SELCHANGE(IDC_BRG_DEF_TYPE_2, &CSpanGdrDetailsBearingsPage::OnCbnSelchangeBrgDefType2)
    ON_CBN_SELCHANGE(IDC_BRG_SHAPE_2, &CSpanGdrDetailsBearingsPage::OnCbnSelchangeBrgShape2)
    ON_CBN_SELCHANGE(IDC_BRG_COUNT_2, &CSpanGdrDetailsBearingsPage::OnCbnSelchangeBrgCount2)
     ON_BN_CLICKED(IDC_BUTTON_EDIT_BEARING_DETAIL_2, &CSpanGdrDetailsBearingsPage::OnCbnEditBearingDetails2)
@@ -405,13 +405,33 @@ void  CSpanGdrDetailsBearingsPage::ShowCtrls()
    this->GetDlgItem(IDC_EDIT_BEARINGS)->ShowWindow(sb);
 }
 
-void CSpanGdrDetailsBearingsPage::OnCbnSelchangeBrgDefType()
+void CSpanGdrDetailsBearingsPage::OnCbnSelchangeBrgDefType1()
 {
 
     AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
     CDataExchange dx(this, TRUE);
     DoDataExchange(&dx);
+
+    if (m_Bearings[pgsTypes::metStart].DefinitionType == BearingDefinitionType::btDetailed)
+    {
+        OnCbnEditBearingDetails1();
+    }
+
+}
+
+void CSpanGdrDetailsBearingsPage::OnCbnSelchangeBrgDefType2()
+{
+
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+    CDataExchange dx(this, TRUE);
+    DoDataExchange(&dx);
+
+    if (m_Bearings[pgsTypes::metEnd].DefinitionType == BearingDefinitionType::btDetailed)
+    {
+        OnCbnEditBearingDetails2();
+    }
 
 }
 

@@ -285,6 +285,11 @@ void CBridgeDescrBearings::OnCbnSelchangeBrgDefType()
     CDataExchange dx(this, TRUE);
     DoDataExchange(&dx);
 
+    if (m_BearingInputData.m_SingleBearing.DefinitionType == BearingDefinitionType::btDetailed)
+    {
+        OnCbnEditBearingDetails();
+    }
+
 }
 
 void CBridgeDescrBearings::OnCbnEditBearingDetails()

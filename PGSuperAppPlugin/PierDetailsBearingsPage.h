@@ -76,10 +76,11 @@ public:
    virtual BOOL OnInitDialog();
    afx_msg void OnBnClickedEditBearings();
    afx_msg void OnCbnSelchangeBrgType();
-   afx_msg void OnCbnSelchangeBrgDefType();
+   afx_msg void OnCbnSelchangeBrgDefType1();
    afx_msg void OnCbnSelchangeBrgShape1();
    afx_msg void OnCbnSelchangeBrgCount1();
    afx_msg void OnCbnEditBearingDetails1();
+   afx_msg void OnCbnSelchangeBrgDefType2();
    afx_msg void OnCbnSelchangeBrgShape2();
    afx_msg void OnCbnSelchangeBrgCount2();
    afx_msg void OnCbnEditBearingDetails2();

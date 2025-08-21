@@ -70,6 +70,7 @@ CBearingGdrGrid::~CBearingGdrGrid()
 BEGIN_MESSAGE_MAP(CBearingGdrGrid, CGXGridWnd)
 	//{{AFX_MSG_MAP(CBearingGdrGrid)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
+   ON_CBN_SELCHANGE(GX_IDS_CTRL_CBS_DROPDOWNLIST, OnSelectionChange)
    ON_MESSAGE(WM_GX_NEEDCHANGETAB, ChangeTabName) 
 
 	//}}AFX_MSG_MAP
@@ -699,6 +700,7 @@ void CBearingGdrGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
        CString strDef = GetCellValue(nRow, nCol);
        if (strDef == _T("Detailed"))
        {
+
            SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingDetailButtonCol), CGXStyle()
                .SetEnabled(TRUE)
                .SetReadOnly(FALSE)
@@ -869,6 +871,24 @@ BOOL CBearingGdrGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	return CGXGridWnd::OnValidateCell(nRow, nCol);
 }
 
+void CBearingGdrGrid::OnSelectionChange()
+{
+    ROWCOL nRow;
+    ROWCOL nCol;
+
+    GetCurrentCell(&nRow, &nCol);
+
+    CComboBox* pCB = (CComboBox*)GetDlgItem(GX_IDS_CTRL_CBS_DROPDOWNLIST);
+    int curSel = pCB->GetCurSel();
+    BearingDefinitionType bdt = (BearingDefinitionType)curSel;
+
+    if (nCol == 3 && bdt == BearingDefinitionType::btDetailed)
+    {
+        OnClickedButtonRowCol(nRow, nCol);
+    }
+
+}
+
 LRESULT CBearingGdrGrid::ChangeTabName( WPARAM wParam, LPARAM lParam ) 
 {
    // don't allow userss to change tab names
@@ -884,7 +904,7 @@ void CBearingGdrGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
 
     CBearingData2 bd = m_DGetter.GetBrgData(this, nRow, m_pCompUnit, &dx);
 
-    if (nCol == 13)
+    if (nCol == 3 || nCol == 13)
     {
 
         bd.ElastomerThickness = m_girderBearingDetailData[nRow - 1].ElastomerThickness;
@@ -906,97 +926,69 @@ void CBearingGdrGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
 
         m_details_dlg.SetBearingDetailDlg(bd);
 
-        
+        if (m_details_dlg.DoModal() == IDOK)
+        {
+            const auto& computed_height = m_details_dlg.GetComputedHeight();
 
-        //bool bRepeatDialog = true;
+            const auto& brg_details = m_details_dlg.GetBearingDetails();
 
-        //while (bRepeatDialog)
-        //{
-            if (m_details_dlg.DoModal() == IDOK)
+
+            SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingHeightCol), CGXStyle()
+                .SetEnabled(FALSE)
+                .SetHorizontalAlignment(DT_RIGHT)
+                .SetVerticalAlignment(DT_TOP)
+                .SetInterior(::GetSysColor(COLOR_BTNFACE))
+                .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
+                .SetValue(FormatDimension(computed_height, *m_pCompUnit, false))
+            );
+
+            bd.Height = computed_height;
+
+
+            SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingLengthCol), CGXStyle()
+                .SetReadOnly(FALSE)
+                .SetEnabled(TRUE)
+                .SetHorizontalAlignment(DT_RIGHT)
+                .SetVerticalAlignment(DT_TOP)
+                .SetValue(FormatDimension(brg_details.Length, *m_pCompUnit, false))
+            );
+
+            SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingWidthCol), CGXStyle()
+                .SetReadOnly(FALSE)
+                .SetEnabled(TRUE)
+                .SetHorizontalAlignment(DT_RIGHT)
+                .SetVerticalAlignment(DT_TOP)
+                .SetInterior(::GetSysColor(COLOR_WINDOW))
+                .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+                .SetValue(FormatDimension(brg_details.Width, *m_pCompUnit, false))
+            );
+
+            // Find back index for this grid's span
+            PierIndexType backBlIdx = this->GetBackBearingIdx();
+            if (backBlIdx == INVALID_INDEX)
             {
-                const auto& computed_height = m_details_dlg.GetComputedHeight();
-
-                const auto& brg_details = m_details_dlg.GetBearingDetails();
-
-                //if (!IsEqual(computed_height, bd.Height))
-                //{
-                //    CString msg;
-                //    msg.Format(_T("The computed height and the initial input are different. Do you want to override the input?"));
-
-                //    if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) == IDYES)
-                //    {
-
-                        SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingHeightCol), CGXStyle()
-                            .SetEnabled(FALSE)
-                            .SetHorizontalAlignment(DT_RIGHT)
-                            .SetVerticalAlignment(DT_TOP)
-                            .SetInterior(::GetSysColor(COLOR_BTNFACE))
-                            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT))
-                            .SetValue(FormatDimension(computed_height, *m_pCompUnit, false))
-                        );
-
-                //        bRepeatDialog = false; // Exit loop
-                //    }
-                //    else
-                //    {
-                //        // Loop will repeat
-                //    }
-
-                //}
-                //else
-                //{
-                    bd.Height = computed_height;
-                    //bRepeatDialog = false;
-                //}
-
-                SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingLengthCol), CGXStyle()
-                    .SetReadOnly(FALSE)
-                    .SetEnabled(TRUE)
-                    .SetHorizontalAlignment(DT_RIGHT)
-                    .SetVerticalAlignment(DT_TOP)
-                    .SetValue(FormatDimension(brg_details.Length, *m_pCompUnit, false))
-                );
-
-                SetStyleRange(CGXRange(nRow, m_DGetter.m_BearingWidthCol), CGXStyle()
-                    .SetReadOnly(FALSE)
-                    .SetEnabled(TRUE)
-                    .SetHorizontalAlignment(DT_RIGHT)
-                    .SetVerticalAlignment(DT_TOP)
-                    .SetInterior(::GetSysColor(COLOR_WINDOW))
-                    .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
-                    .SetValue(FormatDimension(brg_details.Width, *m_pCompUnit, false))
-                );
-
-                // Find back index for this grid's span
-                PierIndexType backBlIdx = this->GetBackBearingIdx();
-                if (backBlIdx == INVALID_INDEX)
-                {
-                    return;
-                }
-
-
-                
-                
-                GirderIndexType gdrIdx = (int)((nRow-1) / 2 + 1);
-                if ((nRow-1) % 2 == 0)
-                {
-                    gdrIdx = (nRow-1) / 2;
-                }
-                m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].NumIntLayers = m_girderBearingDetailData[nRow - 1].NumIntLayers = brg_details.NumIntLayers;
-                m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].ElastomerThickness = m_girderBearingDetailData[nRow - 1].ElastomerThickness = brg_details.ElastomerThickness;
-                m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].CoverThickness = m_girderBearingDetailData[nRow - 1].CoverThickness = brg_details.CoverThickness;
-                m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].ShimThickness = m_girderBearingDetailData[nRow - 1].ShimThickness = brg_details.ShimThickness;
-                m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].UseExtPlates = m_girderBearingDetailData[nRow - 1].UseExtPlates = brg_details.UseExtPlates;
-                m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].FixedX = m_girderBearingDetailData[nRow - 1].FixedX = brg_details.FixedX;
-                m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].FixedY = m_girderBearingDetailData[nRow - 1].FixedY = brg_details.FixedY;
-                m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].ShearDeformationOverride = m_girderBearingDetailData[nRow - 1].ShearDeformationOverride = brg_details.ShearDeformationOverride;
-
+                return;
             }
-            //else
-            //{
-            //    //bRepeatDialog = false; // Dialog cancelled
-            //}
-        //}
+
+
+                
+                
+            GirderIndexType gdrIdx = (int)((nRow-1) / 2 + 1);
+            if ((nRow-1) % 2 == 0)
+            {
+                gdrIdx = (nRow-1) / 2;
+            }
+            m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].NumIntLayers = m_girderBearingDetailData[nRow - 1].NumIntLayers = brg_details.NumIntLayers;
+            m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].ElastomerThickness = m_girderBearingDetailData[nRow - 1].ElastomerThickness = brg_details.ElastomerThickness;
+            m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].CoverThickness = m_girderBearingDetailData[nRow - 1].CoverThickness = brg_details.CoverThickness;
+            m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].ShimThickness = m_girderBearingDetailData[nRow - 1].ShimThickness = brg_details.ShimThickness;
+            m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].UseExtPlates = m_girderBearingDetailData[nRow - 1].UseExtPlates = brg_details.UseExtPlates;
+            m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].FixedX = m_girderBearingDetailData[nRow - 1].FixedX = brg_details.FixedX;
+            m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].FixedY = m_girderBearingDetailData[nRow - 1].FixedY = brg_details.FixedY;
+            m_pBearingInputData->m_Bearings[backBlIdx].m_BearingsForGirders[gdrIdx].ShearDeformationOverride = m_girderBearingDetailData[nRow - 1].ShearDeformationOverride = brg_details.ShearDeformationOverride;
+
+        }
+
     }
 
 }
@@ -1009,8 +1001,6 @@ BOOL CBearingGdrGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
 
     CDataExchange dx(this, TRUE);
     DoDataExchange(&dx);
-
-    //CBearingData2 bd = m_DGetter.GetBrgData(this, nRow, m_pCompUnit, &dx);
 
     // make a local copy of data and only overwrite if we are successful
     BearingInputData localBearingData(*m_pBearingInputData);

@@ -141,7 +141,7 @@ void CBearingSame4BridgeDlg::UploadData(const BearingInputData& rData)
 
    OnCbnSelchangeBrgShape();
    OnCbnSelchangeBrgCount();
-   OnCbnSelchangeBrgDefType();
+
 }
 
 void CBearingSame4BridgeDlg::DownloadData(BearingInputData* pData,CDataExchange* pDX)
@@ -208,6 +208,11 @@ void CBearingSame4BridgeDlg::OnCbnSelchangeBrgDefType()
 
     CDataExchange dx(this, TRUE);
     DoDataExchange(&dx);
+
+    if (m_BearingData.DefinitionType == BearingDefinitionType::btDetailed)
+    {
+        OnCbnEditBearingDetails();
+    }
 
 }
 
