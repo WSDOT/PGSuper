@@ -73,6 +73,7 @@ void CBearingMultiViewReportDlg::DoDataExchange(CDataExchange* pDX)
     GET_IFACE(IIntervals, pIntervals);
     GET_IFACE(IBridge, pBridge);
     GET_IFACE(IBridgeDescription, pIBridgeDesc);
+    GET_IFACE(IPointOfInterest, pPoi);
 
     const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -80,7 +81,7 @@ void CBearingMultiViewReportDlg::DoDataExchange(CDataExchange* pDX)
 
     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, m_GirderKey));
 
-    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
     iter.First();
     PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
@@ -280,6 +281,7 @@ void CBearingMultiViewReportDlg::UpdateBearingComboBox()
     GET_IFACE(IIntervals, pIntervals);
     GET_IFACE(IBridge, pBridge);
     GET_IFACE(IBridgeDescription, pIBridgeDesc);
+    GET_IFACE(IPointOfInterest, pPoi);
 
     const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -288,7 +290,7 @@ void CBearingMultiViewReportDlg::UpdateBearingComboBox()
     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, 
         lastCompositeDeckIntervalIdx, CGirderKey(grpIdx, gdrIdx)));
 
-    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
     iter.First();
     PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 

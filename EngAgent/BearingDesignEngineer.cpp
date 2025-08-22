@@ -567,6 +567,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
     GET_IFACE2(GetBroker(),IBridgeDescription, pBridgeDesc);
     GET_IFACE2(GetBroker(),IBridge, pBridge);
     GET_IFACE2(GetBroker(),IBearingDesign, pBearingDesign);
+    GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
 
     GetBearingParameters(girderKey, pDetails);
 
@@ -577,7 +578,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
     const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
     PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
 
-    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge,pPOI);
+    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge,pPoi);
 
     // Use iterator to walk locations
     for (iter.First(); !iter.IsDone(); iter.Next())

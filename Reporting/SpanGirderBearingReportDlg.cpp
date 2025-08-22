@@ -141,7 +141,9 @@
      GET_IFACE(IBearingDesign, pBearingDesign);
      GET_IFACE(IIntervals, pIntervals);
      GET_IFACE(IBridge, pBridge);
+     GET_IFACE(IPointOfInterest, pPoi);
      GET_IFACE(IBridgeDescription, pIBridgeDesc);
+     
 
      const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -149,7 +151,7 @@
 
      std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(grpIdx, gdrIdx)));
 
-     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
      iter.First();
      PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 

@@ -322,13 +322,15 @@ void CCopyBearingDlg::FillReactionLocationComboBox(CComboBox& cbReactionLocation
    GET_IFACE(IBearingDesign, pBearingDesign);
    GET_IFACE(IIntervals, pIntervals);
    GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IPointOfInterest, pPoi);
+
 
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
        pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(grpIdx, gdrIdx)));
 
-   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
    iter.First();
    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
@@ -491,13 +493,14 @@ ReactionLocation CCopyBearingDlg::GetFromReactionLocation()
    GET_IFACE(IBearingDesign, pBearingDesign);
    GET_IFACE(IIntervals, pIntervals);
    GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IPointOfInterest, pPoi);
 
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
        pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(grpIdx, gdrIdx)));
 
-   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
    iter.First();
    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
@@ -566,13 +569,14 @@ std::vector<ReactionLocation> CCopyBearingDlg::GetToReactionLocations()
              GET_IFACE(IBearingDesign, pBearingDesign);
              GET_IFACE(IIntervals, pIntervals);
              GET_IFACE(IBridge, pBridge);
+             GET_IFACE(IPointOfInterest, pPoi);
 
              IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
              std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
                  pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(grpIdx, gdrIdx)));
 
-             ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+             ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
              iter.First();
              PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 

@@ -160,6 +160,7 @@ BOOL CMultiBearingReportDlg::OnInitDialog()
     GET_IFACE2(pBroker, IBridge, pBridge);
     GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
     GET_IFACE2(pBroker, IIntervals, pIntervals);
+    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
     GroupGirderCollection grpGdrColl;
 
@@ -184,7 +185,7 @@ BOOL CMultiBearingReportDlg::OnInitDialog()
             std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
                 pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
-            ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+            ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
 
             IndexType nBearings = 0;
             for (iter.First(); !iter.IsDone(); iter.Next())
@@ -209,7 +210,7 @@ BOOL CMultiBearingReportDlg::OnInitDialog()
         std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
             pBearingDesign, lastCompositeDeckIntervalIdx, reactionLocation.GirderKey));
 
-        ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+        ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
 
         IndexType rlIdx = 0;
         IndexType rlOnIdx;

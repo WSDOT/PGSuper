@@ -76,6 +76,7 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
     GET_IFACE2(pBroker, IBridge, pBridge);
     GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
     GET_IFACE2(pBroker, IIntervals, pIntervals);
+    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
     GirderIndexType nGirdersTotal = 0;
     CGirderKey gkey(0, 0); // girderKey with max no. RLs
@@ -96,7 +97,7 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
             std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
                 pBearingDesign, lastCompositeDeckIntervalIdx, gkey));
 
-            ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+            ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
 
             for (iter.First(); !iter.IsDone(); iter.Next())
             {
@@ -190,6 +191,7 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
     // left column labels
 
     GET_IFACE2(pBroker, IDocumentType, pDocType);
+
     bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
     RowIndexType row = 0;
@@ -241,7 +243,7 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
             std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
                 pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(grpIdx, gdrIdx)));
 
-            ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+            ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
 
             for (IndexType rlIdx = 0; rlIdx < m_vRL.size(); rlIdx++)
             {
@@ -318,6 +320,7 @@ std::vector<ReactionLocation> CMultiBearingSelectGrid::GetData()
                 GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
                 GET_IFACE2(pBroker, IIntervals, pIntervals);
                 GET_IFACE2(pBroker, IBridge, pBridge);
+                GET_IFACE2(pBroker, IPointOfInterest, pPoi);
                 IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
                 IndexType ggIdx = 0;
@@ -333,7 +336,7 @@ std::vector<ReactionLocation> CMultiBearingSelectGrid::GetData()
                         std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
                             pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(grpIdx, gdrIdx)));
 
-                        ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+                        ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
 
 
                         for (iter.First(); !iter.IsDone(); iter.Next())

@@ -1852,6 +1852,9 @@
     <ClInclude Include="..\Include\SharedCtrls\MultiBearingSelectGrid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\ReactionLocation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bss.ico">

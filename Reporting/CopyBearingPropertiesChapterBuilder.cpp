@@ -101,6 +101,7 @@ rptChapter* CCopyBearingPropertiesChapterBuilder::Build(const std::shared_ptr<co
    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
 
    RowIndexType row = 1;
@@ -122,7 +123,7 @@ rptChapter* CCopyBearingPropertiesChapterBuilder::Build(const std::shared_ptr<co
            const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(girderKey.groupIndex);
            PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
 
-           ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+           ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
 
            // Use iterator to walk locations
            for (iter.First(); !iter.IsDone(); iter.Next())

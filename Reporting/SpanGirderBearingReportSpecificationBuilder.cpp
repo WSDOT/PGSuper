@@ -199,13 +199,14 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiBearingReportSpecifi
         GET_IFACE2(GetBroker(), IBearingDesign, pBearingDesign);
         GET_IFACE2(GetBroker(), IIntervals, pIntervals);
         GET_IFACE2(GetBroker(), IBridge, pBridge);
+        GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
 
         IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
         std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
             pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
-        ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+        ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
         iter.First();
         PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
@@ -306,12 +307,13 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiBearingReportSpecifi
 
     GET_IFACE2(GetBroker(), IBearingDesign, pBearingDesign);
     GET_IFACE2(GetBroker(), IIntervals, pIntervals);
+    GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
 
     IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
-    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
     iter.First();
     PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
@@ -385,12 +387,13 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderBearin
         GET_IFACE2(GetBroker(), IBearingDesign, pBearingDesign);
         GET_IFACE2(GetBroker(), IIntervals, pIntervals);
         GET_IFACE2(GetBroker(), IBridge, pBridge);
+        GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
 
         IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
         std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
-        ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+        ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
         iter.First();
         PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
@@ -466,12 +469,13 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderBearin
     GET_IFACE2(GetBroker(), IBearingDesign, pBearingDesign);
     GET_IFACE2(GetBroker(), IIntervals, pIntervals);
     GET_IFACE2(GetBroker(), IBridge, pBridge);
+    GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
 
     IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
-    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
     iter.First();
     PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
