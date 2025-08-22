@@ -61,7 +61,7 @@ void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, std::shared_
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    pPara->SetName(_T("Principal Tensile Stresses in Webs"));
-   *pPara << pPara->GetName() << rptNewLine;
+   *pPara << pPara->GetName() << _T(" [5.9.2.3.3]") << rptNewLine;
    *pChapter << pPara;
 
    pPara = new rptParagraph;

@@ -77,7 +77,7 @@ protected:
 
    CString GetDataLabel(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx);
 
-   void InitializeGraph(IndexType graphIdx, const CAnalysisResultsGraphDefinition& graphDef, ActionType actionType, IntervalIndexType intervalIdx, bool bIsFinalShear, std::array<IndexType, 4>* pDataSeriesID, std::array<pgsTypes::BridgeAnalysisType, 4>* pBat, std::array<pgsTypes::StressLocation, 4>* pStressLocations, IndexType* pAnalysisTypeCount);
+   void InitializeGraph(IndexType graphIdx, const CAnalysisResultsGraphDefinition& graphDef, ActionType actionType, IntervalIndexType intervalIdx, bool bIsFinalShear, std::array<IndexType, 8>* pDataSeriesID, std::array<pgsTypes::BridgeAnalysisType, 8>* pBat, std::array<pgsTypes::StressLocation, 8>* pStressLocations, IndexType* pAnalysisTypeCount);
 
    void ProductLoadGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const PoiList& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear);
    void CombinedLoadGraph(IndexType graphIdx,const CAnalysisResultsGraphDefinition& graphDef,IntervalIndexType intervalIdx,const PoiList& vPoi,const std::vector<Float64>& xVals,bool bIsFinalShear);

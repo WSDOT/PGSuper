@@ -31,6 +31,7 @@
 #include <IFace\CrackedSection.h>
 #include <IFace\PrestressForce.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\AutoProgress.h>
 
 #include <psgLib/MomentCapacityCriteria.h>
 

@@ -2076,7 +2076,9 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       SHEARCAPACITYDETAILS scd;
       pShearCapacity->GetShearCapacityDetails(pgsTypes::StrengthI, liveLoadIntervalIdx, poi, nullptr, &scd);
       resultsFile<<bridgeId<<", "<<pid<<", 50031, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.Aps , WBFL::Units::Measure::Millimeter2)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50031a, "<<loc<<", "<< QUIET(scd.Kds) << ", 15, " << SEGMENT(segmentKey) << std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50032, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.As , WBFL::Units::Measure::Millimeter2)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50032a, "<<loc<<", "<< QUIET(scd.Kdb) << ", 15, " << SEGMENT(segmentKey) << std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50033, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,erectSegmentIntervalIdx,pgsTypes::End), WBFL::Units::Measure::MPa)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50042, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.pVn , WBFL::Units::Measure::Newton)) <<    ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50043, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.Vn , WBFL::Units::Measure::Newton)) <<     ", 15, "<<SEGMENT(segmentKey)<<std::endl;
@@ -2095,6 +2097,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50055, "<<loc<<", "<< QUIET(scd.Fe) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50056, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.Theta, WBFL::Units::Measure::Degree)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50057, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.fpops, WBFL::Units::Measure::MPa)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile << bridgeId << ", " << pid << ", 50057a, " << loc << ", " << QUIET(scd.Kdt) << ", 15, " << SEGMENT(segmentKey) << std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50058, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.fpeps, WBFL::Units::Measure::MPa)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile << bridgeId << ", " << pid << ", 50059s, " << loc << ", " << QUIET(WBFL::Units::ConvertFromSysUnits(scd.fpoptSegment, WBFL::Units::Measure::MPa)) << ", 15, " << SEGMENT(segmentKey) << std::endl;
       resultsFile << bridgeId << ", " << pid << ", 50060s, " << loc << ", " << QUIET(WBFL::Units::ConvertFromSysUnits(scd.fpeptSegment, WBFL::Units::Measure::MPa)) << ", 15, " << SEGMENT(segmentKey) << std::endl;

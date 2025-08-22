@@ -10,7 +10,7 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.33    6   8.67 James Garner Ave    1     2     III           22  0.6  270  13.75  13.75  10.00  10.00   0.50                                               2  42.0 42.0  8.300  8.300   3.361    -3.759     4219   0.699  0.949   1.876 -0.964  0.000 -0.049 -1.013  65.45  157.05    1.00    1.00    1.00    1.38    0.88    1.79    1.56    1.04 
+ 46.33    6   8.67 James Garner Ave    1     2     III           22  0.6  270  13.75  13.75  10.00  10.00   0.50                                               2  42.0 42.0  8.300  8.300   3.361    -3.759     4219   0.699  0.949   1.876 -0.964  0.000 -0.049 -1.013  65.45  157.05    1.00    1.00    1.00    1.38    0.88    1.79    1.58    1.04 
 
 
 The Specification Check was Not Successful
@@ -22,7 +22,7 @@ Slab Offset ("A" Dimension) check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 46.33    6   8.67 James Garner Ave    1     4     III           22  0.6  270  13.75  13.75  10.00  10.00   1.00                                               2  42.0 42.0  8.300  8.300   3.233    -3.654     4148   0.699  0.861   1.876 -0.960  0.000 -0.049 -1.009  65.45  158.19    1.00    1.00    1.00    1.41    0.99    1.83    1.72    1.13 
+ 46.33    6   8.67 James Garner Ave    1     4     III           22  0.6  270  13.75  13.75  10.00  10.00   1.00                                               2  42.0 42.0  8.300  8.300   3.233    -3.654     4148   0.699  0.861   1.876 -0.960  0.000 -0.049 -1.009  65.45  158.19    1.00    1.00    1.00    1.41    0.99    1.83    1.74    1.13 
 
 
 The Specification Check was Not Successful

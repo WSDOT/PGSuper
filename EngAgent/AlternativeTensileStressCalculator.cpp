@@ -26,7 +26,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace/PointOfInterest.h>
-
+#include <EAF\EAFUtilities.h>
 
 /****************************************************************************
 CLASS

@@ -16,7 +16,7 @@ Examples Configurations
 ---------------
 
 ### Local or Network File System ###
-This type of server is typically used on a computer that is not on a network or for a group of users who want to keep their configration private from the rest of the world.
+This type of server is typically used on a computer that is not on a network or for a group of users who want to keep their configuration private from the rest of the world.
 
 ![](FileConfigurationServer.png)
 
@@ -25,7 +25,7 @@ This type of server is typically used to share a configuration across the intern
 
 ![](FTPConfigurationServer.png)
 
-### HTTP Server ###
+### HTTP/HTTPS Server ###
 This type of server is typically used to share a configuration across the internet. 
 
 ![](HTTPConfigurationServer.png)
