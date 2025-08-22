@@ -76,7 +76,7 @@ std::_tstring CBearingReportSpecification::GetReportContextString() const
    {
       if ( grpIdx != INVALID_INDEX && gdrIdx != INVALID_INDEX )
       {
-          msg.Format(_T("Span %s Girder %s - %s"), LABEL_SPAN(m_ReactionLocation.GirderKey.groupIndex),
+          msg.Format(_T("Group %s Girder %s - %s"), LABEL_SPAN(m_ReactionLocation.GirderKey.groupIndex),
               LABEL_GIRDER(m_ReactionLocation.GirderKey.girderIndex), m_ReactionLocation.PierLabel.c_str());
       }
       else if( grpIdx != INVALID_INDEX )
