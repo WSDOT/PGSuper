@@ -63,6 +63,8 @@ rptRcTable* CUserReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
 
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+
    GET_IFACE2(pBroker,IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
@@ -83,7 +85,7 @@ rptRcTable* CUserReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker
    }
 
    // User iterator to walk locations
-   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge,pPoi);
 
    for (iter.First(); !iter.IsDone(); iter.Next())
    {

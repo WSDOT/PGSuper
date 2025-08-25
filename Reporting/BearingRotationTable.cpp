@@ -699,7 +699,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(std::shared_ptr<WBF
 
 
 
-    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge,pPOI);
     iter.First();
     PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 

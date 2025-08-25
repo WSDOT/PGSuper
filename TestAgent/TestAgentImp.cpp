@@ -1814,6 +1814,27 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    CGirderKey girderKey(segmentKey);
    const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
+   auto nHorizTensionTieArtifacts = pGdrArtifact->GetHorizontalTensionTieArtifactCount();
+   for (auto i = 0; i < nHorizTensionTieArtifacts; i++)
+   {
+      auto* pHorizTensionTieArtifact = pGdrArtifact->GetHorizontalTensionTieArtifact(i);
+      if(pHorizTensionTieArtifact->IsApplicable())
+      {
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100100, ")<<-1<<_T(", ")<<(int)(pHorizTensionTieArtifact->Passed()?1:0)<<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100101, ")<<-1<<_T(", ")<< QUIET(pHorizTensionTieArtifact->GetTieForce()) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100102, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetTieResistance()) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100103, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetHorizDistance(pgsTypes::stLeft)) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100104, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetHorizDistance(pgsTypes::stRight)) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100105, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetVertDistance(pgsTypes::stLeft)) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl; 
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100106, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetVertDistance(pgsTypes::stRight)) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100107, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetBearingReactionLocation(pgsTypes::stLeft)) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100108, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetBearingReactionLocation(pgsTypes::stRight)) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100109, ") << -1 << _T(", ") << pHorizTensionTieArtifact->GetNumBondedStrandsInFlange(pgsTypes::stLeft) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100110, ") << -1 << _T(", ") << pHorizTensionTieArtifact->GetNumBondedStrandsInFlange(pgsTypes::stRight) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100111, ") << -1 << _T(", ") << pHorizTensionTieArtifact->GetTotalNumBondedStrands() << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+      }
+   }
+
    const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
    const pgsStirrupCheckArtifact* pstirrup_artifact= pSegmentArtifact->GetStirrupCheckArtifact();
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100200 , ")<<-1<<_T(", ")<<(int)(pSegmentArtifact->Passed()?1:0) <<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;

@@ -22,18 +22,15 @@
 
 #pragma once
 
-#include <PgsExt\ConstructabilityArtifact.h>
-#include <PgsExt\GirderDesignArtifact.h>
-#include <PgsExt\SegmentDesignArtifact.h>
-#include <PgsExt\FlexuralCapacityArtifact.h>
-#include <PgsExt\FlexuralStressArtifact.h>
-#include <PgsExt\GirderArtifact.h>
-#include <PgsExt\HoldDownForceArtifact.h>
-#include <PgsExt\PoiArtifactKey.h>
-#include <PgsExt\PoiMgr.h>
-#include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\StrandSlopeArtifact.h>
-#include <PgsExt\StrandStressArtifact.h>
-#include <PgsExt\PrincipalTensionStressArtifact.h>
-#include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\ReinforcementFatigueArtifact.h>
+#include <Reporting\ReportingExp.h>
+#include <Reporter\Chapter.h>
+#include <Reporting\PGSuperChapterBuilder.h>
+
+class REPORTINGCLASS CHorizontalTensionTieCheckDetailsChapterBuilder : public CPGSuperChapterBuilder
+{
+public:
+   CHorizontalTensionTieCheckDetailsChapterBuilder(bool bSelect = true);
+
+   LPCTSTR GetName() const override;
+   rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+};

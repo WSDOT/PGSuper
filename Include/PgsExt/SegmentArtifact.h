@@ -57,28 +57,12 @@
 class PGSEXTCLASS pgsSegmentArtifact
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    pgsSegmentArtifact(const CSegmentKey& segmentKey);
+   pgsSegmentArtifact(const pgsSegmentArtifact& rOther) = default;
+   ~pgsSegmentArtifact() = default;
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsSegmentArtifact(const pgsSegmentArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsSegmentArtifact();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   pgsSegmentArtifact& operator = (const pgsSegmentArtifact& rOther);
+   pgsSegmentArtifact& operator = (const pgsSegmentArtifact& rOther) = default;
    bool operator<(const pgsSegmentArtifact& rOther) const;
-
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
 
    //------------------------------------------------------------------------
    // Sets the strand stress artifact for this artifact
@@ -184,24 +168,7 @@ public:
 
    const CSegmentKey& GetSegmentKey() const;
 
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const pgsSegmentArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsSegmentArtifact& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
    CSegmentKey m_SegmentKey;
 
    pgsStrandStressArtifact     m_StrandStressArtifact;

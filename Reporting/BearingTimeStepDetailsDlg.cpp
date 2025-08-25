@@ -166,10 +166,11 @@ void CBearingTimeStepDetailsDlg::UpdateReactionLocation()
    GET_IFACE(IBearingDesign, pBearingDesign);
    GET_IFACE(IIntervals, pIntervals);
    GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IPointOfInterest, pPoi);
 
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    std::unique_ptr<CmbLsBearingDesignReactionAdapter> pForces(std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, m_GirderKey));
-   m_vReactionLocations = pForces->GetBearingReactionLocations(lastCompositeDeckIntervalIdx, m_GirderKey, pBridge, pBearingDesign);
+   m_vReactionLocations = pForces->GetBearingReactionLocations(lastCompositeDeckIntervalIdx, m_GirderKey, pBridge, pPoi, pBearingDesign);
    if (m_Slider.GetSafeHwnd() != nullptr )
    {
       m_Slider.SetRange(0,(int)(m_vReactionLocations.size()-1)); // the range is number of spaces along slider... 

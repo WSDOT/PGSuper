@@ -33,6 +33,7 @@
 #include <IFace\BeamFactory.h>
 #include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF/AutoProgress.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Alignment.h>
@@ -964,6 +965,7 @@ bool CEngAgentImp::RegisterInterfaces()
    REGISTER_INTERFACE(IArtifact);
    REGISTER_INTERFACE(ICrackedSection);
    REGISTER_INTERFACE(IBearingDesignParameters);
+   REGISTER_INTERFACE(IHorizontalTensionTieChecks);
 
    return true;
 }
@@ -982,6 +984,7 @@ bool CEngAgentImp::Init()
    m_PsForceEngineer = std::make_unique<pgsPsForceEng>(m_pBroker, m_StatusGroupID);
    m_ShearCapEngineer = std::make_unique<pgsShearCapacityEngineer>(m_pBroker, m_StatusGroupID);
    m_BearingEngineer = std::make_unique<pgsBearingDesignEngineer>(m_pBroker);
+   m_HorizTieForceEngineer = std::make_unique<pgsHorizTieForceEng>(m_pBroker, m_StatusGroupID);
 
    // register the callback ID's we will be using
    GET_IFACE(IEAFStatusCenter, pStatusCenter);
@@ -4150,6 +4153,23 @@ const CRACKEDSECTIONDETAILS* CEngAgentImp::GetCrackedSectionDetails(const pgsPoi
 std::vector<const CRACKEDSECTIONDETAILS*> CEngAgentImp::GetCrackedSectionDetails(const PoiList& vPoi, bool bPositiveMoment) const
 {
    return m_pMomentCapacityEngineer->GetCrackedSectionDetails(vPoi, bPositiveMoment);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// IHorizontalTensionTieChecks
+void CEngAgentImp::CheckHorizontalTensionTieForce(const CGirderKey& girderKey, pgsGirderArtifact* pGdrArtifact) const
+{
+   m_HorizTieForceEngineer->Check(girderKey,pGdrArtifact);
+}
+
+void CEngAgentImp::ReportHorizontalTensionTieForceChecks(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const
+{
+   m_HorizTieForceEngineer->ReportHorizontalTensionTieForceChecks(pGirderArtifact, pChapter);
+}
+
+void CEngAgentImp::ReportHorizontalTensionTieForceCheckDetails(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const
+{
+   m_HorizTieForceEngineer->ReportHorizontalTensionTieForceCheckDetails(pGirderArtifact, pChapter);
 }
 
 /////////////////////////////////////////////////////////////////////////////

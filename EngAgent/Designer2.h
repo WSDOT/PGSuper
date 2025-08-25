@@ -28,8 +28,6 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\PrestressForce.h>
 
-#include <PgsExt\PgsExt.h>
-
 #include "StrandDesignTool.h"
 #include "ShearDesignTool.h"
 #include "DesignCodes.h"
@@ -429,6 +427,8 @@ private:
    void CheckConstructability(const CGirderKey& girderKey,pgsConstructabilityArtifact* pArtifact) const;
 
    void CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirderArtifact* pGdrArtifact) const;
+
+   void CheckHorizontalTensionTie(const CGirderKey& girderKey, pgsGirderArtifact* pGdrArtifact) const;
 
    // Initialize the design artifact with a first guess of the design variables
    void DesignMidZone(bool bUseCurrentStrands, const arDesignOptions& options,std::shared_ptr<IEAFProgress> pProgress) const;

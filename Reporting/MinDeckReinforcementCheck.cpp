@@ -79,7 +79,7 @@ void CMinDeckReinforcementCheck::Build(rptChapter* pChapter, std::shared_ptr<WBF
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   *pParagraph << _T("Where the longitudinal tensile stress in the concrete deck due to Load Combination Service I exceeds ") << symbol(PHI) << Sub2(_T("f"), _T("r")) << _T(", the total cross-sectional area of the longitudinal reinforcement shall not be less than 1% of the total cross-sectional area of the concrete deck. ");
+   *pParagraph << _T("Where the longitudinal tensile stress in the concrete deck due to Load Combination Service I exceeds ") << symbol(phi) << Sub2(_T("f"), _T("r")) << _T(", the total cross-sectional area of the longitudinal reinforcement shall not be less than 1% of the total cross-sectional area of the concrete deck. ");
 
    auto* pSegmentArtifact0 = pGirderArtifact->GetSegmentArtifact(0);
    auto* pDeckReinfArtifact0 = pSegmentArtifact0->GetDeckReinforcementCheckArtifact();
@@ -90,12 +90,12 @@ void CMinDeckReinforcementCheck::Build(rptChapter* pChapter, std::shared_ptr<WBF
    if (numCastingRegions < 2)
    {
       Float64 modRupt = pDeckReinfArtifact0->GetDeckReinforcementCheckAtPoisArtifact(0)->GetDeckModulusRupture();
-      *pParagraph << _T("Deck modulus of rupture ") << Sub2(_T("f"), _T("r")) << _T(" = ") << stressWLabel.SetValue(modRupt) << _T(", ") << symbol(PHI) << _T(" = ") << rptRcScalar(phi)
+      *pParagraph << _T("Deck modulus of rupture ") << Sub2(_T("f"), _T("r")) << _T(" = ") << stressWLabel.SetValue(modRupt) << _T(", ") << symbol(phi) << _T(" = ") << rptRcScalar(phi)
          << _T(", Stress Threshold where min reinforcement is required = ") << stressWLabel.SetValue(modRupt * phi) << rptNewLine;
    }
    else
    {
-      *pParagraph << symbol(PHI) << _T(" = ") << rptRcScalar(phi) << rptNewLine;
+      *pParagraph << symbol(phi) << _T(" = ") << rptRcScalar(phi) << rptNewLine;
    }
 
    IndexType numColumns = numCastingRegions > 1 ? 7 : 6; // need to put rupture modulus in table if multiple regions
