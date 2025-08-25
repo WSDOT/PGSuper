@@ -654,6 +654,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
    bool bAfter1999 = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
+   bool bAfter2000 = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2001Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
 
    Float64 struct_slab_h = pBridge->GetStructuralSlabDepth(poi);
 
@@ -766,7 +767,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    }
 
    pscd->Kds = (Aps == 0.0 ? 0.0 : apsu / Aps);
-   pscd->Kdt = (Aps == 0.0 ? 0.0 : apst / Aps);
+   pscd->Kdt = (Aps == 0.0 ? 0.0 : (bAfter2000 ? apst / Aps : 1.0));
    pscd->Aps = Aps;
 
    if ( pscd->bTensionBottom )
