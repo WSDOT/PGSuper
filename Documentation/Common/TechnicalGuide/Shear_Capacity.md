@@ -15,5 +15,33 @@ Directs engineers to follow the June 2001 design memorandum and not apply the pr
 [August 2007 Design Memorandum](http://www.wsdot.wa.gov/eesc/bridge/designmemos/12-2007.htm)<br>
 Supercedes June 2001 design memorandum and directs engineers to use, what will be known as the "General Procedure" when published in the 2008 interim provisions.
 
+### Adjustment Factors for Net Longitunal Tensile Strain
+
+
+The Shear Capacity Details Report includes the following revised form of LRFD Equation 5.7.3.4.2-4:
+
+![](ex_2005.png)
+
+where the following adjustment factors for As, Aps, and fpo have been added:
+
+Kdb = factor accounting for lack of full bar development.
+
+Kds = factor accounting for lack of full strand development.
+
+Kdt = factor accounting for lack of full transfer of prestressing force.
+
+Previously, the provided As, Aps, and fpo were scaled by the percentage of the corresponding 
+bar/strand development. In the revised equation, the true values of As. Aps, and fpo are provided 
+and multiplied by Kdb, Kds and Kdt respectively. Values of Kdb and Kds are determined by linearly interpolating
+the percentage from zero at the location where the bond between the bars or strands and concrete commences to 
+the full development length of the bars or strands. Similarily, Kdt can be determined by linearly interpolating 
+the percentage from zero at the location where the bond between the strands and concrete commences to its full 
+value at the end of the transfer length.
+
+
+
+
+
+
 ## Load Rating
 One of the unique features of the MCFT is that ultimate shear capacity is a function of loading. Even though load ratings are computed for individual vehicles the shear capacity is computed based on the live load envelope of which the vehicle belongs. For example, the shear rating for the legal load rating for routine commercial traffic may be controlled by the Type 3-3 vehicle, the shear capacity will be based on the envelope of all the AASHTO Legal Load vehicles. In most all cases, the vehicle causing the maximum shear in the live load envelope will be the same vehicle governing the load rating.
