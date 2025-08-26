@@ -24,61 +24,40 @@
 
 #include <ReportManager\ReportManager.h>
 #include "resource.h"
+#include <Reporting\SpanItemReportDlg.h>
 
 // CSpanGirderReportDlg dialog
 
 
-class CSpanGirderReportDlg : public CDialog
+class CSpanGirderReportDlg : public CSpanItemReportDlg
 {
 	DECLARE_DYNAMIC(CSpanGirderReportDlg)
 
 public:
-   enum class Mode
-   {
-      ChaptersOnly = 0,
-      GroupAndChapters = 1,
-      GirderAndChapters = 2,
-      GroupGirderAndChapters = 3,
-      GroupGirderSegmentAndChapters = 4
-   };
-   
-   CSpanGirderReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_SPANGIRDERREPORT,CWnd* pParent = nullptr);   // standard constructor
-	virtual ~CSpanGirderReportDlg();
+
+   CSpanGirderReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_SPANITEMREPORT,CWnd* pParent = nullptr);   // standard constructor
+   ~CSpanGirderReportDlg();
 
 // Dialog Data
-	enum { IDD = IDD_SPANGIRDERREPORT };
+	enum { IDD = IDD_SPANITEMREPORT };
 
    CSegmentKey m_SegmentKey;
-   std::vector<std::_tstring> m_ChapterList;
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
-   virtual void UpdateChapterList();
-   virtual void UpdateGirderComboBox();
-   virtual void UpdateSegmentComboBox();
+   void UpdateGirderComboBox() override;
+   void UpdateSegmentComboBox();
 
-   virtual void ClearChapterCheckMarks(BOOL bClear=TRUE);
-   virtual void InitChapterListFromSpec();
-   virtual void InitFromRptSpec();
+   void InitFromRptSpec() override;
 
-   CCheckListBox	m_ChList;
-
-   const WBFL::Reporting::ReportDescription& m_RptDesc;
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
-   Mode m_Mode;
-
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 
 public:
 	// Generated message map functions
 	//{{AFX_MSG(CReportDlg)
-	virtual BOOL OnInitDialog();
-	afx_msg void OnHelp();
-	afx_msg void OnGroupChanged();
-   afx_msg void OnGirderChanged();
-   afx_msg void OnSelectAll();
-   afx_msg void OnDeselectAll();
+	BOOL OnInitDialog() override;
+   afx_msg void OnGirderChanged() override;
+   afx_msg void OnGroupChanged() override;
 	//}}AFX_MSG
 
 	DECLARE_MESSAGE_MAP()

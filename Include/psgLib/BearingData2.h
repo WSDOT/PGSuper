@@ -25,6 +25,7 @@
 #include "PsgLibLib.h"
 class CProjectAgentImp; // Only one privy to private conversion data
 
+enum BearingDefinitionType {btBasic, btDetailed};
 enum BearingShape {bsRectangular, bsRound};
 
 // put arbitrary upper limit on number of bearings for UI
@@ -33,6 +34,7 @@ enum BearingShape {bsRectangular, bsRound};
 class PSGLIBCLASS CBearingData2
 {
 public:
+   BearingDefinitionType  DefinitionType; // definition of bearing. Either basic bearing details (e.g. length & width) or more detailed for design (elastomer layers, shims etc)
    BearingShape Shape;
    Float64      Length; // length along girder. used for support width when computing capacities. Before version 4, was SupportWidth in pier class
    Float64      Width;  // width normal to girder
@@ -43,7 +45,22 @@ public:
    Float64      RecessLength;  // length of recess cut into girder bottom
    Float64      SolePlateHeight; // thickness of sole plate attached to girder bottom (in recess)
 
+   Float64      ElastomerThickness; // thickness of intermediate elastomer layer i
+   Float64      CoverThickness;
+   Float64      ShimThickness;
+   IndexType    NumIntLayers;
+
+   Float64      ShearDeformationOverride{-1};
+
+   bool         UseExtPlates;
+   bool         FixedX;
+   bool         FixedY;
+   
+
+
    CBearingData2();
+
+   CBearingData2& operator=(const CBearingData2& brg);
 
    // set data to defaults
    void Init();

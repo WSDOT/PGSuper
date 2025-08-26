@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by PGSuperPluginApp.rc
+// Used by PGSuperAppPlugin.rc
 //
 #define ID_INDICATOR_CRITERIA           4
 #define ID_INDICATOR_ANALYSIS           5
@@ -139,7 +139,7 @@
 #define IDI_LIVELOAD                    314
 #define IDI_RF                          315
 #define IDI_COPY_PROPERTIES             316
-#define IDD_MULTI_GIRDER_SELECT         317
+#define IDD_MULTI_SELECT                317
 #define IDR_COPY_PASTE                  318
 #define IDD_SPLICEDGIRDER               318
 #define IDD_LINEAR_DUCT                 319
@@ -311,6 +311,7 @@
 #define IDD_EDIT_HAUNCH_BY_HAUNCH       1115
 #define IDC_HPOFFSET_END                1116
 #define IDC_SHIPPING_TAG                1116
+#define IDD_COPY_BEARING_PROPERTIES     1116
 #define IDC_FINAL_TAG                   1117
 #define IDC_HPOFFSET_START              1117
 #define IDC_HPOFFSET_END_UNIT           1118
@@ -624,6 +625,7 @@
 #define IDC_FROM_GIRDER                 1435
 #define IDC_RIGHT_CONCRETE_LABEL        1436
 #define IDC_COMPUTE_HAUNCH_COMBO        1436
+#define IDC_FROM_BEARING                1436
 #define IDC_COMPUTE_HAUNCH_GIRDER       1437
 #define IDC_DEBOND_GRID                 1443
 #define IDC_DELETE                      1444
@@ -1040,6 +1042,7 @@
 #define IDC_TO_SPAN                     1729
 #define IDC_HEIGHT_MEASURE              1731
 #define IDC_TO_GIRDER                   1732
+#define IDC_TO_BEARING                  1733
 #define IDC_LLDF_GIRDERS_TABW           1734
 #define IDC_LLDF_TABW                   1734
 #define IDC_LLDF_PIERS_TABW             1735
@@ -1247,6 +1250,7 @@
 #define IDC_DECK_EVENT_DETAILS          1904
 #define IDC_HELP                        1904
 #define IDC_VIEW_TIMELINE_SUMMARY       1904
+#define IDC_BUTTON_EDIT_BEARING         1904
 #define IDC_LABELS                      1905
 #define IDC_BUTTON2                     1905
 #define IDC_EDIT                        1905
@@ -1268,9 +1272,11 @@
 #define IDC_USER_LOADS2                 1909
 #define IDC_SCHEMATIC                   1909
 #define IDC_ASSUMED_EXCESS_CAMBER_LABEL2 1909
+#define IDC_BRG_DEF_TYPE                1909
 #define IDC_BRG_COUNT                   1910
 #define IDC_SCHEMATIC2                  1910
 #define IDC_RW_CS                       1910
+#define IDC_BRG_DEF_TYPE_2              1910
 #define IDC_BRG_SPACING                 1911
 #define IDC_ASSUMED_EXCESS_CAMBER_GROUP 1911
 #define IDC_TOP_WIDTH_GRID_LABEL        1912
@@ -1303,6 +1309,7 @@
 #define IDC_BRG_RECESS_LENGTH           1925
 #define IDC_DONT_WARN                   1925
 #define IDC_GCE_CHECK                   1925
+#define IDC_CHECK_FIXED_X_TRANS         1925
 #define IDC_STRANDS_CG2                 1926
 #define IDC_SECTION_CG                  1926
 #define IDC_EDIT1                       1926
@@ -1311,15 +1318,25 @@
 #define IDC_TIME_BETWEEN_CASTING        1926
 #define IDC_STARTPIERNO                 1926
 #define IDC_NAME                        1926
+#define IDC_EDIT_BEARING_LENGTH         1926
 #define IDC_BRG_RECESS_LENGTH_UNIT      1927
+#define IDC_EDIT_BEARING_WIDTH          1927
+#define IDC_EDIT_INT_ELASTOMER_THICK    1928
 #define IDC_BEARING_GRID                1928
 #define IDC_BRG1_STATIC                 1928
 #define IDC_STATIC_B1                   1929
+#define IDC_NUMBER_INT_LAYERS           1929
 #define IDC_STATIC_B2                   1930
+#define IDC_STEEL_SHIM_THICKNESS        1930
 #define IDC_STATIC_B3                   1931
+#define IDC_SHEAR_DEFORMATION_B         1931
+#define IDC_EDIT_SHEAR_DEFORMATION      1931
 #define IDC_STATIC_B4                   1932
+#define IDC_CHECK_FIXED_Y_TRANS         1932
 #define IDC_STATIC_B5                   1933
+#define IDC_CHECK_EXT_BONDED_PLATES     1933
 #define IDC_STATIC_B6                   1934
+#define IDC_EDIT_COVER_ELASTOMER_THICK  1934
 #define IDC_BRG_SHAPE_1                 1935
 #define IDC_BRG_SPACING_1               1936
 #define IDC_BRG_LENGTH_1                1937
@@ -1454,6 +1471,24 @@
 #define IDC_HAUNCH_INPUT_UNIT           2050
 #define IDC_TS_ELEVATION_ADJUST_GRID    2051
 #define IDC_HAUNCH_DESIGN_NOTE          2052
+#define IDC_EDIT_BEARING_LENGTH_UNIT    2053
+#define IDC_EDIT_BEARING_WIDTH_UNIT     2054
+#define IDC_EDIT_INT_ELASTOMER_THICK_UNIT 2055
+#define IDC_EDIT_COVER_ELASTOMER_THICK_UNIT 2056
+#define IDC_STEEL_SHIM_THICKNESS_UNIT   2057
+#define IDC_EDIT_INT_ELASTOMER_THICK_UNIT4 2058
+#define IDC_SHEAR_DEFORMATION_B_UNIT    2058
+#define IDC_EDIT_SHEAR_DEFORMATION_UNIT 2058
+#define IDC_STATIC_BRG_HEIGHT           2059
+#define IDC_BRG_WEIGHT                  2060
+#define IDC_STATIC_DEF                  2062
+#define IDC_STATIC_DETAIL               2063
+#define IDC_BUTTON_EDIT_BEARING_DETAIL  2064
+#define IDC_BUTTON_EDIT_BEARING_DETAIL_2 2065
+#define IDC_BRG_DEF_TYPE_1              2066
+#define IDC_BUTTON_EDIT_BEARING_DETAIL_1 2067
+#define IDC_SELECT_BEARINGS             2068
+#define IDC_STATIC_BRG_NOTE             2069
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1636,14 +1671,18 @@
 #define ID_COPY_GIRDER_PROPS            37018
 #define ID_COPY_PIER_PROPS              37019
 #define ID_COPY_TEMPSUPPORT_PROPS       37020
+#define ID_EDIT_COPYBEARINGPROPERTIES   37021
+#define ID_COPY_BRG_PROPS               37022
+#define IDD_BEARING_DETAIL              37040
+#define IDC_STATIC_MULTI_SELECT_ITEM    37060
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        410
-#define _APS_NEXT_COMMAND_VALUE         37021
-#define _APS_NEXT_CONTROL_VALUE         2053
+#define _APS_NEXT_RESOURCE_VALUE        411
+#define _APS_NEXT_COMMAND_VALUE         37026
+#define _APS_NEXT_CONTROL_VALUE         2070
 #define _APS_NEXT_SYMED_VALUE           115
 #endif
 #endif

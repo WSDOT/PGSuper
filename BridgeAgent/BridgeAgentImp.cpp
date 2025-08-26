@@ -4370,7 +4370,14 @@ void CBridgeAgentImp::ValidateGirders()
                   continue;
                }
 
-               Float64 bearingWidth = pBearingData->Width + (pBearingData->BearingCount - 1) * pBearingData->Spacing;
+               GET_IFACE(IBridge, pBridge);
+
+               CComPtr<IAngle> pSkew;
+               pBridge->GetPierSkew(pierIdx, &pSkew);
+               Float64 skew;
+               pSkew->get_Value(&skew);
+
+               Float64 bearingWidth = pBearingData->Width + (pBearingData->BearingCount - 1) * pBearingData->Spacing * cos(skew);
 
                SegmentIndexType segIdx = 0;
                CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);

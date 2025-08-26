@@ -54,7 +54,9 @@ protected:
 
 	//{{AFX_MSG(CBearingGdrGrid)
 		// NOTE - the ClassWizard will add and remove member functions here.
-    afx_msg LRESULT ChangeTabName( WPARAM wParam, LPARAM lParam );
+   afx_msg LRESULT ChangeTabName( WPARAM wParam, LPARAM lParam );
+   afx_msg void OnSelectionChange();
+   void OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -86,5 +88,9 @@ private:
    BearingInputData* m_pBearingInputData;
 
    SpanIndexType m_SpanIdx;
+
+   CBearingDetailsDlg m_details_dlg;
+   
+   std::vector<CBearingData2> m_girderBearingDetailData;
 };
 

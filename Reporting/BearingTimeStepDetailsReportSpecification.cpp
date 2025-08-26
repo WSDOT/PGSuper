@@ -23,6 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\BearingTimeStepDetailsReportSpecification.h>
 #include <PsgLib\GirderLabel.h>
+#include <IFace\DocumentType.h>
+#include <AgentTools.h>
 
 
 CBearingTimeStepDetailsReportSpecification::CBearingTimeStepDetailsReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,
@@ -60,11 +62,21 @@ std::_tstring CBearingTimeStepDetailsReportSpecification::GetReportContextString
    {
       strLocation = _T("All Bearing Locations");
    }
+
+
+   ///////////////////////////////
+
    else if ( girderKey.groupIndex != ALL_GROUPS && girderKey.girderIndex != ALL_GIRDERS )
    {
-      CString strLabel{ m_reactionLocation.PierLabel.c_str() };
+       GET_IFACE2(GetBroker(), IDocumentType, pDocType);
+       bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
-      strLocation = std::_tstring(strLabel);
+       CString msg;
+
+       msg.Format(_T("Group %s Girder %s - %s"), LABEL_SPAN(m_reactionLocation.GirderKey.groupIndex),
+           LABEL_GIRDER(m_reactionLocation.GirderKey.girderIndex), m_reactionLocation.PierLabel.c_str());
+
+      strLocation = std::_tstring(msg);
 
    }
 

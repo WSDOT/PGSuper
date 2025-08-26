@@ -30,7 +30,7 @@
 #if defined _NOGRID
 #include <NoGrid.h>
 #else
-#include <grid\gxall.h>
+#include "SharedCTrls\MultiSelectGrid.h" 
 #endif
 
 // Container for spans and girders on/off settings
@@ -41,56 +41,22 @@ typedef GroupGirderOnCollection::iterator GroupGirderOnIterator;
 /////////////////////////////////////////////////////////////////////////////
 // CMultiGirderSelectGrid window
 
-class CMultiGirderSelectGrid : public CGXGridWnd
+class CMultiGirderSelectGrid : public CMultiSelectGrid
 {
-	GRID_DECLARE_REGISTER()
+
+
+
 // Construction
 public:
 	CMultiGirderSelectGrid();
 
-// Attributes
-public:
-
-// Operations
-public:
-
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CMultiGirderSelectGrid)
-	//}}AFX_VIRTUAL
-
-	virtual void OnDrawItem(CDC *pDC, ROWCOL nRow, ROWCOL nCol, const CRect& rectDraw, const CGXStyle& style) override;
-
-// Implementation
-public:
-	virtual ~CMultiGirderSelectGrid();
-
-	// Generated message map functions
-protected:
-	//{{AFX_MSG(CMultiGirderSelectGrid)
-		// NOTE - the ClassWizard will add and remove member functions here.
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-
-   afx_msg UINT OnGetDlgCode();
-
-   // virtual overrides for grid
-   virtual BOOL OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT nFlags, CPoint pt) override;
-   virtual BOOL ProcessKeys(CWnd* pSender, UINT nMessage, UINT nChar, UINT nRepCnt, UINT flags) override;
-   virtual void OnChangedSelection(const CGXRange* pRange, BOOL, BOOL) override;
 
 public:
    // custom stuff for grid
    void CustomInit(const GroupGirderOnCollection& groupGirderOnCollection, std::_tstring(*pGetGirderLabel)(GirderIndexType));
-   void Enable(bool bEnable);
 
-   bool GetCellValue(ROWCOL nRow, ROWCOL nCol);
-   void SetAllValues(bool val);
-
-   // Vector of girders turned on (checked)
+   // Vector of items turned on (checked)
    std::vector<CGirderKey> GetData();
 
-private:
-   CGXRangeList m_SelectedRange;
 };
 

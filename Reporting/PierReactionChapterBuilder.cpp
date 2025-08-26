@@ -339,19 +339,19 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
    }
 
    p_design_table->SetColumnSpan(0, col, 2);
-   (*p_design_table)(0, col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Fx");
+   (*p_design_table)(0, col) << _T("* Design LL") << rptNewLine << _T("Optimize Fx");
    (*p_design_table)(1, col) << _T("Max");
    (*p_design_table)(1, col + 1) << _T("Min");
    col += 2;
 
    p_design_table->SetColumnSpan(0, col, 2);
-   (*p_design_table)(0, col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Fy");
+   (*p_design_table)(0, col) << _T("* Design LL") << rptNewLine << _T("Optimize Fy");
    (*p_design_table)(1, col) << _T("Max");
    (*p_design_table)(1, col + 1) << _T("Min");
    col += 2;
 
    p_design_table->SetColumnSpan(0, col, 2);
-   (*p_design_table)(0, col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Mz");
+   (*p_design_table)(0, col) << _T("* Design LL") << rptNewLine << _T("Optimize Mz");
    (*p_design_table)(1, col) << _T("Max");
    (*p_design_table)(1, col + 1) << _T("Min");
    col += 2;

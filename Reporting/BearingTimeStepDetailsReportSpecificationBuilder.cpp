@@ -53,7 +53,6 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
 
    GET_IFACE2(GetBroker(),IBridge, pBridge);
    GET_IFACE2(GetBroker(),IPointOfInterest, pPOI);
-   GET_IFACE2(GetBroker(),IIntervals, pIntervals);
    GET_IFACE2(GetBroker(),IBearingDesignParameters, pBearingDesignParameters);
    SHEARDEFORMATIONDETAILS details;
    CGirderKey girderKey;
@@ -62,6 +61,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
    if (pInitRptSpec)
    {
        initial_location = pInitRptSpec->GetReactionLocation();
+       girderKey = initial_location.GirderKey;
    }
    else
    {
@@ -69,7 +69,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
        CSelection selection = pSelection->GetSelection();
        if (selection.Type == CSelection::Girder || selection.Type == CSelection::Segment)
        {
-           girderKey.groupIndex = 0;
+           girderKey.groupIndex = (selection.GroupIdx == INVALID_INDEX ? 0 : selection.GroupIdx);
            girderKey.girderIndex = selection.GirderIdx;
        }
        else
@@ -79,8 +79,8 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
        }
 
        GET_IFACE2(GetBroker(),IBearingDesign, pBearingDesign);
+       GET_IFACE2(GetBroker(), IIntervals, pIntervals);
        GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
-
        IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
        std::unique_ptr<CmbLsBearingDesignReactionAdapter> pForces(std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
        ReactionLocationContainer vReactionLocations = pForces->GetBearingReactionLocations(lastCompositeDeckIntervalIdx, girderKey, pBridge, pPoi, pBearingDesign);
