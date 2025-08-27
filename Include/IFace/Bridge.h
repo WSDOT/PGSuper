@@ -1096,6 +1096,7 @@ public:
 
    // Total area of splitting shear steel between two points along the girder
    virtual Float64 GetSplittingAv(const CSegmentKey& segmentKey,Float64 start,Float64 end) const = 0;
+   virtual Float64 GetConfinementAv(const CSegmentKey& segmentKey, Float64 start, Float64 end) const = 0;
 
    // Processed confinement bar information - returns max bar size/min spacing in required zone length at both ends of girder
    virtual void GetStartConfinementBarInfo(const CSegmentKey& segmentKey, Float64 requiredZoneLength, WBFL::Materials::Rebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const = 0;
