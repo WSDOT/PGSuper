@@ -15423,6 +15423,134 @@ Float64 CBridgeAgentImp::GetSplittingAv(const CSegmentKey& segmentKey,Float64 st
    return Av;
 }
 
+Float64 CBridgeAgentImp::GetConfinementAv(const CSegmentKey& segmentKey, Float64 start, Float64 end) const
+{
+    ATLASSERT(end > start);
+
+    Float64 Av = 0.0;
+
+    const CShearData2* pShearData = GetShearData(segmentKey);
+
+    //// primary confinement reinforcement
+
+    ZoneIndexType nbrZones = GetPrimaryZoneCount(segmentKey);
+    for (ZoneIndexType zone = 0; zone < nbrZones; zone++)
+    {
+        Float64 zoneStart, zoneEnd;
+        GetPrimaryZoneBounds(segmentKey, zone, &zoneStart, &zoneEnd);
+
+        Float64 length; // length of zone which falls within the range
+
+        // zoneStart                zoneEnd
+        //   |-----------------------|
+        //       zone is here (1) zoneStart                zoneEnd
+        //                           |-----------------------|
+        //                                 or here (2)    zoneStart                zoneEnd
+        //                                                   |-----------------------|
+        //                                                           here (3)
+        //                |=============================================|
+        //             start                 Range                     end
+        //      zoneStart                                                   zoneEnd
+        //        |-------------------------------------------------------------|
+        //                       (4) zone is larger than range 
+
+        if (start <= zoneStart && zoneEnd <= end)
+        {
+            // Case 2 - entire zone is in the range
+            length = zoneEnd - zoneStart;
+        }
+        else if (zoneStart < start && end < zoneEnd)
+        {
+            // Case 4
+            length = end - start;
+        }
+        else if (zoneStart < start && InRange(start, zoneEnd, end))
+        {
+            // Case 1
+            length = zoneEnd - start;
+        }
+        else if (InRange(start, zoneStart, end) && end < zoneEnd)
+        {
+            // Case 3
+            length = end - zoneStart;
+        }
+        else
+        {
+            continue; // This zone doesn't touch the range at all... go back to the start of the loop
+        }
+
+        // We are in a zone - determine Av/S and multiply by length
+        ZoneIndexType idx = GetPrimaryZoneIndex(segmentKey, pShearData, zone);
+
+        const CShearZoneData2& shearZoneData = pShearData->ShearZones[idx];
+
+        WBFL::Materials::Rebar::Size barSize = shearZoneData.ConfinementBarSize;
+        if (barSize != WBFL::Materials::Rebar::Size::bsNone && !IsZero(shearZoneData.BarSpacing))
+        {
+            const auto* prp = WBFL::LRFD::RebarPool::GetInstance();
+            const auto* pbar = prp->GetRebar(pShearData->ShearBarType, pShearData->ShearBarGrade, barSize);
+
+            Float64 Abar = pbar->GetNominalArea();
+
+            // area of confinement per unit length for this zone
+            // (assume comfinement bars are smeared out along zone)
+            auto nConfinementBars = 2.0; // always 2 legs intersecting tension plane
+            Float64 avs = nConfinementBars * Abar / shearZoneData.BarSpacing;
+
+            Av += avs * length;
+        }
+    }
+
+    ///// additional confinement reinforcement
+
+    auto nConfinementBars = pShearData->nSplittingBars;
+
+    if (pShearData->ConfinementBarSize != WBFL::Materials::Rebar::Size::bsNone && nConfinementBars)
+    {
+        Float64 spacing = pShearData->ConfinementBarSpacing;
+        Float64 length = 0.0;
+        if (spacing <= 0.0)
+        {
+            ATLASSERT(false); // UI should block this
+        }
+        else
+        {
+            // determine how much additional bars is in our start/end region
+            Float64 zone_length = pShearData->ConfinementZoneLength;
+            // left end first
+            if (start < zone_length)
+            {
+                Float64 zend = Min(end, zone_length);
+                length = zend - start;
+            }
+            else
+            {
+                // try right end
+                Float64 segment_length = GetSegmentLength(segmentKey);
+                if (segment_length <= end)
+                {
+                    Float64 zstart = Max(segment_length - zone_length, start);
+                    length = end - zstart;
+                }
+            }
+
+            if (0.0 < length)
+            {
+                // We have bars in region. multiply av/s * length
+                const auto* prp = WBFL::LRFD::RebarPool::GetInstance();
+                const auto* pbar = prp->GetRebar(pShearData->ShearBarType, pShearData->ShearBarGrade, pShearData->ConfinementBarSize);
+
+                Float64 Abar = pbar->GetNominalArea();
+                Float64 avs = nConfinementBars * Abar / spacing; // confinement bars exist where splitting bars exist
+
+                Av += avs * length;
+            }
+        }
+    }
+
+    return Av;
+}
+
 Float64 CBridgeAgentImp::GetPrimarySplittingAv(const CSegmentKey& segmentKey,Float64 start,Float64 end, const CShearData2* pShearData) const
 {
    if (!pShearData->bUsePrimaryForSplitting)

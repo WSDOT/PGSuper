@@ -642,6 +642,7 @@ public:
    Float64 GetAdditionalHorizInterfaceBarCount(const pgsPointOfInterest& poi) const override;
 
    Float64 GetSplittingAv(const CSegmentKey& segmentKey,Float64 start,Float64 end) const override;
+   Float64 GetConfinementAv(const CSegmentKey& segmentKey,Float64 start,Float64 end) const override;
 
    void GetStartConfinementBarInfo(const CSegmentKey& segmentKey, Float64 requiredZoneLength, WBFL::Materials::Rebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const override;
    void GetEndConfinementBarInfo(  const CSegmentKey& segmentKey, Float64 requiredZoneLength, WBFL::Materials::Rebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const override;

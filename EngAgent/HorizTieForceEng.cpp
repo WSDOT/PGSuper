@@ -206,7 +206,8 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
             start_zl = reactionLocation.poi.GetDistFromStart() - 0.5 * (Hg / n);
             end_zl = reactionLocation.poi.GetDistFromStart() + 0.5 * (Hg / n);
          }
-         auto Avs = pStirrupGeometry->GetSplittingAv(reactionLocation.poi.GetSegmentKey(), 0.0, Hg / n);
+
+         auto Avc = pStirrupGeometry->GetConfinementAv(reactionLocation.poi.GetSegmentKey(), 0.0, Hg / n);
 
          Float64 Es, fy, fu;
          pMaterials->GetSegmentTransverseRebarProperties(reactionLocation.poi.GetSegmentKey(), &Es, &fy, &fu);
@@ -216,7 +217,7 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
             pgsHorizontalTieForceArtifact artifact(reactionLocation, ls);
             artifact.IsApplicable(true);
 
-            artifact.SetTieArea(Avs);
+            artifact.SetTieArea(Avc);
             artifact.SetTieYieldStrength(fy);
 
             Float64 Rmin, Rmax;
