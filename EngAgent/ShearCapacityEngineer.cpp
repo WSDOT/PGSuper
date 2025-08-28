@@ -107,7 +107,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
       // indicate that we need to.
       Float64 xfer = 1.0;
 
-      if (0 < pscd->Aps)
+      if (0 < pscd->Kds*pscd->Aps)
       {
          Float64 fpu = pStrand->GetUltimateStrength();
          Float64 K = 0.70;
@@ -572,11 +572,13 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
 
    if ( bTensionOnBottom )
    {
-      pscd->As = pLongRebarGeometry->GetAsBottomHalf(poi,true);
+      pscd->As = pLongRebarGeometry->GetAsBottomHalf(poi,false);
+      pscd->Kdb = (pscd->As==0? 0 : pLongRebarGeometry->GetAsBottomHalf(poi,true)/ pscd->As);
    }
    else
    {
-      pscd->As = pLongRebarGeometry->GetAsTopHalf(poi,true);
+      pscd->As = pLongRebarGeometry->GetAsTopHalf(poi,false);
+      pscd->Kdb = (pscd->As == 0 ? 0 : pLongRebarGeometry->GetAsTopHalf(poi, true)/ pscd->As);
    }
 
    if ( bIsInClosureJoint )
@@ -652,6 +654,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
    bool bAfter1999 = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
+   bool bAfter2000 = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2001Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
 
    Float64 struct_slab_h = pBridge->GetStructuralSlabDepth(poi);
 
@@ -727,15 +730,21 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
 
    // prestress area - factor for development length per LRFD 5.7.3.4.2
    Float64 apsu = 0;
+   Float64 apst = 0;
+   Float64 Aps = 0;
    if (pConfig == nullptr)
    {
       if ( pscd->bTensionBottom )
       {
          apsu = pStrandGeometry->GetApsBottomHalf(poi,dlaAccurate);
+         apst = pStrandGeometry->GetXferApsBottomHalf(poi);
+         Aps = pStrandGeometry->GetApsBottomHalf(poi,dlaNone);
       }
       else
       {
          apsu = pStrandGeometry->GetApsTopHalf(poi,dlaAccurate);
+         apst = pStrandGeometry->GetXferApsTopHalf(poi);
+         Aps = pStrandGeometry->GetApsTopHalf(poi,dlaNone);
       }
    }
    else
@@ -746,14 +755,20 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       if ( pscd->bTensionBottom )
       {
          apsu = pStrandGeometry->GetApsBottomHalf(poi,dlaApproximate,pConfig);
+         apst = pStrandGeometry->GetXferApsBottomHalf(poi, pConfig);
+         Aps = pStrandGeometry->GetApsBottomHalf(poi,dlaNone,pConfig);
       }
       else                                                             
       {
          apsu = pStrandGeometry->GetApsTopHalf(poi,dlaApproximate,pConfig);
+         apst = pStrandGeometry->GetXferApsTopHalf(poi, pConfig);
+         Aps = pStrandGeometry->GetApsTopHalf(poi,dlaNone,pConfig);
       }
    }
 
-   pscd->Aps = apsu;
+   pscd->Kds = (Aps == 0.0 ? 0.0 : apsu / Aps);
+   pscd->Kdt = (Aps == 0.0 ? 0.0 : (bAfter2000 ? apst / Aps : 1.0));
+   pscd->Aps = Aps;
 
    if ( pscd->bTensionBottom )
    {
@@ -969,8 +984,10 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
    data.dv           = pscd->dv;
    data.bv           = pscd->bv;
    data.Es           = pscd->Es;
+   data.Kdb          = pscd->Kdb;
    data.As           = pscd->As;
    data.Eps          = pscd->Eps;
+   data.Kds          = pscd->Kds;
    data.Aps          = pscd->Aps;
    data.EptSegment   = pscd->EptSegment;
    data.AptSegment   = pscd->AptSegment;
@@ -978,6 +995,7 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
    data.AptGirder    = pscd->AptGirder;
    data.Ec           = pscd->Ec;
    data.Ac           = pscd->Ac;
+   data.Kdt          = pscd->Kdt;
    data.fpops        = pscd->fpops;
    data.fpoptSegment = pscd->fpoptSegment;
    data.fpoptGirder  = pscd->fpoptGirder;
@@ -1247,9 +1265,12 @@ bool pgsShearCapacityEngineer::ComputeVuhpc(const pgsPointOfInterest& poi, SHEAR
    data.dv_uhpc = pscd->dv_uhpc;
    data.bv = pscd->bv;
    data.Es = pscd->Es;
+   data.Kdb = pscd->Kdb;
    data.As = pscd->As;
    data.Eps = pscd->Eps;
+   data.Kds = pscd->Kds;
    data.Aps = pscd->Aps;
+   data.Kdt = pscd->Kdt;
    data.fpo = pscd->fpops;
    data.Ec = pscd->Ec;
    data.Ac = pscd->Ac;

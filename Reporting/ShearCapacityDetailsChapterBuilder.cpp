@@ -1560,7 +1560,7 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
       *pParagraph << rptNewLine;
    }
 
-   Int16 nCol = (bAfter1999 && shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables ? 14 : 12);
+   Int16 nCol = (bAfter1999 && shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables ? 17 : 15);
    if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2001 ||
       shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007 ||
       shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTEquations
@@ -1588,6 +1588,13 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    {
       nCol += 3;
    }
+
+   *pParagraph << rptNewLine;
+   *pParagraph << _T("where:") << rptNewLine;
+   *pParagraph << _T("All areas and corresponding adjustment factors used in this equation are based on the tension side of the girder section") << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("db")) << _T(" = factor that accounts for lack of full bar development ") << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("ds")) << _T(" = factor that accounts for lack of full strand development ") << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("dt")) << _T(" = factor that accounts for lack of full transfer of prestressing force") << rptNewLine;
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol);
 
@@ -1658,9 +1665,12 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    }
 
    (*table)(0,col++) << COLHDR( Sub2(_T("d"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("s")) << _T("*"), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,col++) << Sub2(_T("K"),_T("db"));
+   (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("s")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
    (*table)(0,col++) << COLHDR( Sub2(_T("E"),_T("s")), rptStressUnitTag, pDisplayUnits->GetModEUnit() );
-   (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("ps")) << _T("*"), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,col++) << Sub2(_T("K"),_T("ds"));
+   (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("ps")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0, col++) << Sub2(_T("K"), _T("dt"));
    (*table)(0,col++) << COLHDR( Sub2(_T("E"),_T("ps")), rptStressUnitTag, pDisplayUnits->GetModEUnit() );
 
    if (0 < nMaxSegmentDucts)
@@ -1778,9 +1788,12 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
       }
 
       (*table)(row,col++) << dim.SetValue( scd.dv );
+      (*table)(row,col++) << scalar.SetValue( scd.Kdb );
       (*table)(row,col++) << area.SetValue( scd.As );
       (*table)(row,col++) << mod_e.SetValue( scd.Es );
+      (*table)(row,col++) << scalar.SetValue( scd.Kds );
       (*table)(row,col++) << area.SetValue( scd.Aps );
+      (*table)(row, col++) << scalar.SetValue(scd.Kdt);
       (*table)(row,col++) << mod_e.SetValue( scd.Eps );
 
       if (0 < nMaxSegmentDucts)
@@ -1830,7 +1843,6 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("* In calculating ") << RPT_AS << _T(" and ") << RPT_APS << _T(" the area of bars or tendons terminated less than their development length from the section under consideration are reduced in proportion to their lack of full development. (") << WBFL::LRFD::LrfdCw8th(_T("5.8.3.4.2"), _T("5.7.3.4.2")) << _T(")") << rptNewLine;
 
    // print footnote if any values could not be calculated
    if (print_footnote1 || print_footnote2)
