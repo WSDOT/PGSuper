@@ -57,7 +57,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    GET_IFACE2(pBroker, IShapes, pShapes);
 
-
    CComPtr<IShape> shape;
    pShapes->GetSegmentShape(intervalIdx, poi, false, pgsTypes::scGirder, &shape);
 
@@ -77,7 +76,37 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        compShape->get_Item(0, &item);
        item->get_Shape(&primaryShape);
 
-       GetPointsNextShape(primaryShape, &primaryShapePoints);
+       shape->get_PolyPoints(&primaryShapePoints);
+
+       CComQIPtr<ICompositeShape> voidedShape(primaryShape);
+
+       if (voidedShape)
+       {
+           IndexType nVoidShapes;
+           voidedShape->get_Count(&nVoidShapes);
+
+           for (IndexType i = 0; i < nVoidShapes; i++)
+           {
+               CComPtr<ICompositeShapeItem> voidItem;
+               voidedShape->get_Item(i, &voidItem);
+
+               CComPtr<IShape> s;
+               voidItem->get_Shape(&s);
+
+               CComPtr<IPoint2dCollection> points;
+               s->get_PolyPoints(&points);
+
+               CComPtr<IEnumPoint2d> enumPoints;
+               points->get__Enum(&enumPoints);
+               CComPtr<IPoint2d> point;
+               while (enumPoints->Next(1, &point, nullptr) != S_FALSE)
+               {
+                   primaryShapePoints->Add(point);
+                   point.Release();
+               }
+
+           }
+       }
 
        if (1 < nShapes)
        {
@@ -90,6 +119,36 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    else
    {
        shape->get_PolyPoints(&primaryShapePoints);
+
+       CComQIPtr<ICompositeShape> voidedShape(primaryShape);
+
+       if (voidedShape)
+       {
+           IndexType nVoidShapes;
+           voidedShape->get_Count(&nVoidShapes);
+
+           for (IndexType i = 0; i < nVoidShapes; i++)
+           {
+               CComPtr<ICompositeShapeItem> voidItem;
+               voidedShape->get_Item(i, &voidItem);
+
+               CComPtr<IShape> s;
+               voidItem->get_Shape(&s);
+
+               CComPtr<IPoint2dCollection> points;
+               s->get_PolyPoints(&points);
+
+               CComPtr<IEnumPoint2d> enumPoints;
+               points->get__Enum(&enumPoints);
+               CComPtr<IPoint2d> point;
+               while (enumPoints->Next(1, &point, nullptr) != S_FALSE)
+               {
+                   primaryShapePoints->Add(point);
+                   point.Release();
+               }
+
+           }
+       }
    }
 
    CComPtr<IShape> leftJointShape, rightJointShape;
@@ -305,35 +364,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    *pPara << CreateImage(primaryPoints, secondaryPoints) << rptNewLine;
 
    return pChapter;
-}
-
-void CSectionPropertiesChapterBuilder::GetPointsNextShape(IShape* shape, IPoint2dCollection** shapePoints) const
-{
-    CComQIPtr<ICompositeShape> compShape(shape);
-
-    if (compShape)
-    {
-        IndexType nShapes;
-        compShape->get_Count(&nShapes);
-
-        for (IndexType i = 0; i < nShapes; i++)
-        {
-            CComPtr<ICompositeShapeItem> item;
-            compShape->get_Item(i, &item);
-            VARIANT_BOOL bVoid;
-            item->get_Void(&bVoid);
-            CComPtr<IShape> s;
-            item->get_Shape(&s);
-            s->get_PolyPoints(shapePoints);
-
-            GetPointsNextShape(s, shapePoints);
-        }
-
-    }
-    else
-    {
-        shape->get_PolyPoints(shapePoints);
-    }
 }
 
 void CSectionPropertiesChapterBuilder::WriteSectionProperties(rptParagraph& para, CComPtr<IShapeProperties>& shapeProps) const
