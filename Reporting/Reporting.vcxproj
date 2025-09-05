@@ -203,6 +203,10 @@
     <ClCompile Include="ReinforcementFatigueCheck.cpp" />
     <ClCompile Include="ReportNotes.cpp" />
     <ClCompile Include="RMultiBearingSelectDlg.cpp" />
+    <ClCompile Include="SectionPropertiesChapterBuilder.cpp" />
+    <ClCompile Include="SectionPropertiesReportSpecification.cpp" />
+    <ClCompile Include="SectionPropertiesReportSpecificationBuilder.cpp" />
+    <ClCompile Include="SelectSectionDlg.cpp" />
     <ClCompile Include="SpanGirderBearingReportDlg.cpp" />
     <ClCompile Include="SpanGirderBearingReportSpecification.cpp" />
     <ClCompile Include="SpanGirderBearingReportSpecificationBuilder.cpp" />
@@ -341,7 +345,6 @@
     <ClCompile Include="SegmentTendonGeometryChapterBuilder.cpp" />
     <ClCompile Include="SelectCrackedSectionDlg.cpp" />
     <ClCompile Include="SelectMomentCapacitySectionDlg.cpp" />
-    <ClCompile Include="SelectPointOfInterestDlg.cpp" />
     <ClCompile Include="ShearCapacityDetailsChapterBuilder.cpp" />
     <ClCompile Include="ShearCheckTable.cpp" />
     <ClCompile Include="ShrinkageStrainChapterBuilder.cpp" />
@@ -550,6 +553,9 @@
     <ClInclude Include="..\Include\Reporting\ReinforcementFatigueCheck.h" />
     <ClInclude Include="..\Include\Reporting\ReportingExp.h" />
     <ClInclude Include="..\Include\Reporting\ReportNotes.h" />
+    <ClInclude Include="..\Include\Reporting\SectionPropertiesChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\SectionPropertiesReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\SectionPropertiesReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\SectPropChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\SectPropTable.h" />
     <ClInclude Include="..\Include\Reporting\SectPropTable2.h" />
@@ -616,7 +622,7 @@
     <ClInclude Include="RMultiGirderSelectDlg.h" />
     <ClInclude Include="SelectCrackedSectionDlg.h" />
     <ClInclude Include="SelectMomentCapacitySectionDlg.h" />
-    <ClInclude Include="SelectPointOfInterestDlg.h" />
+    <ClInclude Include="SelectSectionDlg.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TimeStepDetailsDlg.h" />
   </ItemGroup>

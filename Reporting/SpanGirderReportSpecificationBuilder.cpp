@@ -26,7 +26,6 @@
 #include <Reporting\SpanGirderReportDlg.h>
 #include <Reporting\MultiGirderReportDlg.h>
 #include "GirderMultiViewReportDlg.h"
-#include "SelectPointOfInterestDlg.h"
 #include "MultiViewReportDlg.h"
 
 #include <IFace/Tools.h>
