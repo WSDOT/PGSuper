@@ -76,7 +76,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        CComPtr<ICompositeShapeItem> item;
        compShape->get_Item(0, &item);
        item->get_Shape(&primaryShape);
-       primaryShape->get_PolyPoints(&primaryShapePoints);
+
+       GetPointsNextShape(primaryShape, &primaryShapePoints);
 
        if (1 < nShapes)
        {
@@ -306,7 +307,34 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    return pChapter;
 }
 
+void CSectionPropertiesChapterBuilder::GetPointsNextShape(IShape* shape, IPoint2dCollection** shapePoints) const
+{
+    CComQIPtr<ICompositeShape> compShape(shape);
 
+    if (compShape)
+    {
+        IndexType nShapes;
+        compShape->get_Count(&nShapes);
+
+        for (IndexType i = 0; i < nShapes; i++)
+        {
+            CComPtr<ICompositeShapeItem> item;
+            compShape->get_Item(i, &item);
+            VARIANT_BOOL bVoid;
+            item->get_Void(&bVoid);
+            CComPtr<IShape> s;
+            item->get_Shape(&s);
+            s->get_PolyPoints(shapePoints);
+
+            GetPointsNextShape(s, shapePoints);
+        }
+
+    }
+    else
+    {
+        shape->get_PolyPoints(shapePoints);
+    }
+}
 
 void CSectionPropertiesChapterBuilder::WriteSectionProperties(rptParagraph& para, CComPtr<IShapeProperties>& shapeProps) const
 {

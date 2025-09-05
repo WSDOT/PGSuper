@@ -62,12 +62,7 @@
 #define IDC_BUTTON2                     3021
 #define IDC_DESELECT_ALL                3021
 #define IDD_TIMESTEP_SHEAR_DEFORMATION_DETAILS 3022
-#define IDC_GIRDERLINE_SHEAR_DEF        3023
 #define IDD_MULTIBEARINGREPORT          3023
-#define IDC_INTERVAL_SHEAR_DEF          3024
-#define IDC_ALL_LOCATIONS_SHEAR_DEF     3026
-#define IDC_SLIDER_SHEAR_DEF            3027
-#define IDC_LOCATION_SHEAR_DEF          3028
 #define IDC_STATIC_MULTI_SELECT_ITEM    3028
 #define IDC_GROUP_GIRDER_SELECT         3029
 #define IDC_STATIC_XC                   3030

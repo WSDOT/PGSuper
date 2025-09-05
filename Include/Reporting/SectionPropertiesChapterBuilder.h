@@ -46,6 +46,8 @@ private:
 // Delete them in the destructor
    mutable std::vector<std::_tstring> m_TemporaryFiles;
 
+   void GetPointsNextShape(IShape* shape, IPoint2dCollection** shapePoints) const;
+
    void WriteSectionProperties(rptParagraph& para, CComPtr<IShapeProperties>& shapeProps) const;
 
    rptRcImage* CreateImage(const Points2D& primary, const Points2D& secondary) const;
