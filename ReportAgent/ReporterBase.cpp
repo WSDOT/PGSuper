@@ -240,7 +240,7 @@ void CReporterBase::CreateDetailsReport(std::shared_ptr<IEAFReportManager> pRptM
    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CADimChapterBuilder>()));
    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingSeatElevationsDetailsChapterBuilder2>()));
    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignDetailsChapterBuilder>()));
-   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignParametersChapterBuilder>()));
+   //pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignParametersChapterBuilder>()));
    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLiftingCheckDetailsChapterBuilder>()));
    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CHaulingCheckDetailsChapterBuilder>()));
    pRptMgr->AddReportBuilder( pRptBuilder );
