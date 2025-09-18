@@ -4391,7 +4391,7 @@ void CBridgeAgentImp::ValidateGirders()
                {
                   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
                   CString strMsg;
-                  strMsg.Format(_T("The bearings on the ahead side of %s for Girder %s, are wider than the bottom of the girder."),LABEL_PIER_EX(pPier->IsAbutment(),pierIdx),LABEL_GIRDER(segmentKey.girderIndex));
+                  strMsg.Format(_T("The bearings on the ahead side of %s for Girder %s, are wider than the bottom of the girder. Additional width is ignored in transverse tie force calculation (LRFD 5.9.4.4.3)"),LABEL_PIER_EX(pPier->IsAbutment(),pierIdx),LABEL_GIRDER(segmentKey.girderIndex));
                   pStatusCenter->Add(std::make_shared<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::Bearings, strMsg));
                }
             }
@@ -4421,7 +4421,7 @@ void CBridgeAgentImp::ValidateGirders()
                {
                   const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
                   CString strMsg;
-                  strMsg.Format(_T("The bearings on the back side of %s for Girder %s, are wider than the bottom of the girder."),LABEL_PIER_EX(pPier->IsAbutment(),pierIdx),LABEL_GIRDER(segmentKey.girderIndex));
+                  strMsg.Format(_T("The bearings on the back side of %s for Girder %s, are wider than the bottom of the girder. Additional width is ignored in transverse tie force calculation (LRFD 5.9.4.4.3)"),LABEL_PIER_EX(pPier->IsAbutment(),pierIdx),LABEL_GIRDER(segmentKey.girderIndex));
                   pStatusCenter->Add(std::make_shared<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::Bearings, strMsg));
                }
             }
