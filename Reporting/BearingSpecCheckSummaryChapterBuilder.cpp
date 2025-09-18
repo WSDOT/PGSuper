@@ -148,12 +148,12 @@ rptChapter* CBearingSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<
 
                 if (criteria.AnalysisMethod == WBFL::EngTools::BearingAnalysisMethod::MethodA)
                 {
-                    brgReporter->ReportBearingSpecCheckSummaryA(pChapter, pPara, artifact);
+                    brgReporter->ReportBearingSpecCheckSummaryA(pDispUnits, pChapter, pPara, artifact);
 
                 }
                 else
                 {
-                    brgReporter->ReportBearingSpecCheckSummaryB(pChapter, pPara, artifact, &tArtifact);
+                    brgReporter->ReportBearingSpecCheckSummaryB(pDispUnits, pChapter, pPara, artifact, &tArtifact);
                 }
 
             }
@@ -249,14 +249,16 @@ rptChapter* CBearingSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<
                 else
                 {
                     std::unique_ptr<WBFL::EngTools::BearingReporter> brgReporter;
+                    CEAFApp* pApp = EAFGetApp();
+                    const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
 
                     if (criteria.AnalysisMethod == WBFL::EngTools::BearingAnalysisMethod::MethodB)
                     {
-                        brgReporter->ReportBearingSpecCheckSummaryB(pChapter, pParagraph, artifact, &tArtifact);
+                        brgReporter->ReportBearingSpecCheckSummaryB(pDispUnits, pChapter, pParagraph, artifact, &tArtifact);
                     }
                     else
                     {
-                        brgReporter->ReportBearingSpecCheckSummaryA(pChapter, pParagraph, artifact);
+                        brgReporter->ReportBearingSpecCheckSummaryA(pDispUnits, pChapter, pParagraph, artifact);
                     }
                 }
             }
