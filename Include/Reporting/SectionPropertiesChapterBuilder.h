@@ -48,6 +48,6 @@ private:
 
    void WriteSectionProperties(rptParagraph& para, CComPtr<IShapeProperties>& shapeProps) const;
 
-   rptRcImage* CreateImage(const Points2D& primary, const Points2D& secondary) const;
+   rptRcImage* CreateImage(const std::vector<Points2D>& primary, const Points2D& secondary) const;
 
 };

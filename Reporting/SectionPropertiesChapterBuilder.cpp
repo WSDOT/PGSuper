@@ -60,7 +60,10 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    CComPtr<IShape> shape;
    pShapes->GetSegmentShape(intervalIdx, poi, false, pgsTypes::scGirder, &shape);
 
-   CComPtr<IPoint2dCollection> primaryShapePoints;
+   std::vector<CComPtr<IPoint2dCollection>> primaryShapePoints;
+   CComPtr<IPoint2dCollection> p1;
+   primaryShapePoints.emplace_back(p1);
+
    CComPtr<IPoint2dCollection> secondaryShapePoints;
    CComQIPtr<ICompositeShape> compShape(shape);
 
@@ -76,7 +79,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        compShape->get_Item(0, &item);
        item->get_Shape(&primaryShape);
 
-       shape->get_PolyPoints(&primaryShapePoints);
+       shape->get_PolyPoints(&primaryShapePoints[0]);
 
        CComQIPtr<ICompositeShape> voidedShape(primaryShape);
 
@@ -85,8 +88,11 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            IndexType nVoidShapes;
            voidedShape->get_Count(&nVoidShapes);
 
-           for (IndexType i = 0; i < nVoidShapes; i++)
+           for (IndexType i = 1; i < nVoidShapes; i++)
            {
+               CComPtr<IPoint2dCollection> pi;
+               primaryShapePoints.emplace_back(pi);
+
                CComPtr<ICompositeShapeItem> voidItem;
                voidedShape->get_Item(i, &voidItem);
 
@@ -99,11 +105,23 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                CComPtr<IEnumPoint2d> enumPoints;
                points->get__Enum(&enumPoints);
                CComPtr<IPoint2d> point;
-               while (enumPoints->Next(1, &point, nullptr) != S_FALSE)
+
+               IndexType j = 0;
+               while (enumPoints->Next(1, &point, nullptr) != S_FALSE) //???
                {
-                   primaryShapePoints->Add(point);
-                   point.Release();
+                   if (j == 0)
+                   {
+                       shape->get_PolyPoints(&primaryShapePoints[i]);
+                   }
+                   else
+                   {
+                       primaryShapePoints[i]->Add(point);
+                   }
+
+                   j++;
                }
+
+               enumPoints.Release();
 
            }
        }
@@ -118,7 +136,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    }
    else
    {
-       shape->get_PolyPoints(&primaryShapePoints);
+       shape->get_PolyPoints(&primaryShapePoints[0]);
 
        CComQIPtr<ICompositeShape> voidedShape(primaryShape);
 
@@ -141,10 +159,21 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                CComPtr<IEnumPoint2d> enumPoints;
                points->get__Enum(&enumPoints);
                CComPtr<IPoint2d> point;
+
+               IndexType j = 0;
                while (enumPoints->Next(1, &point, nullptr) != S_FALSE)
                {
-                   primaryShapePoints->Add(point);
+                   if (j == 0)
+                   {
+                       shape->get_PolyPoints(&primaryShapePoints[i+1]);
+                   }
+                   else
+                   {
+                       primaryShapePoints[i+1]->Add(point);
+                   }
                    point.Release();
+
+                   j++;
                }
 
            }
@@ -218,27 +247,30 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        EcDeck = pMaterials->GetDeckEc(deckCastingRegionIdx, intervalIdx);
    }
 
-   std::vector<std::pair<Float64, Float64>> primaryPoints;
+   std::vector <std::vector<std::pair<Float64, Float64>>> primaryPoints;
+   primaryPoints.resize(primaryShapePoints.size());
    std::vector<std::pair<Float64, Float64>> secondaryPoints;
 
-
    IndexType nPoints;
-   if (primaryShapePoints)
+
+   for (IndexType j = 0; j < primaryShapePoints.size(); j++)
    {
-
-       primaryShapePoints->get_Count(&nPoints);
-       for (IndexType i = 0; i < nPoints; i++)
+       if (primaryShapePoints[j])
        {
-           CComPtr<IPoint2d> pnt;
-           primaryShapePoints->get_Item(i, &pnt);
-           Float64 x, y;
-           pnt->Location(&x, &y);
+           primaryShapePoints[j]->get_Count(&nPoints);
+           for (IndexType i = 0; i < nPoints; i++)
+           {
+               CComPtr<IPoint2d> pnt;
+               primaryShapePoints[j]->get_Item(i, &pnt);
+               Float64 x, y;
+               pnt->Location(&x, &y);
 
-           x = IsZero(x) ? 0 : x;
-           y = IsZero(y) ? 0 : y;
+               x = IsZero(x) ? 0 : x;
+               y = IsZero(y) ? 0 : y;
 
-           primaryPoints.emplace_back(x, y);
+               primaryPoints[j].emplace_back(x, y);
 
+           }
        }
    }
 
@@ -281,19 +313,44 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    (*pPrimaryPointsTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
    (*pPrimaryPointsTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
 
-
-
-
    RowIndexType row = pPrimaryPointsTable->GetNumberOfHeaderRows();
-   std::vector<std::pair<Float64, Float64>>::const_iterator iter(primaryPoints.begin());
-   std::vector<std::pair<Float64, Float64>>::const_iterator end(primaryPoints.end());
-   for (; iter != end; iter++, row++)
-   {
-       Float64 x = iter->first;
-       Float64 y = iter->second;
 
-       (*pPrimaryPointsTable)(row, 0) << length.SetValue(x);
-       (*pPrimaryPointsTable)(row, 1) << length.SetValue(y);
+   std::vector<std::pair<Float64, Float64>>::const_iterator iter;
+   std::vector<std::pair<Float64, Float64>>::const_iterator end;
+
+   for (IndexType i = 0; i < primaryPoints.size(); i++)
+   {
+       CString voidStr;
+       voidStr.Format(_T("Void %d"), i);
+       auto pVoidPointsTable = rptStyleManager::CreateDefaultTable(2, voidStr);
+       (*pVoidPointsTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+       (*pVoidPointsTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
+       if (i > 0)
+       {
+           row = pVoidPointsTable->GetNumberOfHeaderRows();
+           ColumnIndexType col = (ColumnIndexType)(i - 1);
+           (*pLayoutTable)(1, col) << pVoidPointsTable;
+       }
+       
+       iter = primaryPoints[i].begin();
+       end = primaryPoints[i].end();
+
+       for (; iter != end; iter++, row++)
+       {
+           Float64 x = iter->first;
+           Float64 y = iter->second;
+
+           if (i == 0)
+           {
+               (*pPrimaryPointsTable)(row, 0) << length.SetValue(x);
+               (*pPrimaryPointsTable)(row, 1) << length.SetValue(y);
+           }
+           else
+           {
+               (*pVoidPointsTable)(row, 0) << length.SetValue(x);
+               (*pVoidPointsTable)(row, 1) << length.SetValue(y);
+           }
+       }
    }
 
 
@@ -407,7 +464,7 @@ void CSectionPropertiesChapterBuilder::WriteSectionProperties(rptParagraph& para
 
 
 rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(
-    const Points2D& primaryPoints, const Points2D& secondaryPoints) const
+    const std::vector<Points2D>& primaryPoints, const Points2D& secondaryPoints) const
 {
     CEAFApp* pApp = EAFGetApp();
     const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
@@ -456,21 +513,32 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(
     graph.SetYAxisNumberOfMinorTics(0);
     graph.SetYAxisNumberOfMajorTics(11);
 
-    IndexType primarySeries = graph.CreateDataSeries(_T(""), PS_SOLID, 1, BLUE);
+    std::vector<IndexType> primarySeries;
+    primarySeries.resize(primaryPoints.size());
+    for (IndexType i = 0; i < primaryPoints.size(); i++)
+    {
+        primarySeries[i] = graph.CreateDataSeries(_T(""), PS_SOLID, 1, BLUE);
+    }
     IndexType secondarySeries = graph.CreateDataSeries(_T(""), PS_SOLID, 1, BLUE);
 
-    std::vector<std::pair<Float64, Float64>>::const_iterator iter(primaryPoints.begin());
-    std::vector<std::pair<Float64, Float64>>::const_iterator end(primaryPoints.end());
-    for (; iter != end; iter++)
-    {
-        WBFL::Graphing::Point point(WBFL::Units::ConvertFromSysUnits(iter->first, pDispUnits->ComponentDim.UnitOfMeasure), WBFL::Units::ConvertFromSysUnits(iter->second, pDispUnits->ComponentDim.UnitOfMeasure));
-        graph.AddPoint(primarySeries, point);
-    }
+    std::vector<std::pair<Float64, Float64>>::const_iterator iter;
+    std::vector<std::pair<Float64, Float64>>::const_iterator end;
 
-    if (0 < primaryPoints.size())
+    for (IndexType i = 0; i < primaryPoints.size(); i++)
     {
-        WBFL::Graphing::Point point(WBFL::Units::ConvertFromSysUnits(primaryPoints.front().first, pDispUnits->ComponentDim.UnitOfMeasure), WBFL::Units::ConvertFromSysUnits(primaryPoints.front().second, pDispUnits->ComponentDim.UnitOfMeasure));
-        graph.AddPoint(primarySeries, point);
+        iter = primaryPoints[i].begin();
+        end = primaryPoints[i].end();
+        for (; iter != end; iter++)
+        {
+            WBFL::Graphing::Point point(WBFL::Units::ConvertFromSysUnits(iter->first, pDispUnits->ComponentDim.UnitOfMeasure), WBFL::Units::ConvertFromSysUnits(iter->second, pDispUnits->ComponentDim.UnitOfMeasure));
+            graph.AddPoint(primarySeries[i], point);
+        }
+
+        if (0 < primaryPoints.size())
+        {
+            WBFL::Graphing::Point point(WBFL::Units::ConvertFromSysUnits(primaryPoints[i].front().first, pDispUnits->ComponentDim.UnitOfMeasure), WBFL::Units::ConvertFromSysUnits(primaryPoints[i].front().second, pDispUnits->ComponentDim.UnitOfMeasure));
+            graph.AddPoint(primarySeries[i], point);
+        }
     }
 
     iter = secondaryPoints.begin();
