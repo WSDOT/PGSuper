@@ -415,6 +415,7 @@ void CSectionPropertiesChapterBuilder::WriteSectionProperties(rptParagraph& para
     para << _T("Area = ") << area.SetValue(Area) << rptNewLine;
     para << Sub2(_T("X"), _T("c.g.")) << _T(" = ") << length.SetValue(xcg) << rptNewLine;
     para << Sub2(_T("Y"), _T("c.g.")) << _T(" = ") << length.SetValue(ycg) << rptNewLine;
+    para << _T("Ix = ") << momentOfInertia.SetValue(Ixx) << rptNewLine;
     para << _T("Iy = ") << momentOfInertia.SetValue(Iyy) << rptNewLine;
     para << _T("Ixy = ") << momentOfInertia.SetValue(Ixy) << rptNewLine;
 }
