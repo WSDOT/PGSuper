@@ -99,29 +99,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                CComPtr<IShape> s;
                voidItem->get_Shape(&s);
 
-               CComPtr<IPoint2dCollection> points;
-               s->get_PolyPoints(&points);
-
-               CComPtr<IEnumPoint2d> enumPoints;
-               points->get__Enum(&enumPoints);
-               CComPtr<IPoint2d> point;
-
-               IndexType j = 0;
-               while (enumPoints->Next(1, &point, nullptr) != S_FALSE) //???
-               {
-                   if (j == 0)
-                   {
-                       shape->get_PolyPoints(&primaryShapePoints[i]);
-                   }
-                   else
-                   {
-                       primaryShapePoints[i]->Add(point);
-                   }
-
-                   j++;
-               }
-
-               enumPoints.Release();
+               s->get_PolyPoints(&primaryShapePoints[i]);
 
            }
        }
@@ -153,28 +131,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                CComPtr<IShape> s;
                voidItem->get_Shape(&s);
 
-               CComPtr<IPoint2dCollection> points;
-               s->get_PolyPoints(&points);
-
-               CComPtr<IEnumPoint2d> enumPoints;
-               points->get__Enum(&enumPoints);
-               CComPtr<IPoint2d> point;
-
-               IndexType j = 0;
-               while (enumPoints->Next(1, &point, nullptr) != S_FALSE)
-               {
-                   if (j == 0)
-                   {
-                       shape->get_PolyPoints(&primaryShapePoints[i+1]);
-                   }
-                   else
-                   {
-                       primaryShapePoints[i+1]->Add(point);
-                   }
-                   point.Release();
-
-                   j++;
-               }
+               s->get_PolyPoints(&primaryShapePoints[i + 1]);
 
            }
        }
