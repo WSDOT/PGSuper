@@ -2472,8 +2472,6 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
 
             GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
-            LPCTSTR lpszGirderName = pParent->m_Girder.GetGirderName();
-
             // convert strands
             // Create a prestressing config based on the current input
             PRESTRESSCONFIG config;

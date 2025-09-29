@@ -3639,7 +3639,6 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
 
          pGirder->SetConditionFactor(gdrData.ConditionFactor);
          pGirder->SetConditionFactorType(gdrData.Condition);
-         pGirder->SetGirderName(gdrData.m_GirderName.c_str());
 
          SegmentIDType segID = pSegment->GetID();
          pTimelineMgr->SetSegmentErectionEventByIndex(segID,gpEventIdx);
