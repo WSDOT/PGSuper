@@ -117,9 +117,10 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
       {
          Float64 Hg = pGirder->GetHeight(reactionLocation.poi);
          Float64 hb = pGirder->GetBottomFlangeThickness(reactionLocation.poi, 0);
+         Float64 bw = pGirder->GetBottomFlangeWidth(reactionLocation.poi);
 
          const CBearingData2* pbd = pIBridgeDesc->GetBearingData(reactionLocation.PierIdx, (reactionLocation.Face == rftBack ? pgsTypes::Back : pgsTypes::Ahead), reactionLocation.poi.GetSegmentKey().girderIndex);
-         Float64 bb = pbd->Width;
+         Float64 bb = (pbd->Width <= bw? pbd->Width : bw);
 
          std::vector<CComPtr<IRect2d>> rects = pStrandGeometry->GetWebWidthProjections(reactionLocation.poi);
          ASSERT(rects.size() == 1);

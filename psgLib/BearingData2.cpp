@@ -99,6 +99,7 @@ HRESULT CBearingData2::Load(IStructuredLoad* pStrLoad, std::shared_ptr<IEAFProgr
           FixedY = (var.boolVal == VARIANT_TRUE ? true : false);
           hr = pStrLoad->get_Property(_T("UsesExtPlates"), &var);
           UseExtPlates = (var.boolVal == VARIANT_TRUE ? true : false);
+          var.vt = VT_R8;
           hr = pStrLoad->get_Property(_T("ShearDeformationOverride"), &var);
           ShearDeformationOverride = var.dblVal;
       }
