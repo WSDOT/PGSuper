@@ -25,6 +25,7 @@
 
 #include <Plugins\PGSuperIEPlugin.h>
 #include <EAF\ComponentObject.h>
+#include <MfcTools/ExcelWrapper.h>
 
 class CGirderScheduleExporter : public WBFL::EAF::ComponentObject,
 	public PGS::IDataExporter
@@ -40,5 +41,6 @@ public:
 	HRESULT Export(std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
 
 private:
+
 	CBitmap m_Bitmap;
 };
