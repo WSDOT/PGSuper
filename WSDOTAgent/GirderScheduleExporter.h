@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// IEPluginExample
 // Copyright © 1999-2025  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
@@ -19,15 +19,26 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
+// PGSuperExporter.h : Declaration of the CPGSuperExporter
 #pragma once
 
-#include <initguid.h>
+#include <Plugins\PGSuperIEPlugin.h>
+#include <EAF\ComponentObject.h>
 
-DEFINE_GUID(CLSID_WSDOTAgent, 0xB1A19633, 0x8880, 0x40bc, 0xA3, 0xC9, 0xDD, 0xF4, 0x7F, 0x7F, 0x18, 0x44);
-struct __declspec(uuid("{B1A19633-8880-40bc-A3C9-DDF47F7F1844}")) WSDOTAgent;
+class CGirderScheduleExporter : public WBFL::EAF::ComponentObject,
+	public PGS::IDataExporter
+{
+public:
+	CGirderScheduleExporter();
 
-DEFINE_GUID(CLSID_WSDOTPGSuperComponentInfo, 0x5656F52E, 0x4DC8, 0x4299, 0x8A, 0xD1, 0x23, 0xEB, 0x3A, 0xE4, 0x63, 0x53);
 
-DEFINE_GUID(CLSID_WSDOTPGSpliceComponentInfo, 0xE389A200, 0xD722, 0x4977, 0xAE, 0x9F, 0x93, 0x9F, 0x9C, 0x12, 0x1A, 0x1C);
+	STDMETHOD(Init)(UINT nCmdID) override;
+	CString GetMenuText() const override;
+	HBITMAP GetBitmapHandle() const override;
+	CString GetCommandHintText() const override;
+	HRESULT Export(std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
 
-DEFINE_GUID(CLSID_WSDOTGirderScheduleExporter, 0x4ef32715, 0x1772, 0x4de9, 0xa7, 0x99, 0x2b, 0xc2, 0x5e, 0xaa, 0x0, 0xe8);
+private:
+	CBitmap m_Bitmap;
+};

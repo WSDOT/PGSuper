@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////
-// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// IEPluginExample
 // Copyright © 1999-2025  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
@@ -19,15 +19,50 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
-#pragma once
 
-#include <initguid.h>
+// PGSuperExporter.cpp : Implementation of CPGSuperExporter
+#include "stdafx.h"
+#include "GirderScheduleExporter.h"
 
-DEFINE_GUID(CLSID_WSDOTAgent, 0xB1A19633, 0x8880, 0x40bc, 0xA3, 0xC9, 0xDD, 0xF4, 0x7F, 0x7F, 0x18, 0x44);
-struct __declspec(uuid("{B1A19633-8880-40bc-A3C9-DDF47F7F1844}")) WSDOTAgent;
 
-DEFINE_GUID(CLSID_WSDOTPGSuperComponentInfo, 0x5656F52E, 0x4DC8, 0x4299, 0x8A, 0xD1, 0x23, 0xEB, 0x3A, 0xE4, 0x63, 0x53);
 
-DEFINE_GUID(CLSID_WSDOTPGSpliceComponentInfo, 0xE389A200, 0xD722, 0x4977, 0xAE, 0x9F, 0x93, 0x9F, 0x9C, 0x12, 0x1A, 0x1C);
 
-DEFINE_GUID(CLSID_WSDOTGirderScheduleExporter, 0x4ef32715, 0x1772, 0x4de9, 0xa7, 0x99, 0x2b, 0xc2, 0x5e, 0xaa, 0x0, 0xe8);
+
+CGirderScheduleExporter::CGirderScheduleExporter()
+{
+}
+
+STDMETHODIMP CGirderScheduleExporter::Init(UINT nCmdID)
+{
+    return S_OK;
+}
+
+CString CGirderScheduleExporter::GetMenuText() const
+{
+    return CString("Girder Schedule to Excel File");
+}
+
+HBITMAP CGirderScheduleExporter::GetBitmapHandle() const
+{
+    return m_Bitmap;
+}
+
+CString CGirderScheduleExporter::GetCommandHintText() const
+{
+    return CString("Status line hint text\nTool tip text");
+}
+
+HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker)
+{
+    // write some bridge data to a text file
+    CFileDialog  fildlg(FALSE, _T("xlsx"), _T("PGSuperExport"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("PGSuper Export File (*.xlsx)|*.xlsx||"));
+    if (fildlg.DoModal() == IDOK)
+    {
+        CString file_path = fildlg.GetPathName();
+
+        std::_tofstream ofile(file_path);
+    }
+
+    return S_OK;
+}
+

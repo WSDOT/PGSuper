@@ -29,6 +29,7 @@
 #include "CLSID.h"
 #include "PGSuperComponentInfo.h"
 #include "PGSpliceComponentInfo.h"
+#include "GirderScheduleExporter.h"
 #include "WSDOTAgentImp.h"
 #include <EAF/ComponentModule.h>
 WBFL::EAF::ComponentModule Module_;
@@ -36,6 +37,7 @@ WBFL::EAF::ComponentModule Module_;
 EAF_BEGIN_OBJECT_MAP(ObjectMap)
 EAF_OBJECT_ENTRY(CLSID_WSDOTPGSuperComponentInfo, CPGSuperComponentInfo)
 EAF_OBJECT_ENTRY(CLSID_WSDOTPGSpliceComponentInfo, CPGSpliceComponentInfo)
+EAF_OBJECT_ENTRY(CLSID_WSDOTGirderScheduleExporter, CGirderScheduleExporter)
 EAF_OBJECT_ENTRY(CLSID_WSDOTAgent, CWSDOTAgentImp)
 EAF_END_OBJECT_MAP()
 
