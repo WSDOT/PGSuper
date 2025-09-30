@@ -95,6 +95,20 @@ bool CGirderScheduleExporter::DoesFileExist(const CString& filename)
     }
 }
 
+CString CGirderScheduleExporter::GetColumnLabel(ColumnIndexType colIdx)
+{
+    CString strLabel((TCHAR)((colIdx % 26) + _T('A')));
+    colIdx = ((colIdx - (colIdx % 26)) / 26);
+    if (0 < colIdx)
+    {
+        CString strTemp = strLabel;
+        strLabel = GetColumnLabel(colIdx - 1);
+        strLabel += strTemp;
+    }
+
+    return strLabel;
+}
+
 HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
     // Excel
@@ -124,7 +138,29 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     ws.SetName(_T("Girder Schedule"));
 
 
-    //////////
+
+    //////////////////////////////////////////////////
+
+
+
+   // write the table headings
+    CString strCell;
+    strCell.Format(_T("%s1"), GetColumnLabel(0));
+    Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+    cell.SetValue2(COleVariant(_T("Title")));
+
+    strCell.Format(_T("%s2"), GetColumnLabel(0));
+    Range cell2 = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+    cell2.SetValue2(COleVariant(_T("SubTitle")));
+
+    strCell.Format(_T("%s3"), GetColumnLabel(0));
+    Range cell3 = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+    cell3.SetValue2(COleVariant(_T("Ytable")));
+
+
+    //////////////////////////////////////////////////
+
+
 
     AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -170,8 +206,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         return false;
     }
 
-    /////////
-
 
     // Save file
     while (!CommitExcel(excel, worksheets, file_path))
@@ -194,8 +228,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         {
 
             // user wants to rename the file
-            CString strExcelFilter(_T("Microsoft Excel Files (*.xls)"));
-            CString strFileExtension(_T("xls"));
+            CString strExcelFilter(_T("Microsoft Excel Files (*.xlsx)"));
+            CString strFileExtension(_T("xlsx"));
 
             CFileDialog fileDlg2(FALSE, strFileExtension, file_path, OFN_HIDEREADONLY, strExcelFilter);
             fileDlg2.DoModal();

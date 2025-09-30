@@ -41,6 +41,7 @@ public:
 
 private:
 
+	CString GetColumnLabel(ColumnIndexType colIdx);
 	bool DoesFileExist(const CString& filname);
 	bool CommitExcel(_Application& excel, Worksheets& worksheets, LPCTSTR strFilename);
 
