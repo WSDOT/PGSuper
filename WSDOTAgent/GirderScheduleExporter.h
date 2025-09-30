@@ -33,7 +33,6 @@ class CGirderScheduleExporter : public WBFL::EAF::ComponentObject,
 public:
 	CGirderScheduleExporter();
 
-
 	STDMETHOD(Init)(UINT nCmdID) override;
 	CString GetMenuText() const override;
 	HBITMAP GetBitmapHandle() const override;
@@ -41,6 +40,9 @@ public:
 	HRESULT Export(std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
 
 private:
+
+	bool DoesFileExist(const CString& filname);
+	bool CommitExcel(_Application& excel, Worksheets& worksheets, LPCTSTR strFilename);
 
 	CBitmap m_Bitmap;
 };
