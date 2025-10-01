@@ -41,7 +41,19 @@ public:
 
 private:
 
+	struct ScheduleHeaderInfo
+	{
+		ColumnIndexType colIdx;
+		ColumnIndexType colSpan; 
+		RowIndexType rowIdx;
+		RowIndexType rowSpan; 
+		Float64 orientation;
+		CString strValue;
+	};
+
 	CString GetColumnLabel(ColumnIndexType colIdx);
+	void SetColumnHeader(_Worksheet* worksheet, ColumnIndexType colIdx, ColumnIndexType colSpan, 
+		RowIndexType rowIdx, RowIndexType rowSpan, Float64 orientation, CString strValue);
 	bool DoesFileExist(const CString& filname);
 	bool CommitExcel(_Application& excel, Worksheets& worksheets, LPCTSTR strFilename);
 
