@@ -1446,6 +1446,7 @@
 #define IDC_CHECK4                      1726
 #define IDC_CHECK_DEBONDING_SYMMETRY    1726
 #define IDC_PRINCIPAL_TENSION_LABEL5    1726
+#define IDC_HORIZ_TENSION_TIE_CHECK     1726
 #define IDC_CHECK5                      1727
 #define IDC_CHECK_ADJACENT_STRANDS      1727
 #define IDC_UNGROUTED_MULTIPLIER2       1727
@@ -1500,6 +1501,7 @@
 #define IDC_REQ_BEARING_GIRDER_EDGE_UNIT 1756
 #define IDC_07_LABEL_2                  1756
 #define IDC_MAX_LL_DEF_LIMIT_UNIT       1757
+#define IDC_HORIZ_TENSION_TIE_LABEL     1757
 #define IDC_MAX_TL_LIMIT_UNIT           1758
 #define IDC_MAX_TL_UNIT                 1758
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1541,7 +1543,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        335
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1757
+#define _APS_NEXT_CONTROL_VALUE         1758
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

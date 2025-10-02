@@ -53,6 +53,16 @@ bool pgsHorizontalTieForceArtifact::IsApplicable() const
    return m_bIsApplicable;
 }
 
+void pgsHorizontalTieForceArtifact::IsChecked(bool bIsChecked)
+{
+   m_bIsChecked = bIsChecked;
+}
+
+bool pgsHorizontalTieForceArtifact::IsChecked() const
+{
+   return m_bIsChecked;
+}
+
 void pgsHorizontalTieForceArtifact::SetBearingWidth(Float64 bb)
 {
    m_bb = bb;
@@ -189,7 +199,8 @@ bool pgsHorizontalTieForceArtifact::IsSymmetric() const
 bool pgsHorizontalTieForceArtifact::Passed() const
 {
    // If this check is not applicable, return true. i.e. - you always pass this check
-   if ( !m_bIsApplicable )
+   // If this check is not checked, return true
+   if ( !m_bIsApplicable || !m_bIsChecked )
    {
       return true;
    }

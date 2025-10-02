@@ -51,13 +51,12 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
 {
    GET_IFACE2(GetBroker(), IGirder, pGirder);
    auto nWebs = pGirder->GetWebCount(girderKey);
+   auto nBottomFlanges = pGirder->GetBottomFlangeCount(girderKey);
 
-   bool bIsApplicable = true;
-   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::TenthEdition2024 || nWebs != 1)
+   bool bIsApplicable = false;
+   if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition() && nWebs == 1 && nBottomFlanges == 1)
    {
-      // if needed, the applicability check can be made stronger by checking the beam family and beam types
-      // For now, only I-beams have single webs, so checking the web count is sufficient
-      bIsApplicable = false;
+      bIsApplicable = true;
    }
 
    GET_IFACE2(GetBroker(), IIntervals, pIntervals);
@@ -80,6 +79,8 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    auto n = pSpecEntry->GetEndZoneCriteria().SplittingZoneLengthFactor; // this is for h/4
 
+   bool bIsChecked = pSpecEntry->GetEndZoneCriteria().bCheckHorizTensionTie;
+
    GET_IFACE2(GetBroker(), IBearingDesign, pBearingDesign);
    CmbLsBearingDesignReactionAdapter adapter(pBearingDesign, lastIntervalIdx, girderKey);
    GET_IFACE2(GetBroker(), IBridge, pBridge);
@@ -98,22 +99,7 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
       // Use IBearingDesign->GetBearingLimitStateReaction to get Vu
       // Use the reactionLocation.poi to get girder properties such as Hg and #webs
 
-      if (!bIsApplicable)
-      {
-         for (auto& ls : vLimitStates)
-         {
-            pgsHorizontalTieForceArtifact artifact(reactionLocation, ls);
-            if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::TenthEdition2024 || nWebs != 1)
-            {
-               // This check is only applicable starting with LRFD 10th Edition and it is only for
-               // I-Beams with a single web
-               artifact.IsApplicable(false);
-               pGdrArtifact->AddHorizontalTensionTieArtifact(artifact);
-               continue;
-            }
-         }
-      }
-      else
+      if (bIsApplicable)
       {
          Float64 Hg = pGirder->GetHeight(reactionLocation.poi);
          Float64 hb = pGirder->GetBottomFlangeThickness(reactionLocation.poi, 0);
@@ -217,6 +203,7 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
          {
             pgsHorizontalTieForceArtifact artifact(reactionLocation, ls);
             artifact.IsApplicable(true);
+            artifact.IsChecked(bIsChecked);
 
             artifact.SetTieArea(Avc);
             artifact.SetTieYieldStrength(fy);
@@ -243,6 +230,15 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
             pGdrArtifact->AddHorizontalTensionTieArtifact(artifact);
          }
       }
+      else
+      {
+         for (auto& ls : vLimitStates)
+         {
+            pgsHorizontalTieForceArtifact artifact(reactionLocation, ls);
+            artifact.IsApplicable(false);
+            pGdrArtifact->AddHorizontalTensionTieArtifact(artifact);
+         }
+      }
    }
 }
 
@@ -264,6 +260,15 @@ void pgsHorizTieForceEng::ReportHorizontalTensionTieForceChecks(const pgsGirderA
 
    pPara = new rptParagraph;
    *pChapter << pPara;
+
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   bool bIsChecked = pSpecEntry->GetEndZoneCriteria().bCheckHorizTensionTie;
+   if (!bIsChecked)
+   {
+      *pPara << _T("Checking of the horizontal transverse tension tie reinforcement is disabled in the Project Criteria") << rptNewLine;
+   }
 
    auto pTable = rptStyleManager::CreateDefaultTable(5);
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -290,13 +295,21 @@ void pgsHorizTieForceEng::ReportHorizontalTensionTieForceChecks(const pgsGirderA
       {
          (*pTable)(row, col++) << force.SetValue(artifact->GetTieForce());
          (*pTable)(row, col++) << force.SetValue(artifact->GetTieResistance());
-         bool bPassed = artifact->Passed();
-         if (bPassed)
-            (*pTable)(row, col) << RPT_PASS;
-         else
-            (*pTable)(row, col) << RPT_FAIL;
 
-         (*pTable)(row, col) << rptNewLine << _T("(") << cdRatio.SetValue(artifact->GetTieResistance(), artifact->GetTieForce(), bPassed) << _T(")");
+         if (artifact->IsChecked())
+         {
+            bool bPassed = artifact->Passed();
+            if (bPassed)
+               (*pTable)(row, col) << RPT_PASS;
+            else
+               (*pTable)(row, col) << RPT_FAIL;
+
+            (*pTable)(row, col) << rptNewLine << _T("(") << cdRatio.SetValue(artifact->GetTieResistance(), artifact->GetTieForce(), bPassed) << _T(")");
+         }
+         else
+         {
+            (*pTable)(row, col++) << _T("N/A");
+         }
       }
       else
       {

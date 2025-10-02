@@ -46,6 +46,9 @@ public:
    void IsApplicable(bool bIsApplicable);
    bool IsApplicable() const;
 
+   void IsChecked(bool bIsChecked);
+   bool IsChecked() const;
+
    void SetBearingWidth(Float64 bb);
    Float64 GetBearingWidth() const;
 
@@ -92,6 +95,7 @@ private:
    ReactionLocation m_Location;
    pgsTypes::LimitState m_LimitState;
    bool m_bIsApplicable = false;
+   bool m_bIsChecked = true;
    Float64 m_bb;
    Float64 m_hb;
    StrandIndexType m_Nw;

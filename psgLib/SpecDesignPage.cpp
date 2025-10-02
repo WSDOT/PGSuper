@@ -291,6 +291,12 @@ BOOL CSpecDesignPage::OnSetActive()
       pWnd->SetWindowText(_T("Hauling Stability Check/Design Options (LRFD 5.5.4.3)"));
    }
 
+   // only applicable if LRFD 10th edition or later
+   auto show = (pDad->GetSpecVersion() < WBFL::LRFD::BDSManager::Edition::TenthEdition2024) ? SW_HIDE : SW_SHOW;
+   GetDlgItem(IDC_HORIZ_TENSION_TIE_LABEL)->ShowWindow(show);
+   GetDlgItem(IDC_HORIZ_TENSION_TIE_CHECK)->ShowWindow(show);
+
+
    return CPropertyPage::OnSetActive();
 }
 

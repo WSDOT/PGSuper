@@ -38,6 +38,7 @@ struct PSGLIBCLASS EndZoneCriteria
    bool bCheckConfinement = true;
    bool bDesignSplitting = true;
    bool bDesignConfinement = true;
+   bool bCheckHorizTensionTie = true; // new criteria for LRFD 10th Edition, 5.9.4.4.3
 
    Float64 SplittingZoneLengthFactor = 4.0; ///< Splitting zone length h/n (h/4 or h/5) per LRFD 5.9.4.4.1 (pre2017: 5.10.10.1)
 

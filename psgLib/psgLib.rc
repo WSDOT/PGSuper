@@ -1075,7 +1075,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Spec. Checking and Design"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "At Release Check/Design Options",IDC_STATIC,7,6,535,111
+    GROUPBOX        "At Release Check/Design Options",IDC_STATIC,7,6,535,119
     LTEXT           "Harped Strand Hold Down Force",IDC_STATIC,15,22,104,8
     CONTROL         "Check",IDC_CHECK_HD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,137,20,34,8
     CONTROL         "Design",IDC_DESIGN_HD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,174,20,34,8
@@ -1103,73 +1103,75 @@ BEGIN
     LTEXT           "Confinement Reinforcement (5.10.10.2)",IDC_SCONFINEMENT,17,84,124,8
     CONTROL         "Check",IDC_CHECK_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,151,84,37,8
     CONTROL         "Design",IDC_DESIGN_CONFINEMENT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,191,84,37,8
-    LTEXT           "Plant Handling Weight",IDC_STATIC,16,100,72,8
-    CONTROL         "Check",IDC_CHECK_HANDLING_WEIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,95,100,34,10
-    EDITTEXT        IDC_HANDLING_WEIGHT,132,99,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_HANDLING_WEIGHT_UNIT,177,101,19,8
-    GROUPBOX        "Lifting Stability Check/Design Options (LRFD 5.5.4.3)",IDC_LIFTING_GROUP,7,120,535,30
-    CONTROL         "Check",IDC_CHECK_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,133,31,8
-    CONTROL         "Design",IDC_DESIGN_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,51,133,37,8
-    LTEXT           "Min Lifting Point Location from ends of girder",IDC_MIN_LIFTING_POINT_LABEL,97,134,140,8
-    EDITTEXT        IDC_MIN_LIFTING_POINT,243,131,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "un",IDC_MIN_LIFTING_POINT_UNIT,286,134,9,8
-    LTEXT           "(Enter value or H)",IDC_STATIC_L,300,134,56,8
-    LTEXT           "Accuracy",IDC_LIFTING_POINT_LOCATION_ACCURACY_LABEL,365,133,31,8
-    EDITTEXT        IDC_LIFTING_POINT_LOCATION_ACCURACY,401,130,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,445,133,19,8
-    GROUPBOX        "Hauling Stability Check/Design Options (LRFD 5.5.4.3)",IDC_HAULING_GROUP,7,153,535,40
-    CONTROL         "Check",IDC_CHECK_HAULING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,164,31,8
-    CONTROL         "Design",IDC_DESIGN_HAULING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,51,164,37,8
-    LTEXT           "Min Truck Support Location from ends of girder",IDC_MIN_TRUCK_SUPPORT_LABEL,90,164,149,8
-    EDITTEXT        IDC_MIN_TRUCK_SUPPORT,244,160,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_MIN_TRUCK_SUPPORT_UNIT,286,164,9,8
-    LTEXT           "(Enter value of H)",IDC_STATIC_H,300,164,56,8
-    LTEXT           "Accuracy",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_LABEL,364,164,31,8
-    EDITTEXT        IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,399,160,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,443,164,19,8
-    CONTROL         "Not to be less than",IDC_IS_SUPPORT_LESS_THAN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,90,176,73,10
-    EDITTEXT        IDC_SUPPORT_LESS_THAN,166,174,25,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "* girder length",IDC_SUPPORT_LESS_THAN_UNIT,194,176,44,8
-    LTEXT           "(For Kansas method only)",IDC_STATIC_K,249,176,97,8
-    GROUPBOX        "Final Check/Design Options",IDC_STATIC,7,230,535,131
-    CONTROL         "Check",IDC_CHECK_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,307,37,8
-    CONTROL         "Design slab offset",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,63,307,72,8
-    LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,15,243,100,8
-    CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,242,45,10
-    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,174,242,82,8
-    EDITTEXT        IDC_DEFLECTION_LIMIT,254,239,40,14,ES_AUTOHSCROLL
-    LTEXT           "Bottom Flange Clearance",IDC_STATIC,15,258,80,8
-    CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,258,37,10
-    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,174,257,48,8
-    EDITTEXT        IDC_CLEARANCE,233,254,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_CLEARANCE_UNIT,278,257,19,8
-    LTEXT           "Inclination of Tilted Girder",IDC_STATIC,15,273,81,8
-    CONTROL         "Check",IDC_CHECK_INCLINDED_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,273,37,10
-    LTEXT           "Factor of Safety",IDC_INCLINDED_GIRDER_FS_LABEL,173,273,51,8
-    EDITTEXT        IDC_INCLINDED_GIRDER_FS,233,270,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Harped Strand Design",IDC_STATIC,7,363,535,36
+    LTEXT           "Horizontal Transverse Tension Tie",IDC_HORIZ_TENSION_TIE_LABEL,15,97,109,8
+    CONTROL         "Check",IDC_HORIZ_TENSION_TIE_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,151,98,37,10
+    LTEXT           "Plant Handling Weight",IDC_STATIC,16,111,72,8
+    CONTROL         "Check",IDC_CHECK_HANDLING_WEIGHT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,95,111,34,10
+    EDITTEXT        IDC_HANDLING_WEIGHT,132,110,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_HANDLING_WEIGHT_UNIT,177,112,19,8
+    GROUPBOX        "Lifting Stability Check/Design Options (LRFD 5.5.4.3)",IDC_LIFTING_GROUP,7,128,535,30
+    CONTROL         "Check",IDC_CHECK_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,141,31,8
+    CONTROL         "Design",IDC_DESIGN_LIFTING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,51,141,37,8
+    LTEXT           "Min Lifting Point Location from ends of girder",IDC_MIN_LIFTING_POINT_LABEL,97,142,140,8
+    EDITTEXT        IDC_MIN_LIFTING_POINT,243,139,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "un",IDC_MIN_LIFTING_POINT_UNIT,286,142,9,8
+    LTEXT           "(Enter value or H)",IDC_STATIC_L,300,142,56,8
+    LTEXT           "Accuracy",IDC_LIFTING_POINT_LOCATION_ACCURACY_LABEL,365,141,31,8
+    EDITTEXT        IDC_LIFTING_POINT_LOCATION_ACCURACY,401,138,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_LIFTING_POINT_LOCATION_ACCURACY_UNIT,445,141,19,8
+    GROUPBOX        "Hauling Stability Check/Design Options (LRFD 5.5.4.3)",IDC_HAULING_GROUP,7,161,535,40
+    CONTROL         "Check",IDC_CHECK_HAULING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,172,31,8
+    CONTROL         "Design",IDC_DESIGN_HAULING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,51,172,37,8
+    LTEXT           "Min Truck Support Location from ends of girder",IDC_MIN_TRUCK_SUPPORT_LABEL,90,172,149,8
+    EDITTEXT        IDC_MIN_TRUCK_SUPPORT,244,168,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_MIN_TRUCK_SUPPORT_UNIT,286,172,9,8
+    LTEXT           "(Enter value of H)",IDC_STATIC_H,300,172,56,8
+    LTEXT           "Accuracy",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_LABEL,364,172,31,8
+    EDITTEXT        IDC_TRUCK_SUPPORT_LOCATION_ACCURACY,399,168,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT,443,172,19,8
+    CONTROL         "Not to be less than",IDC_IS_SUPPORT_LESS_THAN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,90,184,73,10
+    EDITTEXT        IDC_SUPPORT_LESS_THAN,166,182,25,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "* girder length",IDC_SUPPORT_LESS_THAN_UNIT,194,184,44,8
+    LTEXT           "(For Kansas method only)",IDC_STATIC_K,249,184,97,8
+    GROUPBOX        "Final Check/Design Options",IDC_STATIC,7,238,535,131
+    CONTROL         "Check",IDC_CHECK_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,315,37,8
+    CONTROL         "Design slab offset",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,63,315,72,8
+    LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,15,251,100,8
+    CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,250,45,10
+    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,174,250,82,8
+    EDITTEXT        IDC_DEFLECTION_LIMIT,254,247,40,14,ES_AUTOHSCROLL
+    LTEXT           "Bottom Flange Clearance",IDC_STATIC,15,266,80,8
+    CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,266,37,10
+    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,174,265,48,8
+    EDITTEXT        IDC_CLEARANCE,233,262,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_CLEARANCE_UNIT,278,265,19,8
+    LTEXT           "Inclination of Tilted Girder",IDC_STATIC,15,281,81,8
+    CONTROL         "Check",IDC_CHECK_INCLINDED_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,281,37,10
+    LTEXT           "Factor of Safety",IDC_INCLINDED_GIRDER_FS_LABEL,173,281,51,8
+    EDITTEXT        IDC_INCLINDED_GIRDER_FS,233,278,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "Harped Strand Design",IDC_STATIC,7,371,535,36
     CONTROL         "Add Strands Using the Permanent Strand Fill Order",IDC_RADIO_FILL_PERMANENT,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,373,193,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,381,193,10
     CONTROL         "Minimize Number of Harped Strands (If necessary, straight strands may be traded for harped in order to control top tension)",IDC_RADIO2,
-                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,384,504,10
-    GROUPBOX        "Roadway Finished Elevation Check and Haunch Geometry Check/Design",IDC_ELEVATION_TOLERANCE_GROUP,15,292,512,61
-    LTEXT           "Minimum difference between finished and design roadway surface elevation",IDC_ELEVATION_TOLERANCE_LABEL,37,326,240,8
-    EDITTEXT        IDC_ELEVATION_TOLERANCE,279,323,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ELEVATION_TOLERANCE_UNIT,322,326,19,8
-    LTEXT           "(Only applies when explicit haunch depths are input directly, and to adjacent girder bridges without a deck. See documentation for additional details)",IDC_ELEVATION_TOLERANCE_NOTE,37,338,481,8
-    GROUPBOX        "Concrete Strength for Limit State Evaluations",IDC_FC_GROUP,7,401,535,44
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,392,504,10
+    GROUPBOX        "Roadway Finished Elevation Check and Haunch Geometry Check/Design",IDC_ELEVATION_TOLERANCE_GROUP,15,300,512,61
+    LTEXT           "Minimum difference between finished and design roadway surface elevation",IDC_ELEVATION_TOLERANCE_LABEL,37,334,240,8
+    EDITTEXT        IDC_ELEVATION_TOLERANCE,279,331,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ELEVATION_TOLERANCE_UNIT,322,334,19,8
+    LTEXT           "(Only applies when explicit haunch depths are input directly, and to adjacent girder bridges without a deck. See documentation for additional details)",IDC_ELEVATION_TOLERANCE_NOTE,37,346,481,8
+    GROUPBOX        "Concrete Strength for Limit State Evaluations",IDC_FC_GROUP,7,409,535,44
     CONTROL         "Use fc at the time of loading (5.14.3.2d and 5.14.1.3.3)",IDC_FC1,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,415,188,10
-    CONTROL         "Use specified f'ci and f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,428,93,10
-    CONTROL         "Use",IDC_USE_90_DAY_STRENGTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,428,25,10
-    EDITTEXT        IDC_90_DAY_STRENGTH_FACTOR,150,426,36,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "% of f'c for stress combinations after 90 days for slow curing concretes (5.12.3.2.5)",IDC_90_DAY_STRENGTH_LABEL,188,429,278,8
-    COMBOBOX        IDC_A_ROUNDING_CB,136,304,163,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_A_ROUNDING_EDIT,299,304,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "in",IDC_A_ROUNDING_UNIT,342,307,23,8
-    GROUPBOX        "Elastomeric Bearing Check (LRFD 14.7.5 and 14.7.6)",IDC_LIFTING_GROUP2,7,197,535,30
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,423,188,10
+    CONTROL         "Use specified f'ci and f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,436,93,10
+    CONTROL         "Use",IDC_USE_90_DAY_STRENGTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,436,25,10
+    EDITTEXT        IDC_90_DAY_STRENGTH_FACTOR,150,434,36,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "% of f'c for stress combinations after 90 days for slow curing concretes (5.12.3.2.5)",IDC_90_DAY_STRENGTH_LABEL,188,437,278,8
+    COMBOBOX        IDC_A_ROUNDING_CB,136,312,163,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_A_ROUNDING_EDIT,299,312,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "in",IDC_A_ROUNDING_UNIT,342,315,23,8
+    GROUPBOX        "Elastomeric Bearing Check (LRFD 14.7.5 and 14.7.6)",IDC_LIFTING_GROUP2,7,205,535,30
     CONTROL         "Check Bearing (See Bearings tab for details)",IDC_CHECK_BEARING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,210,155,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,218,155,8
 END
 
 IDD_SPEC_SHEAR DIALOGEX 0, 0, 431, 377

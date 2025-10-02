@@ -1393,6 +1393,7 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    DDV_GreaterThanZero(pDX, IDC_N, m_Entry.m_pImpl->m_EndZoneCriteria.SplittingZoneLengthFactor);
 	DDX_Check_Bool(pDX, IDC_CHECK_CONFINEMENT,  m_Entry.m_pImpl->m_EndZoneCriteria.bCheckConfinement);
 	DDX_Check_Bool(pDX, IDC_DESIGN_CONFINEMENT, m_Entry.m_pImpl->m_EndZoneCriteria.bDesignConfinement);
+    DDX_Check_Bool(pDX, IDC_HORIZ_TENSION_TIE_CHECK, m_Entry.m_pImpl->m_EndZoneCriteria.bCheckHorizTensionTie);
 
    // Lifting
 	DDX_Check_Bool(pDX, IDC_CHECK_LIFTING,  m_Entry.m_pImpl->m_LiftingCriteria.bCheck);
