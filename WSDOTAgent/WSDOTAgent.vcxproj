@@ -189,6 +189,7 @@
     </ClCompile>
     <ClCompile Include="WSDOTAgent.cpp" />
     <ClCompile Include="WSDOTAgentImp.cpp" />
+    <ClCompile Include="WSDOTReinforcement.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="WSDOTAgent.def" />
@@ -206,6 +207,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="WSDOTAgentImp.h" />
+    <ClInclude Include="WSDOTReinforcement.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Wsdot.ico" />

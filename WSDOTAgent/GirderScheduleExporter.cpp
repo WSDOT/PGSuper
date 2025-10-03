@@ -36,6 +36,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <psgLib/GirderLibraryEntry.h>
 #include <Plugins/BeamFamilyCLSID.h>
+#include "WSDOTReinforcement.h"
 
 
 
@@ -195,7 +196,10 @@ void CGirderScheduleExporter::SetColumnData(_Worksheet* pWorksheet, ColumnIndexT
 
 HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
-    // Excel
+    GET_IFACE2(pBroker, IEAFProgress, pProgress);
+    WBFL::EAF::AutoProgress ap(pProgress);
+
+
     _Application excel;
     if (!excel.CreateDispatch(_T("Excel.Application")))
     {
@@ -294,6 +298,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     }
 
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    GET_IFACE2(pBroker, IArtifact, pIArtifact);
 
     INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
     INIT_UV_PROTOTYPE(rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), true);
@@ -440,7 +445,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
 
 
-            GET_IFACE2(pBroker, IArtifact, pIArtifact);
+            
             const pgsGirderArtifact* pArtifact = pIArtifact->GetGirderArtifact(girderKey);
             const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
 
@@ -686,7 +691,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             Float64 z1Spacing, z1Length;
             Float64 z2Spacing, z2Length;
             Float64 z3Spacing, z3Length;
-            int reinfDetailsResult = GetReinforcementDetails(pBroker, segmentKey, familyCLSID, 
+            CWSDOTReinforcement details;
+            int reinfDetailsResult = details.GetWSDOTReinforcementDetails(pBroker, segmentKey, familyCLSID, 
                 &z1Spacing, &z1Length, &z2Spacing, &z2Length, &z3Spacing, &z3Length);
             if (reinfDetailsResult < 0)
             {

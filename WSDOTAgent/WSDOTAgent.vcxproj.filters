@@ -28,6 +28,9 @@
     <ClCompile Include="GirderScheduleExporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WSDOTReinforcement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dllmain.h">
@@ -58,6 +61,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GirderScheduleExporter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WSDOTReinforcement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
