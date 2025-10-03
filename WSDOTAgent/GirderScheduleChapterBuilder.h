@@ -36,7 +36,8 @@ public:
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
 private:
-   int GetReinforcementDetails(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,CLSID& familyCLSID,Float64* pz1Spacing,Float64 *pz1Length,Float64 *pz2Spacing,Float64* pz2Length,Float64 *pz3Spacing,Float64* pz3Length) const;
+   int GetReinforcementDetails(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,CLSID& familyCLSID,
+       Float64* pz1Spacing,Float64 *pz1Length,Float64 *pz2Spacing,Float64* pz2Length,Float64 *pz3Spacing,Float64* pz3Length) const;
 
    struct DebondInformation
    {
