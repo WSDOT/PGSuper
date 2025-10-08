@@ -55,9 +55,8 @@ private:
 	CString GetColumnLabel(ColumnIndexType colIdx);
 	void SetColumnHeader(_Worksheet* worksheet, ColumnIndexType colIdx, ColumnIndexType colSpan, 
 		RowIndexType rowIdx, RowIndexType rowSpan, Float64 orientation, CString strValue);
-	void SetColumnData(_Worksheet* pWorksheet, ColumnIndexType colIdx, RowIndexType rowIdx, CString strValue);
-	void SetColumnData(_Worksheet* pWorksheet, ColumnIndexType colIdx, RowIndexType rowIdx, Float64 value);
-	void SetColumnData(_Worksheet* pWorksheet, ColumnIndexType colIdx, RowIndexType rowIdx, rptReportContent& rptItem);
+	template <typename T>
+	void SetColumnData(_Worksheet* pWorksheet, ColumnIndexType colIdx, RowIndexType rowIdx, T tValue);
 	bool DoesFileExist(const CString& filname);
 	bool CommitExcel(_Application& excel, Worksheets& worksheets, LPCTSTR strFilename);
 
