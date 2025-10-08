@@ -469,17 +469,25 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
             if (bCanReportPrestressInformation)
             {
-                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, Ns);
 
                 if (CLSID_SlabBeamFamily != familyCLSID)
                 {
                     StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEither);
                     if (nDebonded != 0)
                     {
-                        ///add debonded...................
+                        strValue.Format(_T("%d (%d debonded)"), Ns, nDebonded);
+                        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
+                    }
+                    else
+                    {
+                        SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, Ns);
                     }
 
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, Nh);
+                }
+                else
+                {
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, Ns);
                 }
 
                 if (0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Temporary))
@@ -596,67 +604,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt2);
                 SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
             }
-
-            //int debondResults = DEBOND_ERROR_NONE;
-            //if (CLSID_SlabBeamFamily == familyCLSID)
-            //{
-            //    // Debonding for slab beams
-            //    pTable->SetColumnSpan(++row, 0, 2);
-            //    (*pTable)(row, 0) << _T("Straight Strands to Debond");
-
-            //    std::vector<DebondInformation> debondInfo;
-            //    debondResults = GetDebondDetails(pBroker, segmentKey, debondInfo);
-
-            //    if (debondResults < 0)
-            //    {
-            //        for (int i = 0; i < 3; i++)
-            //        {
-            //            pTable->SetColumnSpan(++row, 0, 2);
-            //            (*pTable)(row, 0) << _T("Group ") << (i + 1);
-
-            //            (*pTable)(++row, 0) << _T("Strands to Debond");
-            //            (*pTable)(row, 1) << _T("%");
-            //            (*pTable)(++row, 0) << _T("Sleeved Length at Ends to Prevent Bond");
-            //            (*pTable)(row, 1) << _T("%");
-            //        }
-            //    }
-            //    else
-            //    {
-            //        int groupCount = 0;
-            //        std::vector<DebondInformation>::iterator iter(debondInfo.begin());
-            //        std::vector<DebondInformation>::iterator end(debondInfo.end());
-            //        for (; iter != end; iter++, groupCount++)
-            //        {
-            //            DebondInformation& dbInfo = *iter;
-
-            //            pTable->SetColumnSpan(++row, 0, 2);
-            //            (*pTable)(row, 0) << _T("Group ") << (groupCount + 1);
-
-            //            (*pTable)(++row, 0) << _T("Strands to Debond");
-            //            std::vector<StrandIndexType>::iterator strandIter(dbInfo.Strands.begin());
-            //            std::vector<StrandIndexType>::iterator strandIterEnd(dbInfo.Strands.end());
-            //            for (; strandIter != strandIterEnd; strandIter++)
-            //            {
-            //                StrandIndexType strandIdx = *strandIter;
-            //                (*pTable)(row, 1) << _T(" ") << (strandIdx + 1);
-            //            }
-
-            //            (*pTable)(++row, 0) << _T("Sleeved Length at Ends to Prevent Bond");
-            //            (*pTable)(row, 1) << glength.SetValue(dbInfo.Length);
-            //        }
-
-            //        for (int i = groupCount; i < 3; i++)
-            //        {
-            //            pTable->SetColumnSpan(++row, 0, 2);
-            //            (*pTable)(row, 0) << _T("Group ") << (i + 1);
-
-            //            (*pTable)(++row, 0) << _T("Strands to Debond");
-            //            (*pTable)(row, 1) << _T("-");
-            //            (*pTable)(++row, 0) << _T("Sleeved Length at Ends to Prevent Bond");
-            //            (*pTable)(row, 1) << _T("-");
-            //        }
-            //    }
-            //}
 
             GET_IFACE2(pBroker, ICamber, pCamber);
             pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
