@@ -207,28 +207,48 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     allCells.SetHorizontalAlignment(vCenter);
     allCells.SetVerticalAlignment(vCenter);
 
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
+    INIT_UV_PROTOTYPE(rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), true);
+    INIT_UV_PROTOTYPE(rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(), true);
+
+    INIT_FRACTIONAL_LENGTH_PROTOTYPE(gdim, IS_US_UNITS(pDisplayUnits), 8, RoundUp, pDisplayUnits->GetComponentDimUnit(), true, true);
+    INIT_FRACTIONAL_LENGTH_PROTOTYPE(glength, IS_US_UNITS(pDisplayUnits), 4, RoundOff, pDisplayUnits->GetSpanLengthUnit(), true, true);
+
     // write the table headings
+
+    CString strAngle1;
+    strAngle1.Format(_T("\u03B8\u2081 (%s)"), angle.GetUnitTag().c_str());
+    CString strAngle2;
+    strAngle2.Format(_T("\u03B8\u2082 (%s)"), angle.GetUnitTag().c_str());
+    CString strFc;
+    strFc.Format(_T("@ 28 DAYS F'C (%s)"), stress.GetUnitTag().c_str());
+    CString strFci;
+    strFci.Format(_T("@ RELEASE F'CI (%s)"), stress.GetUnitTag().c_str());
+    CString strSpring;
+    strSpring.Format(_T("K\u03B8 MINIMUM SHIPPING SUPPORT ROTATIONAL SPRING CONSTANT (%s)"), spring.GetUnitTag().c_str());
 
     const std::vector<ScheduleHeaderInfo>& headerInfo =
     { 
         {0, 41, 0, 1, 0, _T("GIRDER SCHEDULE")},
         {0, 1, 1, 3, 90, _T("SPAN")},
         {1, 1, 1, 3, 90, _T("GIRDER")},
-        {2, 1, 1, 3, 90, _T("SERIES")},
-        {3, 1, 1, 3, 0, _T("PLAN LENGTH (ALONG GIRDER GRADE)")},
+        {2, 1, 1, 3, 90, _T("GIRDER SERIES")},
+        {3, 1, 1, 3, 0, _T("PLAN LENGTH (ALONG GIRDER GRADE) (SEE GIRDER NOTE 1)")},
         {4, 1, 1, 3, 0, _T("INT. DIAPHRAGM TYPE (FULL OR PARTIAL)")},
         {5, 7, 1, 1, 0, _T("GIRDER END DETAILS")},
         {5, 1, 2, 2, 90, _T("END 1 TYPE")},
         {6, 1, 2, 2, 90, _T("END 2 TYPE")},
         {7, 1, 2, 2, 0, _T("Ld")},
-        {8, 1, 2, 2, 0, _T("\u03B8\u2081")},
-        {9, 1, 2, 2, 0, _T("\u03B8\u2082")},
+        {8, 1, 2, 2, 0, strAngle1},
+        {9, 1, 2, 2, 0, strAngle2},
         {10, 1, 2, 2, 0, _T("P\u2081")},
         {11, 1, 2, 2, 0, _T("P\u2082")},
         {12, 2, 1, 1, 0, _T("MIN. CONC. COMP. STRENGTH")},
-        {12, 1, 2, 2, 90, _T("@ 28 DAYS F'C")},
-        {13, 1, 2, 2, 90, _T("@ RELEASE F'CI")},
-        {14, 3, 1, 1, 0, _T("NUMBER OF STRANDS")},
+        {12, 1, 2, 2, 90, strFc},
+        {13, 1, 2, 2, 90, strFci},
+        {14, 3, 1, 1, 0, _T("NUMBER OF STRANDS (SEE GIRDER NOTE 2)")},
         {14, 1, 2, 2, 90, _T("STRAIGHT")},
         {15, 1, 2, 2, 90, _T("HARPED")},
         {16, 1, 2, 2, 90, _T("TEMPORARY")},
@@ -264,7 +284,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         {36, 1, 2, 2, 0, _T("L")},
         {37, 1, 2, 2, 0, _T("L\u2081")},
         {38, 1, 2, 2, 0, _T("L\u2082")},
-        {39, 1, 2, 2, 0, _T("K\u03B8 MINIMUM SHIPPING SUPPORT ROTATIONAL SPRING CONSTANT")},
+        {39, 1, 2, 2, 0, strSpring},
         {40, 1, 2, 2, 0, _T("Wcc MINIMUM SHIPPING SUPPORT CNTR.-TO-CNTR. WHEEL SPACING")},
     };
     
@@ -273,14 +293,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         SetColumnHeader(&ws, info.colIdx, info.colSpan, info.rowIdx, info.rowSpan, info.orientation, info.strValue);
     }
 
-    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
-    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
-    INIT_UV_PROTOTYPE(rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), true);
-    INIT_UV_PROTOTYPE(rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(), true);
-
-    INIT_FRACTIONAL_LENGTH_PROTOTYPE(gdim, IS_US_UNITS(pDisplayUnits), 8, RoundUp, pDisplayUnits->GetComponentDimUnit(), true, true);
-    INIT_FRACTIONAL_LENGTH_PROTOTYPE(glength, IS_US_UNITS(pDisplayUnits), 4, RoundOff, pDisplayUnits->GetSpanLengthUnit(), true, true);
     CComPtr<IAnnotatedDisplayUnitFormatter> pADUF;
     pADUF.CoCreateInstance(CLSID_AnnotatedDisplayUnitFormatter);
 
@@ -340,11 +352,11 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
             angle.SetValue(t1);
             const auto& ft1 = angle.GetValue(true);
-            strValue.Format(_T("%0.2f %s"), ft1, angle.GetUnitTag().c_str());
+            strValue.Format(_T("%0.2f"), ft1);
             SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
             angle.SetValue(t2);
             const auto& ft2 = angle.GetValue(true);
-            strValue.Format(_T("%0.2f %s"), ft2, angle.GetUnitTag().c_str());
+            strValue.Format(_T("%0.2f"), ft2);
             SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
 
             GET_IFACE2(pBroker, ISectionProperties, pSectProp);
@@ -423,12 +435,12 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             
             stress.SetValue(pMaterial->GetSegmentDesignFc(segmentKey, finalIntervalIdx));
             const auto& fc = stress.GetValue(true);
-            strValue.Format(_T("%0.3f %s"), fc, stress.GetUnitTag().c_str());
+            strValue.Format(_T("%0.3f"), fc);
             SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
 
             stress.SetValue(pMaterial->GetSegmentDesignFc(segmentKey, releaseIntervalIdx));
             const auto& fci = stress.GetValue(true);
-            strValue.Format(_T("%0.3f %s"), fci, stress.GetUnitTag().c_str());
+            strValue.Format(_T("%0.3f"), fci);
             SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
 
             //set number of strands
@@ -538,35 +550,51 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
             //strand extensions
             StrandIndexType nExtended = 0;
+            CString strExt1;
             for (StrandIndexType strandIdx = 0; strandIdx < Ns; strandIdx++)
             {
                 if (pStrandGeometry->IsExtendedStrand(segmentKey, pgsTypes::metStart, strandIdx, pgsTypes::Straight))
                 {
-                    gdim.GetValue(strandIdx + 1);
-                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, gdim);
+                    nExtended++;
+                    CString val;
+                    val.Format(_T("%d "), strandIdx + 1);
+                    strExt1.Append(val);
                 }
             }
+
             if (nExtended == 0)
             {
                 SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
                 SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
             }
+            else
+            {
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt1);
+                SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, _T("-"));
+            }
 
             nExtended = 0;
+            CString strExt2;
             for (StrandIndexType strandIdx = 0; strandIdx < Ns; strandIdx++)
             {
                 if (pStrandGeometry->IsExtendedStrand(segmentKey, pgsTypes::metEnd, strandIdx, pgsTypes::Straight))
                 {
                     nExtended++;
-                    CString strExt;
-                    strExt.Format(_T("%d"), gdim.GetValue(strandIdx + 1));
-                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, strExt);
+                    CString val;
+                    val.Format(_T("%d "), strandIdx + 1);
+                    strExt2.Append(val);
                 }
             }
+            
             if (nExtended == 0)
             {
                 SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, _T("-"));
                 SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, _T("-"));
+            }
+            else
+            {
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt2);
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
             }
 
             //int debondResults = DEBOND_ERROR_NONE;
@@ -813,7 +841,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     spring.SetValue(pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollStiffness());
                     const auto& val2 = spring.GetValue(true);
-                    strValue.Format(_T("%0.3f %s"), val2, spring.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.3f"), val2);
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
                 }
                 else
