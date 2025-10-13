@@ -61,4 +61,6 @@ private:
 	bool CommitExcel(_Application& excel, Worksheets& worksheets, LPCTSTR strFilename);
 
 	CBitmap m_Bitmap;
+
+	std::vector<ScheduleHeaderInfo> m_HeaderInfo;
 };
