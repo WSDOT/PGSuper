@@ -145,7 +145,7 @@ void CGirderScheduleExporter::SetColumnData(_Worksheet* pWorksheet, ColumnIndexT
     strCell.Format(_T("%s%d"), GetColumnLabel(colIdx), rowIdx + 1);
     Range cell = pWorksheet->GetRange(COleVariant(strCell), COleVariant(strCell));
     CString strValue;
-    if constexpr (std::is_convertible_v<T, LPCTSTR> )
+    if constexpr (std::is_convertible_v<T, LPCTSTR>)
         strValue = tValue;
     else if constexpr (std::is_same_v<T, Float64>)
         strValue.Format(_T("%f"), tValue);
@@ -345,7 +345,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
         {31, 4, 1, 2, 0, _T("LONGITUDINAL REINFORCEMENT") },
         {31, 2, 3, 1, 0, _T("G1")},
-        {33, 2, 3, 1, 0, _T("G1")},
+        {33, 2, 3, 1, 0, _T("G2")},
         {31, 1, 4, 1, 90, _T("BAR SIZE")},
         {32, 1, 4, 1, 90, _T("NO. OF BARS")},
         {33, 1, 4, 1, 90, _T("BAR SIZE")},
@@ -673,303 +673,340 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
             }
 
-            //Float64 ybg = pSectProp->GetY(releaseIntervalIdx, poiMidSpan, pgsTypes::BottomGirder);
-            //Float64 sse = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMidSpan, pgsTypes::Straight).Y();
-            //if (0 < Ns)
-            //{
-            //    gdim.SetValue(ybg - sse);
-            //    const auto& val = gdim.GetValue(true);
-            //    strValue.Format(_T("%0.3f %s"), val, gdim.GetUnitTag().c_str());
-            //    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, strValue);
-            //}
-            //else
-            //{
-            //    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, _T("N/A"));
-            //}
+            if (CLSID_SlabBeamFamily != familyCLSID)
+            {
 
-            //if (CLSID_SlabBeamFamily != familyCLSID)
-            //{
-            //    Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMidSpan, pgsTypes::Harped).Y();
-            //    if (0 < Nh)
-            //    {
-            //        gdim.SetValue(ybg - hse);
-            //        const auto& val = gdim.GetValue(true);
-            //        strValue.Format(_T("%0.3f %s"), val, gdim.GetUnitTag().c_str());
-            //        SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, strValue);
-            //    }
-            //    else
-            //    {
-            //        SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, _T("N/A"));
-            //    }
+                Float64 ybg = pSectProp->GetY(releaseIntervalIdx, poiMidSpan, pgsTypes::BottomGirder);
+                Float64 sse = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMidSpan, pgsTypes::Straight).Y();
+                if (0 < Ns)
+                {
+                    gdim.SetValue(ybg - sse);
+                    const auto& val = gdim.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), val, gdim.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, strValue);
+                }
+                else
+                {
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, _T("N/A"));
+                }
+
+                Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMidSpan, pgsTypes::Harped).Y();
+                if (0 < Nh)
+                {
+                    gdim.SetValue(ybg - hse);
+                    const auto& val = gdim.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), val, gdim.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
+                }
+                else
+                {
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("N/A"));
+                }
 
 
-            //    Float64 ytg = pSectProp->GetY(releaseIntervalIdx, poiStart, pgsTypes::TopGirder);
-            //    Float64 hss = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Harped).Y();
-            //    if (0 < Nh)
-            //    {
-            //        gdim.SetValue(ytg + hss);
-            //        const auto& val = gdim.GetValue(true);
-            //        strValue.Format(_T("%0.3f %s"), val, gdim.GetUnitTag().c_str());
-            //        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //    }
-            //    else
-            //    {
-            //        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("N/A"));
-            //    }
-            //}
+                Float64 ytg = pSectProp->GetY(releaseIntervalIdx, poiStart, pgsTypes::TopGirder);
+                Float64 hss = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiStart, pgsTypes::Harped).Y();
+                if (0 < Nh)
+                {
+                    gdim.SetValue(ytg + hss);
+                    const auto& val = gdim.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), val, gdim.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
+                }
+                else
+                {
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("N/A"));
+                }
 
-            ////strand extensions
-            //StrandIndexType nExtended = 0;
-            //CString strExt1;
-            //for (StrandIndexType strandIdx = 0; strandIdx < Ns; strandIdx++)
-            //{
-            //    if (pStrandGeometry->IsExtendedStrand(segmentKey, pgsTypes::metStart, strandIdx, pgsTypes::Straight))
-            //    {
-            //        nExtended++;
-            //        CString val;
-            //        val.Format(_T("%d "), strandIdx + 1);
-            //        strExt1.Append(val);
-            //    }
-            //}
 
-            //if (nExtended == 0)
-            //{
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-            //}
-            //else
-            //{
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt1);
-            //    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, _T("-"));
-            //}
+                //strand extensions
+                StrandIndexType nExtended = 0;
+                CString strExt1;
+                for (StrandIndexType strandIdx = 0; strandIdx < Ns; strandIdx++)
+                {
+                    if (pStrandGeometry->IsExtendedStrand(segmentKey, pgsTypes::metStart, strandIdx, pgsTypes::Straight))
+                    {
+                        nExtended++;
+                        CString val;
+                        val.Format(_T("%d "), strandIdx + 1);
+                        strExt1.Append(val);
+                    }
+                }
 
-            //nExtended = 0;
-            //CString strExt2;
-            //for (StrandIndexType strandIdx = 0; strandIdx < Ns; strandIdx++)
-            //{
-            //    if (pStrandGeometry->IsExtendedStrand(segmentKey, pgsTypes::metEnd, strandIdx, pgsTypes::Straight))
-            //    {
-            //        nExtended++;
-            //        CString val;
-            //        val.Format(_T("%d "), strandIdx + 1);
-            //        strExt2.Append(val);
-            //    }
-            //}
-            //
-            //if (nExtended == 0)
-            //{
-            //    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, _T("-"));
-            //    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, _T("-"));
-            //}
-            //else
-            //{
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt2);
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-            //}
+                if (nExtended == 0)
+                {
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                }
+                else
+                {
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt1);
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                }
 
-            //GET_IFACE2(pBroker, ICamber, pCamber);
-            //pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
-            //Float64 C;
-            //if (IsNonstructuralDeck(deckType))
-            //{
-            //    C = pCamber->GetExcessCamber(poiMidSpan, pgsTypes::CreepTime::Max);
-            //}
-            //else
-            //{
-            //    if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
-            //    {
-            //        gdim.SetValue(pBridgeDesc->GetSlabOffset());
-            //        const auto& A = gdim.GetValue(true);
-            //        strValue.Format(_T("%0.3f %s"), A, gdim.GetUnitTag().c_str());
-            //        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //    }
-            //    else
-            //    {
-            //        CString str;
-            //        str.Format(_T("%d"), gdim.GetValue(pSegment->GetSlabOffset(pgsTypes::metStart)));
-            //        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, str);
+                nExtended = 0;
+                CString strExt2;
+                for (StrandIndexType strandIdx = 0; strandIdx < Ns; strandIdx++)
+                {
+                    if (pStrandGeometry->IsExtendedStrand(segmentKey, pgsTypes::metEnd, strandIdx, pgsTypes::Straight))
+                    {
+                        nExtended++;
+                        CString val;
+                        val.Format(_T("%d "), strandIdx + 1);
+                        strExt2.Append(val);
+                    }
+                }
 
-            //        str.Format(_T("%d"), gdim.GetValue(pSegment->GetSlabOffset(pgsTypes::metEnd)));
-            //        SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, str);
-            //    }
+                if (nExtended == 0)
+                {
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                }
+                else
+                {
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt2);
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                }
 
-            //    gdim.SetValue(pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max));
-            //    const auto& sCamber = gdim.GetValue(true);
-            //    if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
-            //    {
-            //        strValue.Format(_T("%0.3f\""), sCamber);
-            //    }
-            //    else
-            //    {
-            //        strValue.Format(_T("%0.3fm"), sCamber);
-            //    }
-            //    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, strValue);
-            //}
+            }
 
-            //// get # of days for creep
-            //Float64 Dmax_UpperBound, Dmax_Average, Dmax_LowerBound;
-            //Float64 Dmin_UpperBound, Dmin_Average, Dmin_LowerBound;
-            //pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Max, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
-            //pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Min, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
+            GET_IFACE2(pBroker, ICamber, pCamber);
+            pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
+            Float64 C;
+            if (IsNonstructuralDeck(deckType))
+            {
+                C = pCamber->GetExcessCamber(poiMidSpan, pgsTypes::CreepTime::Max);
+            }
+            else
+            {
+                if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
+                {
+                    gdim.SetValue(pBridgeDesc->GetSlabOffset());
+                    const auto& A = gdim.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), A, gdim.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                }
+                else
+                {
+                    CString str;
+                    str.Format(_T("%d"), gdim.GetValue(pSegment->GetSlabOffset(pgsTypes::metStart)));
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), str);
 
-            //gdim.SetValue(Dmin_LowerBound);
-            //const auto& dMin_LowerBound = gdim.GetValue(true);
-            //strValue.Format(_T("%0.3f %s"), dMin_LowerBound, gdim.GetUnitTag().c_str());
-            //SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
+                    str.Format(_T("%d"), gdim.GetValue(pSegment->GetSlabOffset(pgsTypes::metEnd)));
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), str);
+                }
 
-            //gdim.SetValue(Dmax_UpperBound);
-            //const auto& dMax_UpperBound = gdim.GetValue(true);
-            //strValue.Format(_T("%0.3f %s"), dMax_UpperBound, gdim.GetUnitTag().c_str());
-            //SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
+                gdim.SetValue(pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max));
+                const auto& sCamber = gdim.GetValue(true);
+                if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
+                {
+                    strValue.Format(_T("%0.3f\""), sCamber);
+                }
+                else
+                {
+                    strValue.Format(_T("%0.3fm"), sCamber);
+                }
+                SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+            }
 
-            //// Stirrups
-            //Float64 z1Spacing, z1Length;
-            //Float64 z2Spacing, z2Length;
-            //Float64 z3Spacing, z3Length;
-            //CWSDOTReinforcement details;
-            //int reinfDetailsResult = details.GetWSDOTReinforcementDetails(pBroker, segmentKey, familyCLSID, 
-            //    &z1Spacing, &z1Length, &z2Spacing, &z2Length, &z3Spacing, &z3Length);
-            //if (reinfDetailsResult < 0)
-            //{
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-            //}
-            //else
-            //{
-            //    gdim.SetValue(z1Spacing);
-            //    const auto& z1Spacing = gdim.GetValue(true);
-            //    strValue.Format(_T("%0.3f %s"), z1Spacing, gdim.GetUnitTag().c_str());
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //    glength.SetValue(z1Length);
-            //    const auto& z1Length = glength.GetValue(true);
-            //    strValue.Format(_T("%0.3f %s"), z1Length, glength.GetUnitTag().c_str());
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //    gdim.SetValue(z2Spacing);
-            //    const auto& z2Spacing = gdim.GetValue(true);
-            //    strValue.Format(_T("%0.3f %s"), z2Spacing, gdim.GetUnitTag().c_str());
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //    glength.SetValue(z2Length);
-            //    const auto& z2Length = glength.GetValue(true);
-            //    strValue.Format(_T("%0.3f %s"), z2Length, glength.GetUnitTag().c_str());
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //    gdim.SetValue(z3Spacing);
-            //    const auto& z3Spacing = gdim.GetValue(true);
-            //    strValue.Format(_T("%0.3f %s"), z3Spacing, gdim.GetUnitTag().c_str());
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //    glength.SetValue(z3Length);
-            //    const auto& z3Length = glength.GetValue(true);
-            //    strValue.Format(_T("%0.3f %s"), z3Length, glength.GetUnitTag().c_str());
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //}
+            // get # of days for creep
+            Float64 Dmax_UpperBound, Dmax_Average, Dmax_LowerBound;
+            Float64 Dmin_UpperBound, Dmin_Average, Dmin_LowerBound;
+            pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Max, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
+            pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Min, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
 
-            //// Stirrup Height
+            gdim.SetValue(Dmin_LowerBound);
+            const auto& dMin_LowerBound = gdim.GetValue(true);
+            strValue.Format(_T("%0.3f %s"), dMin_LowerBound, gdim.GetUnitTag().c_str());
+            SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
 
-            //if (familyCLSID == CLSID_WFBeamFamily || familyCLSID == CLSID_UBeamFamily)
-            //{
-            //    // H1 (Hg + "A" + 3")
-            //    if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
-            //    {
-            //        Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poiStart);
-            //        Float64 H1 = pBridgeDesc->GetSlabOffset() + Hg + WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch);
-            //        glength.SetValue(H1);
-            //        const auto& fH1 = glength.GetValue(true);
-            //        strValue.Format(_T("%0.3f %s"), fH1, glength.GetUnitTag().c_str());
-            //        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //    }
-            //    else
-            //    {
-            //        Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poiStart);
-            //        Float64 H1 = pSegment->GetSlabOffset(pgsTypes::metStart) + Hg + WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch);
-            //        glength.SetValue(H1);
-            //        const auto& fH1s = glength.GetValue(true);
-            //        strValue.Format(_T("%0.3f %s"), fH1s, glength.GetUnitTag().c_str());
-            //        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
+            gdim.SetValue(Dmax_UpperBound);
+            const auto& dMax_UpperBound = gdim.GetValue(true);
+            strValue.Format(_T("%0.3f %s"), dMax_UpperBound, gdim.GetUnitTag().c_str());
+            SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
 
-            //        pgsPointOfInterest poiEnd(poiStart);
-            //        poiEnd.SetDistFromStart(pBridge->GetSegmentLength(segmentKey));
-            //        Hg = pSectProp->GetHg(releaseIntervalIdx, poiEnd);
-            //        H1 = pSegment->GetSlabOffset(pgsTypes::metEnd) + Hg + WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch);
-            //        glength.SetValue(H1);
-            //        const auto& fH1e = glength.GetValue(true);
-            //        strValue.Format(_T("%0.3f %s"), fH1e, glength.GetUnitTag().c_str());
-            //        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //    }
-            //}
+            // Stirrups
+            Float64 z1Spacing, z1Length;
+            Float64 z2Spacing, z2Length;
+            Float64 z3Spacing, z3Length;
+            CWSDOTReinforcement details;
+            int reinfDetailsResult = details.GetWSDOTReinforcementDetails(pBroker, segmentKey, familyCLSID, 
+                &z1Spacing, &z1Length, &z2Spacing, &z2Length, &z3Spacing, &z3Length);
+            if (reinfDetailsResult < 0)
+            {
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+            }
+            else
+            {
+                gdim.SetValue(z1Spacing);
+                const auto& z1Spacing = gdim.GetValue(true);
+                strValue.Format(_T("%0.3f %s"), z1Spacing, gdim.GetUnitTag().c_str());
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                glength.SetValue(z1Length);
+                const auto& z1Length = glength.GetValue(true);
+                strValue.Format(_T("%0.3f %s"), z1Length, glength.GetUnitTag().c_str());
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                gdim.SetValue(z2Spacing);
+                const auto& z2Spacing = gdim.GetValue(true);
+                strValue.Format(_T("%0.3f %s"), z2Spacing, gdim.GetUnitTag().c_str());
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                glength.SetValue(z2Length);
+                const auto& z2Length = glength.GetValue(true);
+                strValue.Format(_T("%0.3f %s"), z2Length, glength.GetUnitTag().c_str());
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                gdim.SetValue(z3Spacing);
+                const auto& z3Spacing = gdim.GetValue(true);
+                strValue.Format(_T("%0.3f %s"), z3Spacing, gdim.GetUnitTag().c_str());
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                glength.SetValue(z3Length);
+                const auto& z3Length = glength.GetValue(true);
+                strValue.Format(_T("%0.3f %s"), z3Length, glength.GetUnitTag().c_str());
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+            }
 
-            //auto pHaulingArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
-            //if (pHaulingArtifact != nullptr)
-            //{
-            //    GET_IFACE2(pBroker, IGirder, pIGirder);
-            //    const WBFL::Stability::HaulingStabilityProblem* pHaulProblem = pIGirder->GetSegmentHaulingStabilityProblem(segmentKey);
-            //    Float64 camber = pHaulProblem->GetCamber();
-            //    Float64 precamber = pIGirder->GetPrecamber(segmentKey);
-            //    gdim.SetValue(camber + precamber);
-            //    const auto& val = gdim.GetValue(true);
-            //    strValue.Format(_T("%0.3f %s"), val, gdim.GetUnitTag().c_str());
-            //    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, strValue);
-            //}
+            // Stirrup Height
 
-            //auto pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
-            //if (pLiftArtifact != nullptr)
-            //{
-            //    GET_IFACE2(pBroker, ISegmentLifting, pSegmentLifting);
-            //    Float64 L = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
-            //    glength.SetValue(L);
-            //    const auto& val = glength.GetValue(true);
-            //    strValue.Format(_T("%0.3f %s"), val, glength.GetUnitTag().c_str());
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //}
+            if (familyCLSID == CLSID_WFBeamFamily || familyCLSID == CLSID_UBeamFamily)
+            {
+                // H1 (Hg + "A" + 3")
+                if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
+                {
+                    Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poiStart);
+                    Float64 H1 = pBridgeDesc->GetSlabOffset() + Hg + WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch);
+                    glength.SetValue(H1);
+                    const auto& fH1 = glength.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), fH1, glength.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
+                }
+                else
+                {
+                    Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poiStart);
+                    Float64 H1 = pSegment->GetSlabOffset(pgsTypes::metStart) + Hg + WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch);
+                    glength.SetValue(H1);
+                    const auto& fH1s = glength.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), fH1s, glength.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
 
-            //if (pHaulingArtifact != nullptr)
-            //{
-            //    GET_IFACE2(pBroker, IIntervals, pIntervals);
-            //    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-            //    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+                    pgsPointOfInterest poiEnd(poiStart);
+                    poiEnd.SetDistFromStart(pBridge->GetSegmentLength(segmentKey));
+                    Hg = pSectProp->GetHg(releaseIntervalIdx, poiEnd);
+                    H1 = pSegment->GetSlabOffset(pgsTypes::metEnd) + Hg + WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch);
+                    glength.SetValue(H1);
+                    const auto& fH1e = glength.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), fH1e, glength.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
+                }
+            }
 
-            //    GET_IFACE2(pBroker, IProductForces, pProduct);
-            //    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
+            //longitudinal rebar
+            if (familyCLSID == CLSID_SlabBeamFamily)
+            {
+                GET_IFACE2(pBroker, ILongitudinalRebar, pLongRebar);
+                const CLongitudinalRebarData* pLRD = pLongRebar->GetSegmentLongitudinalRebarData(segmentKey);
 
-            //    GET_IFACE2(pBroker, ISegmentHauling, pSegmentHauling);
-            //    Float64 trailingOverhang = pSegmentHauling->GetTrailingOverhang(segmentKey);
-            //    Float64 leadingOverhang = pSegmentHauling->GetLeadingOverhang(segmentKey);
+                ATLASSERT(pLRD->RebarRows.size() <= 2);
 
-            //    glength.SetValue(leadingOverhang);
-            //    const auto& val = glength.GetValue(true);
-            //    strValue.Format(_T("%0.3f %s"), val, glength.GetUnitTag().c_str());
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //    glength.SetValue(trailingOverhang);
-            //    const auto& val1 = glength.GetValue(true);
-            //    strValue.Format(_T("%0.3f %s"), val1, glength.GetUnitTag().c_str());
-            //    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 5, _T("-"));
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 5, _T("-"));
 
-            //    if (pSegment->HandlingData.pHaulTruckLibraryEntry)
-            //    {
-            //        spring.SetValue(pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollStiffness());
-            //        const auto& val2 = spring.GetValue(true);
-            //        strValue.Format(_T("%0.3f"), val2);
-            //        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //    }
-            //    else
-            //    {
-            //        SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, _T("-"));
-            //    }
+                for (const auto& row : pLRD->RebarRows)
+                {
+                    if (row.Face == pgsTypes::FaceType::TopFace)
+                    {
+                        SetColumnData(&ws, --col, nGirders * grpIdx + gdrIdx + 5, WBFL::LRFD::RebarPool::GetBarSize(row.BarSize).c_str());
+                        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 5, row.NumberOfBars);
+                    }
+                }
 
-            //    if (pSegment->HandlingData.pHaulTruckLibraryEntry)
-            //    {
-            //        glength.SetValue(pSegment->HandlingData.pHaulTruckLibraryEntry->GetAxleWidth());
-            //        const auto& val = glength.GetValue(true);
-            //        strValue.Format(_T("%0.3f %s"), val, glength.GetUnitTag().c_str());
-            //        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
-            //    }
-            //    else
-            //    {
-            //        SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, _T("-"));
-            //    }
-            //}
+                SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 5, _T("-"));
+                SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 5, _T("-"));
+
+                for (const auto& row : pLRD->RebarRows)
+                {
+                    if (row.Face == pgsTypes::FaceType::BottomFace)
+                    {
+                        SetColumnData(&ws, --col, nGirders * grpIdx + gdrIdx + 5, WBFL::LRFD::RebarPool::GetBarSize(row.BarSize).c_str());
+                        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 5, row.NumberOfBars);
+                    }
+                }
+
+            }
+
+            auto pHaulingArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
+            if (pHaulingArtifact != nullptr)
+            {
+                GET_IFACE2(pBroker, IGirder, pIGirder);
+                const WBFL::Stability::HaulingStabilityProblem* pHaulProblem = pIGirder->GetSegmentHaulingStabilityProblem(segmentKey);
+                Float64 camber = pHaulProblem->GetCamber();
+                Float64 precamber = pIGirder->GetPrecamber(segmentKey);
+                gdim.SetValue(camber + precamber);
+                const auto& val = gdim.GetValue(true);
+                strValue.Format(_T("%0.3f %s"), val, gdim.GetUnitTag().c_str());
+                SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+            }
+
+            auto pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
+            if (pLiftArtifact != nullptr)
+            {
+                GET_IFACE2(pBroker, ISegmentLifting, pSegmentLifting);
+                Float64 L = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
+                glength.SetValue(L);
+                const auto& val = glength.GetValue(true);
+                strValue.Format(_T("%0.3f %s"), val, glength.GetUnitTag().c_str());
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+            }
+
+            if (pHaulingArtifact != nullptr)
+            {
+                GET_IFACE2(pBroker, IIntervals, pIntervals);
+                IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+                IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+
+                GET_IFACE2(pBroker, IProductForces, pProduct);
+                pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+                GET_IFACE2(pBroker, ISegmentHauling, pSegmentHauling);
+                Float64 trailingOverhang = pSegmentHauling->GetTrailingOverhang(segmentKey);
+                Float64 leadingOverhang = pSegmentHauling->GetLeadingOverhang(segmentKey);
+
+                glength.SetValue(leadingOverhang);
+                const auto& val = glength.GetValue(true);
+                strValue.Format(_T("%0.3f %s"), val, glength.GetUnitTag().c_str());
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                glength.SetValue(trailingOverhang);
+                const auto& val1 = glength.GetValue(true);
+                strValue.Format(_T("%0.3f %s"), val1, glength.GetUnitTag().c_str());
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+
+                if (pSegment->HandlingData.pHaulTruckLibraryEntry)
+                {
+                    spring.SetValue(pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollStiffness());
+                    const auto& val2 = spring.GetValue(true);
+                    strValue.Format(_T("%0.3f"), val2);
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                }
+                else
+                {
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+                }
+
+                if (pSegment->HandlingData.pHaulTruckLibraryEntry)
+                {
+                    glength.SetValue(pSegment->HandlingData.pHaulTruckLibraryEntry->GetAxleWidth());
+                    const auto& val = glength.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), val, glength.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                }
+                else
+                {
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+                }
+            }
 
 
 
