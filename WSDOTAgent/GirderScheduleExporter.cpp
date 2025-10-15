@@ -461,8 +461,9 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             const CSplicedGirderData* pGirder = pGroupHeader->GetGirder(gdrIdx);
             
             //Set Girder Label
-            CString strGirder = GetColumnLabel(gdrIdx);
-            SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strGirder);
+            //CString strGirder = GetColumnLabel(gdrIdx);
+            //SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strGirder);
+            ++col;
 
             GET_IFACE2(pBroker, IBridge, pBridge);
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
@@ -705,9 +706,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                             SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 5, Nt);
                         }
 
-                        //strValue.Format(_T("%d @ %f%s"), nStrandsInRow);
-                        //WBFL::Units::ConvertFromSysUnits(1.75, WBFL::Units::Measure::Feet), gdim.GetUnitTag().c_str());
-                        //SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 5, strValue);
                     }
 
                 }
@@ -1111,12 +1109,29 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         SpanIndexType spanIdx = girderKey.groupIndex;
         CString strSpan;
         strSpan.Format(_T("%d"), spanIdx + 1);
-        SetColumnData(&ws, 0, (bSlab ? 5 : 4) + grpIdx * (nGirders+1), (CString)strSpan);
+        SetColumnData(&ws, 0, (bSlab ? 5 : 4) + grpIdx * (nGirders + 1), (CString)strSpan);
 
         //merge and format span cells
         CString strCell;
-        strCell.Format(_T("A%d:A%d"), (grpIdx * nGirders) + (bSlab? 6 : 5), (grpIdx * nGirders) + ((bSlab ? 5 : 4) + nGirders));
+        strCell.Format(_T("A%d:A%d"), (grpIdx* nGirders) + (bSlab ? 6 : 5), (grpIdx* nGirders) + ((bSlab ? 5 : 4) + nGirders));
         Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+        cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+        cell.BorderAround(
+            COleVariant((long)1),
+            (long)2,
+            (long)-4105,
+            COleVariant((long)0)
+        );
+
+        //set girder range
+        CString strGirder;
+        CString strGirderLabel = GetColumnLabel(nGirders - 1);
+        strGirder.Format(_T("A-%s"), strGirderLabel);
+        SetColumnData(&ws, 1, (bSlab ? 5 : 4) + grpIdx * (nGirders + 1), (CString)strGirder);
+
+        //merge and format girder cells
+        strCell.Format(_T("B%d:B%d"), (grpIdx* nGirders) + (bSlab ? 6 : 5), (grpIdx* nGirders) + ((bSlab ? 5 : 4) + nGirders));
+        cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
         cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
         cell.BorderAround(
             COleVariant((long)1),
