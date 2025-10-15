@@ -259,7 +259,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         {19, 1, 2, 2, 0, _T("F\u2080")},
         {20, 4, 1, 1, 0, _T("STRAIGHT STRANDS TO EXTEND")},
         {20, 2, 2, 1, 0, _T("END 1")},
-        {22, 2, 2, 1, 0, _T("END 2")},
+        {21, 2, 2, 1, 0, _T("END 2")},
         {20, 1, 3, 1, 90, _T("STRANDS")},
         {21, 1, 3, 1, 90, _T("EXTENSION LENGTH")},
         {22, 1, 3, 1, 90, _T("STRANDS")},
@@ -287,6 +287,58 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         {38, 1, 2, 2, 0, _T("L\u2082")},
         {39, 1, 2, 2, 0, strSpring},
         {40, 1, 2, 2, 0, _T("Wcc MINIMUM SHIPPING SUPPORT CNTR.-TO-CNTR. WHEEL SPACING")},
+    };
+
+    const std::vector<ScheduleHeaderInfo>& headerInfoUBeamFamily =
+    {
+        {0, 41, 0, 1, 0, _T("GIRDER SCHEDULE")},
+        {0, 1, 1, 3, 90, _T("SPAN")},
+        {1, 1, 1, 3, 90, _T("GIRDER")},
+        {2, 1, 1, 3, 90, _T("GIRDER SERIES")},
+        {3, 1, 1, 3, 0, _T("PLAN LENGTH (ALONG GIRDER GRADE) (SEE GIRDER NOTE 1)")},
+        {4, 1, 1, 3, 0, _T("INT. DIAPHRAGM TYPE (FULL OR PARTIAL)")},
+        {5, 7, 1, 1, 0, _T("GIRDER END DETAILS")},
+        {5, 1, 2, 2, 90, _T("END 1 TYPE")},
+        {6, 1, 2, 2, 90, _T("END 2 TYPE")},
+        {7, 1, 2, 2, 0, _T("Ld")},
+        {8, 1, 2, 2, 0, strAngle1},
+        {9, 1, 2, 2, 0, strAngle2},
+        {10, 1, 2, 2, 0, _T("P\u2081")},
+        {11, 1, 2, 2, 0, _T("P\u2082")},
+        {12, 2, 1, 1, 0, _T("MIN. CONC. COMP. STRENGTH")},
+        {12, 1, 2, 2, 90, strFc},
+        {13, 1, 2, 2, 90, strFci},
+        {14, 3, 1, 1, 0, _T("NUMBER OF STRANDS (SEE GIRDER NOTE 2)")},
+        {14, 1, 2, 2, 90, _T("STRAIGHT")},
+        {15, 1, 2, 2, 90, _T("HARPED")},
+        {16, 1, 2, 2, 90, _T("TEMPORARY")},
+        {17, 3, 1, 1, 0, _T("LOCATION OF C.G. STRANDS")},
+        {17, 1, 2, 2, 0, _T("E")},
+        {18, 1, 2, 2, 0, _T("F\u2104")},
+        {19, 1, 2, 2, 0, _T("F\u2080")},
+        {20, 2, 1, 1, 0, _T("STRAIGHT STRANDS TO EXTEND")},
+        {20, 1, 2, 2, 0, _T("END 1")},
+        {21, 1, 2, 2, 0, _T("END 2")},
+        {22, 1, 1, 3, 90, _T("\"A\" DIMENSION AT \u2104 BEARINGS")},
+        {23, 1, 1, 3, 90, _T("DECK SCREED CAMBER C")},
+        {24, 2, 1, 2, 0, _T("MIDSPAN VERTICAL DEFLECTION D")},
+        {24, 1, 3, 1, 90, _T("LOWER BOUND @ 40 DAYS")},
+        {25, 1, 3, 1, 90, _T("UPPER BOUND @ 120 DAYS")},
+        {26, 7, 1, 1, 0, _T("REINFORCEMENT DETAILS")},
+        {26, 1, 2, 2, 0, _T("V1")},
+        {27, 1, 2, 2, 0, _T("V2")},
+        {28, 1, 2, 2, 0, _T("V3")},
+        {29, 1, 2, 2, 0, _T("V4")},
+        {30, 1, 2, 2, 0, _T("V5")},
+        {31, 1, 2, 2, 0, _T("V6")},
+        {32, 1, 2, 2, 0, _T("H1")},
+        {33, 6, 1, 1, 0, _T("SHIPPING AND HANDLING DETAILS")},
+        {33, 1, 2, 2, 0, _T("MIDSPAN VERTICAL DEFLECTION AT SHIPPING")},
+        {34, 1, 2, 2, 0, _T("L")},
+        {35, 1, 2, 2, 0, _T("L\u2081")},
+        {36, 1, 2, 2, 0, _T("L\u2082")},
+        {37, 1, 2, 2, 0, strSpring},
+        {38, 1, 2, 2, 0, _T("Wcc MINIMUM SHIPPING SUPPORT CNTR.-TO-CNTR. WHEEL SPACING")},
     };
 
     const std::vector<ScheduleHeaderInfo>& headerInfoSlabFamily =
@@ -372,11 +424,14 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     CLSID familyCLSID = factory->GetFamilyCLSID();
 
     bool bSlab = (familyCLSID == CLSID_SlabBeamFamily);
-
-    m_HeaderInfo = headerInfoWFFamily;
+    bool bUbeam = (familyCLSID == CLSID_UBeamFamily);
 
     if (bSlab)
         m_HeaderInfo = headerInfoSlabFamily;
+    else if (bUbeam)
+        m_HeaderInfo = headerInfoUBeamFamily;
+    else
+        m_HeaderInfo = headerInfoWFFamily;
         
     
     for (const auto& info : m_HeaderInfo)
@@ -606,13 +661,11 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, Nh);
 
-                    if (0 < pStrandGeometry->GetMaxStrands(segmentKey, pgsTypes::Temporary))
-                    {
-                        StrandIndexType Nt = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
-                        CString strNt;
-                        strNt.Format(_T("%d"), Nt);
-                        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, Nt);
-                    }
+                    StrandIndexType Nt = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
+                    CString strNt;
+                    strNt.Format(_T("%d"), Nt);
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, Nt);
+                    
                 }
                 else
                 {
@@ -736,12 +789,18 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 if (nExtended == 0)
                 {
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                    if (!bUbeam)
+                    {
+                        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                    }
                 }
                 else
                 {
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt1);
-                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                    if (!bUbeam)
+                    {
+                        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                    }
                 }
 
                 nExtended = 0;
@@ -760,12 +819,18 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 if (nExtended == 0)
                 {
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                    if (!bUbeam)
+                    {
+                        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                    }
                 }
                 else
                 {
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt2);
-                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                    if (!bUbeam)
+                    {
+                        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
+                    }
                 }
 
             }
@@ -843,35 +908,65 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             }
             else
             {
-                gdim.SetValue(z1Spacing);
-                const auto& z1Spacing = gdim.GetValue(true);
-                strValue.Format(_T("%0.3f %s"), z1Spacing, gdim.GetUnitTag().c_str());
-                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
-                glength.SetValue(z1Length);
-                const auto& z1Length = glength.GetValue(true);
-                strValue.Format(_T("%0.3f %s"), z1Length, glength.GetUnitTag().c_str());
-                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
-                gdim.SetValue(z2Spacing);
-                const auto& z2Spacing = gdim.GetValue(true);
-                strValue.Format(_T("%0.3f %s"), z2Spacing, gdim.GetUnitTag().c_str());
-                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
-                glength.SetValue(z2Length);
-                const auto& z2Length = glength.GetValue(true);
-                strValue.Format(_T("%0.3f %s"), z2Length, glength.GetUnitTag().c_str());
-                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
-                gdim.SetValue(z3Spacing);
-                const auto& z3Spacing = gdim.GetValue(true);
-                strValue.Format(_T("%0.3f %s"), z3Spacing, gdim.GetUnitTag().c_str());
-                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
-                glength.SetValue(z3Length);
-                const auto& z3Length = glength.GetValue(true);
-                strValue.Format(_T("%0.3f %s"), z3Length, glength.GetUnitTag().c_str());
-                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                if (bUbeam)
+                {
+                    glength.SetValue(z1Length);
+                    const auto& z1Length = glength.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), z1Length, glength.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                    gdim.SetValue(z1Spacing);
+                    const auto& z1Spacing = gdim.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), z1Spacing, gdim.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                    glength.SetValue(z2Length);
+                    const auto& z2Length = glength.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), z2Length, glength.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                    gdim.SetValue(z2Spacing);
+                    const auto& z2Spacing = gdim.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), z2Spacing, gdim.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                    glength.SetValue(z3Length);
+                    const auto& z3Length = glength.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), z3Length, glength.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                    gdim.SetValue(z3Spacing);
+                    const auto& z3Spacing = gdim.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), z3Spacing, gdim.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                }
+                else
+                {
+                    gdim.SetValue(z1Spacing);
+                    const auto& z1Spacing = gdim.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), z1Spacing, gdim.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                    glength.SetValue(z1Length);
+                    const auto& z1Length = glength.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), z1Length, glength.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                    gdim.SetValue(z2Spacing);
+                    const auto& z2Spacing = gdim.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), z2Spacing, gdim.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                    glength.SetValue(z2Length);
+                    const auto& z2Length = glength.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), z2Length, glength.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                    gdim.SetValue(z3Spacing);
+                    const auto& z3Spacing = gdim.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), z3Spacing, gdim.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                    glength.SetValue(z3Length);
+                    const auto& z3Length = glength.GetValue(true);
+                    strValue.Format(_T("%0.3f %s"), z3Length, glength.GetUnitTag().c_str());
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                }
             }
 
             // Stirrup Height
 
-            if (familyCLSID == CLSID_WFBeamFamily || familyCLSID == CLSID_UBeamFamily)
+            if (familyCLSID == CLSID_WFBeamFamily || bUbeam)
             {
                 // H1 (Hg + "A" + 3")
                 if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
