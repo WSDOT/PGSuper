@@ -161,13 +161,14 @@ void CGirderScheduleExporter::SetColumnData(_Worksheet* pWorksheet, ColumnIndexT
         strValue = _T("unknown type");
     }
     cell.SetValue2(COleVariant(strValue));
-    cell.SetWrapText(COleVariant((short)VARIANT_TRUE, VT_BOOL));
+
     cell.BorderAround(
         COleVariant((long)1),
         (long)2,
         (long)-4105,
         COleVariant((long)0)
     );
+
 }
 
 HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker)
@@ -206,6 +207,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     COleVariant vCenter((long)-4108, VT_I4);
     allCells.SetHorizontalAlignment(vCenter);
     allCells.SetVerticalAlignment(vCenter);
+    allCells.SetWrapText(COleVariant((short)VARIANT_TRUE, VT_BOOL));
 
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
@@ -259,7 +261,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         {19, 1, 2, 2, 0, _T("F\u2080")},
         {20, 4, 1, 1, 0, _T("STRAIGHT STRANDS TO EXTEND")},
         {20, 2, 2, 1, 0, _T("END 1")},
-        {21, 2, 2, 1, 0, _T("END 2")},
+        {22, 2, 2, 1, 0, _T("END 2")},
         {20, 1, 3, 1, 90, _T("STRANDS")},
         {21, 1, 3, 1, 90, _T("EXTENSION LENGTH")},
         {22, 1, 3, 1, 90, _T("STRANDS")},
@@ -291,7 +293,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
     const std::vector<ScheduleHeaderInfo>& headerInfoWFDGFamily =
     {
-        {0, 41, 0, 1, 0, _T("GIRDER SCHEDULE")},
+        {0, 37, 0, 1, 0, _T("GIRDER SCHEDULE")},
         {0, 1, 1, 3, 90, _T("SPAN")},
         {1, 1, 1, 3, 90, _T("GIRDER")},
         {2, 1, 1, 3, 90, _T("GIRDER SERIES")},
@@ -315,29 +317,33 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         {16, 1, 2, 2, 0, _T("E")},
         {17, 1, 2, 2, 0, _T("F\u2104")},
         {18, 1, 2, 2, 0, _T("F\u2080")},
-        {19, 2, 1, 1, 0, _T("STRAIGHT STRANDS TO EXTEND")},
-        {19, 1, 2, 2, 0, _T("END 1")},
-        {20, 1, 2, 2, 0, _T("END 2")},
-        {21, 2, 1, 2, 0, _T("MIDSPAN VERTICAL DEFLECTION D")},
-        {21, 1, 3, 1, 90, _T("LOWER BOUND @ 40 DAYS")},
-        {22, 1, 3, 1, 90, _T("UPPER BOUND @ 120 DAYS")},
-        {23, 6, 1, 1, 0, _T("REINFORCEMENT DETAILS")},
-        {23, 2, 2, 1, 0, _T("ZONE 1")},
-        {25, 2, 2, 1, 0, _T("ZONE 2")},
-        {27, 2, 2, 1, 0, _T("ZONE 3")},
-        {23, 1, 3, 1, 90, _T("SPACING")},
-        {24, 1, 3, 1, 90, _T("LENGTH")},
+        {19, 4, 1, 1, 0, _T("STRAIGHT STRANDS TO EXTEND")},
+        {19, 2, 2, 2, 0, _T("END 1")},
+        {21, 2, 2, 2, 0, _T("END 2")},
+        {19, 1, 3, 1, 90, _T("STRANDS")},
+        {20, 1, 3, 1, 90, _T("EXTENSION LENGTH")},
+        {21, 1, 3, 1, 90, _T("STRANDS")},
+        {22, 1, 3, 1, 90, _T("EXTENSION LENGTH")},
+        {23, 2, 1, 2, 0, _T("MIDSPAN VERTICAL DEFLECTION D")},
+        {23, 1, 3, 1, 90, _T("LOWER BOUND @ 40 DAYS")},
+        {24, 1, 3, 1, 90, _T("UPPER BOUND @ 120 DAYS")},
+        {25, 6, 1, 1, 0, _T("REINFORCEMENT DETAILS")},
+        {25, 2, 2, 1, 0, _T("ZONE 1")},
+        {27, 2, 2, 1, 0, _T("ZONE 2")},
+        {29, 2, 2, 1, 0, _T("ZONE 3")},
         {25, 1, 3, 1, 90, _T("SPACING")},
         {26, 1, 3, 1, 90, _T("LENGTH")},
         {27, 1, 3, 1, 90, _T("SPACING")},
         {28, 1, 3, 1, 90, _T("LENGTH")},
-        {29, 6, 1, 1, 0, _T("SHIPPING AND HANDLING DETAILS")},
-        {29, 1, 2, 2, 0, _T("MIDSPAN VERTICAL DEFLECTION AT SHIPPING")},
-        {30, 1, 2, 2, 0, _T("L")},
-        {31, 1, 2, 2, 0, _T("L\u2081")},
-        {32, 1, 2, 2, 0, _T("L\u2082")},
-        {33, 1, 2, 2, 0, strSpring},
-        {34, 1, 2, 2, 0, _T("Wcc MINIMUM SHIPPING SUPPORT CNTR.-TO-CNTR. WHEEL SPACING")},
+        {29, 1, 3, 1, 90, _T("SPACING")},
+        {30, 1, 3, 1, 90, _T("LENGTH")},
+        {31, 6, 1, 1, 0, _T("SHIPPING AND HANDLING DETAILS")},
+        {31, 1, 2, 2, 0, _T("MIDSPAN VERTICAL DEFLECTION AT SHIPPING")},
+        {32, 1, 2, 2, 0, _T("L")},
+        {33, 1, 2, 2, 0, _T("L\u2081")},
+        {34, 1, 2, 2, 0, _T("L\u2082")},
+        {35, 1, 2, 2, 0, strSpring},
+        {36, 1, 2, 2, 0, _T("Wcc MINIMUM SHIPPING SUPPORT CNTR.-TO-CNTR. WHEEL SPACING")},
     };
 
     const std::vector<ScheduleHeaderInfo>& headerInfoUBeamFamily =
@@ -855,7 +861,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 if (nExtended == 0)
                 {
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-                    if (!bUbeam && !bWFDG)
+                    if (!bUbeam/* && !bWFDG*/)
                     {
                         SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
                     }
@@ -863,7 +869,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 else
                 {
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt1);
-                    if (!bUbeam && !bWFDG)
+                    if (!bUbeam /*&& !bWFDG*/)
                     {
                         SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
                     }
@@ -885,7 +891,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 if (nExtended == 0)
                 {
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
-                    if (!bUbeam && !bWFDG)
+                    if (!bUbeam/* && !bWFDG*/)
                     {
                         SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
                     }
@@ -893,7 +899,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 else
                 {
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt2);
-                    if (!bUbeam && !bWFDG)
+                    if (!bUbeam/* && !bWFDG*/)
                     {
                         SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
                     }
