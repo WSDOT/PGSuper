@@ -58,6 +58,7 @@ private:
 	template <typename T>
 	void SetColumnData(_Worksheet* pWorksheet, ColumnIndexType colIdx, RowIndexType rowIdx, T tValue);
 	bool DoesFileExist(const CString& filname);
+	std::string FormatFeetInchesFromDecimalInches(double totalInches, int denom);
 	bool CommitExcel(_Application& excel, Worksheets& worksheets, LPCTSTR strFilename);
 
 	CBitmap m_Bitmap;
