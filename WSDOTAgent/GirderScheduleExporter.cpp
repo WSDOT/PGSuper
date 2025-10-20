@@ -724,7 +724,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                     gdim.SetValue(P1);
                     P1 = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), planLength, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.1f %s"), P1, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(P1, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
@@ -748,7 +748,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                     gdim.SetValue(P2);
                     P2 = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), planLength, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.1f %s"), P2, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(P2, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
@@ -760,12 +760,12 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             
             stress.SetValue(pMaterial->GetSegmentDesignFc(segmentKey, finalIntervalIdx));
             const auto& fc = stress.GetValue(true);
-            strValue.Format(_T("%0.3f"), fc);
+            strValue.Format(_T("%0.1f"), fc);
             SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
 
             stress.SetValue(pMaterial->GetSegmentDesignFc(segmentKey, releaseIntervalIdx));
             const auto& fci = stress.GetValue(true);
-            strValue.Format(_T("%0.3f"), fci);
+            strValue.Format(_T("%0.1f"), fci);
             SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
 
 
@@ -884,7 +884,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     gdim.SetValue(ybg - sse);
                     const auto& val = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), planLength, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + 4, strValue);
@@ -899,7 +899,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     gdim.SetValue(ybg - hse);
                     const auto& val = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), planLength, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
@@ -916,7 +916,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     gdim.SetValue(ytg + hss);
                     const auto& val = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), planLength, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
@@ -1287,7 +1287,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     spring.SetValue(pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollStiffness());
                     const auto& val2 = spring.GetValue(true);
-                    strValue.Format(_T("%0.3f"), val2);
+                    strValue.Format(_T("%0.1f"), val2);
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
                 }
                 else
