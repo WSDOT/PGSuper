@@ -339,7 +339,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
     const std::vector<ScheduleHeaderInfo>& headerInfoWFDGFamily =
     {
-        {0, 37, 0, 1, 0, _T("GIRDER SCHEDULE")},
+        {0, 40, 0, 1, 0, _T("GIRDER SCHEDULE")},
         {0, 1, 1, 3, 90, _T("SPAN")},
         {1, 1, 1, 3, 90, _T("GIRDER")},
         {2, 1, 1, 3, 90, _T("GIRDER SERIES")},
@@ -359,37 +359,40 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         {14, 3, 1, 1, 0, _T("NUMBER OF STRANDS (SEE GIRDER NOTE 2)")},
         {14, 1, 2, 2, 90, _T("STRAIGHT")},
         {15, 1, 2, 2, 90, _T("HARPED")},
-        {16, 3, 1, 1, 0, _T("LOCATION OF C.G. STRANDS")},
-        {16, 1, 2, 2, 0, _T("E")},
-        {17, 1, 2, 2, 0, _T("F\u2104")},
-        {18, 1, 2, 2, 0, _T("F\u2080")},
-        {19, 4, 1, 1, 0, _T("STRAIGHT STRANDS TO EXTEND")},
-        {19, 2, 2, 2, 0, _T("END 1")},
-        {21, 2, 2, 2, 0, _T("END 2")},
-        {19, 1, 3, 1, 90, _T("STRANDS")},
-        {20, 1, 3, 1, 90, _T("EXTENSION LENGTH")},
-        {21, 1, 3, 1, 90, _T("STRANDS")},
-        {22, 1, 3, 1, 90, _T("EXTENSION LENGTH")},
-        {23, 2, 1, 2, 0, _T("MIDSPAN VERTICAL DEFLECTION D")},
-        {23, 1, 3, 1, 90, _T("LOWER BOUND @ 40 DAYS")},
-        {24, 1, 3, 1, 90, _T("UPPER BOUND @ 120 DAYS")},
-        {25, 6, 1, 1, 0, _T("REINFORCEMENT DETAILS")},
-        {25, 2, 2, 1, 0, _T("ZONE 1")},
-        {27, 2, 2, 1, 0, _T("ZONE 2")},
-        {29, 2, 2, 1, 0, _T("ZONE 3")},
-        {25, 1, 3, 1, 90, _T("SPACING")},
-        {26, 1, 3, 1, 90, _T("LENGTH")},
-        {27, 1, 3, 1, 90, _T("SPACING")},
-        {28, 1, 3, 1, 90, _T("LENGTH")},
-        {29, 1, 3, 1, 90, _T("SPACING")},
-        {30, 1, 3, 1, 90, _T("LENGTH")},
-        {31, 6, 1, 1, 0, _T("SHIPPING AND HANDLING DETAILS")},
-        {31, 1, 2, 2, 0, _T("MIDSPAN VERTICAL DEFLECTION AT SHIPPING")},
-        {32, 1, 2, 2, 0, _T("L")},
-        {33, 1, 2, 2, 0, _T("L\u2081")},
-        {34, 1, 2, 2, 0, _T("L\u2082")},
-        {35, 1, 2, 2, 0, strSpring},
-        {36, 1, 2, 2, 0, _T("Wcc MINIMUM SHIPPING SUPPORT CNTR.-TO-CNTR. WHEEL SPACING")},
+        {16, 1, 2, 2, 90, _T("TEMPORARY")}, //
+        {17, 3, 1, 1, 0, _T("LOCATION OF C.G. STRANDS")},
+        {17, 1, 2, 2, 0, _T("E")},
+        {18, 1, 2, 2, 0, _T("F\u2104")},
+        {19, 1, 2, 2, 0, _T("F\u2080")},
+        {20, 4, 1, 1, 0, _T("STRAIGHT STRANDS TO EXTEND")},
+        {20, 2, 2, 2, 0, _T("END 1")},
+        {22, 2, 2, 2, 0, _T("END 2")},
+        {20, 1, 3, 1, 90, _T("STRANDS")},
+        {21, 1, 3, 1, 90, _T("EXTENSION LENGTH")},
+        {22, 1, 3, 1, 90, _T("STRANDS")},
+        {23, 1, 3, 1, 90, _T("EXTENSION LENGTH")},
+        {24, 1, 1, 3, 90, _T("\"A\" DIMENSION AT \u2104 BEARINGS")},
+        {25, 1, 1, 3, 90, _T("DECK SCREED CAMBER C")},
+        {26, 2, 1, 2, 0, _T("MIDSPAN VERTICAL DEFLECTION D")},
+        {26, 1, 3, 1, 90, _T("LOWER BOUND @ 40 DAYS")},
+        {27, 1, 3, 1, 90, _T("UPPER BOUND @ 120 DAYS")},
+        {28, 6, 1, 1, 0, _T("REINFORCEMENT DETAILS")},
+        {28, 2, 2, 1, 0, _T("ZONE 1")},
+        {30, 2, 2, 1, 0, _T("ZONE 2")},
+        {32, 2, 2, 1, 0, _T("ZONE 3")},
+        {28, 1, 3, 1, 90, _T("SPACING")},
+        {29, 1, 3, 1, 90, _T("LENGTH")},
+        {30, 1, 3, 1, 90, _T("SPACING")},
+        {31, 1, 3, 1, 90, _T("LENGTH")},
+        {32, 1, 3, 1, 90, _T("SPACING")},
+        {33, 1, 3, 1, 90, _T("LENGTH")},
+        {34, 6, 1, 1, 0, _T("SHIPPING AND HANDLING DETAILS")},
+        {34, 1, 2, 2, 0, _T("MIDSPAN VERTICAL DEFLECTION AT SHIPPING")},
+        {35, 1, 2, 2, 0, _T("L")},
+        {36, 1, 2, 2, 0, _T("L\u2081")},
+        {37, 1, 2, 2, 0, _T("L\u2082")},
+        {38, 1, 2, 2, 0, strSpring},
+        {39, 1, 2, 2, 0, _T("Wcc MINIMUM SHIPPING SUPPORT CNTR.-TO-CNTR. WHEEL SPACING")},
     };
 
     const std::vector<ScheduleHeaderInfo>& headerInfoUBeamFamily =
@@ -564,9 +567,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
             const CSplicedGirderData* pGirder = pGroupHeader->GetGirder(gdrIdx);
             
-            //Set Girder Label
-            //CString strGirder = GetColumnLabel(gdrIdx);
-            //SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strGirder);
             ++col;
 
             GET_IFACE2(pBroker, IBridge, pBridge);
@@ -810,13 +810,12 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, Nh);
 
-                    if (!bWFDG)
-                    {
-                        StrandIndexType Nt = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
-                        CString strNt;
-                        strNt.Format(_T("%d"), Nt);
-                        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, Nt);
-                    }
+
+                    StrandIndexType Nt = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
+                    CString strNt;
+                    strNt.Format(_T("%d"), Nt);
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, Nt);
+                    
                     
                 }
                 else
@@ -992,52 +991,54 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
             GET_IFACE2(pBroker, ICamber, pCamber);
 
-            if (!bWFDG)
-            {
-                pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
-                Float64 C;
-                if (IsNonstructuralDeck(deckType))
-                {
-                    C = pCamber->GetExcessCamber(poiMidSpan, pgsTypes::CreepTime::Max);
-                }
-                else
-                {
-                    if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
-                    {
-                        gdim.SetValue(pBridgeDesc->GetSlabOffset());
-                        const auto& val = gdim.GetValue(true);
-                        strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
-                        if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
-                            strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
-                        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
-                    }
-                    else
-                    {
-                        gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metStart));
-                        const auto& val = gdim.GetValue(true);
-                        gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metEnd));
-                        const auto& val1 = gdim.GetValue(true);
-                        strValue.Format(_T("End 1: %0.1f %s End 2: %0.1f %s"), 
-                            val, gdim.GetUnitTag().c_str(), val1, gdim.GetUnitTag().c_str());
-                        if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
-                        {
-                            CString strVal;
-                            strVal = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
-                            CString strVal1;
-                            strVal1 = FormatFeetInchesFromDecimalInches(RoundOff(val1, 0.125)).c_str();
-                            strValue.Format(_T("End 1: %s End 2: %s"), strVal, strVal1);
-                        }
-                        SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
-                    }
 
-                    gdim.SetValue(pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max));
+            pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
+            Float64 C;
+            if (IsNonstructuralDeck(deckType))
+            {
+
+                SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+                SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+
+            }
+            else
+            {
+                if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
+                {
+                    gdim.SetValue(pBridgeDesc->GetSlabOffset());
                     const auto& val = gdim.GetValue(true);
                     strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
                 }
-}
+                else
+                {
+                    gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metStart));
+                    const auto& val = gdim.GetValue(true);
+                    gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metEnd));
+                    const auto& val1 = gdim.GetValue(true);
+                    strValue.Format(_T("End 1: %0.1f %s End 2: %0.1f %s"), 
+                        val, gdim.GetUnitTag().c_str(), val1, gdim.GetUnitTag().c_str());
+                    if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
+                    {
+                        CString strVal;
+                        strVal = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
+                        CString strVal1;
+                        strVal1 = FormatFeetInchesFromDecimalInches(RoundOff(val1, 0.125)).c_str();
+                        strValue.Format(_T("End 1: %s End 2: %s"), strVal, strVal1);
+                    }
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                }
+
+                gdim.SetValue(pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max));
+                const auto& val = gdim.GetValue(true);
+                strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
+                    strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
+                SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+            }
+
 
             // get # of days for creep
             Float64 Dmax_UpperBound, Dmax_Average, Dmax_LowerBound;
