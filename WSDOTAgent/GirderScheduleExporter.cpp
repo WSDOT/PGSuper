@@ -529,6 +529,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     auto factory = pGdrLibEntry->GetBeamFactory();
     CLSID familyCLSID = factory->GetFamilyCLSID();
 
+    bool bIbeam = (familyCLSID == CLSID_WFBeamFamily);
     bool bSlab = (familyCLSID == CLSID_SlabBeamFamily);
     bool bUbeam = (familyCLSID == CLSID_UBeamFamily);
     bool bWFDG = (familyCLSID == CLSID_DeckBulbTeeBeamFamily);
@@ -539,8 +540,13 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         m_HeaderInfo = headerInfoUBeamFamily;
     else if (bWFDG)
         m_HeaderInfo = headerInfoWFDGFamily;
-    else
+    else if (bIbeam)
         m_HeaderInfo = headerInfoWFFamily;
+    else
+    {
+        AfxMessageBox(_T("There is no schedule for the selected girder type"));
+        return E_FAIL;
+    }
         
     
     for (const auto& info : m_HeaderInfo)
