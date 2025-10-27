@@ -1339,6 +1339,17 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     spring.SetValue(pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollStiffness());
                     const auto& val2 = spring.GetValue(true);
                     strValue.Format(_T("%0.1f"), val2);
+                    // Where to stop inserting (skip leading minus, if any)
+                    const int start = (!strValue.IsEmpty() && strValue[0] == _T('-')) ? 1 : 0;
+
+                    // Position of decimal point (or end if none)
+                    int dot = strValue.Find(_T('.'));
+                    if (dot < 0) dot = strValue.GetLength();
+
+                    // Insert commas every 3 to the left of the decimal
+                    for (int i = dot - 3; i > start; i -= 3)
+                        strValue.Insert(i, _T(','));
+
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
                 }
                 else
