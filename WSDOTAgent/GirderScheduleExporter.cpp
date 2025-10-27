@@ -1338,7 +1338,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     spring.SetValue(pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollStiffness());
                     const auto& val2 = spring.GetValue(true);
-                    strValue.Format(_T("%0.1f"), val2);
+                    strValue.Format(_T("%0.0f"), val2);
                     // Where to stop inserting (skip leading minus, if any)
                     const int start = (!strValue.IsEmpty() && strValue[0] == _T('-')) ? 1 : 0;
 
