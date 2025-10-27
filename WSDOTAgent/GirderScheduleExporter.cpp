@@ -33,6 +33,7 @@
 #include <IFace\GirderHandling.h>
 #include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\GirderArtifact.h>
+#include <EAF\EAFApp.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <psgLib/GirderLibraryEntry.h>
 #include <Plugins/BeamFamilyCLSID.h>
@@ -178,7 +179,7 @@ void CGirderScheduleExporter::SetColumnHeader(_Worksheet* pWorksheet, ColumnInde
     cell.SetWrapText(COleVariant((short)VARIANT_TRUE, VT_BOOL));
     cell.BorderAround(
         COleVariant((long)1),
-        (long)2,
+        (long)3,
         (long)-4105,
         COleVariant((long)0)
     );
@@ -210,7 +211,7 @@ void CGirderScheduleExporter::SetColumnData(_Worksheet* pWorksheet, ColumnIndexT
 
     cell.BorderAround(
         COleVariant((long)1),
-        (long)2,
+        (long)3,
         (long)-4105,
         COleVariant((long)0)
     );
@@ -222,6 +223,36 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     GET_IFACE2(pBroker, IEAFProgress, pProgress);
     WBFL::EAF::AutoProgress ap(pProgress);
 
+    // Get the Excel template file folder
+    CEAFApp* pApp = EAFGetApp();
+    CString str = pApp->GetAppLocation();
+
+    CString strDefaultLocation;
+    if (-1 != str.Find(_T("RegFreeCOM")))
+    {
+        // application is on a development box
+        strDefaultLocation = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\"));
+    }
+    else
+    {
+        // make sure we have a trailing backslash
+        if (_T('\\') != str.GetAt(str.GetLength() - 1))
+        {
+            str += _T("\\");
+        }
+        strDefaultLocation = str;
+    }
+
+    // Get the user's setting, using the local machine setting as the default if not present
+    CString strExcelTemplateFolder = pApp->GetProfileString(_T("Settings"), _T("ExcelTemplateFolder"), strDefaultLocation);
+
+    // make sure we have a trailing backslash
+    if (_T('\\') != strExcelTemplateFolder.GetAt(strExcelTemplateFolder.GetLength() - 1))
+    {
+        strExcelTemplateFolder += _T("\\");
+    }
+
+    CString strTemplateName = strExcelTemplateFolder + _T("WF_Girder_Schedule_Template.xltx");
 
     _Application excel;
     if (!excel.CreateDispatch(_T("Excel.Application")))
@@ -230,9 +261,10 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         return FALSE;
     }
 
-    // Set up the spreadsheet
-    Workbooks workbooks = excel.GetWorkbooks();
-    _Workbook workbook = workbooks.Add(ovOptional);
+      // get the spreadsheet setup
+      Workbooks workbooks = excel.GetWorkbooks();
+      _Workbook workbook = workbooks.Add(COleVariant(strTemplateName)); // creates a new Excel file from the template
+
     Worksheets worksheets = workbook.GetWorksheets();
 
     // Delete "Sheet2" and "Sheet3"
@@ -549,10 +581,10 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     }
         
     
-    for (const auto& info : m_HeaderInfo)
-    {
-        SetColumnHeader(&ws, info.colIdx, info.colSpan, info.rowIdx, info.rowSpan, info.orientation, info.strValue);
-    }
+    //for (const auto& info : m_HeaderInfo)
+    //{
+    //    SetColumnHeader(&ws, info.colIdx, info.colSpan, info.rowIdx, info.rowSpan, info.orientation, info.strValue);
+    //}
 
     CComPtr<IAnnotatedDisplayUnitFormatter> pADUF;
     pADUF.CoCreateInstance(CLSID_AnnotatedDisplayUnitFormatter);
@@ -1346,7 +1378,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
         cell.BorderAround(
             COleVariant((long)1),
-            (long)2,
+            (long)3,
             (long)-4105,
             COleVariant((long)0)
         );
@@ -1363,7 +1395,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
         cell.BorderAround(
             COleVariant((long)1),
-            (long)2,
+            (long)3,
             (long)-4105,
             COleVariant((long)0)
         );
