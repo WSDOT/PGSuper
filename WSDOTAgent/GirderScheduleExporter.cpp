@@ -207,6 +207,9 @@ void CGirderScheduleExporter::SetColumnData(_Worksheet* pWorksheet, ColumnIndexT
     {
         strValue = _T("unknown type");
     }
+
+    m_current_row_data.emplace_back(strValue);
+
     cell.SetValue2(COleVariant(strValue));
 
     cell.BorderAround(
@@ -594,9 +597,12 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
     for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
     {
-        GirderIndexType gdrIdx = 0;
+        m_previous_row_data.clear();
+        
+        GirderIndexType gdrIdx = m_last_same_gdrID = 0;
         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
         GirderIndexType nGirders = pGroup->GetGirderCount();
+
         for (gdrIdx; gdrIdx < nGirders; gdrIdx++)
         {
             ColumnIndexType col = 0;
@@ -611,8 +617,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
             CSegmentKey segmentKey(pSegment->GetSegmentKey());
             pgsPointOfInterest poiStart(segmentKey, 0.0);
-
-
 
             GET_IFACE2(pBroker, ISectionProperties, pSectProp);
 
@@ -1372,6 +1376,49 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 }
             }
 
+            //set girder range
+            CString strGirder;
+
+            bool bSame = true;
+
+            if (m_previous_row_data.size() != m_current_row_data.size())
+                bSame = false;
+            else
+            {
+                for (size_t i = 1; i < m_previous_row_data.size(); ++i)
+                {
+                    if (m_previous_row_data[i].CompareNoCase(m_current_row_data[i]) != 0)
+                          bSame = false;
+                }
+            }
+
+            m_previous_row_data = m_current_row_data;
+            m_current_row_data.clear();
+
+            if (bSame)
+            {
+                strGirder.Format(_T("%s-%s"), GetColumnLabel(m_last_same_gdrID), GetColumnLabel(gdrIdx));
+                SetColumnData(&ws, 1, nGirders * grpIdx + m_last_same_gdrID + (bSlab ? 5 : 4), strGirder);
+            }
+            else
+            {
+                m_last_same_gdrID = gdrIdx;
+                SetColumnData(&ws, 1, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), GetColumnLabel(gdrIdx));
+            }
+            
+            
+            //merge and format girder cells
+            CString strCell;
+            strCell.Format(_T("B%d:B%d"), nGirders* grpIdx + m_last_same_gdrID + (bSlab ? 6 : 5), nGirders * grpIdx + gdrIdx + (bSlab ? 6 : 5));
+            Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+            cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+            cell.BorderAround(
+                COleVariant((long)1),
+                (long)3,
+                (long)-4105,
+                COleVariant((long)0)
+            );
+
 
 
         } // gdrIdx
@@ -1386,23 +1433,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         CString strCell;
         strCell.Format(_T("A%d:A%d"), (grpIdx* nGirders) + (bSlab ? 6 : 5), (grpIdx* nGirders) + ((bSlab ? 5 : 4) + nGirders));
         Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
-        cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
-        cell.BorderAround(
-            COleVariant((long)1),
-            (long)3,
-            (long)-4105,
-            COleVariant((long)0)
-        );
-
-        //set girder range
-        CString strGirder;
-        CString strGirderLabel = GetColumnLabel(nGirders - 1);
-        strGirder.Format(_T("A-%s"), strGirderLabel);
-        SetColumnData(&ws, 1, (bSlab ? 5 : 4) + grpIdx * (nGirders + 1), (CString)strGirder);
-
-        //merge and format girder cells
-        strCell.Format(_T("B%d:B%d"), (grpIdx* nGirders) + (bSlab ? 6 : 5), (grpIdx* nGirders) + ((bSlab ? 5 : 4) + nGirders));
-        cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
         cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
         cell.BorderAround(
             COleVariant((long)1),

@@ -64,4 +64,9 @@ private:
 	CBitmap m_Bitmap;
 
 	std::vector<ScheduleHeaderInfo> m_HeaderInfo;
+
+	std::vector<CString> m_current_row_data;
+	std::vector<CString> m_previous_row_data;
+
+	GirderIndexType m_last_same_gdrID;
 };
