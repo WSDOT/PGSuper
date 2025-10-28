@@ -176,7 +176,6 @@ void CGirderScheduleExporter::SetColumnHeader(_Worksheet* pWorksheet, ColumnInde
     cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
     cell.SetValue2(COleVariant(strValue));
     cell.SetOrientation(COleVariant((short)orientation));
-    cell.SetWrapText(COleVariant((short)VARIANT_TRUE, VT_BOOL));
     cell.BorderAround(
         COleVariant((long)1),
         (long)3,
@@ -288,7 +287,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     COleVariant vCenter((long)-4108, VT_I4);
     allCells.SetHorizontalAlignment(vCenter);
     allCells.SetVerticalAlignment(vCenter);
-    allCells.SetWrapText(COleVariant((short)VARIANT_TRUE, VT_BOOL));
 
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
@@ -582,12 +580,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         AfxMessageBox(_T("There is no schedule for the selected girder type"));
         return E_FAIL;
     }
-        
-    
-    //for (const auto& info : m_HeaderInfo)
-    //{
-    //    SetColumnHeader(&ws, info.colIdx, info.colSpan, info.rowIdx, info.rowSpan, info.orientation, info.strValue);
-    //}
 
     CComPtr<IAnnotatedDisplayUnitFormatter> pADUF;
     pADUF.CoCreateInstance(CLSID_AnnotatedDisplayUnitFormatter);
@@ -1406,7 +1398,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 SetColumnData(&ws, 1, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), GetColumnLabel(gdrIdx));
             }
             
-            
             //merge and format girder cells
             CString strCell;
             strCell.Format(_T("B%d:B%d"), nGirders* grpIdx + m_last_same_gdrID + (bSlab ? 6 : 5), nGirders * grpIdx + gdrIdx + (bSlab ? 6 : 5));
@@ -1427,7 +1418,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         SpanIndexType spanIdx = girderKey.groupIndex;
         CString strSpan;
         strSpan.Format(_T("%d"), spanIdx + 1);
-        SetColumnData(&ws, 0, (bSlab ? 5 : 4) + grpIdx * (nGirders + 1), (CString)strSpan);
+        SetColumnData(&ws, 0, (bSlab ? 5 : 4) + grpIdx * (nGirders + 1), strSpan);
 
         //merge and format span cells
         CString strCell;
@@ -1441,6 +1432,51 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             COleVariant((long)0)
         );
 
+    }
+
+    //build strand extension table
+
+    RowIndexType tableOffset = (bSlab ? 6 : 5);
+    GET_IFACE2(pBroker, IBridge, pBridge);
+    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+    {
+        tableOffset += pBridge->GetGirderCount(grpIdx);
+    }
+
+    const std::vector<ScheduleHeaderInfo>& headerInfo =
+    {
+        {0, 5, tableOffset, 1, 0, _T("EXTENDED STRAND SCHEDULE")},
+        {0, 3, tableOffset + 1, 1, 0, _T("STRAND PATTERN")},
+        {3, 2, tableOffset + 1, 1, 0, _T("STRANDS TO EXTEND")}
+    };
+
+    for (const auto& info : headerInfo)
+    {
+        CString strCell;
+        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(info.colIdx), info.rowIdx + 1, GetColumnLabel(info.colIdx + info.colSpan - 1), info.rowIdx + info.rowSpan);
+        Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+        cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+        cell.SetValue2(COleVariant(info.strValue));
+        cell.BorderAround(
+            COleVariant((long)1),
+            (long)3,
+            (long)-4105,
+            COleVariant((long)0)
+        );
+
+        COleDispatchDriver font(cell.GetFont(), FALSE);
+
+        font.SetProperty(0x60, VT_BOOL, TRUE);
+
+
+        if (info.rowIdx == tableOffset)
+        {
+            font.SetProperty(0x68, VT_R8, 20.0);
+        }
+        else
+        {
+            font.SetProperty(0x68, VT_R8, 16.0);
+        }
     }
 
 
