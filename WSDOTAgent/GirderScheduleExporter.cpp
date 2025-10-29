@@ -587,6 +587,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
     CGirderKey girderKey;
 
+    std::vector<CString> vStrandPatterns;
+
     for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
     {
         m_previous_row_data.clear();
@@ -969,9 +971,16 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     {
                         nExtended++;
                         CString val;
-                        val.Format(_T("%d "), strandIdx + 1);
+                        val.Format(_T("%d, "), strandIdx + 1);
                         strExt1.Append(val);
                     }
+                }
+
+                int pos = strExt1.ReverseFind(_T(','));
+                if (pos != -1)
+                {
+                    strExt1.Delete(pos, 1);
+                    strExt1.TrimRight();
                 }
 
                 if (nExtended == 0)
@@ -984,7 +993,16 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 }
                 else
                 {
-                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt1);
+                    if (std::find(vStrandPatterns.begin(), vStrandPatterns.end(), strExt1) == vStrandPatterns.end())
+                    {
+                        vStrandPatterns.emplace_back(strExt1);
+                    }
+
+                    auto it = std::find(vStrandPatterns.begin(), vStrandPatterns.end(), strExt1);
+                    IndexType idx = std::distance(vStrandPatterns.begin(), it);
+                        
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, GetColumnLabel(idx));
+
                     if (!bUbeam /*&& !bWFDG*/)
                     {
                         SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
@@ -999,9 +1017,16 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     {
                         nExtended++;
                         CString val;
-                        val.Format(_T("%d "), strandIdx + 1);
+                        val.Format(_T("%d, "), strandIdx + 1);
                         strExt2.Append(val);
                     }
+                }
+
+                pos = strExt2.ReverseFind(_T(','));
+                if (pos != -1)
+                {
+                    strExt2.Delete(pos, 1);
+                    strExt2.TrimRight();
                 }
 
                 if (nExtended == 0)
@@ -1014,7 +1039,16 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 }
                 else
                 {
-                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strExt2);
+                    if (std::find(vStrandPatterns.begin(), vStrandPatterns.end(), strExt2) == vStrandPatterns.end())
+                    {
+                        vStrandPatterns.emplace_back(strExt2);
+                    }
+
+                    auto it = std::find(vStrandPatterns.begin(), vStrandPatterns.end(), strExt2);
+                    IndexType idx = std::distance(vStrandPatterns.begin(), it);
+
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, GetColumnLabel(idx));
+
                     if (!bUbeam/* && !bWFDG*/)
                     {
                         SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, _T("-"));
@@ -1477,6 +1511,35 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         {
             font.SetProperty(0x68, VT_R8, 16.0);
         }
+    }
+
+
+    for (IndexType idx = 0; idx < vStrandPatterns.size() ; idx++)
+    {
+        CString strCell;
+
+        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + 3 + idx, GetColumnLabel(2), tableOffset + 3 + idx);
+        Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+        cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+        cell.SetValue2(COleVariant(GetColumnLabel(idx)));
+        cell.BorderAround(
+            COleVariant((long)1),
+            (long)3,
+            (long)-4105,
+            COleVariant((long)0)
+        );
+
+        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(3), tableOffset + 3 + idx, GetColumnLabel(4), tableOffset + 3 + idx);
+        cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+        cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+        cell.SetValue2(COleVariant(vStrandPatterns[idx]));
+        cell.BorderAround(
+            COleVariant((long)1),
+            (long)3,
+            (long)-4105,
+            COleVariant((long)0)
+        );
+
     }
 
 
