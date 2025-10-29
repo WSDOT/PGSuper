@@ -599,6 +599,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
         for (gdrIdx; gdrIdx < nGirders; gdrIdx++)
         {
+            m_current_row_data.clear();
+
             ColumnIndexType col = 0;
 
             girderKey = CGirderKey(grpIdx, gdrIdx);
@@ -1419,7 +1421,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             }
 
             m_previous_row_data = m_current_row_data;
-            m_current_row_data.clear();
 
             if (bSame)
             {
