@@ -588,6 +588,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     CGirderKey girderKey;
 
     std::vector<CString> vStrandPatterns;
+    std::vector<StrandIndexType> vDebond;
 
     for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
     {
@@ -838,7 +839,20 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEither);
                     if (nDebonded != 0)
                     {
-                        strValue.Format(_T("%d (%d debonded)"), Ns, nDebonded);
+                        if (std::find(vDebond.begin(), vDebond.end(), nDebonded) == vDebond.end())
+                        {
+                            vDebond.emplace_back(nDebonded);
+                        }
+
+                        auto it = std::find(vDebond.begin(), vDebond.end(), nDebonded);
+                        IndexType idx = std::distance(vDebond.begin(), it);
+
+                        CString strAsterisks;
+                        for (int i = 0; i < idx + 1; ++i)
+                        {
+                            strAsterisks += _T('*');
+                        }
+                        strValue.Format(_T("%d%s"), Ns, strAsterisks);
                         SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
                     }
                     else
@@ -1478,69 +1492,109 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         tableOffset += pBridge->GetGirderCount(grpIdx);
     }
 
-    const std::vector<ScheduleHeaderInfo>& headerInfo =
+    if (vStrandPatterns.size() != 0)
     {
-        {0, 5, tableOffset, 1, 0, _T("EXTENDED STRAND SCHEDULE")},
-        {0, 3, tableOffset + 1, 1, 0, _T("STRAND PATTERN")},
-        {3, 2, tableOffset + 1, 1, 0, _T("STRANDS TO EXTEND")}
-    };
-
-    for (const auto& info : headerInfo)
-    {
-        CString strCell;
-        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(info.colIdx), info.rowIdx + 1, GetColumnLabel(info.colIdx + info.colSpan - 1), info.rowIdx + info.rowSpan);
-        Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
-        cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
-        cell.SetValue2(COleVariant(info.strValue));
-        cell.BorderAround(
-            COleVariant((long)1),
-            (long)3,
-            (long)-4105,
-            COleVariant((long)0)
-        );
-
-        COleDispatchDriver font(cell.GetFont(), FALSE);
-
-        font.SetProperty(0x60, VT_BOOL, TRUE);
-
-
-        if (info.rowIdx == tableOffset)
+        const std::vector<ScheduleHeaderInfo>& headerInfo =
         {
-            font.SetProperty(0x68, VT_R8, 20.0);
+            {0, 5, tableOffset, 1, 0, _T("EXTENDED STRAND SCHEDULE")},
+            {0, 3, tableOffset + 1, 1, 0, _T("STRAND PATTERN")},
+            {3, 2, tableOffset + 1, 1, 0, _T("STRANDS TO EXTEND")}
+        };
+
+        for (const auto& info : headerInfo)
+        {
+            CString strCell;
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(info.colIdx), info.rowIdx + 1, GetColumnLabel(info.colIdx + info.colSpan - 1), info.rowIdx + info.rowSpan);
+            Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+            cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+            cell.SetValue2(COleVariant(info.strValue));
+            cell.BorderAround(
+                COleVariant((long)1),
+                (long)3,
+                (long)-4105,
+                COleVariant((long)0)
+            );
+
+            COleDispatchDriver font(cell.GetFont(), FALSE);
+
+            font.SetProperty(0x60, VT_BOOL, TRUE);
+
+
+            if (info.rowIdx == tableOffset)
+            {
+                font.SetProperty(0x68, VT_R8, 20.0);
+            }
+            else
+            {
+                font.SetProperty(0x68, VT_R8, 16.0);
+            }
         }
-        else
+
+
+        for (IndexType idx = 0; idx < vStrandPatterns.size(); idx++)
         {
-            font.SetProperty(0x68, VT_R8, 16.0);
+            CString strCell;
+
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + 3 + idx, GetColumnLabel(2), tableOffset + 3 + idx);
+            Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+            cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+            cell.SetValue2(COleVariant(GetColumnLabel(idx)));
+            cell.BorderAround(
+                COleVariant((long)1),
+                (long)3,
+                (long)-4105,
+                COleVariant((long)0)
+            );
+
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(3), tableOffset + 3 + idx, GetColumnLabel(4), tableOffset + 3 + idx);
+            cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+            cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+            cell.SetValue2(COleVariant(vStrandPatterns[idx]));
+            cell.BorderAround(
+                COleVariant((long)1),
+                (long)3,
+                (long)-4105,
+                COleVariant((long)0)
+            );
+
         }
     }
 
 
-    for (IndexType idx = 0; idx < vStrandPatterns.size() ; idx++)
+    if (vDebond.size() != 0)
     {
         CString strCell;
+        CString strValue;
 
-        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + 3 + idx, GetColumnLabel(2), tableOffset + 3 + idx);
+        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + 4 + vStrandPatterns.size(),
+            GetColumnLabel(4), tableOffset + 4 + vStrandPatterns.size());
         Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
         cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
-        cell.SetValue2(COleVariant(GetColumnLabel(idx)));
-        cell.BorderAround(
-            COleVariant((long)1),
-            (long)3,
-            (long)-4105,
-            COleVariant((long)0)
-        );
+        COleVariant vLeft((long)-4131, VT_I4);
+        cell.SetHorizontalAlignment(vLeft);
+        cell.SetValue2(COleVariant(_T("SCHEDULE LEGEND:")));
+        COleDispatchDriver font(cell.GetFont(), FALSE);
+        font.SetProperty(0x60, VT_BOOL, TRUE);
+        font.SetProperty(0x68, VT_R8, 20.0);
+        font.SetProperty(0x6A, VT_I4, (long)2);
 
-        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(3), tableOffset + 3 + idx, GetColumnLabel(4), tableOffset + 3 + idx);
-        cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
-        cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
-        cell.SetValue2(COleVariant(vStrandPatterns[idx]));
-        cell.BorderAround(
-            COleVariant((long)1),
-            (long)3,
-            (long)-4105,
-            COleVariant((long)0)
-        );
+        for (IndexType idx = 0; idx < vDebond.size(); idx++)
+        {
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + 5 + vStrandPatterns.size() + idx,
+                GetColumnLabel(4), tableOffset + 5 + vStrandPatterns.size() + idx);
+            cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
 
+            CString strAsterisks;
+            for (int i = 0; i < idx + 1; ++i)
+            {
+                strAsterisks += _T('*');
+            }
+            strValue.Format(_T("%s %d STRAND%s"), strAsterisks, vDebond[idx], (vDebond[idx] == 1? _T(" DEBONDED") :_T("S DEBONDED")));
+            cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+            COleVariant vLeft((long)-4131, VT_I4);
+            cell.SetHorizontalAlignment(vLeft);
+            cell.SetValue2(COleVariant(strValue));
+        }
     }
 
 
