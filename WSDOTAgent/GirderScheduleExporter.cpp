@@ -254,7 +254,19 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         strExcelTemplateFolder += _T("\\");
     }
 
-    CString strTemplateName = strExcelTemplateFolder + _T("WF_Girder_Schedule_Template.xltx");
+    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
+
+    CString strTemplateName;
+    if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
+    {
+        strTemplateName = strExcelTemplateFolder + _T("WF_Girder_Schedule_Template_US.xltx");
+    }
+    else
+    {
+        strTemplateName = strExcelTemplateFolder + _T("WF_Girder_Schedule_Template_US_Varied_Haunch.xltx");
+    }
 
     _Application excel;
     if (!excel.CreateDispatch(_T("Excel.Application")))
@@ -552,8 +564,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     };
 
     //Set girder data
-    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
     GroupIndexType grpHeaderIdx = 0;
     const CGirderGroupData* pGroupHeader = pBridgeDesc->GetGirderGroup(grpHeaderIdx);
@@ -1076,7 +1086,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             GET_IFACE2(pBroker, ICamber, pCamber);
 
 
-            pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
+            
             Float64 C;
             if (IsNonstructuralDeck(deckType))
             {
@@ -1102,17 +1112,15 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     const auto& val = gdim.GetValue(true);
                     gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metEnd));
                     const auto& val1 = gdim.GetValue(true);
-                    strValue.Format(_T("End 1: %0.1f %s End 2: %0.1f %s"), 
-                        val, gdim.GetUnitTag().c_str(), val1, gdim.GetUnitTag().c_str());
+
+                    CString strVal1, strVal2;
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     {
-                        CString strVal;
-                        strVal = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
-                        CString strVal1;
-                        strVal1 = FormatFeetInchesFromDecimalInches(RoundOff(val1, 0.125)).c_str();
-                        strValue.Format(_T("End 1: %s End 2: %s"), strVal, strVal1);
+                        strVal1 = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
+                        strVal2 = FormatFeetInchesFromDecimalInches(RoundOff(val1, 0.125)).c_str();
                     }
-                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strVal1);
+                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strVal2);
                 }
 
                 gdim.SetValue(pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max));
@@ -1280,15 +1288,14 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     gdim.SetValue(H1);
                     const auto& val1 = gdim.GetValue(true);
                     strValue.Format(_T("End 1: %0.1f %s End 2: %0.1f %s"), val, gdim.GetUnitTag().c_str(), val1, gdim.GetUnitTag().c_str());
+                    CString strVal1, strVal2;
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     {
-                        CString strVal;
-                        strVal = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
-                        CString strVal1;
-                        strVal1 = FormatFeetInchesFromDecimalInches(RoundOff(val1, 0.125)).c_str();
-                        strValue.Format(_T("End 1: %s End 2: %s"), strVal, strVal1);
+                        strVal1 = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
+                        strVal2 = FormatFeetInchesFromDecimalInches(RoundOff(val1, 0.125)).c_str();
                     }
-                    SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + 4, strValue);
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), strVal1);
+                    SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), strVal2);
                 }
             }
 
