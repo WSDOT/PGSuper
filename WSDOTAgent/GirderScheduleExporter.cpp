@@ -35,6 +35,9 @@
 #include <PgsExt\GirderArtifact.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <psgLib\SpecLibraryEntry.h>
+#include <psgLib/CreepCriteria.h>
+#include <psgLib/LimitsCriteria.h>
 #include <psgLib/GirderLibraryEntry.h>
 #include <Plugins/BeamFamilyCLSID.h>
 #include "WSDOTReinforcement.h"
@@ -1090,7 +1093,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             Float64 C;
             if (IsNonstructuralDeck(deckType))
             {
-
+                C = pCamber->GetExcessCamber(poiMidSpan, pgsTypes::CreepTime::Max);
                 SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
                 SetColumnData(&ws, ++col, nGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
 
@@ -1123,7 +1126,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     SetColumnData(&ws, ++col, nGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strVal2);
                 }
 
-                gdim.SetValue(pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max));
+                C = pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max);
+                gdim.SetValue(C);
                 const auto& val = gdim.GetValue(true);
                 strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
                 if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
@@ -1425,6 +1429,210 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 }
             }
 
+            GET_IFACE2(pBroker, ILibrary, pLib);
+            GET_IFACE2(pBroker, ISpecification, pSpec);
+            std::_tstring spec_name = pSpec->GetSpecification();
+            const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
+            const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+            const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
+
+            Float64 min_days = WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Min, WBFL::Units::Measure::Day);
+            Float64 max_days = WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
+
+            CString msg;
+            VARIANT var;
+
+            if (limits_criteria.bCheckSag)
+            {
+                if (IsNonstructuralDeck(deckType))
+                {
+                    if (C < 0)
+                    {
+                        VariantInit(&var);
+                        var.vt = VT_I4;
+                        var.lVal = RGB(255,0,0);
+                        CString msg;
+                        msg.Format(_T("Girder %s WARNING: Final camber is downward. The girder may end up with a sag."), GIRDER_LABEL(girderKey));
+                        m_warnings.emplace_back(msg, _T("Color"), var);
+                    }
+                }
+                else
+                {
+                    std::_tstring camberType;
+                    Float64 D = 0;
+
+                    switch (limits_criteria.SagCamber)
+                    {
+                    case pgsTypes::SagCamber::LowerBoundCamber:
+                        D = Dmin_LowerBound;
+                        camberType = _T("lower bound");
+                        break;
+                    case pgsTypes::SagCamber::AverageCamber:
+                        D = Dmin_Average;
+                        camberType = _T("average");
+                        break;
+                    case pgsTypes::SagCamber::UpperBoundCamber:
+                        D = Dmin_UpperBound;
+                        camberType = _T("upper bound");
+                        break;
+                    }
+
+                    if (D < C)
+                    {
+                        VariantInit(&var);
+                        var.vt = VT_I4;
+                        var.lVal = RGB(255, 0, 0);
+                        msg.Format(_T("Girder %s WARNING: Screed camber (C) is greater than the %s camber at time of deck casting, D. The girder may end up with a sag."), 
+                            GIRDER_LABEL(girderKey), camberType.c_str());
+                        m_warnings.emplace_back(msg, _T("Color"), var);
+                    }
+                    else if (IsEqual(C, D, WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch)))
+                    {
+                        VariantInit(&var);
+                        var.vt = VT_I4;
+                        var.lVal = RGB(255, 0, 0);
+                        msg.Format(_T("Girder %s WARNING: Screed camber (C) is nearly equal to the %s camber at time of deck casting, D. The girder may end up with a sag."),
+                            GIRDER_LABEL(girderKey), camberType.c_str());
+                        m_warnings.emplace_back(msg, _T("Color"), var);
+                    }
+
+                    if (Dmin_LowerBound < C && limits_criteria.SagCamber != pgsTypes::SagCamber::LowerBoundCamber)
+                    {
+                        Float64 Cfactor = pCamber->GetLowerBoundCamberVariabilityFactor();
+                        VariantInit(&var);
+                        var.vt = VT_I4;
+                        var.lVal = RGB(0, 0, 0);
+                        msg.Format(_T("Girder %s Screed camber (C) is greater than the lower bound camber at time of deck casting (%0.0f%% of D%0.0f). The girder may end up with a sag if the deck is placed at day %0.0f and the actual camber is a lower bound value."), 
+                            GIRDER_LABEL(girderKey), Cfactor * 100, min_days, min_days);
+                        m_warnings.emplace_back(msg, _T("Color"), var);
+                    }
+                }
+            }
+
+
+            if (!bCanReportPrestressInformation)
+            {
+                VARIANT var;
+                VariantInit(&var);
+                var.vt = VT_I4;
+                var.lVal = RGB(0, 0, 0);
+                msg.Format(_T("-Girder %s Prestressing information could not be included in the girder schedule because strand input is not consistent with the standard WSDOT details."), 
+                    GIRDER_LABEL(girderKey));
+                m_warnings.emplace_back(
+                    msg, 
+                    _T("Color"), var);
+            }
+
+            if (reinfDetailsResult == STIRRUP_ERROR_ZONES)
+            {
+                VARIANT var;
+                VariantInit(&var);
+                var.vt = VT_I4;
+                var.lVal = RGB(0, 0, 0);
+                msg.Format(_T("-Girder %s Reinforcement details could not be listed because the number of transverse reinforcement zones is not consistent with the girder schedule."),
+                    GIRDER_LABEL(girderKey));
+                m_warnings.emplace_back(
+                    msg,
+                    _T("Color"), var);
+            }
+            else if (reinfDetailsResult == STIRRUP_ERROR_SYMMETRIC)
+            {
+                VARIANT var;
+                VariantInit(&var);
+                var.vt = VT_I4;
+                var.lVal = RGB(0, 0, 0);
+                msg.Format(_T("-Girder %s Reinforcement details could not be listed because the girder schedule is for symmetric transverse reinforcement layouts."),
+                    GIRDER_LABEL(girderKey));
+                m_warnings.emplace_back(
+                    msg,
+                    _T("Color"), var);
+            }
+            else if (reinfDetailsResult == STIRRUP_ERROR_STARTZONE)
+            {
+                VARIANT var;
+                VariantInit(&var);
+                var.vt = VT_I4;
+                var.lVal = RGB(0, 0, 0);
+                msg.Format(_T("-Girder %s Reinforcement details could not be listed because first zone of transverse reinforcement is not consistent with standard WSDOT details."),
+                    GIRDER_LABEL(girderKey));
+                m_warnings.emplace_back(
+                    msg,
+                    _T("Color"), var);
+            }
+            else if (reinfDetailsResult == STIRRUP_ERROR_LASTZONE)
+            {
+                VARIANT var;
+                VariantInit(&var);
+                var.vt = VT_I4;
+                var.lVal = RGB(0, 0, 0);
+                if (familyCLSID == CLSID_SlabBeamFamily)
+                {
+                    msg.Format(_T("-Girder %s Reinforcement details could not be listed because spacing in the last zone is not equal to the smaller of H-3\" or 1'-6\" per the standard WSDOT details."),
+                        GIRDER_LABEL(girderKey));
+                    m_warnings.emplace_back(
+                        msg,
+                        _T("Color"), var);
+                }
+                else
+                {
+                    msg.Format(_T("-Girder %s Reinforcement details could not be listed because spacing in the last zone is not 1'-6\" per the standard WSDOT details."),
+                        GIRDER_LABEL(girderKey));
+                    m_warnings.emplace_back(
+                        msg,
+                        _T("Color"), var);
+                }
+            }
+            else if (reinfDetailsResult == STIRRUP_ERROR_BARSIZE)
+            {
+                VARIANT var;
+                VariantInit(&var);
+                var.vt = VT_I4;
+                var.lVal = RGB(0, 0, 0);
+                msg.Format(_T("-Girder %s Reinforcement details could not be listed because the bar size is not #5 in one or more zones."),
+                    GIRDER_LABEL(girderKey));
+                m_warnings.emplace_back(
+                    msg,
+                    _T("Color"), var);
+            }
+            else if (reinfDetailsResult == STIRRUP_ERROR_V6)
+            {
+                VARIANT var;
+                VariantInit(&var);
+                var.vt = VT_I4;
+                var.lVal = RGB(0, 0, 0);
+                msg.Format(_T("-Girder %s Reinforcement details could not be listed because two different values are needed for V6."),
+                    GIRDER_LABEL(girderKey));
+                m_warnings.emplace_back(
+                    msg,
+                    _T("Color"), var);
+            }
+            else if (reinfDetailsResult < 0)
+            {
+                VARIANT var;
+                VariantInit(&var);
+                var.vt = VT_I4;
+                var.lVal = RGB(0, 0, 0);
+                msg.Format(_T("-Girder %s Reinforcement details could not be listed."),
+                    GIRDER_LABEL(girderKey));
+                m_warnings.emplace_back(
+                    msg,
+                    _T("Color"), var);
+            }
+
+            if (pSegment->HandlingData.pHaulTruckLibraryEntry == nullptr)
+            {
+                VARIANT var;
+                VariantInit(&var);
+                var.vt = VT_I4;
+                var.lVal = RGB(0, 0, 0);
+                msg.Format(_T("-Girder %s Shipping analysis not performed."),
+                    GIRDER_LABEL(girderKey));
+                m_warnings.emplace_back(
+                    msg,
+                    _T("Color"), var);
+            }
+
+
             //set girder range
             CString strGirder;
 
@@ -1490,14 +1698,43 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
     }
 
+
+    VARIANT var;
+    VariantInit(&var);
+    var.vt = VT_I4;
+    var.lVal = RGB(0, 0, 0);
+    m_warnings.emplace_back(_T("-End Types to be determined by the Designer."), _T("Color"), var);
+    m_warnings.emplace_back(_T("-Intermediate Diaphragm Type to be determined by the Designer."), _T("Color"), var);
+    m_warnings.emplace_back(_T("-Ld to be determined by the Designer."), _T("Color"), var);
+
+    if (familyCLSID == CLSID_WFBeamFamily || familyCLSID == CLSID_UBeamFamily)
+    {
+        VARIANT var;
+        VariantInit(&var);
+        var.vt = VT_I4;
+        var.lVal = RGB(0, 0, 0);
+        m_warnings.emplace_back(
+            _T("-H1 is computed as the height of the girder H + 3\" + \"A\" Dimension. Designers shall check H1 for the effect of vertical curve and increase as necessary."),
+            _T("Color"), var);
+    }
+
+
     //build strand extension table
 
     RowIndexType tableOffset = (bSlab ? 6 : 5);
     GET_IFACE2(pBroker, IBridge, pBridge);
+
+    CString strCell;
+    CString strValue;
+
+
+
     for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
     {
         tableOffset += pBridge->GetGirderCount(grpIdx);
     }
+
+    int nPatternHeadings = 0;
 
     if (vStrandPatterns.size() != 0)
     {
@@ -1507,6 +1744,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             {0, 3, tableOffset + 1, 1, 0, _T("STRAND PATTERN")},
             {3, 2, tableOffset + 1, 1, 0, _T("STRANDS TO EXTEND")}
         };
+
+        nPatternHeadings = headerInfo.size();
 
         for (const auto& info : headerInfo)
         {
@@ -1540,9 +1779,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
         for (IndexType idx = 0; idx < vStrandPatterns.size(); idx++)
         {
-            CString strCell;
 
-            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + 3 + idx, GetColumnLabel(2), tableOffset + 3 + idx);
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + nPatternHeadings + idx, GetColumnLabel(2), tableOffset + nPatternHeadings + idx);
             Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
             cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
             cell.SetValue2(COleVariant(GetColumnLabel(idx)));
@@ -1553,7 +1791,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 COleVariant((long)0)
             );
 
-            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(3), tableOffset + 3 + idx, GetColumnLabel(4), tableOffset + 3 + idx);
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(3), tableOffset + nPatternHeadings + idx, GetColumnLabel(4), tableOffset + nPatternHeadings + idx);
             cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
             cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
             cell.SetValue2(COleVariant(vStrandPatterns[idx]));
@@ -1567,14 +1805,15 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         }
     }
 
+    int nDebondHeadings = 0;
 
     if (vDebond.size() != 0)
     {
-        CString strCell;
-        CString strValue;
 
-        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + 4 + vStrandPatterns.size(),
-            GetColumnLabel(4), tableOffset + 4 + vStrandPatterns.size());
+        nDebondHeadings = 2;
+
+        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + nPatternHeadings + (vStrandPatterns.size() != 0 ? 1 : 0) + vStrandPatterns.size(),
+            GetColumnLabel(4), tableOffset + nPatternHeadings + (vStrandPatterns.size() != 0 ? 1 : 0) + vStrandPatterns.size());
         Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
         cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
         COleVariant vLeft((long)-4131, VT_I4);
@@ -1587,8 +1826,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
         for (IndexType idx = 0; idx < vDebond.size(); idx++)
         {
-            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + 5 + vStrandPatterns.size() + idx,
-                GetColumnLabel(4), tableOffset + 5 + vStrandPatterns.size() + idx);
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + nPatternHeadings + nDebondHeadings + vStrandPatterns.size() + idx,
+                GetColumnLabel(4), tableOffset + nPatternHeadings + nDebondHeadings + vStrandPatterns.size() + idx);
             cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
 
             CString strAsterisks;
@@ -1604,6 +1843,41 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         }
     }
 
+    if (m_warnings.size() != 0)
+    {
+
+        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + nPatternHeadings + nDebondHeadings + (vDebond.size() != 0 ? 1 : 0) + vStrandPatterns.size() + vDebond.size(),
+            GetColumnLabel(4), tableOffset + nPatternHeadings + nDebondHeadings + (vDebond.size() != 0 ? 1 : 0) + vStrandPatterns.size() + vDebond.size());
+        Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+        cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+        COleVariant vLeft((long)-4131, VT_I4);
+        cell.SetHorizontalAlignment(vLeft);
+        cell.SetValue2(COleVariant(_T("NOTES TO DESIGNER:")));
+
+        for (IndexType idx = 0; idx < m_warnings.size(); idx++)
+        {
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + nPatternHeadings + nDebondHeadings + (vDebond.size() != 0? 1:0) + 1 + vStrandPatterns.size() + vDebond.size() + idx,
+                GetColumnLabel(40), tableOffset + nPatternHeadings + nDebondHeadings + (vDebond.size() != 0 ? 1 : 0) + 1 + vStrandPatterns.size() + vDebond.size() + idx);
+            Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+
+            COleDispatchDriver font(cell.GetFont(), FALSE);
+
+            // Resolve property name -> DISPID
+            LPOLESTR name = (LPOLESTR)(LPCTSTR)m_warnings[idx].prop;
+            DISPID dispid = 0;
+            HRESULT hr = font.m_lpDispatch->GetIDsOfNames(
+                IID_NULL, &name, 1, LOCALE_USER_DEFAULT, &dispid);
+
+            if (SUCCEEDED(hr)) {
+                font.SetProperty(dispid, VT_VARIANT, &m_warnings[idx].var);
+            }
+
+            cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+            COleVariant vLeft((long)-4131, VT_I4);
+            cell.SetHorizontalAlignment(vLeft);
+            cell.SetValue2(COleVariant(m_warnings[idx].msg));
+        }
+    }
 
     AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

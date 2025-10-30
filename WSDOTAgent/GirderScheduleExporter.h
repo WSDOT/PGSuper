@@ -52,6 +52,23 @@ private:
 		CString strValue;
 	};
 
+	struct WarningInfo {
+		CString msg;
+		CString prop; // e.g., "Color" or "ColorIndex"
+		VARIANT var;
+		WarningInfo(const CString& m, const CString& p, long rgb) : msg(m), prop(p) {
+			VariantInit(&var); var.vt = VT_I4; var.lVal = rgb;
+		}
+		WarningInfo(const CString& m, const CString& p, short idx) : msg(m), prop(p) {
+			VariantInit(&var); var.vt = VT_I2; var.iVal = idx;
+		}
+		WarningInfo(const CString& m, const CString& p, const VARIANT& v) : msg(m), prop(p) {
+			VariantInit(&var); VariantCopy(&var, const_cast<VARIANT*>(&v));
+		}
+		~WarningInfo() { VariantClear(&var); }
+	};
+
+
 	CString GetColumnLabel(ColumnIndexType colIdx);
 	void SetColumnHeader(_Worksheet* worksheet, ColumnIndexType colIdx, ColumnIndexType colSpan, 
 		RowIndexType rowIdx, RowIndexType rowSpan, Float64 orientation, CString strValue);
@@ -69,4 +86,6 @@ private:
 	std::vector<CString> m_previous_row_data;
 
 	GirderIndexType m_last_same_gdrID;
+
+	std::vector<WarningInfo> m_warnings;
 };
