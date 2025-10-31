@@ -357,7 +357,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
             girderKey = CGirderKey(grpIdx, gdrIdx);
 
-            const CSplicedGirderData* pGirder = pGroupHeader->GetGirder(gdrIdx);
+            const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
             
             ++col;
 
