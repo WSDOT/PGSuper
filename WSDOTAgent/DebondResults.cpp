@@ -20,19 +20,35 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#pragma once
+#include "StdAfx.h"
+#include "DebondResults.h"
+#include <AgentTools.h>
 
-#include <PsgLib\Keys.h>
+#include <IFace\Bridge.h>
+#include <IFace/PointOfInterest.h>
 
-namespace WBFL { namespace EAF { class Broker; }; };
+#include <Plugins\BeamFamilyCLSID.h>
 
-class CGirderScheduleChapterBuilder : public CPGSuperChapterBuilder
+
+int CDebondResults::GetDebondDetails(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, std::vector<DebondInformation>& debondInfo) const
 {
-public:
-   CGirderScheduleChapterBuilder(bool bSelect = true);
+    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
+    if (!pStrandGeometry->IsDebondingSymmetric(segmentKey))
+    {
+        return DEBOND_ERROR_SYMMETRIC;
+    }
 
-   virtual LPCTSTR GetName() const override;
+    // fail if not symmetric
+    SectionIndexType nSections = pStrandGeometry->GetNumDebondSections(segmentKey, pgsTypes::metStart, pgsTypes::Straight);
+    for (SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++)
+    {
+        DebondInformation dbInfo;
+        dbInfo.Length = pStrandGeometry->GetDebondSection(segmentKey, pgsTypes::metStart, sectionIdx, pgsTypes::Straight);
 
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+        dbInfo.Strands = pStrandGeometry->GetDebondedStrandsAtSection(segmentKey, pgsTypes::metStart, sectionIdx, pgsTypes::Straight);
 
-};
+        debondInfo.push_back(dbInfo);
+    }
+
+    return DEBOND_ERROR_NONE;
+}

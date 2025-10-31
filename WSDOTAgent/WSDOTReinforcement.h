@@ -14,8 +14,6 @@ namespace WBFL { namespace EAF { class Broker; }; };
 #define STIRRUP_ERROR_LASTZONE   -6
 #define STIRRUP_ERROR_V6         -7
 
-#define DEBOND_ERROR_NONE        0
-#define DEBOND_ERROR_SYMMETRIC   -1
 
 class CWSDOTReinforcement
 {

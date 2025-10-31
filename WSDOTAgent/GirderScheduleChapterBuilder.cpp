@@ -45,6 +45,8 @@
 #include <psgLib/CreepCriteria.h>
 #include <psgLib/LimitsCriteria.h>
 #include <psgLib/GirderLibraryEntry.h>
+#include "WSDOTReinforcement.h"
+#include "DebondResults.h"
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
@@ -55,7 +57,6 @@
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
 #endif
-#include "WSDOTReinforcement.h"
 
 
 CGirderScheduleChapterBuilder::CGirderScheduleChapterBuilder(bool bSelect) :
@@ -443,8 +444,9 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
       pTable->SetColumnSpan(++row,0,2);
       (*pTable)(row,0) << _T("Straight Strands to Debond");
 
-      std::vector<DebondInformation> debondInfo;
-      debondResults = GetDebondDetails(pBroker,segmentKey,debondInfo);
+      std::vector<CDebondResults::DebondInformation> debondInfo;
+      CDebondResults results;
+      debondResults = results.GetDebondDetails(pBroker,segmentKey,debondInfo);
 
       if ( debondResults < 0 )
       {
@@ -462,11 +464,11 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
       else
       {
          int groupCount = 0;
-         std::vector<DebondInformation>::iterator iter(debondInfo.begin());
-         std::vector<DebondInformation>::iterator end(debondInfo.end());
+         std::vector<CDebondResults::DebondInformation>::iterator iter(debondInfo.begin());
+         std::vector<CDebondResults::DebondInformation>::iterator end(debondInfo.end());
          for ( ; iter != end; iter++, groupCount++ )
          {
-            DebondInformation& dbInfo = *iter;
+             CDebondResults::DebondInformation& dbInfo = *iter;
 
             pTable->SetColumnSpan(++row,0,2);
             (*pTable)(row,0) << _T("Group ") << (groupCount+1);
@@ -854,25 +856,4 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    return pChapter;
 }
 
-int CGirderScheduleChapterBuilder::GetDebondDetails(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::vector<DebondInformation>& debondInfo) const
-{
-   GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
-   if ( !pStrandGeometry->IsDebondingSymmetric(segmentKey) )
-   {
-      return DEBOND_ERROR_SYMMETRIC;
-   }
 
-   // fail if not symmetric
-   SectionIndexType nSections = pStrandGeometry->GetNumDebondSections(segmentKey,pgsTypes::metStart,pgsTypes::Straight);
-   for ( SectionIndexType sectionIdx = 0; sectionIdx < nSections; sectionIdx++ )
-   {
-      DebondInformation dbInfo;
-      dbInfo.Length = pStrandGeometry->GetDebondSection(segmentKey,pgsTypes::metStart,sectionIdx,pgsTypes::Straight);
-
-      dbInfo.Strands = pStrandGeometry->GetDebondedStrandsAtSection(segmentKey,pgsTypes::metStart,sectionIdx,pgsTypes::Straight);
-       
-      debondInfo.push_back(dbInfo);
-   }
-
-   return DEBOND_ERROR_NONE;
-}

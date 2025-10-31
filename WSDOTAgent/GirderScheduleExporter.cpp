@@ -41,6 +41,7 @@
 #include <psgLib/GirderLibraryEntry.h>
 #include <Plugins/BeamFamilyCLSID.h>
 #include "WSDOTReinforcement.h"
+#include "DebondResults.h"
 
 
 
@@ -1086,10 +1087,76 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
             }
 
+            ///////////////////////////////////////////
+            ///////////////////////////////////////////
+
+            int debondResults = DEBOND_ERROR_NONE;
+            if (CLSID_SlabBeamFamily == familyCLSID)
+            {
+                // Debonding for slab beams
+                //pTable->SetColumnSpan(++row, 0, 2);
+                //(*pTable)(row, 0) << _T("Straight Strands to Debond");
+
+                std::vector<CDebondResults::DebondInformation> debondInfo;
+                CDebondResults results;
+                debondResults = results.GetDebondDetails(pBroker, segmentKey, debondInfo);
+
+            //    if (debondResults < 0)
+            //    {
+            //        for (int i = 0; i < 3; i++)
+            //        {
+            //            pTable->SetColumnSpan(++row, 0, 2);
+            //            (*pTable)(row, 0) << _T("Group ") << (i + 1);
+
+            //            (*pTable)(++row, 0) << _T("Strands to Debond");
+            //            (*pTable)(row, 1) << _T("%");
+            //            (*pTable)(++row, 0) << _T("Sleeved Length at Ends to Prevent Bond");
+            //            (*pTable)(row, 1) << _T("%");
+            //        }
+            //    }
+            //    else
+            //    {
+            //        int groupCount = 0;
+            //        std::vector<CDebondResults::DebondInformation>::iterator iter(debondInfo.begin());
+            //        std::vector<CDebondResults::DebondInformation>::iterator end(debondInfo.end());
+            //        for (; iter != end; iter++, groupCount++)
+            //        {
+            //            CDebondResults::DebondInformation& dbInfo = *iter;
+
+            //            pTable->SetColumnSpan(++row, 0, 2);
+            //            (*pTable)(row, 0) << _T("Group ") << (groupCount + 1);
+
+            //            (*pTable)(++row, 0) << _T("Strands to Debond");
+            //            std::vector<StrandIndexType>::iterator strandIter(dbInfo.Strands.begin());
+            //            std::vector<StrandIndexType>::iterator strandIterEnd(dbInfo.Strands.end());
+            //            for (; strandIter != strandIterEnd; strandIter++)
+            //            {
+            //                StrandIndexType strandIdx = *strandIter;
+            //                (*pTable)(row, 1) << _T(" ") << (strandIdx + 1);
+            //            }
+
+            //            (*pTable)(++row, 0) << _T("Sleeved Length at Ends to Prevent Bond");
+            //            (*pTable)(row, 1) << glength.SetValue(dbInfo.Length);
+            //        }
+
+            //        for (int i = groupCount; i < 3; i++)
+            //        {
+            //            pTable->SetColumnSpan(++row, 0, 2);
+            //            (*pTable)(row, 0) << _T("Group ") << (i + 1);
+
+            //            (*pTable)(++row, 0) << _T("Strands to Debond");
+            //            (*pTable)(row, 1) << _T("-");
+            //            (*pTable)(++row, 0) << _T("Sleeved Length at Ends to Prevent Bond");
+            //            (*pTable)(row, 1) << _T("-");
+            //        }
+            //    }
+            }
+
+            ///////////////////////////////////////////
+            ///////////////////////////////////////////
+
             GET_IFACE2(pBroker, ICamber, pCamber);
 
-
-            
             Float64 C;
             if (IsNonstructuralDeck(deckType))
             {
@@ -1520,6 +1587,19 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     GIRDER_LABEL(girderKey));
                 m_warnings.emplace_back(
                     msg, 
+                    _T("Color"), var);
+            }
+
+            if (debondResults == DEBOND_ERROR_SYMMETRIC)
+            {
+                VARIANT var;
+                VariantInit(&var);
+                var.vt = VT_I4;
+                var.lVal = RGB(0, 0, 0);
+                msg.Format(_T("-Girder %s Debonding must be symmetric for this girder schedule."),
+                    GIRDER_LABEL(girderKey));
+                m_warnings.emplace_back(
+                    msg,
                     _T("Color"), var);
             }
 
