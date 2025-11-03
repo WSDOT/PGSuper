@@ -285,24 +285,20 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
     Worksheets worksheets = workbook.GetWorksheets();
 
-    // Delete "Sheet2" and "Sheet3"
-    // Must leave "Sheet1"
-    long count = worksheets.GetCount();
-    for (long i = count; 1 < i; i--)
-    {
-        _Worksheet ws = worksheets.GetItem(COleVariant(i));
-        ws.Delete();
-    }
-
     // Name worksheet
     _Worksheet ws = worksheets.GetItem(COleVariant(1L));
     ws.SetName(_T("Girder Schedule"));
+    _Worksheet ws2 = worksheets.GetItem(COleVariant(2L));
+    ws2.SetName(_T("Flange Thickness"));
 
     // Format cells
     Range allCells = ws.GetCells();
     COleVariant vCenter((long)-4108, VT_I4);
     allCells.SetHorizontalAlignment(vCenter);
     allCells.SetVerticalAlignment(vCenter);
+    Range allCells2 = ws2.GetCells();
+    allCells2.SetHorizontalAlignment(vCenter);
+    allCells2.SetVerticalAlignment(vCenter);
 
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
@@ -341,6 +337,12 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     std::vector<CString> vStrandPatterns;
     std::vector<StrandIndexType> vDebond;
 
+    GET_IFACE2(pBroker, IBridge, pBridge);
+    GET_IFACE2(pBroker, IGirder, pIGirder);
+
+    IndexType hits = 0;
+    IndexType rdx = 0;
+
     for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
     {
         m_previous_row_data.clear();
@@ -363,7 +365,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             
             ++col;
 
-            GET_IFACE2(pBroker, IBridge, pBridge);
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
             CSegmentKey segmentKey(pSegment->GetSegmentKey());
             pgsPointOfInterest poiStart(segmentKey, 0.0);
@@ -390,7 +391,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                 if (bWFDG)
                 {
-                    GET_IFACE2(pBroker, IGirder, pIGirder);
                     Float64 W = pIGirder->GetTopWidth(poiMidSpan);
                     gdim.SetValue(W);
                     const auto& val = gdim.GetValue(true);
@@ -1493,7 +1493,106 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 COleVariant((long)0)
             );
 
+            SegmentIndexType segIdx = 0;
 
+            SegmentIndexType nSegments = pGirder->GetSegmentCount();
+
+            for (segIdx; segIdx < nSegments; segIdx++)
+            {
+                const auto& segmentKey = CSegmentKey(girderKey, segIdx);
+
+                Float64 tft = pIGirder->GetTopFlangeThickening(segmentKey);
+
+                FlangeIndexType nFlanges = pIGirder->GetTopFlangeCount(girderKey);
+
+                if (pIGirder->CanTopFlangeBeLongitudinallyThickened(segmentKey) && !IsZero(tft))
+                {
+                    SetColumnData(&ws2, 0, 3 + segIdx, SEGMENT_LABEL(segmentKey));
+
+                    hits++;
+
+                    if (hits == 1)
+                    {
+                        ///top flange thickening table
+                        const std::vector<ScheduleHeaderInfo>& headerInfo =
+                        {
+                            {0, 1, 0, 3, 0, _T("SEGMENT")},
+                            {1, 11, 0, 1, 0, _T("TOP FLANGE THICKNESS, TF")},
+                            {1, 11, 1, 1, 0, _T("SEG. 10TH PT.")}
+                        };
+
+                        int nFlangeThicknessHeadings = 2;
+
+                        IndexType idx = 0;
+
+                        for (const auto& info : headerInfo)
+                        {
+                            CString strCell;
+                            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(info.colIdx), info.rowIdx + 1, GetColumnLabel(info.colIdx + info.colSpan - 1), info.rowIdx + info.rowSpan);
+                            Range cell = ws2.GetRange(COleVariant(strCell), COleVariant(strCell));
+                            cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+                            cell.SetValue2(COleVariant(info.strValue));
+                            cell.BorderAround(
+                                COleVariant((long)1),
+                                (long)3,
+                                (long)-4105,
+                                COleVariant((long)0)
+                            );
+
+
+                            COleDispatchDriver font(cell.GetFont(), FALSE);
+
+                            if (idx == 1)
+                            {
+                                font.SetProperty(0x60, VT_BOOL, TRUE);
+                                font.SetProperty(0x68, VT_R8, 32.0);
+                            }
+
+                            idx++;
+
+                        }
+
+                        // The table currently in the WSDOT girder standard drawing 5.6-A6-10 lists top flange thickness at 10th points
+                        // with the first and last point being at the CL Bearing. This implies an erected segment. However, this is girder
+                        // fabrication data so it makes more sence to list based on 10th points of the actual segment. For this reason,
+                        // the reference_type variable is introduced. The reporting can be easily changed by changing this variable.
+                        PoiAttributeType reference_type = POI_ERECTED_SEGMENT; // POI_RELEASED_SEGMENT;
+                        PoiList tfPoi;
+                        GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+                        pPoi->GetPointsOfInterest(segmentKey, POI_TENTH_POINTS | reference_type, &tfPoi);
+
+                        IndexType cdx = 1;
+                        for (const pgsPointOfInterest& poi : tfPoi)
+                        {
+                            auto tenth_point = poi.IsTenthPoint(reference_type);
+                            CHECK(tenth_point != 0); // expecting only 10th Points
+                            if (tenth_point == 1 || tenth_point == 11)
+                                SetColumnData(&ws2, cdx++, 2, _T("\u2104 Brg."));
+                            else
+                                SetColumnData(&ws2, cdx++, 2, (tenth_point - 1) / 10.);
+                        }
+
+                        INIT_UV_PROTOTYPE(rptLengthUnitValue, thickness, pDisplayUnits->GetComponentDimUnit(), true);
+
+                        cdx = 1;
+                        for (const pgsPointOfInterest& poi : tfPoi)
+                        {
+
+                            for (FlangeIndexType i = 0; i < nFlanges; i++)
+                            {
+                                thickness.SetValue(pIGirder->GetTopFlangeThickness(poi, i));
+                                const auto& val = thickness.GetValue(true);
+                                strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                                if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
+                                    strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
+                                SetColumnData(&ws2, cdx++, 3 + segIdx, strValue);
+                            }
+
+                        }
+
+                    }
+                }
+            }
 
         } // gdrIdx
 
@@ -1541,7 +1640,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     //build strand extension table
 
     RowIndexType tableOffset = (bSlab ? 6 : 5);
-    GET_IFACE2(pBroker, IBridge, pBridge);
+    
 
     CString strCell;
     CString strValue;

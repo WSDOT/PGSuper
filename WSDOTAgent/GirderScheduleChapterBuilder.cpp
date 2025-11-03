@@ -807,7 +807,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    if (pIGirder->CanTopFlangeBeLongitudinallyThickened(segmentKey) && !IsZero(tft))
    {
        GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-       INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true);
        INIT_UV_PROTOTYPE(rptLengthUnitValue, thickness, pDisplayUnits->GetComponentDimUnit(), true);
 
        // The table currently in the WSDOT girder standard drawing 5.6-A6-10 lists top flange thickness at 10th points
