@@ -227,6 +227,11 @@ void CGirderScheduleExporter::SetColumnData(_Worksheet* pWorksheet, ColumnIndexT
 HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
     GET_IFACE2(pBroker, IEAFProgress, pProgress);
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
+
     WBFL::EAF::AutoProgress ap(pProgress);
 
     // Get the Excel template file folder
@@ -237,7 +242,17 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     if (-1 != str.Find(_T("RegFreeCOM")))
     {
         // application is on a development box
-        strDefaultLocation = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\"));
+        if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
+            if (pBridgeDesc->GetSlabOffsetType() != pgsTypes::sotBridge)
+                strDefaultLocation = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\Template US Units\\Varied Haunch\\"));
+            else
+                strDefaultLocation = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\Template US Units\\"));
+        else
+            if (pBridgeDesc->GetSlabOffsetType() != pgsTypes::sotBridge)
+                strDefaultLocation = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\Template SI Units\\Varied Haunch\\"));
+            else
+                strDefaultLocation = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\Template SI Units\\"));
+
     }
     else
     {
@@ -258,56 +273,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         strExcelTemplateFolder += _T("\\");
     }
 
-    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
-
-    CString strTemplateName;
-    if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
-    {
-        strTemplateName = strExcelTemplateFolder + _T("WF_Girder_Schedule_Template_US.xltx");
-    }
-    else
-    {
-        strTemplateName = strExcelTemplateFolder + _T("WF_Girder_Schedule_Template_US_Varied_Haunch.xltx");
-    }
-
-    _Application excel;
-    if (!excel.CreateDispatch(_T("Excel.Application")))
-    {
-        AfxMessageBox(_T("An error occured while attempting to run Excel. Excel files cannot be created unless Microsoft Excel is installed. Maybe try a .csv file?"));
-        return FALSE;
-    }
-
-      // get the spreadsheet setup
-      Workbooks workbooks = excel.GetWorkbooks();
-      _Workbook workbook = workbooks.Add(COleVariant(strTemplateName)); // creates a new Excel file from the template
-
-    Worksheets worksheets = workbook.GetWorksheets();
-
-    // Name worksheet
-    _Worksheet ws = worksheets.GetItem(COleVariant(1L));
-    ws.SetName(_T("Girder Schedule"));
-    _Worksheet ws2 = worksheets.GetItem(COleVariant(2L));
-    ws2.SetName(_T("Flange Thickness"));
-
-    // Format cells
-    Range allCells = ws.GetCells();
-    COleVariant vCenter((long)-4108, VT_I4);
-    allCells.SetHorizontalAlignment(vCenter);
-    allCells.SetVerticalAlignment(vCenter);
-    Range allCells2 = ws2.GetCells();
-    allCells2.SetHorizontalAlignment(vCenter);
-    allCells2.SetVerticalAlignment(vCenter);
-
-    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
-    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
-    INIT_UV_PROTOTYPE(rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), true);
-    INIT_UV_PROTOTYPE(rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(), true);
-
-    INIT_FRACTIONAL_LENGTH_PROTOTYPE(gdim, IS_US_UNITS(pDisplayUnits), 8, RoundUp, pDisplayUnits->GetComponentDimUnit(), true, true);
-
     //Set girder data
 
     GroupIndexType grpHeaderIdx = 0;
@@ -321,6 +286,46 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     bool bSlab = (familyCLSID == CLSID_SlabBeamFamily);
     bool bUbeam = (familyCLSID == CLSID_UBeamFamily);
     bool bWFDG = (familyCLSID == CLSID_DeckBulbTeeBeamFamily);
+
+    CString strTemplateName;
+
+    if (bWFDG)
+        strTemplateName = strExcelTemplateFolder + _T("WFDG_Girder_Schedule.xltx");
+    else 
+        strTemplateName = strExcelTemplateFolder + _T("WF_Girder_Schedule.xltx");
+
+
+    _Application excel;
+    if (!excel.CreateDispatch(_T("Excel.Application")))
+    {
+        AfxMessageBox(_T("An error occured while attempting to run Excel. Excel files cannot be created unless Microsoft Excel is installed. Maybe try a .csv file?"));
+        return FALSE;
+    }
+
+    // get the spreadsheet setup
+    Workbooks workbooks = excel.GetWorkbooks();
+    _Workbook workbook = workbooks.Add(COleVariant(strTemplateName)); // creates a new Excel file from the template
+
+    Worksheets worksheets = workbook.GetWorksheets();
+
+
+    // Format cells
+    _Worksheet ws = worksheets.GetItem(COleVariant(1L));
+    Range allCells = ws.GetCells();
+    COleVariant vCenter((long)-4108, VT_I4);
+    allCells.SetHorizontalAlignment(vCenter);
+    allCells.SetVerticalAlignment(vCenter);
+
+    _Worksheet ws2;
+    Range allCells2;
+
+    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
+    INIT_UV_PROTOTYPE(rptAngleUnitValue, angle, pDisplayUnits->GetAngleUnit(), true);
+    INIT_UV_PROTOTYPE(rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(), true);
+
+    INIT_FRACTIONAL_LENGTH_PROTOTYPE(gdim, IS_US_UNITS(pDisplayUnits), 8, RoundUp, pDisplayUnits->GetComponentDimUnit(), true, true);
+
+
 
     if (!(bSlab || bUbeam || bWFDG || bIbeam))
     {
@@ -341,7 +346,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     GET_IFACE2(pBroker, IGirder, pIGirder);
 
     IndexType hits = 0;
-    IndexType rdx = 0;
 
     for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
     {
@@ -900,9 +904,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             if (IsNonstructuralDeck(deckType))
             {
                 C = pCamber->GetExcessCamber(poiMidSpan, pgsTypes::CreepTime::Max);
-                SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
-                SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
-
             }
             else
             {
@@ -1507,12 +1508,28 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                 if (pIGirder->CanTopFlangeBeLongitudinallyThickened(segmentKey) && !IsZero(tft))
                 {
-                    SetColumnData(&ws2, 0, 3 + segIdx, SEGMENT_LABEL(segmentKey));
+
+                    // The table currently in the WSDOT girder standard drawing 5.6-A6-10 lists top flange thickness at 10th points
+                    // with the first and last point being at the CL Bearing. This implies an erected segment. However, this is girder
+                    // fabrication data so it makes more sence to list based on 10th points of the actual segment. For this reason,
+                    // the reference_type variable is introduced. The reporting can be easily changed by changing this variable.
+                    PoiAttributeType reference_type = POI_ERECTED_SEGMENT; // POI_RELEASED_SEGMENT;
+                    PoiList tfPoi;
+                    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+                    pPoi->GetPointsOfInterest(segmentKey, POI_TENTH_POINTS | reference_type, &tfPoi);
+                    IndexType cdx = 1;
 
                     hits++;
 
                     if (hits == 1)
                     {
+
+                        ws2 = worksheets.GetItem(COleVariant(2L));
+                        allCells2 = ws2.GetCells();
+                        allCells2.SetHorizontalAlignment(vCenter);
+                        allCells2.SetVerticalAlignment(vCenter);
+
+
                         ///top flange thickening table
                         const std::vector<ScheduleHeaderInfo>& headerInfo =
                         {
@@ -1552,16 +1569,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                         }
 
-                        // The table currently in the WSDOT girder standard drawing 5.6-A6-10 lists top flange thickness at 10th points
-                        // with the first and last point being at the CL Bearing. This implies an erected segment. However, this is girder
-                        // fabrication data so it makes more sence to list based on 10th points of the actual segment. For this reason,
-                        // the reference_type variable is introduced. The reporting can be easily changed by changing this variable.
-                        PoiAttributeType reference_type = POI_ERECTED_SEGMENT; // POI_RELEASED_SEGMENT;
-                        PoiList tfPoi;
-                        GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-                        pPoi->GetPointsOfInterest(segmentKey, POI_TENTH_POINTS | reference_type, &tfPoi);
-
-                        IndexType cdx = 1;
                         for (const pgsPointOfInterest& poi : tfPoi)
                         {
                             auto tenth_point = poi.IsTenthPoint(reference_type);
@@ -1572,25 +1579,28 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                                 SetColumnData(&ws2, cdx++, 2, (tenth_point - 1) / 10.);
                         }
 
-                        INIT_UV_PROTOTYPE(rptLengthUnitValue, thickness, pDisplayUnits->GetComponentDimUnit(), true);
+                    }
 
-                        cdx = 1;
-                        for (const pgsPointOfInterest& poi : tfPoi)
+                    SetColumnData(&ws2, 0, 2 + hits, SEGMENT_LABEL(segmentKey));
+
+                    INIT_UV_PROTOTYPE(rptLengthUnitValue, thickness, pDisplayUnits->GetComponentDimUnit(), true);
+
+                    cdx = 1;
+                    for (const pgsPointOfInterest& poi : tfPoi)
+                    {
+
+                        for (FlangeIndexType i = 0; i < nFlanges; i++)
                         {
-
-                            for (FlangeIndexType i = 0; i < nFlanges; i++)
-                            {
-                                thickness.SetValue(pIGirder->GetTopFlangeThickness(poi, i));
-                                const auto& val = thickness.GetValue(true);
-                                strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
-                                if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
-                                    strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
-                                SetColumnData(&ws2, cdx++, 3 + segIdx, strValue);
-                            }
-
+                            thickness.SetValue(pIGirder->GetTopFlangeThickness(poi, i));
+                            const auto& val = thickness.GetValue(true);
+                            strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                            if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
+                                strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
+                            SetColumnData(&ws2, cdx++, 2 + hits, strValue);
                         }
 
                     }
+                    
                 }
             }
 
@@ -1775,7 +1785,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         for (IndexType idx = 0; idx < m_warnings.size(); idx++)
         {
             strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + nPatternHeadings + nDebondHeadings + 2 + vStrandPatterns.size() + vDebond.size() + idx,
-                GetColumnLabel(40), tableOffset + nPatternHeadings + nDebondHeadings + 2 + vStrandPatterns.size() + vDebond.size() + idx);
+                GetColumnLabel(24), tableOffset + nPatternHeadings + nDebondHeadings + 2 + vStrandPatterns.size() + vDebond.size() + idx);
             Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
 
             COleDispatchDriver font(cell.GetFont(), FALSE);
