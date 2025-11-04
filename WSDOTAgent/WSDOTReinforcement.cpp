@@ -31,7 +31,8 @@
 
 
 int CWSDOTReinforcement::GetWSDOTReinforcementDetails(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, 
-    CLSID& familyCLSID, Float64* pz1Spacing, Float64* pz1Length, Float64* pz2Spacing, Float64* pz2Length, Float64* pz3Spacing, Float64* pz3Length) const
+    CLSID& familyCLSID, WBFL::Materials::Rebar::Size* pz1Size, Float64* pz1Spacing, Float64* pz1Length, WBFL::Materials::Rebar::Size* pz2Size, 
+    Float64* pz2Spacing, Float64* pz2Length, WBFL::Materials::Rebar::Size* pz3Size, Float64* pz3Spacing, Float64* pz3Length) const
 {
     GET_IFACE2(pBroker, IStirrupGeometry, pStirrupGeometry);
     if (!pStirrupGeometry->AreStirrupZonesSymmetrical(segmentKey))
@@ -85,6 +86,7 @@ int CWSDOTReinforcement::GetWSDOTReinforcementDetails(std::shared_ptr<WBFL::EAF:
         return STIRRUP_ERROR_BARSIZE;
     }
 
+    *pz1Size = barSize;
     *pz1Spacing = spacing;
     *pz1Length = zoneLength;
 
@@ -103,6 +105,7 @@ int CWSDOTReinforcement::GetWSDOTReinforcementDetails(std::shared_ptr<WBFL::EAF:
         return STIRRUP_ERROR_BARSIZE;
     }
 
+    *pz2Size = barSize;
     *pz2Spacing = spacing;
     *pz2Length = zoneLength;
 
@@ -168,6 +171,7 @@ int CWSDOTReinforcement::GetWSDOTReinforcementDetails(std::shared_ptr<WBFL::EAF:
         }
     }
 
+    *pz3Size = barSize;
     *pz3Spacing = spacing;
     *pz3Length = zoneLength;
 

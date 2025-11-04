@@ -554,13 +554,13 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    }
 
    // Stirrups
-   Float64 z1Spacing, z1Length;
-   Float64 z2Spacing, z2Length;
-   Float64 z3Spacing, z3Length;
-
+            // Stirrups
+   Float64 z1Spacing, z1Length, z2Spacing, z2Length, z3Spacing, z3Length;
+   WBFL::Materials::Rebar::Size z1Size, z2Size, z3Size;
    CWSDOTReinforcement details;
+   int reinfDetailsResult = details.GetWSDOTReinforcementDetails(pBroker, segmentKey, familyCLSID,
+       &z1Size, &z1Spacing, &z1Length, &z2Size, &z2Spacing, &z2Length, &z3Size, &z3Spacing, &z3Length);
 
-   int reinfDetailsResult = details.GetWSDOTReinforcementDetails(pBroker,segmentKey,familyCLSID,&z1Spacing,&z1Length,&z2Spacing,&z2Length,&z3Spacing,&z3Length);
    if (reinfDetailsResult < 0)
    {
       (*pTable)(++row,0) << _T("Zone 1 Spacing");
