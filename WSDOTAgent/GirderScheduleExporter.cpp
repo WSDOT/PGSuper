@@ -1490,24 +1490,39 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             {
                 strGirder.Format(_T("%s-%s"), GetColumnLabel(m_last_same_gdrID), GetColumnLabel(gdrIdx));
                 SetColumnData(&ws, 1, nPrevGirders * grpIdx + m_last_same_gdrID + (bSlab ? 5 : 4), strGirder);
+                
+                CString strCell;
+                strCell.Format(_T("C%d:%s%d"), nPrevGirders* grpIdx + m_last_same_gdrID + (bSlab ? 6 : 5),
+                    GetColumnLabel(m_current_row_data.size()), nPrevGirders* grpIdx + gdrIdx - 1 + (bSlab ? 6 : 5));
+                Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+                cell.ClearContents();
+
+                //merge and format cells
+                for (IndexType i = 1; i <= m_previous_row_data.size() + 1; i++)
+                {
+                    CString strCol = GetColumnLabel(i);
+                    CString strCell;
+                    strCell.Format(_T("%s%d:%s%d"), strCol, nPrevGirders * grpIdx + m_last_same_gdrID + (bSlab ? 6 : 5),
+                        strCol, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 6 : 5));
+                    Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+                    cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
+                    cell.BorderAround(
+                        COleVariant((long)1),
+                        (long)3,
+                        (long)-4105,
+                        COleVariant((long)0)
+                    );
+                    strCell.Format(_T("%s%d:%s%d"), strCol, nPrevGirders * grpIdx + m_last_same_gdrID + 1 + (bSlab ? 6 : 5),
+                        strCol, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 6 : 5));
+                    cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+                    cell.SetRowHeight(COleVariant((long)0));
+                }
             }
             else
             {
                 m_last_same_gdrID = gdrIdx;
                 SetColumnData(&ws, 1, nPrevGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), GetColumnLabel(gdrIdx));
             }
-            
-            //merge and format girder cells
-            CString strCell;
-            strCell.Format(_T("B%d:B%d"), nPrevGirders* grpIdx + m_last_same_gdrID + (bSlab ? 6 : 5), nPrevGirders * grpIdx + gdrIdx + (bSlab ? 6 : 5));
-            Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
-            cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
-            cell.BorderAround(
-                COleVariant((long)1),
-                (long)3,
-                (long)-4105,
-                COleVariant((long)0)
-            );
 
             SegmentIndexType segIdx = 0;
 
