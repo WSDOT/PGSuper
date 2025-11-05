@@ -1511,8 +1511,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                         (long)-4105,
                         COleVariant((long)0)
                     );
-                    strCell.Format(_T("%s%d:%s%d"), strCol, nPrevGirders * grpIdx + m_last_same_gdrID + 1 + (bSlab ? 6 : 5),
-                        strCol, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 6 : 5));
+                    strCell.Format(_T("%s%d:%s%d"), strCol, nPrevGirders * grpIdx + m_last_same_gdrID + (bSlab ? 6 : 5),
+                        strCol, nPrevGirders * grpIdx + gdrIdx - 1 + (bSlab ? 6 : 5));
                     cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
                     cell.SetRowHeight(COleVariant((long)0));
                 }
