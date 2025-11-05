@@ -316,7 +316,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     Range allCells = ws.GetCells();
     COleVariant vCenter((long)-4108, VT_I4);
     allCells.SetHorizontalAlignment(vCenter);
-    allCells.SetVerticalAlignment(vCenter);
 
     _Worksheet ws2;
     Range allCells2;
