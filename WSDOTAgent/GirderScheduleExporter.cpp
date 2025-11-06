@@ -325,6 +325,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     INIT_UV_PROTOTYPE(rptMomentPerAngleUnitValue, spring, pDisplayUnits->GetMomentPerAngleUnit(), true);
 
     INIT_FRACTIONAL_LENGTH_PROTOTYPE(gdim, IS_US_UNITS(pDisplayUnits), 8, RoundUp, pDisplayUnits->GetComponentDimUnit(), true, true);
+    INIT_FRACTIONAL_LENGTH_PROTOTYPE(glength, IS_US_UNITS(pDisplayUnits), 8, RoundOff, pDisplayUnits->GetSpanLengthUnit(), true, true);
+
 
 
 
@@ -399,7 +401,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     Float64 W = pIGirder->GetTopWidth(poiMidSpan);
                     gdim.SetValue(W);
                     const auto& val = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, strValue);
@@ -410,7 +412,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poiMidSpan);
                 gdim.SetValue(Hg);
                 const auto& val = gdim.GetValue(true);
-                strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                 if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                 SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, strValue);
@@ -419,18 +421,25 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 Float64 W = pIGirder->GetTopWidth(poiMidSpan);
                 gdim.SetValue(W);
                 const auto& val1 = gdim.GetValue(true);
-                strValue.Format(_T("%0.1f %s"), val1, gdim.GetUnitTag().c_str());
+                strValue.Format(_T("%0.0f %s"), val1, gdim.GetUnitTag().c_str());
                 if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     strValue = FormatFeetInchesFromDecimalInches(RoundOff(val1, 0.125)).c_str();
                 SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, strValue);
             }
 
-            //Set Plan Length
-            const auto& rptPlanLength = gdim.SetValue(pBridge->GetSegmentPlanLength(segmentKey));
-            const auto& planLength = gdim.GetValue(true);
-            strValue.Format(_T("%0.1f %s"), planLength, gdim.GetUnitTag().c_str());
+                //Set Plan Length
             if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
+            {
+                const auto& rptPlanLength = gdim.SetValue(pBridge->GetSegmentPlanLength(segmentKey));
+                const auto& planLength = gdim.GetValue(true);
                 strValue = FormatFeetInchesFromDecimalInches(RoundOff(planLength, 0.125)).c_str();
+            }
+            else
+            {
+                const auto& rptPlanLength = glength.SetValue(pBridge->GetSegmentPlanLength(segmentKey));
+                const auto& planLength = glength.GetValue(true);
+                strValue.Format(_T("%0.1f %s"), planLength, glength.GetUnitTag().c_str());
+            }
            
             SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
 
@@ -456,7 +465,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 const auto& intVoidDiameter = gdim.GetValue(true);
                 if (intVoidDiameter != 0)
                 {
-                    strValue.Format(_T("Ext: %0.1f %s Int: %0.1f %s"), extVoidDiameter, gdim.GetUnitTag().c_str(), 
+                    strValue.Format(_T("Ext: %0.0f %s Int: %0.0f %s"), extVoidDiameter, gdim.GetUnitTag().c_str(), 
                         intVoidDiameter, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     {
@@ -469,7 +478,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 }
                 else
                 {
-                    strValue.Format(_T("%0.1f %s"), extVoidDiameter, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), extVoidDiameter, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(extVoidDiameter, 0.125)).c_str();
                 }
@@ -525,7 +534,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                     gdim.SetValue(P1);
                     P1 = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), P1, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), P1, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(P1, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, strValue);
@@ -549,7 +558,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                     gdim.SetValue(P2);
                     P2 = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), P2, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), P2, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(P2, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, strValue);
@@ -697,7 +706,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     gdim.SetValue(ybg - sse);
                     const auto& val = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, strValue);
@@ -712,7 +721,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     gdim.SetValue(ybg - hse);
                     const auto& val = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, strValue);
@@ -729,7 +738,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     gdim.SetValue(ytg + hss);
                     const auto& val = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, strValue);
@@ -916,24 +925,29 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     gdim.SetValue(pBridgeDesc->GetSlabOffset());
                     const auto& val = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
                 }
                 else
                 {
+                    CString strVal1, strVal2;
+                    
                     gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metStart));
                     const auto& val = gdim.GetValue(true);
+                    strVal1.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                     gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metEnd));
                     const auto& val1 = gdim.GetValue(true);
+                    strVal2.Format(_T("%0.0f %s"), val1, gdim.GetUnitTag().c_str());
 
-                    CString strVal1, strVal2;
+
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     {
                         strVal1 = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                         strVal2 = FormatFeetInchesFromDecimalInches(RoundOff(val1, 0.125)).c_str();
                     }
+
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strVal1);
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strVal2);
                 }
@@ -941,7 +955,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 C = pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max);
                 gdim.SetValue(C);
                 const auto& val = gdim.GetValue(true);
-                strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                 if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                 SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
@@ -956,14 +970,14 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
             gdim.SetValue(Dmin_LowerBound);
             const auto& val = gdim.GetValue(true);
-            strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+            strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
             if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                 strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
             SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
 
             gdim.SetValue(Dmax_UpperBound);
             const auto& val1 = gdim.GetValue(true);
-            strValue.Format(_T("%0.1f %s"), val1, gdim.GetUnitTag().c_str());
+            strValue.Format(_T("%0.0f %s"), val1, gdim.GetUnitTag().c_str());
             if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                 strValue = FormatFeetInchesFromDecimalInches(RoundOff(val1, 0.125)).c_str();
             SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
@@ -989,39 +1003,39 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     gdim.SetValue(z1Length);
                     const auto& z1Length = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), z1Length, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), z1Length, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(z1Length, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
                     gdim.SetValue(z1Spacing);
                     const auto& z1Spacing = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), z1Spacing, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), z1Spacing, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(z1Spacing, 0.25), 4).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
 
                     gdim.SetValue(z2Length);
                     const auto& z2Length = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), z2Length, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), z2Length, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(z2Length, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
                     gdim.SetValue(z2Spacing);
                     const auto& z2Spacing = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), z2Spacing, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), z2Spacing, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(z2Spacing, 0.25), 4).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
 
                     gdim.SetValue(z3Length);
                     const auto& z3Length = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), z3Length, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), z3Length, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(z3Length, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
                     gdim.SetValue(z3Spacing);
                     const auto& z3Spacing = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), z3Spacing, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), z3Spacing, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(z3Spacing, 0.25), 4).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
@@ -1034,13 +1048,13 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     }
                     gdim.SetValue(z1Spacing);
                     const auto& z1Spacing = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), z1Spacing, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), z1Spacing, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(z1Spacing, 0.25), 4).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
                     gdim.SetValue(z1Length);
                     const auto& z1Length = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), z1Length, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), z1Length, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(z1Length, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
@@ -1050,13 +1064,13 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     }
                     gdim.SetValue(z2Spacing);
                     const auto& z2Spacing = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), z2Spacing, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), z2Spacing, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(z2Spacing, 0.25), 4).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
                     gdim.SetValue(z2Length);
                     const auto& z2Length = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), z2Length, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), z2Length, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(z2Length, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
@@ -1066,13 +1080,13 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     }
                     gdim.SetValue(z3Spacing);
                     const auto& z3Spacing = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), z3Spacing, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), z3Spacing, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(z3Spacing, 0.25), 4).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
                     gdim.SetValue(z3Length);
                     const auto& z3Length = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), z3Length, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), z3Length, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(z3Length, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
@@ -1090,10 +1104,10 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     Float64 H1 = pBridgeDesc->GetSlabOffset() + Hg + WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch);
                     gdim.SetValue(H1);
                     const auto& val = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
-                    strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, strValue);
@@ -1112,8 +1126,11 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     H1 = pSegment->GetSlabOffset(pgsTypes::metEnd) + Hg + WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch);
                     gdim.SetValue(H1);
                     const auto& val1 = gdim.GetValue(true);
-                    strValue.Format(_T("End 1: %0.1f %s End 2: %0.1f %s"), val, gdim.GetUnitTag().c_str(), val1, gdim.GetUnitTag().c_str());
                     CString strVal1, strVal2;
+
+                    strVal1.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
+                    strVal2.Format(_T("%0.0f %s"), val1, gdim.GetUnitTag().c_str());
+
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     {
                         strVal1 = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
@@ -1167,7 +1184,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 Float64 precamber = pIGirder->GetPrecamber(segmentKey);
                 gdim.SetValue(camber + precamber);
                 const auto& val = gdim.GetValue(true);
-                strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                 if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                 SetColumnData(&ws, ++col, nPrevGirders* grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
@@ -1180,7 +1197,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 Float64 L = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
                 gdim.SetValue(L);
                 const auto& val = gdim.GetValue(true);
-                strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                 if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                 SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
@@ -1201,13 +1218,13 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                 gdim.SetValue(leadingOverhang);
                 const auto& val = gdim.GetValue(true);
-                strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                 if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                 SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
                 gdim.SetValue(trailingOverhang);
                 const auto& val1 = gdim.GetValue(true);
-                strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                 if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     strValue = FormatFeetInchesFromDecimalInches(RoundOff(val1, 0.125)).c_str();
                 SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
@@ -1239,7 +1256,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     gdim.SetValue(pSegment->HandlingData.pHaulTruckLibraryEntry->GetAxleWidth());
                     const auto& val = gdim.GetValue(true);
-                    strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                    strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                     if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                         strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), strValue);
@@ -1622,7 +1639,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                         {
                             thickness.SetValue(pIGirder->GetTopFlangeThickness(poi, i));
                             const auto& val = thickness.GetValue(true);
-                            strValue.Format(_T("%0.1f %s"), val, gdim.GetUnitTag().c_str());
+                            strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                             if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                                 strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
                             SetColumnData(&ws2, cdx++, 2 + hits, strValue);
@@ -1661,8 +1678,11 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     var.vt = VT_I4;
     var.lVal = RGB(0, 0, 0);
     m_warnings.emplace_back(_T("-End Types to be determined by the Designer."), _T("Color"), var);
-    m_warnings.emplace_back(_T("-Intermediate Diaphragm Type to be determined by the Designer."), _T("Color"), var);
-    m_warnings.emplace_back(_T("-Ld to be determined by the Designer."), _T("Color"), var);
+    if (bIbeam)
+    {
+        m_warnings.emplace_back(_T("-Intermediate Diaphragm Type to be determined by the Designer."), _T("Color"), var);
+        m_warnings.emplace_back(_T("-Ld to be determined by the Designer."), _T("Color"), var);
+    }
 
     if (familyCLSID == CLSID_WFBeamFamily || familyCLSID == CLSID_UBeamFamily)
     {
@@ -1834,6 +1854,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             cell.SetHorizontalAlignment(vLeft);
             cell.SetValue2(COleVariant(m_warnings[idx].msg));
         }
+
+        m_warnings.clear();
     }
 
     AFX_MANAGE_STATE(AfxGetStaticModuleState());
