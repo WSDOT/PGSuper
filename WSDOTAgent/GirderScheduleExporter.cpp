@@ -1655,7 +1655,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         //set span
         SpanIndexType spanIdx = girderKey.groupIndex;
         CString strSpan;
-        strSpan.Format(_T("%d"), spanIdx + 1);
+        strSpan.Format(_T("%s"), LABEL_SPAN(spanIdx));
         SetColumnData(&ws, 0, (bSlab ? 5 : 4) + grpIdx * (nPrevGirders + 1), strSpan);
 
         //merge and format span cells
