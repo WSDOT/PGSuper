@@ -293,6 +293,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         strTemplateName = strExcelTemplateFolder + _T("WFDG_Girder_Schedule.xltx");
     else if (bSlab)
         strTemplateName = strExcelTemplateFolder + _T("Slab_Girder_Schedule.xltx");
+    else if (bUbeam)
+        strTemplateName = strExcelTemplateFolder + _T("U_Beam_Schedule.xltx");
     else 
         strTemplateName = strExcelTemplateFolder + _T("WF_Girder_Schedule.xltx");
 
@@ -446,7 +448,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             //int. diaphragm type or voids
             if (!bSlab)
             {
-                if (!bWFDG)
+                if (!bWFDG && !bUbeam)
                 {
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, _T("-"));
                 }
@@ -773,10 +775,9 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 if (nExtended == 0)
                 {
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, _T("-"));
-                    if (!bUbeam/* && !bWFDG*/)
-                    {
-                        SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, _T("-"));
-                    }
+
+                    SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, _T("-"));
+
                 }
                 else
                 {
@@ -790,10 +791,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                         
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, GetColumnLabel(idx));
 
-                    if (!bUbeam /*&& !bWFDG*/)
-                    {
-                        SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, _T("-"));
-                    }
+                    SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, _T("-"));
                 }
 
                 nExtended = 0;
@@ -819,10 +817,9 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 if (nExtended == 0)
                 {
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, _T("-"));
-                    if (!bUbeam/* && !bWFDG*/)
-                    {
-                        SetColumnData(&ws, ++col, nPrevGirders* grpIdx + gdrIdx + 4, _T("-"));
-                    }
+
+                    SetColumnData(&ws, ++col, nPrevGirders* grpIdx + gdrIdx + 4, _T("-"));
+                    
                 }
                 else
                 {
@@ -836,10 +833,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, GetColumnLabel(idx));
 
-                    if (!bUbeam/* && !bWFDG*/)
-                    {
-                        SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, _T("-"));
-                    }
+                    SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 4, _T("-"));
+                    
                 }
 
             }
@@ -1715,12 +1710,26 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
     if (vStrandPatterns.size() != 0)
     {
-        const std::vector<ScheduleHeaderInfo>& headerInfo =
+        std::vector<ScheduleHeaderInfo> headerInfo;
+
+        if (bUbeam)
         {
-            {0, 5, tableOffset, 1, 0, _T("EXTENDED STRAND SCHEDULE")},
-            {0, 3, tableOffset + 1, 1, 0, _T("STRAND PATTERN")},
-            {3, 2, tableOffset + 1, 1, 0, _T("STRANDS TO EXTEND")}
-        };
+            headerInfo =
+            {
+                { 0, 6, tableOffset, 1, 0, _T("EXTENDED STRAND SCHEDULE") },
+                { 0, 3, tableOffset + 1, 1, 0, _T("STRAND PATTERN") },
+                { 3, 3, tableOffset + 1, 1, 0, _T("STRANDS TO EXTEND") }
+            };
+        }
+        else
+        {
+            headerInfo =
+            {
+                { 0, 5, tableOffset, 1, 0, _T("EXTENDED STRAND SCHEDULE") },
+                { 0, 3, tableOffset + 1, 1, 0, _T("STRAND PATTERN") },
+                { 3, 2, tableOffset + 1, 1, 0, _T("STRANDS TO EXTEND") }
+            };
+        }
 
         nPatternHeadings = headerInfo.size();
 
@@ -1768,7 +1777,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 COleVariant((long)0)
             );
 
-            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(3), tableOffset + nPatternHeadings + idx, GetColumnLabel(4), tableOffset + nPatternHeadings + idx);
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(3), tableOffset + nPatternHeadings + idx, GetColumnLabel((bUbeam? 5 : 4)), tableOffset + nPatternHeadings + idx);
             cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
             cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
             cell.SetValue2(COleVariant(vStrandPatterns[idx]));
@@ -1834,7 +1843,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         for (IndexType idx = 0; idx < m_warnings.size(); idx++)
         {
             strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + nPatternHeadings + nDebondHeadings + 2 + vStrandPatterns.size() + vDebond.size() + idx,
-                GetColumnLabel(24), tableOffset + nPatternHeadings + nDebondHeadings + 2 + vStrandPatterns.size() + vDebond.size() + idx);
+                GetColumnLabel(30), tableOffset + nPatternHeadings + nDebondHeadings + 2 + vStrandPatterns.size() + vDebond.size() + idx);
             Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
 
             COleDispatchDriver font(cell.GetFont(), FALSE);
