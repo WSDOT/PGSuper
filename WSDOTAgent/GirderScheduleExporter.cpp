@@ -280,16 +280,20 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     const CSplicedGirderData* pGirderHeader = pGroupHeader->GetGirder(0);
     const GirderLibraryEntry* pGdrLibEntry = pGirderHeader->GetGirderLibraryEntry();
     auto factory = pGdrLibEntry->GetBeamFactory();
+    auto girder_name = pGdrLibEntry->GetName();
     CLSID familyCLSID = factory->GetFamilyCLSID();
 
     bool bIbeam = (familyCLSID == CLSID_WFBeamFamily);
     bool bSlab = (familyCLSID == CLSID_SlabBeamFamily);
     bool bUbeam = (familyCLSID == CLSID_UBeamFamily);
     bool bWFDG = (familyCLSID == CLSID_DeckBulbTeeBeamFamily);
+    bool bWFTDG = (familyCLSID == CLSID_DeckBulbTeeBeamFamily);
 
     CString strTemplateName;
 
-    if (bWFDG)
+    if (bWFDG && girder_name.find(L"TDG") != std::wstring::npos)
+        strTemplateName = strExcelTemplateFolder + _T("WFTDG_Girder_Schedule.xltx");
+    else if (bWFDG && girder_name.find(L"DG") != std::wstring::npos)
         strTemplateName = strExcelTemplateFolder + _T("WFDG_Girder_Schedule.xltx");
     else if (bSlab)
         strTemplateName = strExcelTemplateFolder + _T("Slab_Girder_Schedule.xltx");
