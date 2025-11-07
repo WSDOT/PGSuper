@@ -1677,9 +1677,12 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     var.vt = VT_I4;
     var.lVal = RGB(0, 0, 0);
     m_warnings.emplace_back(_T("-End Types to be determined by the Designer."), _T("Color"), var);
-    if (bIbeam)
+    if (!bSlab)
     {
-        m_warnings.emplace_back(_T("-Intermediate Diaphragm Type to be determined by the Designer."), _T("Color"), var);
+        if (bIbeam)
+        {
+            m_warnings.emplace_back(_T("-Intermediate Diaphragm Type to be determined by the Designer."), _T("Color"), var);
+        }
         m_warnings.emplace_back(_T("-Ld to be determined by the Designer."), _T("Color"), var);
     }
 
