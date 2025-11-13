@@ -1669,7 +1669,7 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingT
       vTrafficBarrier = pProductForces->GetMoment(railingSystemIntervalIdx,        pgsTypes::pftTrafficBarrier, vPoi, batMin, rtIncremental);
       vSidewalk       = pProductForces->GetMoment(railingSystemIntervalIdx,        pgsTypes::pftSidewalk,       vPoi, batMin, rtIncremental);
 
-      if ( bFutureOverlay )
+      if ( bFutureOverlay || overlayIntervalIdx == INVALID_INDEX)
       {
          vOverlay.resize(vPoi.size(), 0);
       }
