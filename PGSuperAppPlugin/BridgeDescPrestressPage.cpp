@@ -222,7 +222,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Harped);
       DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, Pjack, 
                                 GetUltPjack(nh, pgsTypes::Harped), pDisplayUnits->GetGeneralForceUnit(), 
-                                _T("PJack must be less than the ultimate value of %f %s"));
+                                _T("Pjack must be less than the ultimate value of %f %s"));
 
       // Straight
       bPjackUserInput = !pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight);
@@ -247,7 +247,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       }
 
       Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Straight);
-      DDV_UnitValueLimitOrLess( pDX, IDC_SS_JACK_FORCE, Pjack, GetUltPjack(ns, pgsTypes::Straight ), pDisplayUnits->GetGeneralForceUnit(), _T("PJack must be less than the ultimate value of %f %s") );
+      DDV_UnitValueLimitOrLess( pDX, IDC_SS_JACK_FORCE, Pjack, GetUltPjack(ns, pgsTypes::Straight ), pDisplayUnits->GetGeneralForceUnit(), _T("Pjack must be less than the ultimate value of %f %s") );
    }
 
    // Temporary
@@ -307,7 +307,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    }
 
    Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Temporary);
-   DDV_UnitValueLimitOrLess( pDX, IDC_TEMP_JACK_FORCE, Pjack, GetUltPjack(nt, pgsTypes::Temporary ), pDisplayUnits->GetGeneralForceUnit(), _T("PJack must be less than the ultimate value of %f %s") );
+   DDV_UnitValueLimitOrLess( pDX, IDC_TEMP_JACK_FORCE, Pjack, GetUltPjack(nt, pgsTypes::Temporary ), pDisplayUnits->GetGeneralForceUnit(), _T("Pjack must be less than the ultimate value of %f %s") );
 
    // Set up pjack controls - values that are auto-computed will be refreshed
    UpdateStrandControls();
@@ -741,10 +741,10 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    idx = pCB->AddString(_T("Temporary strands post-tensioned before lifting"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::ttsPTBeforeLifting);
 
-   idx = pCB->AddString(_T("Temporary strands post-tensioned immedately after lifting"));
+   idx = pCB->AddString(_T("Temporary strands post-tensioned immediately after lifting"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::ttsPTAfterLifting);
 
-   idx = pCB->AddString(_T("Temporary strands post-tensioned immedately before shipping"));
+   idx = pCB->AddString(_T("Temporary strands post-tensioned immediately before shipping"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::ttsPTBeforeShipping);
 
    pCB = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
