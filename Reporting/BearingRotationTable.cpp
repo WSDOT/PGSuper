@@ -544,7 +544,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
 
     if (!bDetail)
     {
-            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("s")),
+            (*p_table)(0, col++) << COLHDR(_T("**") << Sub2(symbol(theta), _T("s")),
                     rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
     }
 
