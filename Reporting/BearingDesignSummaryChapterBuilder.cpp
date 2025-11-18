@@ -105,18 +105,18 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads,  true, pDisplayUnits, false, true) << rptNewLine;
 
-    *p << Sub2(symbol(theta), _T("s-st")) << _T(" = static component of maximum service limit design rotation") << rptNewLine;
-    *p << Sub2(symbol(theta), _T("s-cy")) << _T(" = cyclic component of maximum service limit design rotation") << rptNewLine;
-    *p << Sub2(symbol(theta), _T("s")) << _T(" = maximum total service limit design rotation") << rptNewLine;
+    *p << Sub2(symbol(theta), _T("s-st")) << _T(" = static component of the largest (") << symbol(PLUS_MINUS) << _T(") service limit design rotation") << rptNewLine;
+    *p << Sub2(symbol(theta), _T("s-cy")) << _T(" = cyclic component of the largest (") << symbol(PLUS_MINUS) << _T(") service limit design rotation") << rptNewLine;
+    *p << Sub2(symbol(theta), _T("s")) << _T(" = largest (") << symbol(PLUS_MINUS) << _T(") total service limit design rotation") << rptNewLine;
     *p << _T("*Static rotations include ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
     *p << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, false, false) << rptNewLine;
 
-    *p << Sub2(symbol(theta), _T("s-st")) << _T(" = static component of maximum service limit design rotation") << rptNewLine;
-    *p << Sub2(symbol(theta), _T("s-cy")) << _T(" = cyclic component of maximum service limit design rotation") << rptNewLine;
-    *p << Sub2(symbol(theta), _T("s")) << _T(" = maximum total service limit design rotation") << rptNewLine;
+    *p << Sub2(symbol(theta), _T("s-st")) << _T(" = static component of the largest (") << symbol(PLUS_MINUS) << _T(") service limit design rotation") << rptNewLine;
+    *p << Sub2(symbol(theta), _T("s-cy")) << _T(" = cyclic component of the largest (") << symbol(PLUS_MINUS) << _T(") service limit design rotation") << rptNewLine;
+    *p << Sub2(symbol(theta), _T("s")) << _T(" = largest (") << symbol(PLUS_MINUS) << _T(") total service limit design rotation") << rptNewLine;
     *p << _T("*Static rotations include ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
     *p << rptNewLine;
 
@@ -130,8 +130,6 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     {
         bCold = false;
     }
-
-
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pDisplayUnits, false, bCold, &sfDetails) << rptNewLine;
 

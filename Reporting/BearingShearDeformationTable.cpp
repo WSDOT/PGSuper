@@ -28,7 +28,7 @@
 #include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
@@ -223,15 +223,46 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(std
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-    
+    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+
+    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
     for (auto& bearing:details->brg_details)
 
     {
+
+        const CPierData2* pPier = pBridgeDesc->GetPier(bearing.reactionLocation.PierIdx);
+        CString bcType;
+
+        if (pPier->IsBoundaryPier())
+        {
+            bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
+            bcType = CPierData2::AsString(pPier->GetBoundaryConditionType(), bNoDeck);
+        }
+        else
+        {
+            bcType = CPierData2::AsString(pPier->GetSegmentConnectionType());
+        }
+
         pBearing->GetThermalExpansionDetails(&bearing);
 
         ColumnIndexType col = 0;
 
-        (*p_table)(row, col++) << bearing.reactionLocation.PierLabel;
+        CString strBrg = bearing.reactionLocation.PierLabel.c_str();
+
+        if (bcType == _T("Hinge"))
+        {
+            CString hingeBrgStr;
+            hingeBrgStr.Format(_T("%s (Hinge)"), strBrg);
+
+            (*p_table)(row, col++) << hingeBrgStr;
+        }
+        else
+        {
+            (*p_table)(row, col++) << strBrg;
+        }
+
+        
 
         INIT_UV_PROTOTYPE(rptLengthUnitValue, Deflection, pDisplayUnits->GetDeflectionUnit(), false);
         INIT_UV_PROTOTYPE(rptLengthUnitValue, Span, pDisplayUnits->GetSpanLengthUnit(), false);

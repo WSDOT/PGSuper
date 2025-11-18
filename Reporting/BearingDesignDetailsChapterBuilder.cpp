@@ -119,6 +119,11 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << _T(" LRFD Article 6.6 (Table 6.6.1.2.3-1 for Category A)") << rptNewLine;
     *p << _T("Method B is used per WSDOT Policy (BDM Ch. 9.2)") << rptNewLine;
 
+    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign, girderKey);
+    IndexType j = 0;
+    auto iter = strLLNames.begin();
+    auto end = strLLNames.end();
+
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true);
     SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -127,6 +132,11 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         *p << _T("Erected Segment reactions are the segment self-weight simple span reactions after erection. Girder reactions are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
     }
     *p << _T("*Live loads do not include impact") << rptNewLine;
+
+    for (; iter != end; iter++, j++)
+    {
+        *p << _T("(D") << j << _T(") ") << *iter << rptNewLine;
+    }
 
 
     SHEARDEFORMATIONDETAILS sfDetails;
@@ -141,6 +151,14 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     }
     *p << _T("*Live loads do not include impact") << rptNewLine;
 
+    j = 0;
+    iter = strLLNames.begin();
+    end = strLLNames.end();
+    for (; iter != end; iter++, j++)
+    {
+        *p << _T("(D") << j << _T(") ") << *iter << rptNewLine;
+    }
+
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true, false);
 
@@ -150,10 +168,9 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     }
     *p << _T("*Live loads do not include impact") << rptNewLine;
     
-    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign, girderKey);
-    IndexType j = 0;
-    auto iter = strLLNames.begin();
-    auto end = strLLNames.end();
+    j = 0;
+    iter = strLLNames.begin();
+    end = strLLNames.end();
     for (; iter != end; iter++, j++)
     {
         *p << _T("(D") << j << _T(") ") << *iter << rptNewLine;
