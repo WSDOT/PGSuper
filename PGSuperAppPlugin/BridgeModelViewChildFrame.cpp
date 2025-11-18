@@ -288,7 +288,7 @@ void CBridgeModelViewChildFrame::InitGroupRange()
    }
    else
    {
-      str.Format(_T("of (%d - %d)"), startDisplayIndx, endDisplayIndx);
+      str.Format(_T("of (%d - %d)"), 1, nGroups);
    }
 
    m_SettingsBar.GetDlgItem(IDC_GROUP_COUNT)->SetWindowText(str);
