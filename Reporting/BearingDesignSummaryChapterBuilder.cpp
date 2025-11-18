@@ -94,7 +94,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     *p << Sub2(_T("P"), _T("L")) << _T(" = Vertical Live Load") << rptNewLine;
 
-    *p << _T("*Live loads do not include impact") << rptNewLine;
+    *p << (bIncludeImpact ? LIVELOAD_PER_BEARING : LIVELOAD_PER_BEARING_NO_IMPACT) << rptNewLine;
 
     *p << rptNewLine;
 

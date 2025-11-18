@@ -1206,8 +1206,8 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
 
     VehicleIndexType minConfig1, maxConfig1, minConfig2, maxConfig2;
-    pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, false, true, &R1min, &R1max, &minConfig1, &maxConfig1);
-    pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, false, true, &R2min, &R2max, &minConfig2, &maxConfig2);
+    pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, bIncludeImpact, true, &R1min, &R1max, &minConfig1, &maxConfig1);
+    pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, bIncludeImpact, true, &R2min, &R2max, &minConfig2, &maxConfig2);
 
     GET_IFACE2(GetBroker(),ILiveLoadDistributionFactors, pLLDF);
     SpanIndexType spanIdx = pBridge->GetGirderGroupEndSpan(girderKey.groupIndex);
