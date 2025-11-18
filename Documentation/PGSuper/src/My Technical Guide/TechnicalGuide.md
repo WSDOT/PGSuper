@@ -7,6 +7,7 @@ Topics
 * @subpage tg_07_strands
 * @subpage tg_biaxial_stresses
 * @subpage tg_bearing_seat_geometry
+* @subpage tg_bearing_shear_deformation
 * @subpage tg_camber
 * @subpage tg_deflections
 * @subpage tg_capacity_demand_ratios
@@ -41,7 +42,6 @@ Topics
 * @subpage tg_reactions
 * @subpage tg_section_properties
 * @subpage tg_shear_capacity
-* @subpage tg_bearing_shear_deformation
 * @subpage tg_simple_spans_made_continuous
 * @subpage tg_sign_convention
 * @subpage tg_splitting_zone_checks
