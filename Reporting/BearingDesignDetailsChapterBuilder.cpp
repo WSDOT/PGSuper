@@ -99,13 +99,14 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *pChapter << p;
     *p << _T("Bearing Movement Description") << rptNewLine;
 
-    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("bearing_orientation_description.png")) << rptNewLine;
-
     p = new rptParagraph;
     *pChapter << p;
 
+    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("bearing_orientation_description.png")) << rptNewLine;
+
     *p <<  Sub2(symbol(theta), _T("f")) << _T(" = flexural bearing rotation") << rptNewLine;
-    *p << Sub2(symbol(theta), _T("t")) << _T(" = torsional bearing rotation = ") << Sub2(symbol(theta), _T("f")) << _T("tan") << Sub2(symbol(theta), _T("skew")) << rptNewLine << rptNewLine;
+    *p << Sub2(symbol(theta), _T("t")) << _T(" = torsional bearing rotation = ") << Sub2(symbol(theta), _T("f")) << _T(" ") << symbol(TIMES) << _T(" ") << _T("tan") <<_T("(") << Sub2(symbol(theta), _T("skew")) << _T(")") << rptNewLine;
+    *p << Sub2(symbol(DELTA), _T("s")) << _T(" = bearing shear deformation") << rptNewLine << rptNewLine;
 
     p = new rptParagraph(rptStyleManager::GetHeadingStyle());
     *pChapter << p;
@@ -119,6 +120,11 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << _T(" LRFD Article 6.6 (Table 6.6.1.2.3-1 for Category A)") << rptNewLine;
     *p << _T("Method B is used per WSDOT Policy (BDM Ch. 9.2)") << rptNewLine;
 
+    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign, girderKey);
+    IndexType j = 0;
+    auto iter = strLLNames.begin();
+    auto end = strLLNames.end();
+
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true);
     SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -126,7 +132,12 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     {
         *p << _T("Erected Segment reactions are the segment self-weight simple span reactions after erection. Girder reactions are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
     }
-    *p << _T("*Live loads do not include impact") << rptNewLine;
+    *p << (bIncludeImpact ? LIVELOAD_PER_BEARING : LIVELOAD_PER_BEARING_NO_IMPACT) << rptNewLine;
+
+    for (; iter != end; iter++, j++)
+    {
+        *p << _T("(D") << j << _T(") ") << *iter << rptNewLine;
+    }
 
 
     SHEARDEFORMATIONDETAILS sfDetails;
@@ -139,7 +150,15 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     {
         *p << _T("Erected Segment rotations are the segment self-weight simple span rotations after erection. Girder rotations are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
     }
-    *p << _T("*Live loads do not include impact") << rptNewLine;
+    *p << (bIncludeImpact ? LIVELOAD_PER_BEARING : LIVELOAD_PER_BEARING_NO_IMPACT) << rptNewLine;
+
+    j = 0;
+    iter = strLLNames.begin();
+    end = strLLNames.end();
+    for (; iter != end; iter++, j++)
+    {
+        *p << _T("(D") << j << _T(") ") << *iter << rptNewLine;
+    }
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true, false);
@@ -148,12 +167,11 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     {
         *p << _T("Erected Segment rotations are the segment self-weight simple span rotations after erection. Girder rotations are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
     }
-    *p << _T("*Live loads do not include impact") << rptNewLine;
+    *p << (bIncludeImpact ? LIVELOAD_PER_BEARING : LIVELOAD_PER_BEARING_NO_IMPACT) << rptNewLine;
     
-    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign, girderKey);
-    IndexType j = 0;
-    auto iter = strLLNames.begin();
-    auto end = strLLNames.end();
+    j = 0;
+    iter = strLLNames.begin();
+    end = strLLNames.end();
     for (; iter != end; iter++, j++)
     {
         *p << _T("(D") << j << _T(") ") << *iter << rptNewLine;
