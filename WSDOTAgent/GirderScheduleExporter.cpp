@@ -995,9 +995,12 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
                 SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
                 SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
-                SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
-                SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
-                SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+                if (bSlab)
+                {
+                    SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+                    SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+                    SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + (bSlab ? 5 : 4), _T("-"));
+                }
             }
             else
             {
