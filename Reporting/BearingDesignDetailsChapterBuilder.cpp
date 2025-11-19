@@ -105,7 +105,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("bearing_orientation_description.png")) << rptNewLine;
 
     *p <<  Sub2(symbol(theta), _T("f")) << _T(" = flexural bearing rotation") << rptNewLine;
-    *p << Sub2(symbol(theta), _T("t")) << _T(" = torsional bearing rotation = ") << Sub2(symbol(theta), _T("f")) << _T("tan") << Sub2(symbol(theta), _T("skew")) << rptNewLine;
+    *p << Sub2(symbol(theta), _T("t")) << _T(" = torsional bearing rotation = ") << Sub2(symbol(theta), _T("f")) << _T(" ") << symbol(TIMES) << _T(" ") << _T("tan") <<_T("(") << Sub2(symbol(theta), _T("skew")) << _T(")") << rptNewLine;
     *p << Sub2(symbol(DELTA), _T("s")) << _T(" = bearing shear deformation") << rptNewLine << rptNewLine;
 
     p = new rptParagraph(rptStyleManager::GetHeadingStyle());
