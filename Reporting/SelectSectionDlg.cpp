@@ -257,6 +257,7 @@ void CSelectSectionDlg::OnGirderChanged()
 void CSelectSectionDlg::FillIntervalCtrl()
 {
     CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_POI_INTERVAL);
+    pcbIntervals->ResetContent();
 
     auto pBroker = EAFGetBroker();
 
