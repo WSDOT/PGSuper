@@ -366,6 +366,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         const CGirderGroupData* pPrevGroup = pBridgeDesc->GetGirderGroup((grpIdx == 0? 0: grpIdx - 1));
         GirderIndexType nPrevGirders = pPrevGroup->GetGirderCount();
 
+        IndexType nMaxDebondCombos = 0;
+
         for (gdrIdx; gdrIdx < nGirders; gdrIdx++)
         {
             m_current_row_data.clear();
@@ -608,6 +610,10 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             StrandIndexType Ns = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Straight);
             StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped);
 
+            std::vector<CDebondResults::DebondInformation> debondInfo;
+            CDebondResults results;
+            int debondResults = results.GetDebondDetails(pBroker, segmentKey, debondInfo);
+
             if (bCanReportPrestressInformation)
             {
 
@@ -649,7 +655,9 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 }
                 else
                 {
+
                     RowIndexType nRows = 3;
+
 
                     for (RowIndexType rowIdx = 0; rowIdx < nRows; rowIdx++)
                     {
@@ -658,15 +666,15 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                         if (rowIdx <= 1)
                         {
-                            RowIndexType nStrandsInRowDebonded = pStrandGeometry->GetNumDebondedStrandsInRow(poiStart, rowIdx, pgsTypes::Straight);
-                            SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, nStrandsInRowDebonded);
-
                             StrandIndexType nExtended = 0;
+
+                            std::vector<StrandIndexType>vStrandsInRow = pStrandGeometry->GetStrandsInRow(poiStart, rowIdx, pgsTypes::Straight);
 
                             if (Ns > 0)
                             {
-                                std::vector<StrandIndexType>vStrandsInRow = pStrandGeometry->GetStrandsInRow(poiStart, rowIdx, pgsTypes::Straight);
 
+                                std::map<Float64, StrandIndexType> mCountPerDebondLength;
+                                
                                 for (const auto& strandIdx : vStrandsInRow)
                                 {
                                     bool bExtended = pStrandGeometry->IsExtendedStrand(poiStart, strandIdx, pgsTypes::Straight);
@@ -674,10 +682,59 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                                     {
                                         nExtended++;
                                     }
+
+                                    bool bDebonded = pStrandGeometry->IsStrandDebonded(poiStart, strandIdx, pgsTypes::Straight);
+                                    if (bDebonded)
+                                    {
+                                        int groupCount = 0;
+                                        std::vector<CDebondResults::DebondInformation>::iterator iter(debondInfo.begin());
+                                        std::vector<CDebondResults::DebondInformation>::iterator end(debondInfo.end());
+
+                                        for (; iter != end; iter++)
+                                        {
+                                            CDebondResults::DebondInformation& dbInfo = *iter;
+
+                                            if (std::find(dbInfo.Strands.begin(), dbInfo.Strands.end(), (strandIdx + 1)) != dbInfo.Strands.end())
+                                            {
+                                                mCountPerDebondLength[dbInfo.Length]++;
+                                            }
+
+                                        }
+
+                                    }
+
                                 }
+
+                                IndexType nDebondedCombos = mCountPerDebondLength.size();
+
+                                nMaxDebondCombos = max(nMaxDebondCombos, nDebondedCombos);
+
+                                strValue.Empty();
+
+                                for (const auto& count : mCountPerDebondLength)
+                                {
+                                    gdim.SetValue(count.first);
+                                    const auto& val = gdim.GetValue(true);
+
+                                    CString strLocValue;
+
+                                    strLocValue.Format(_T("%d @ %0.0f %s \n"), count.second, val, gdim.GetUnitTag().c_str());
+                                    CString debondLength;
+                                    debondLength = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
+                                    if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
+                                        strLocValue.Format(_T("%d @ %s \n"), count.second, debondLength);
+
+                                    strValue.Append(strLocValue);
+                                }
+
+                                strValue.TrimRight('\n');
+
                             }
 
                             SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, nExtended);
+
+                            SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, strValue);
+
                         }
                         else
                         {
@@ -843,73 +900,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
             }
 
-            ///////////////////////////////////////////
-            ///////////////////////////////////////////
-
-            int debondResults = DEBOND_ERROR_NONE;
-            if (CLSID_SlabBeamFamily == familyCLSID)
-            {
-                // Debonding for slab beams
-                //pTable->SetColumnSpan(++row, 0, 2);
-                //(*pTable)(row, 0) << _T("Straight Strands to Debond");
-
-                std::vector<CDebondResults::DebondInformation> debondInfo;
-                CDebondResults results;
-                debondResults = results.GetDebondDetails(pBroker, segmentKey, debondInfo);
-
-            //    if (debondResults < 0)
-            //    {
-            //        for (int i = 0; i < 3; i++)
-            //        {
-            //            pTable->SetColumnSpan(++row, 0, 2);
-            //            (*pTable)(row, 0) << _T("Group ") << (i + 1);
-
-            //            (*pTable)(++row, 0) << _T("Strands to Debond");
-            //            (*pTable)(row, 1) << _T("%");
-            //            (*pTable)(++row, 0) << _T("Sleeved Length at Ends to Prevent Bond");
-            //            (*pTable)(row, 1) << _T("%");
-            //        }
-            //    }
-            //    else
-            //    {
-            //        int groupCount = 0;
-            //        std::vector<CDebondResults::DebondInformation>::iterator iter(debondInfo.begin());
-            //        std::vector<CDebondResults::DebondInformation>::iterator end(debondInfo.end());
-            //        for (; iter != end; iter++, groupCount++)
-            //        {
-            //            CDebondResults::DebondInformation& dbInfo = *iter;
-
-            //            pTable->SetColumnSpan(++row, 0, 2);
-            //            (*pTable)(row, 0) << _T("Group ") << (groupCount + 1);
-
-            //            (*pTable)(++row, 0) << _T("Strands to Debond");
-            //            std::vector<StrandIndexType>::iterator strandIter(dbInfo.Strands.begin());
-            //            std::vector<StrandIndexType>::iterator strandIterEnd(dbInfo.Strands.end());
-            //            for (; strandIter != strandIterEnd; strandIter++)
-            //            {
-            //                StrandIndexType strandIdx = *strandIter;
-            //                (*pTable)(row, 1) << _T(" ") << (strandIdx + 1);
-            //            }
-
-            //            (*pTable)(++row, 0) << _T("Sleeved Length at Ends to Prevent Bond");
-            //            (*pTable)(row, 1) << glength.SetValue(dbInfo.Length);
-            //        }
-
-            //        for (int i = groupCount; i < 3; i++)
-            //        {
-            //            pTable->SetColumnSpan(++row, 0, 2);
-            //            (*pTable)(row, 0) << _T("Group ") << (i + 1);
-
-            //            (*pTable)(++row, 0) << _T("Strands to Debond");
-            //            (*pTable)(row, 1) << _T("-");
-            //            (*pTable)(++row, 0) << _T("Sleeved Length at Ends to Prevent Bond");
-            //            (*pTable)(row, 1) << _T("-");
-            //        }
-            //    }
-            }
-
-            ///////////////////////////////////////////
-            ///////////////////////////////////////////
 
             GET_IFACE2(pBroker, ICamber, pCamber);
 
@@ -1513,9 +1503,19 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 SetColumnData(&ws, 1, nPrevGirders * grpIdx + m_last_same_gdrID + (bSlab ? 5 : 4), strGirder);
                 
                 CString strCell;
-                strCell.Format(_T("C%d:%s%d"), nPrevGirders* grpIdx + m_last_same_gdrID + (bSlab ? 6 : 5),
-                    GetColumnLabel(m_current_row_data.size()), nPrevGirders* grpIdx + gdrIdx - 1 + (bSlab ? 6 : 5));
+
+                strCell.Format(_T("C%d:%s%d"), nPrevGirders * grpIdx + gdrIdx + (bSlab ? 6 : 5),
+                    GetColumnLabel(m_current_row_data.size()), nPrevGirders * grpIdx + gdrIdx + (bSlab ? 6 : 5));
+
                 Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+                if (nMaxDebondCombos > 0)
+                {
+                    cell.SetRowHeight(COleVariant((long)20.5 * nMaxDebondCombos));
+                }
+
+                strCell.Format(_T("C%d:%s%d"), nPrevGirders * grpIdx + m_last_same_gdrID + (bSlab ? 6 : 5),
+                    GetColumnLabel(m_current_row_data.size()), nPrevGirders* grpIdx + gdrIdx - 1 + (bSlab ? 6 : 5));
+                cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
                 cell.ClearContents();
 
                 //merge and format cells
