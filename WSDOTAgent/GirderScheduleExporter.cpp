@@ -732,8 +732,14 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                             }
 
                             SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, nExtended);
-
-                            SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, strValue);
+                            if (strValue.IsEmpty())
+                            {
+                                SetColumnData(&ws, ++col, nPrevGirders* grpIdx + gdrIdx + 5, 0);
+                            }
+                            else
+                            {
+                                SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, strValue);
+                            }
 
                         }
                         else
