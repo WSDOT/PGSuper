@@ -1848,12 +1848,39 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         }
     }
 
+
     if (m_warnings.size() != 0)
     {
 
-        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + nPatternHeadings + nDebondHeadings + 1 + vStrandPatterns.size() + vDebond.size(),
-            GetColumnLabel(4), tableOffset + nPatternHeadings + nDebondHeadings + 1 + vStrandPatterns.size() + vDebond.size());
-        Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+        // Prepare VARIANTs
+        VARIANT vtMissing, vtAfter;
+        VariantInit(&vtMissing);
+        vtMissing.vt = VT_ERROR;
+        vtMissing.scode = DISP_E_PARAMNOTFOUND; // Excel "missing" parameter
+
+        // Get last sheet so we can add after it
+        long count = worksheets.GetCount();
+        VARIANT vtIndex;
+        vtIndex.vt = VT_I4;
+        vtIndex.lVal = count;
+
+        auto lastSheet = worksheets.GetItem(vtIndex);
+
+        // Set vtAfter = lastSheet
+        vtAfter.vt = VT_DISPATCH;
+        vtAfter.pdispVal = lastSheet;
+
+        // Add new worksheet AFTER last sheet
+        IDispatch* newSheetDisp = worksheets.Add(vtMissing, vtAfter, vtMissing, vtMissing);
+
+        // cast to Worksheet wrapper class
+        _Worksheet newSheet = newSheetDisp;
+
+        newSheet.SetName(_T("Designer Notes"));
+
+
+        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), 1, GetColumnLabel(0), 1);
+        Range cell = newSheet.GetRange(COleVariant(strCell), COleVariant(strCell));
         cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
         COleVariant vLeft((long)-4131, VT_I4);
         cell.SetHorizontalAlignment(vLeft);
@@ -1861,9 +1888,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
         for (IndexType idx = 0; idx < m_warnings.size(); idx++)
         {
-            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + nPatternHeadings + nDebondHeadings + 2 + vStrandPatterns.size() + vDebond.size() + idx,
-                GetColumnLabel(30), tableOffset + nPatternHeadings + nDebondHeadings + 2 + vStrandPatterns.size() + vDebond.size() + idx);
-            Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), 2, GetColumnLabel(0), 2);
+            Range cell = newSheet.GetRange(COleVariant(strCell), COleVariant(strCell));
 
             COleDispatchDriver font(cell.GetFont(), FALSE);
 
@@ -1885,6 +1911,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
         m_warnings.clear();
     }
+
+
 
     AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
