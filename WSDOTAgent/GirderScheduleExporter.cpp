@@ -1682,8 +1682,16 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         );
 
     }
-
     RowIndexType tableOffset = (bSlab ? 6 : 5);
+
+    CString strCell;
+
+    //set bottom of header to normal line weight
+    strCell.Format(_T("A1:%s%d"), GetColumnLabel(m_previous_row_data.size() + 1), tableOffset - 1);
+    Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+    Borders borders = cell.GetBorders();
+    Border bottomBorder = borders.GetItem(9);
+    bottomBorder.SetWeight(COleVariant((long)3));
 
     for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
     {
@@ -1692,9 +1700,15 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
 
     //thicken table border
-    CString strCell;
-    strCell.Format(_T("A1:%s%d"), GetColumnLabel(m_previous_row_data.size()), tableOffset - 1);
-    Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+    strCell.Format(_T("A1:%s%d"), GetColumnLabel(m_previous_row_data.size() + 1), tableOffset - 1);
+    cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+    cell.BorderAround(
+        COleVariant((long)1),
+        (long)4,
+        (long)-4105,
+        COleVariant((long)0)
+    );
+
     cell.BorderAround(
         COleVariant((long)1),
         (long)4,
