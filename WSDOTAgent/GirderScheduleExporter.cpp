@@ -1897,7 +1897,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         // cast to Worksheet wrapper class
         _Worksheet newSheet = newSheetDisp;
 
-        newSheet.SetName(_T("Designer Notes"));
+        newSheet.SetName(_T("INFO_WARNINGS"));
 
 
         strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), 1, GetColumnLabel(0), 1);
@@ -1909,7 +1909,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
         for (IndexType idx = 0; idx < m_warnings.size(); idx++)
         {
-            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), 2, GetColumnLabel(0), 2);
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), 2 + idx, GetColumnLabel(30), 2 + idx);
             Range cell = newSheet.GetRange(COleVariant(strCell), COleVariant(strCell));
 
             COleDispatchDriver font(cell.GetFont(), FALSE);
