@@ -70,59 +70,61 @@ private:
 
 
 	struct ScheduleRowData {
-		CString girderSeries;
-		Float64 topWidth = 0;
-		Float64 Hg = 0;
-		Float64 planLength = 0;
-		Float64 nVoids = 0;
-		Float64 ExtVoidDiameter = 0;
-		Float64 IntVoidDiameter = 0;
-		Float64 t1 = 0;
-		Float64 t2 = 0;
-		Float64 P1 = 0;
-		Float64 P2 = 0;
-		Float64 fc = 0;
-		Float64 fci = 0;
-		StrandIndexType Ns = 0;
-		StrandIndexType Nh = 0;
-		StrandIndexType Nt = 0;
-		std::array<StrandIndexType, 2> nStrandsInRows = { 0, 0 };
-		StrandIndexType nExtended = 0;
-		std::array<std::map<Float64, StrandIndexType>, 2> nDebondedPerLength;
-		Float64 E = 0;
-		Float64 Fcl = 0;
-		Float64 Fo = 0;
-		Float64 A = 0;
-		Float64 Aend1 = 0;
-		Float64 Aend2 = 0;
-		Float64 C = 0;
-		Float64 DminLowerBound = 0;
-		Float64 DmaxUpperBound = 0;
-		Float64 z1Length = 0;
-		Float64 z1Spacing = 0;
-		Float64 z2Length = 0;
-		Float64 z2Spacing = 0;
-		Float64 z3Length = 0;
-		Float64 z3Spacing = 0;
-		WBFL::Materials::Rebar::Size z1Size;
-		WBFL::Materials::Rebar::Size z2Size;
-		WBFL::Materials::Rebar::Size z3Size;
-		Float64 H1 = 0;
-		Float64 H1end1 = 0;
-		Float64 H1end2 = 0;
-		std::vector<WBFL::Materials::Rebar::Size> vG1LongBarSize;
-		std::vector<IndexType> vG1NumLongBars;
-		std::vector<WBFL::Materials::Rebar::Size> vG2LongBarSize;
-		std::vector<IndexType> vG2NumLongBars;
-		Float64 midspanDeflection = 0;
-		Float64 liftingLoopLocation = 0;
-		Float64 trailingOverhang = 0;
-		Float64 leadingOverhang = 0;
-		Float64 rollStiffness = 0;
-		Float64 wheelSpacing = 0;
+		CGirderKey girderKey;
+		CString girderSeries; // girder series
+		Float64 topWidth = 0; // top flange width
+		Float64 Hg = 0; //gross section depth
+		Float64 planLength = 0; //plan length
+		Float64 nVoids = 0; //number of voids
+		Float64 ExtVoidDiameter = 0; //exterior void diameter
+		Float64 IntVoidDiameter = 0; //interior void diameter
+		Float64 t1 = 0; // girder skew end 1
+		Float64 t2 = 0; // girder skew end 2
+		Float64 P1 = 0; // girder end 1 distance to bearing line
+		Float64 P2 = 0; // girder end 2 distance to bearing line
+		Float64 fc = 0; // 28-day strength
+		Float64 fci = 0; // release strength
+		StrandIndexType Ns = 0; // number of straight strands
+		StrandIndexType Nh = 0; // number of harped strands
+		StrandIndexType Nt = 0; // number of temporary strands
+		std::array<StrandIndexType, 3> nStrandsInRows = { 0, 0, 0 }; // number of strands per row
+		StrandIndexType nExtendedL = 0; // number of extended strands left
+		StrandIndexType nExtendedR = 0; // number of extended strands right
+		std::array<std::map<Float64, StrandIndexType>, 2> nDebondedPerLength; // number of de-bonded strands per de-bonded length
+		Float64 E = 0; // location of straight strand C.G. from girder neutral axis at midspan
+		Float64 Fcl = 0; // location of harped strand C.G. from girder neutral axis at midspan
+		Float64 Fo = 0; // location of harped strand C.G. from girder neutral axis at end
+		Float64 A = 0; // uniform design haunch
+		Float64 Aend1 = 0; //design haunch at end 1
+		Float64 Aend2 = 0; //design haunch at end 2
+		Float64 C = 0; // maximum screed camber at midspan
+		Float64 DminLowerBound = 0; //Minimum lower bound camber D40
+		Float64 DmaxUpperBound = 0; //Maximum upper bound camber D120
+		Float64 z1Length = 0; //shear zone 1 length
+		Float64 z1Spacing = 0; //shear zone 1 transverse bar spacing
+		Float64 z2Length = 0; //shear zone 2 length
+		Float64 z2Spacing = 0; //shear zone 2 transverse bar spacing
+		Float64 z3Length = 0; //shear zone 3 length
+		Float64 z3Spacing = 0; //shear zone 3 transverse bar spacing
+		WBFL::Materials::Rebar::Size z1Size; //zone 1 transverse bar size
+		WBFL::Materials::Rebar::Size z2Size; //zone 2 transverse bar size
+		WBFL::Materials::Rebar::Size z3Size; //zone 3 transverse bar size
+		Float64 H1 = 0; // uniform stirrup height
+		Float64 H1end1 = 0; // stirrup height end 1
+		Float64 H1end2 = 0; // stirrup height end 2
+		std::vector<WBFL::Materials::Rebar::Size> vG1LongBarSize; //Top face (G1) longitudinal rebar size
+		std::vector<IndexType> vG1NumLongBars; //Top face (G1) number of longitudinal bars
+		std::vector<WBFL::Materials::Rebar::Size> vG2LongBarSize; //Top face (G2) longitudinal rebar size
+		std::vector<IndexType> vG2NumLongBars; //Top face (G2) number of longitudinal bars
+		Float64 midspanDeflection = 0; // Maximum midspan vertical deflection at shipping
+		Float64 liftingLoopLocation = 0; // lifting loop location from the end
+		Float64 trailingOverhang = 0; // trailing overhang during shipping
+		Float64 leadingOverhang = 0; // leading overhang during shipping
+		Float64 rollStiffness = 0; // hauling truck stiffness
+		Float64 wheelSpacing = 0; //hauling truck wheel spacing
 	};
 
-
+	void AddDesignerNudges();
 
 
 	CString GetColumnLabel(ColumnIndexType colIdx);
@@ -146,4 +148,5 @@ private:
 	GirderIndexType m_last_same_gdrID;
 
 	std::vector<WarningInfo> m_warnings;
+	std::vector<WarningInfo> m_optimizations;
 };
