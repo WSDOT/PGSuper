@@ -310,11 +310,15 @@ void CGirderScheduleExporter::AddDesignerNudges()
                 std::abs(static_cast<long>(girder_i.nExtendedL) -
                     static_cast<long>(girder_j.nExtendedL)));
 
-            if (diff == 0 && t_diff == 0 && l_diff > 0 && l_diff <= 2)
+            StrandIndexType r_diff = static_cast<StrandIndexType>(
+                std::abs(static_cast<long>(girder_i.nExtendedR) -
+                    static_cast<long>(girder_j.nExtendedR)));
+
+            if (diff == 0 && t_diff == 0 && l_diff > 0 && l_diff <= 2 && r_diff > 0 && r_diff <= 2)
             {
                 CString msg;
                 msg.Format(
-                    _T("%s and %s have the same basic geometry and total strand count but extended strand counts on the left side differ by %d. "
+                    _T("%s and %s have the same basic geometry and total strand count but extended strand counts on either side differ by %d. "
                         "Consider using the same count for both girders if the design is acceptable."),
                     GIRDER_LABEL(girder_i.girderKey), GIRDER_LABEL(girder_j.girderKey), l_diff
                 );
@@ -326,25 +330,6 @@ void CGirderScheduleExporter::AddDesignerNudges()
                 m_optimizations.emplace_back(msg, _T("Color"), var);
             }
 
-            StrandIndexType r_diff = static_cast<StrandIndexType>(
-                std::abs(static_cast<long>(girder_i.nExtendedR) -
-                    static_cast<long>(girder_j.nExtendedR)));
-
-            if (diff == 0 && t_diff == 0 && r_diff > 0 && r_diff <= 2)
-            {
-                CString msg;
-                msg.Format(
-                    _T("%s and %s have the same basic geometry and total strand count but extended strand counts on the right side differ by %d. "
-                        "Consider using the same count for both girders if the design is acceptable."),
-                    GIRDER_LABEL(girder_i.girderKey), GIRDER_LABEL(girder_j.girderKey), r_diff
-                );
-
-                VARIANT var;
-                VariantInit(&var);
-                var.vt = VT_I4;
-                var.lVal = RGB(0, 0, 0);
-                m_optimizations.emplace_back(msg, _T("Color"), var);
-            }
 
             if (!same_rebar(girder_i, girder_j))
             {
