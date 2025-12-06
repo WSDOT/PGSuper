@@ -568,7 +568,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     GET_IFACE2(pBroker, IBridge, pBridge);
     GET_IFACE2(pBroker, IGirder, pIGirder);
 
-    IndexType hits = 0;
+    IndexType tf_rows = 0;
 
     m_schedule_data.clear();
 
@@ -1861,9 +1861,9 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     pPoi->GetPointsOfInterest(segmentKey, POI_TENTH_POINTS | reference_type, &tfPoi);
                     IndexType cdx = 1;
 
-                    hits++;
+                    tf_rows++;
 
-                    if (hits == 1)
+                    if (tf_rows == 1)
                     {
 
                         ws2 = worksheets.GetItem(COleVariant(2L));
@@ -1881,6 +1881,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                         };
 
                         int nFlangeThicknessHeadings = 2;
+
+
 
                         IndexType idx = 0;
 
@@ -1923,7 +1925,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                     }
 
-                    SetColumnData(&ws2, 0, 2 + hits, SEGMENT_LABEL(segmentKey));
+                    SetColumnData(&ws2, 0, 2 + tf_rows, SEGMENT_LABEL(segmentKey));
 
                     INIT_UV_PROTOTYPE(rptLengthUnitValue, thickness, pDisplayUnits->GetComponentDimUnit(), true);
 
@@ -1938,7 +1940,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                             strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                             if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                                 strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
-                            SetColumnData(&ws2, cdx++, 2 + hits, strValue);
+                            SetColumnData(&ws2, cdx++, 2 + tf_rows, strValue);
                         }
 
                     }
@@ -1986,7 +1988,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     }
 
 
-    //thicken table border
+    //thicken table borders
     strCell.Format(_T("A1:%s%d"), GetColumnLabel(m_previous_row_data.size() + 1), tableOffset - 1);
     cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
     cell.BorderAround(
@@ -1996,12 +1998,18 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         COleVariant((long)0)
     );
 
-    cell.BorderAround(
-        COleVariant((long)1),
-        (long)4,
-        (long)-4105,
-        COleVariant((long)0)
-    );
+    //thicken flange thickening table
+    if (tf_rows > 0)
+    {
+        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), 1, GetColumnLabel(11), 3 + tf_rows);
+        cell = ws2.GetRange(COleVariant(strCell), COleVariant(strCell));
+        cell.BorderAround(
+            COleVariant((long)1),
+            (long)4,
+            (long)-4105,
+            COleVariant((long)0)
+        );
+    }
 
     VARIANT var;
     VariantInit(&var);
@@ -2093,7 +2101,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         for (IndexType idx = 0; idx < vStrandPatterns.size(); idx++)
         {
 
-            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + nPatternHeadings + idx, GetColumnLabel(2), tableOffset + nPatternHeadings + idx);
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + nPatternHeadings + idx, 
+                GetColumnLabel(2), tableOffset + nPatternHeadings + idx);
             Range cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
             cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
             cell.SetValue2(COleVariant(GetColumnLabel(idx)));
@@ -2104,7 +2113,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 COleVariant((long)0)
             );
 
-            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(3), tableOffset + nPatternHeadings + idx, GetColumnLabel((bUbeam? 5 : 4)), tableOffset + nPatternHeadings + idx);
+            strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(3), tableOffset + nPatternHeadings + idx, 
+                GetColumnLabel((bUbeam? 5 : 4)), tableOffset + nPatternHeadings + idx);
             cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
             cell.Merge(COleVariant((short)VARIANT_FALSE, VT_BOOL));
             cell.SetValue2(COleVariant(vStrandPatterns[idx]));
@@ -2116,6 +2126,17 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             );
 
         }
+
+        //make outline bold
+        strCell.Format(_T("%s%d:%s%d"), GetColumnLabel(0), tableOffset + 1, GetColumnLabel((bUbeam ? 5 : 4)), 
+            tableOffset + 2 + vStrandPatterns.size());
+        cell = ws.GetRange(COleVariant(strCell), COleVariant(strCell));
+        cell.BorderAround(
+            COleVariant((long)1),
+            (long)4,
+            (long)-4105,
+            COleVariant((long)0)
+        );
     }
 
     int nDebondHeadings = 0;
