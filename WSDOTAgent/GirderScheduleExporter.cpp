@@ -243,6 +243,7 @@ void CGirderScheduleExporter::AddDesignerNudges()
             if (!IsEqual(a.leadingOverhang, b.leadingOverhang)) return false;
             if (!IsEqual(a.rollStiffness, b.rollStiffness)) return false;
             if (!IsEqual(a.wheelSpacing, b.wheelSpacing)) return false;
+            return true;
         };
 
 
