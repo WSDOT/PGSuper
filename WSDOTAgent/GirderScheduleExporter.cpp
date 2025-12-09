@@ -453,20 +453,20 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     CEAFApp* pApp = EAFGetApp();
     CString str = pApp->GetAppLocation();
 
-    CString strDefaultLocation;
+    CString strExcelTemplateFolder;
     if (-1 != str.Find(_T("RegFreeCOM")))
     {
         // application is on a development box
         if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
             if (pBridgeDesc->GetSlabOffsetType() != pgsTypes::sotBridge)
-                strDefaultLocation = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\Template US Units\\Varied Haunch\\"));
+               strExcelTemplateFolder = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\Template US Units\\Varied Haunch\\"));
             else
-                strDefaultLocation = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\Template US Units\\"));
+               strExcelTemplateFolder = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\Template US Units\\"));
         else
             if (pBridgeDesc->GetSlabOffsetType() != pgsTypes::sotBridge)
-                strDefaultLocation = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\Template SI Units\\Varied Haunch\\"));
+               strExcelTemplateFolder = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\Template SI Units\\Varied Haunch\\"));
             else
-                strDefaultLocation = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\Template SI Units\\"));
+               strExcelTemplateFolder = str.Left(2) + CString(_T("\\ARP\\PGSuper\\WSDOTAgent\\Template SI Units\\"));
 
     }
     else
@@ -476,16 +476,17 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         {
             str += _T("\\");
         }
-        strDefaultLocation = str;
-    }
 
-    // Get the user's setting, using the local machine setting as the default if not present
-    CString strExcelTemplateFolder = pApp->GetProfileString(_T("Settings"), _T("ExcelTemplateFolder"), strDefaultLocation);
-
-    // make sure we have a trailing backslash
-    if (_T('\\') != strExcelTemplateFolder.GetAt(strExcelTemplateFolder.GetLength() - 1))
-    {
-        strExcelTemplateFolder += _T("\\");
+        if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
+           if (pBridgeDesc->GetSlabOffsetType() != pgsTypes::sotBridge)
+              strExcelTemplateFolder = str + CString(_T("Template US Units\\Varied Haunch\\"));
+           else
+              strExcelTemplateFolder = str + CString(_T("Template US Units\\"));
+        else
+           if (pBridgeDesc->GetSlabOffsetType() != pgsTypes::sotBridge)
+              strExcelTemplateFolder = str + CString(_T("Template SI Units\\Varied Haunch\\"));
+           else
+              strExcelTemplateFolder = str + CString(_T("Template SI Units\\"));
     }
 
     //Set girder data
@@ -521,7 +522,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
     _Application excel;
     if (!excel.CreateDispatch(_T("Excel.Application")))
     {
-        AfxMessageBox(_T("An error occured while attempting to run Excel. Excel files cannot be created unless Microsoft Excel is installed. Maybe try a .csv file?"));
+        AfxMessageBox(_T("An error occurred while attempting to run Excel. Excel files cannot be created unless Microsoft Excel is installed."));
         return FALSE;
     }
 
