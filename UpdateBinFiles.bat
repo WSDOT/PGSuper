@@ -11,9 +11,15 @@ xcopy /Y /d %REGFREECOM%\x64\Release\PGSuper*.dll		%BINTARGET%\AutomationDLLs\x6
 REM - Extension Agents
 REM - WSDOT
 xcopy /Y /d %REGFREECOM%\x64\Release\WSDOTAgent.dll	%BINTARGET%\Extensions\WSDOT\x64\
+xcopy /Y /d %REGFREECOM%\x64\Release\WSDOT.Manifest.PGSuper	%BINTARGET%\Extensions\WSDOT\x64\
+
+xcopy /Y /d /e /s "WSDOTAgent\Template SI Units\*.xltx" "%BINTARGET%\Extensions\WSDOT\x64\Template SI Units\"
+xcopy /Y /d /e /s "WSDOTAgent\Template US Units\*.xltx" "%BINTARGET%\Extensions\WSDOT\x64\Template US Units\"
 
 REM - TXDOT
 xcopy /Y /d %REGFREECOM%\x64\Release\TxDOTAgent.dll	%BINTARGET%\Extensions\TxDOT\x64\
+xcopy /Y /d %REGFREECOM%\x64\Release\TxDOT.Manifest.PGSuper	%BINTARGET%\Extensions\TxDOT\x64\
+xcopy /Y /d %REGFREECOM%\x64\Release\Extensions.Manifest.TOGA	%BINTARGET%\Extensions\TxDOT\x64\
 
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.pgs		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.togt		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
@@ -24,6 +30,7 @@ xcopy /Y /d TxDOTAgent\TxCADExport\*.xltx               %BINTARGET%\Extensions\T
 
 REM - KDOT
 xcopy /Y /d %REGFREECOM%\x64\Release\KDOTExport.dll	%BINTARGET%\Extensions\KDOT\x64\
+xcopy /Y /d %REGFREECOM%\x64\Release\KDOT.Manifest.PGSuper	%BINTARGET%\Extensions\KDOT\x64\
 
 REM - Image files
 xcopy /Y /d images\*.gif				%BINTARGET%\images\
@@ -36,6 +43,7 @@ xcopy /Y /d %REGFREECOM%\x64\Release\MakePgz.exe  	%BINTARGET%\App\x64\
 xcopy /Y /d PGSuper.tip				%BINTARGET%\App\
 xcopy /Y /d License.txt				%BINTARGET%\App\
 xcopy /Y /d Trucks.pgs				%BINTARGET%\App\
+xcopy /Y /d %REGFREECOM%\x64\Release\Application.Manifest.PGSuper		%BINTARGET%\App
 
 REM - Configuration Files
 xcopy /Y /d Configurations\WSDOT.lbr				%BINTARGET%\Configurations\
