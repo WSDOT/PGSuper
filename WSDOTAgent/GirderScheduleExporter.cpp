@@ -897,18 +897,20 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                     RowIndexType nRows = 3;
 
-
                     for (RowIndexType rowIdx = 0; rowIdx < nRows; rowIdx++)
                     {
+                        CString strExt;
+
                         StrandIndexType nStrandsInRow = pStrandGeometry->GetNumStrandInRow(poiStart, rowIdx, pgsTypes::Straight);
 
                         rowData.nStrandsInRows[rowIdx] = nStrandsInRow;
 
                         SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, nStrandsInRow);
 
+                        StrandIndexType nExtended = 0;
+
                         if (rowIdx <= 1)
                         {
-                            StrandIndexType nExtended = 0;
 
                             std::vector<StrandIndexType>vStrandsInRow = pStrandGeometry->GetStrandsInRow(poiStart, rowIdx, pgsTypes::Straight);
 
@@ -916,6 +918,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                             {
 
                                 std::map<Float64, StrandIndexType> mCountPerDebondLength;
+
                                 
                                 for (const auto& strandIdx : vStrandsInRow)
                                 {
@@ -923,6 +926,9 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                                     if (bExtended)
                                     {
                                         nExtended++;
+                                        CString val;
+                                        val.Format(_T("%d, "), strandIdx + 1);
+                                        strExt.Append(val);
                                     }
 
                                     bool bDebonded = pStrandGeometry->IsStrandDebonded(poiStart, strandIdx, pgsTypes::Straight);
@@ -946,6 +952,36 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                                     }
 
                                 }
+
+
+                                if (nExtended > 0)
+                                {
+                                    int pos = strExt.ReverseFind(_T(','));
+                                    if (pos != -1)
+                                    {
+                                        strExt.Delete(pos, 1);
+                                        strExt.TrimRight();
+                                    }
+
+                                    if (std::find(vStrandPatterns.begin(), vStrandPatterns.end(), strExt) == vStrandPatterns.end())
+                                    {
+                                        vStrandPatterns.emplace_back(strExt);
+                                    }
+
+                                    auto it = std::find(vStrandPatterns.begin(), vStrandPatterns.end(), strExt);
+                                    IndexType idx = std::distance(vStrandPatterns.begin(), it);
+
+                                    SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, GetColumnLabel(idx));
+                                    SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, _T("-"));
+
+
+                                }
+                                else
+                                {
+                                    SetColumnData(&ws, ++col, nPrevGirders* grpIdx + gdrIdx + 5, _T("-"));
+                                    SetColumnData(&ws, ++col, nPrevGirders* grpIdx + gdrIdx + 5, _T("-"));
+                                }
+
 
                                 rowData.nDebondedPerLength[rowIdx] = mCountPerDebondLength;
 
@@ -975,15 +1011,15 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                             }
 
-                            SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, nExtended);
                             if (strValue.IsEmpty())
                             {
-                                SetColumnData(&ws, ++col, nPrevGirders* grpIdx + gdrIdx + 5, 0);
+                                SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, 0);
                             }
                             else
                             {
                                 SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, strValue);
                             }
+
 
                         }
                         else
@@ -992,6 +1028,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                             rowData.Nt = Nt;
                             SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, Nt);
                         }
+
 
                     }
 
