@@ -68,6 +68,7 @@ private:
 		~WarningInfo() { VariantClear(&var); }
 	};
 
+	std::vector<std::map<Float64, ConfigStrandFillVector>> m_debond_schedule;
 
 	struct ScheduleRowData {
 		CGirderKey girderKey;
@@ -91,6 +92,7 @@ private:
 		StrandIndexType nExtendedL = 0; // number of extended strands left
 		StrandIndexType nExtendedR = 0; // number of extended strands right
 		std::array<std::map<Float64, StrandIndexType>, 2> nDebondedPerLength; // number of de-bonded strands per de-bonded length
+		std::array<std::map<Float64, ConfigStrandFillVector>, 2> strandIdsPerLength; // de-bonded strand IDs per de-bonded length
 		Float64 E = 0; // location of straight strand C.G. from girder neutral axis at midspan
 		Float64 Fcl = 0; // location of harped strand C.G. from girder neutral axis at midspan
 		Float64 Fo = 0; // location of harped strand C.G. from girder neutral axis at end
