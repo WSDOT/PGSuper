@@ -597,12 +597,20 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             rowData.girderKey = girderKey;
 
             const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
+            const CSplicedGirderData* pGirder_prev = (gdrIdx == 0? pGroup->GetGirder(0) : pGroup->GetGirder(m_last_same_gdrID));
+            const CSplicedGirderData* pGirder_next = (gdrIdx == nGirders - 1? pGroup->GetGirder(gdrIdx) : pGroup->GetGirder(gdrIdx + 1));
             
             ++col;
 
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
+            const CPrecastSegmentData* pSegment_prev = pGirder_prev->GetSegment(0);
+            const CPrecastSegmentData* pSegment_next = pGirder_next->GetSegment(0);
             CSegmentKey segmentKey(pSegment->GetSegmentKey());
+            CSegmentKey segmentKey_prev(pSegment_prev->GetSegmentKey());
+            CSegmentKey segmentKey_next(pSegment_next->GetSegmentKey());
             pgsPointOfInterest poiStart(segmentKey, 0.0);
+            pgsPointOfInterest poiStart_prev(segmentKey_prev, 0.0);
+            pgsPointOfInterest poiStart_next(segmentKey_next, 0.0);
 
             GET_IFACE2(pBroker, ISectionProperties, pSectProp);
 
@@ -611,10 +619,16 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
             GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest);
-            PoiList pmid;
+            PoiList pmid, pmid_prev, pmid_next;
             pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &pmid);
+            pPointOfInterest->GetPointsOfInterest(segmentKey_prev, POI_5L | POI_ERECTED_SEGMENT, &pmid_prev);
+            pPointOfInterest->GetPointsOfInterest(segmentKey_next, POI_5L | POI_ERECTED_SEGMENT, &pmid_next);
             ATLASSERT(pmid.size() == 1);
+            ATLASSERT(pmid_prev.size() == 1);
+            ATLASSERT(pmid_next.size() == 1);
             const pgsPointOfInterest& poiMidSpan(pmid.front());
+            const pgsPointOfInterest& poiMidSpan_prev(pmid_prev.front());
+            const pgsPointOfInterest& poiMidSpan_next(pmid_next.front());
 
             CString strValue;
 
@@ -1231,9 +1245,17 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 }
 
                 C = pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max);
+                Float64 C_prev = pCamber->GetScreedCamber(poiMidSpan_prev, pgsTypes::CreepTime::Max);
+                Float64 C_next = pCamber->GetScreedCamber(poiMidSpan_next, pgsTypes::CreepTime::Max);
+                if (IsEqual(C, C_prev, WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch)))
+                    C = max(C, C_prev);
+                if (IsEqual(C, C_next, WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch)))
+                    C = max(C, C_next);
+
                 rowData.C = C;
                 gdim.SetValue(C);
                 const auto& val = gdim.GetValue(true);
+
                 strValue.Format(_T("%0.0f %s"), val, gdim.GetUnitTag().c_str());
                 if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
                     strValue = FormatFeetInchesFromDecimalInches(RoundOff(val, 0.125)).c_str();
@@ -1246,6 +1268,24 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             Float64 Dmin_UpperBound, Dmin_Average, Dmin_LowerBound;
             pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Max, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
             pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Min, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
+            Float64 Dmax_UpperBound_prev, Dmax_Average_prev, Dmax_LowerBound_prev;
+            Float64 Dmin_UpperBound_prev, Dmin_Average_prev, Dmin_LowerBound_prev;
+            pCamber->GetDCamberForGirderScheduleEx(poiMidSpan_prev, pgsTypes::CreepTime::Max, &Dmax_UpperBound_prev, &Dmax_Average_prev, &Dmax_LowerBound_prev);
+            pCamber->GetDCamberForGirderScheduleEx(poiMidSpan_prev, pgsTypes::CreepTime::Min, &Dmin_UpperBound_prev, &Dmin_Average_prev, &Dmin_LowerBound_prev);
+            Float64 Dmax_UpperBound_next, Dmax_Average_next, Dmax_LowerBound_next;
+            Float64 Dmin_UpperBound_next, Dmin_Average_next, Dmin_LowerBound_next;
+            pCamber->GetDCamberForGirderScheduleEx(poiMidSpan_next, pgsTypes::CreepTime::Max, &Dmax_UpperBound_next, &Dmax_Average_next, &Dmax_LowerBound_next);
+            pCamber->GetDCamberForGirderScheduleEx(poiMidSpan_next, pgsTypes::CreepTime::Min, &Dmin_UpperBound_next, &Dmin_Average_next, &Dmin_LowerBound_next);
+
+            if (IsEqual(Dmin_LowerBound, Dmin_LowerBound_prev, WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch)))
+                Dmin_LowerBound = max(Dmin_LowerBound, Dmin_LowerBound_prev);
+            if (IsEqual(Dmax_UpperBound, Dmax_UpperBound_prev, WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch)))
+                Dmax_UpperBound = max(Dmax_UpperBound, Dmax_UpperBound_prev);
+            if (IsEqual(Dmin_LowerBound, Dmin_LowerBound_next, WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch)))
+                Dmin_LowerBound = max(Dmin_LowerBound, Dmin_LowerBound_next);
+            if (IsEqual(Dmax_UpperBound, Dmax_UpperBound_next, WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch)))
+                Dmax_UpperBound = max(Dmax_UpperBound, Dmax_UpperBound_next);
+
 
             rowData.DminLowerBound = Dmin_LowerBound;
             gdim.SetValue(Dmin_LowerBound);
