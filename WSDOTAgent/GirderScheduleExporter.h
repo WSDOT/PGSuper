@@ -85,12 +85,19 @@ private:
 		Float64 P2 = 0; // girder end 2 distance to bearing line
 		Float64 fc = 0; // 28-day strength
 		Float64 fci = 0; // release strength
+		bool bCanReportPrestressInformation = true;
+		StrandIndexType nDebonded = 0;
 		StrandIndexType Ns = 0; // number of straight strands
 		StrandIndexType Nh = 0; // number of harped strands
 		StrandIndexType Nt = 0; // number of temporary strands
 		std::array<StrandIndexType, 3> nStrandsInRows = { 0, 0, 0 }; // number of strands per row
+		std::array<ConfigStrandFillVector, 3> vStrandsInRow; // strand config per row
+		std::array<ConfigStrandFillVector, 3> vExtStrandsInRow; // ext. strand config per row
+		std::array<ConfigStrandFillVector, 3> vDebStrandsInRow; // deb. strand config per row
 		StrandIndexType nExtendedL = 0; // number of extended strands left
 		StrandIndexType nExtendedR = 0; // number of extended strands right
+		ConfigStrandFillVector vExtendedL; // extended strands config left
+		ConfigStrandFillVector vExtendedR; // extended strands config right
 		std::array<std::map<Float64, StrandIndexType>, 2> nDebondedPerLength; // number of de-bonded strands per de-bonded length
 		std::array<std::map<Float64, ConfigStrandFillVector>, 2> strandIdsPerLength; // de-bonded strand IDs per de-bonded length
 		Float64 E = 0; // location of straight strand C.G. from girder neutral axis at midspan
@@ -102,6 +109,7 @@ private:
 		Float64 C = 0; // maximum screed camber at midspan
 		Float64 DminLowerBound = 0; //Minimum lower bound camber D40
 		Float64 DmaxUpperBound = 0; //Maximum upper bound camber D120
+		int reinfDetailsResult = 0;
 		Float64 z1Length = 0; //shear zone 1 length
 		Float64 z1Spacing = 0; //shear zone 1 transverse bar spacing
 		Float64 z2Length = 0; //shear zone 2 length
@@ -128,6 +136,8 @@ private:
 
 	void AddDesignerNudges();
 
+	void NormalizeCamber(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+
 
 	CString GetColumnLabel(ColumnIndexType colIdx);
 	void SetColumnHeader(_Worksheet* worksheet, ColumnIndexType colIdx, ColumnIndexType colSpan, 
@@ -136,6 +146,7 @@ private:
 	void SetColumnData(_Worksheet* pWorksheet, ColumnIndexType colIdx, RowIndexType rowIdx, T tValue);
 	bool DoesFileExist(const CString& filname);
 	std::string FormatFeetInchesFromDecimalInches(double totalInches, int denom);
+	bool IsSameGeometry(const ScheduleRowData& a, const ScheduleRowData& b);
 	bool CommitExcel(_Application& excel, Worksheets& worksheets, LPCTSTR strFilename);
 
 	CBitmap m_Bitmap;
