@@ -373,18 +373,25 @@ void CGirderScheduleExporter::NormalizeCamber(std::shared_ptr<WBFL::EAF::Broker>
     const auto tol = WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch);
 
     int chainStart = 0;
+    int firstMatchedPrevIdx = -1; // first row that matched its previous row in the current chain
 
     auto in_same_chain = [&](int i, int j)
         {
             const auto& a = m_schedule_data[i];
             const auto& b = m_schedule_data[j];
 
-            // only chain if they are the same basic girder for your purposes
+            // only chain if they are the same basic girder
             if (!IsSameGeometry(a, b)) return false;
 
-            if (!IsEqual(a.C, b.C, tol)) return false;
-            if (!IsEqual(a.DminLowerBound, b.DminLowerBound, tol)) return false;
-            if (!IsEqual(a.DmaxUpperBound, b.DmaxUpperBound, tol)) return false;
+			Float64 Ci = RoundOff(a.C, tol);
+			Float64 Cj = RoundOff(b.C, tol);
+            if (!IsLE(abs(Ci - Cj), tol)) return false;
+            Float64 D40i = RoundOff(a.DminLowerBound, tol);
+            Float64 D40j = RoundOff(b.DminLowerBound, tol);
+            if (!IsLE(abs(D40i - D40j), tol)) return false;
+            Float64 D120i = RoundOff(a.DmaxUpperBound, tol);
+            Float64 D120j = RoundOff(b.DmaxUpperBound, tol);
+            if (!IsLE(abs(D120i - D120j), tol)) return false;
 
             GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
             INIT_FRACTIONAL_LENGTH_PROTOTYPE(gdim, IS_US_UNITS(pDisplayUnits), 8, RoundUp, pDisplayUnits->GetComponentDimUnit(), true, true);
@@ -397,7 +404,7 @@ void CGirderScheduleExporter::NormalizeCamber(std::shared_ptr<WBFL::EAF::Broker>
 
             if (!IsEqual(a.C, b.C, 0.00001))
             {
-                strValue.Format(_T("%s and %s are nearly identical except that the Screed Camber (C) differs by %f %s. The maximum C is used so girders can be normalized."), 
+                strValue.Format(_T("%s and %s are nearly identical except that the Screed Camber (C) differs by %f %s. The maximum C is used so girders can be normalized."),
                     GIRDER_LABEL(a.girderKey), GIRDER_LABEL(b.girderKey), abs(a.C - b.C), gdim.GetUnitTag().c_str());
                 m_warnings.emplace_back(strValue, _T("Color"), var);
             }
@@ -419,12 +426,22 @@ void CGirderScheduleExporter::NormalizeCamber(std::shared_ptr<WBFL::EAF::Broker>
             return true;
         };
 
-    for (int i = 0 + 1; i <= m_schedule_data.size(); ++i)
+    const int n = static_cast<int>(m_schedule_data.size());
+    for (int i = 1; i <= n; ++i)
     {
-        const bool chainContinues =
-            (i < m_schedule_data.size()) && in_same_chain(i - 1, i);
+        // consecutive-pair match
+        const bool pairMatches = (i < n) && in_same_chain(i - 1, i);
 
-        if (!chainContinues)
+        // remember the first row that matched its previous row in this chain
+        if (pairMatches && firstMatchedPrevIdx == -1)
+            firstMatchedPrevIdx = i - 1;
+
+        // chain continues if either the immediate previous matches,
+        // or this row matches the first row that previously matched its previous row
+        const bool chainContinues =
+            (i < n) && (pairMatches || (firstMatchedPrevIdx != -1 && in_same_chain(firstMatchedPrevIdx, i)));
+
+        if (chainContinues)
         {
             // finalize [chainStart, i)
             Float64 C = m_schedule_data[chainStart].C;
@@ -445,8 +462,12 @@ void CGirderScheduleExporter::NormalizeCamber(std::shared_ptr<WBFL::EAF::Broker>
                 m_schedule_data[k].DminLowerBound = D40;
                 m_schedule_data[k].DmaxUpperBound = D120;
             }
-
+        }
+        else
+        {
+            // start a new chain at i
             chainStart = i;
+            firstMatchedPrevIdx = -1; // reset remembered first-match index for next chain
         }
     }
 }
