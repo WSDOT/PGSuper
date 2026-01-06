@@ -1717,8 +1717,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                         if (rowIdx <= 1)
                         {
-                            std::map<Float64, StrandIndexType> mCountPerDebondLength;
-                            std::map<Float64, ConfigStrandFillVector> mStrandIdsPerDebondLength;
 
                             ConfigStrandFillVector vDebondStrandsInRow;
 
@@ -1776,9 +1774,9 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
 
                                 strValue.Empty();
 
-                                if (nDebonded > 0 && mStrandIdsPerDebondLength.size() > 0)
+                                if (nDebonded > 0 && rowData.strandIdsPerLength[rowIdx].size() > 0)
                                 {
-                                    auto it = std::find(m_debond_schedule.begin(), m_debond_schedule.end(), mStrandIdsPerDebondLength);
+                                    auto it = std::find(m_debond_schedule.begin(), m_debond_schedule.end(), rowData.strandIdsPerLength[rowIdx]);
                                     IndexType idx = std::distance(m_debond_schedule.begin(), it);
 
                                     SetColumnData(&ws, ++col, nPrevGirders * grpIdx + gdrIdx + 5, GetColumnLabel(idx));
