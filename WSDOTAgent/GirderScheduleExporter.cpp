@@ -890,6 +890,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                                     if (bDebonded)
                                     {
                                         nDebonded++;
+
                                         rowData.vDebStrandsInRow[rowIdx].emplace_back(strandIdx);
 
                                         std::vector<CDebondResults::DebondInformation>::iterator iter(debondInfo.begin());
@@ -899,10 +900,10 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                                         {
                                             CDebondResults::DebondInformation& dbInfo = *iter;
 
-                                            if (std::find(dbInfo.Strands.begin(), dbInfo.Strands.end(), (strandIdx + 1)) != dbInfo.Strands.end())
+                                            if (std::find(dbInfo.Strands.begin(), dbInfo.Strands.end(), (strandIdx)) != dbInfo.Strands.end())
                                             {
                                                 mCountPerDebondLength[dbInfo.Length]++;
-                                                mStrandIdsPerDebondLength[dbInfo.Length].emplace_back(strandIdx + 1);
+                                                mStrandIdsPerDebondLength[dbInfo.Length].emplace_back(strandIdx);
                                             }
                                         }
 
