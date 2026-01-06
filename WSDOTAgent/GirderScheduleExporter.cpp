@@ -830,6 +830,9 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             StrandIndexType Ns = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Straight);
             StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped);
 
+            rowData.Ns = Ns;
+            rowData.Nh = Nh;
+
             std::vector<CDebondResults::DebondInformation> debondInfo;
             CDebondResults results;
             int debondResults = results.GetDebondDetails(pBroker, segmentKey, debondInfo);
@@ -841,9 +844,6 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                 {
                     StrandIndexType nDebonded = pStrandGeometry->GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEither);
                     rowData.nDebonded = nDebonded;
-
-                    rowData.Ns = Ns;
-                    rowData.Nh = Nh;
 
                     StrandIndexType Nt = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
                     rowData.Nt = Nt;
@@ -1727,7 +1727,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                                 for (const auto& strandIdx : rowData.vStrandsInRow[rowIdx])
                                 {
                                     bool bExtended = std::find(rowData.vExtStrandsInRow[rowIdx].begin(),
-                                        rowData.vExtStrandsInRow[rowIdx].end(), strandIdx) == rowData.vExtStrandsInRow[rowIdx].end();
+                                        rowData.vExtStrandsInRow[rowIdx].end(), strandIdx) != rowData.vExtStrandsInRow[rowIdx].end();
 
                                     if (bExtended)
                                     {
@@ -1738,7 +1738,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                                     }
 
                                     bool bDebonded = std::find(rowData.vDebStrandsInRow[rowIdx].begin(),
-                                        rowData.vExtStrandsInRow[rowIdx].end(), strandIdx) == rowData.vExtStrandsInRow[rowIdx].end();
+                                        rowData.vDebStrandsInRow[rowIdx].end(), strandIdx) != rowData.vDebStrandsInRow[rowIdx].end();
 
                                     if (bDebonded)
                                     {
