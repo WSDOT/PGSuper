@@ -404,22 +404,28 @@ void CGirderScheduleExporter::NormalizeCamber(std::shared_ptr<WBFL::EAF::Broker>
 
             if (!IsEqual(a.C, b.C, 0.00001))
             {
+                gdim.SetValue(abs(a.C - b.C));
+                const auto& val = gdim.GetValue(true);
                 strValue.Format(_T("%s and %s are nearly identical except that the Screed Camber (C) differs by %f %s. The maximum C is used so girders can be normalized."),
-                    GIRDER_LABEL(a.girderKey), GIRDER_LABEL(b.girderKey), abs(a.C - b.C), gdim.GetUnitTag().c_str());
+                    GIRDER_LABEL(a.girderKey), GIRDER_LABEL(b.girderKey), val, gdim.GetUnitTag().c_str());
                 m_warnings.emplace_back(strValue, _T("Color"), var);
             }
 
             if (!IsEqual(a.DminLowerBound, b.DminLowerBound, 0.00001))
             {
+				gdim.SetValue(abs(a.DminLowerBound - b.DminLowerBound));
+				const auto& val = gdim.GetValue(true);
                 strValue.Format(_T("%s and %s are nearly identical except that the Lower Bound Camber (D40) differs by %f %s. The maximum D40 is used so girders can be normalized."),
-                    GIRDER_LABEL(a.girderKey), GIRDER_LABEL(b.girderKey), abs(a.DminLowerBound - b.DminLowerBound), gdim.GetUnitTag().c_str());
+                    GIRDER_LABEL(a.girderKey), GIRDER_LABEL(b.girderKey), val, gdim.GetUnitTag().c_str());
                 m_warnings.emplace_back(strValue, _T("Color"), var);
             }
 
             if (!IsEqual(a.DmaxUpperBound, b.DmaxUpperBound, 0.00001))
             {
+				gdim.SetValue(abs(a.DmaxUpperBound - b.DmaxUpperBound));
+                const auto& val = gdim.GetValue(true);
                 strValue.Format(_T("%s and %s are nearly identical except that the Upper Bound Camber (D120) differs by %f %s. The maximum D120 is used so girders can be normalized."),
-                    GIRDER_LABEL(a.girderKey), GIRDER_LABEL(b.girderKey), abs(a.DmaxUpperBound - b.DmaxUpperBound), gdim.GetUnitTag().c_str());
+                    GIRDER_LABEL(a.girderKey), GIRDER_LABEL(b.girderKey), val, gdim.GetUnitTag().c_str());
                 m_warnings.emplace_back(strValue, _T("Color"), var);
             }
 
@@ -448,7 +454,7 @@ void CGirderScheduleExporter::NormalizeCamber(std::shared_ptr<WBFL::EAF::Broker>
             Float64 D40 = m_schedule_data[chainStart].DminLowerBound;
             Float64 D120 = m_schedule_data[chainStart].DmaxUpperBound;
 
-            for (int k = chainStart + 1; k < i; ++k)
+            for (int k = chainStart + 1; k <= i; ++k)
             {
                 C = max(C, m_schedule_data[k].C);
                 D40 = max(D40, m_schedule_data[k].DminLowerBound);
@@ -456,7 +462,7 @@ void CGirderScheduleExporter::NormalizeCamber(std::shared_ptr<WBFL::EAF::Broker>
             }
 
             // push the max back onto everyone in the chain
-            for (int k = chainStart; k < i; ++k)
+            for (int k = chainStart; k <= i; ++k)
             {
                 m_schedule_data[k].C = C;
                 m_schedule_data[k].DminLowerBound = D40;
