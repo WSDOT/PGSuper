@@ -264,7 +264,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDispUnits->ComponentDim, false);
 
-   rptRcTable* pPrimaryPointsTable = rptStyleManager::CreateDefaultTable(2, _T("Basic Section"));
+   rptRcTable* pPrimaryPointsTable = rptStyleManager::CreateDefaultTable(2, _T("Gross Section"));
 
    (*pLayoutTable)(0, 0) << pPrimaryPointsTable;
    (*pPrimaryPointsTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
@@ -335,16 +335,16 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    CComPtr<IShapeProperties> pShapeProps;
    primaryShape->get_ShapeProperties(&pShapeProps);
-   (*pLayoutTable)(0, 2) << Bold(_T("Basic Section Properties")) << rptNewLine;
-   WriteSectionProperties((*pLayoutTable)(0, 2), pShapeProps);
+   (*pLayoutTable)(0, 1) << rptNewLine;
+   WriteSectionProperties((*pLayoutTable)(0, 1), pShapeProps);
 
    CComPtr<IShapeProperties> cShapeProps;
 
    if (secondaryShape)
    {
-       rptRcTable* pSecondaryPointsTable = rptStyleManager::CreateDefaultTable(2, _T("Composite Piece"));
+       rptRcTable* pSecondaryPointsTable = rptStyleManager::CreateDefaultTable(2, _T("Deck Section"));
 
-       (*pLayoutTable)(0, 1) << pSecondaryPointsTable;
+       (*pLayoutTable)(0, 2) << pSecondaryPointsTable;
        (*pSecondaryPointsTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
        (*pSecondaryPointsTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
 
@@ -362,12 +362,12 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
 
        secondaryShape->get_ShapeProperties(&cShapeProps);
-       (*pLayoutTable)(0, 3) << Bold(_T("Composite Section Properties")) << rptNewLine;
+       (*pLayoutTable)(0, 3) << rptNewLine;
        WriteSectionProperties((*pLayoutTable)(0, 3), cShapeProps);
 
        Float64 n = EcDeck / EcGdr;
        n = ::RoundOff(n, 0.001);
-       (*pLayoutTable)(0, 1) << _T("Modular Ratio, n = ") << n << rptNewLine;
+       (*pLayoutTable)(0, 2) << _T("n = ") << n << rptNewLine;
    }
 
 
