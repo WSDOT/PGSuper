@@ -249,24 +249,36 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        }
    }
 
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
+   // Organize Tables
+   rptRcTable* pParentLayoutTable = rptStyleManager::CreateLayoutTable(2);
 
-   rptParagraph* pPara = new rptParagraph();
-   *pChapter << pPara;
+   (*pParentLayoutTable)(0, 0) << Bold(_T("Non-Composite Section"));
+   rptRcTable* pNonCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
+   rptRcTable* pPrimaryPointsTable = rptStyleManager::CreateDefaultTable(2);
+   (*pNonCompositeLayoutTable)(0, 0) << pPrimaryPointsTable;
+   CComPtr<IShapeProperties> pShapeProps;
+   primaryShape->get_ShapeProperties(&pShapeProps);
+   WriteSectionProperties((*pNonCompositeLayoutTable)(0, 1), pShapeProps);
+   (*pParentLayoutTable)(0, 0) << pNonCompositeLayoutTable;
 
-   rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(4);
-
-   //pLayoutTable->SetColumnStyle(2, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
-   //pLayoutTable->SetColumnStyle(3, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_CENTER));
+   (*pParentLayoutTable)(0, 1) << Bold(_T("Composite Section"));
+   rptRcTable* pCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
+   rptRcTable* pSecondaryPointsTable = rptStyleManager::CreateDefaultTable(2);
+   (*pCompositeLayoutTable)(0, 0) << pSecondaryPointsTable;
+   Float64 n = EcDeck / EcGdr;
+   n = ::RoundOff(n, 0.001);
+   (*pCompositeLayoutTable)(0, 0) << _T("n = ") << n << rptNewLine;
+   CComPtr<IShapeProperties> cShapeProps;
+   secondaryShape->get_ShapeProperties(&cShapeProps);
+   WriteSectionProperties((*pCompositeLayoutTable)(0, 1), cShapeProps);
+   (*pParentLayoutTable)(0, 1) << pCompositeLayoutTable;
 
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDispUnits->ComponentDim, false);
 
-   rptRcTable* pPrimaryPointsTable = rptStyleManager::CreateDefaultTable(2, _T("Gross Section"));
 
-   (*pLayoutTable)(0, 0) << pPrimaryPointsTable;
    (*pPrimaryPointsTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
    (*pPrimaryPointsTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
 
@@ -275,6 +287,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    std::vector<std::pair<Float64, Float64>>::const_iterator iter;
    std::vector<std::pair<Float64, Float64>>::const_iterator end;
 
+   IndexType numVoids = primaryPoints.size() - 1;
+   rptRcTable* pVoidLayoutTable = rptStyleManager::CreateLayoutTable(max(1, numVoids));
    for (IndexType i = 0; i < primaryPoints.size(); i++)
    {
        CString voidStr;
@@ -286,7 +300,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        {
            row = pVoidPointsTable->GetNumberOfHeaderRows();
            ColumnIndexType col = (ColumnIndexType)(i - 1);
-           (*pLayoutTable)(1, col) << pVoidPointsTable;
+           (*pVoidLayoutTable)(0, col) << pVoidPointsTable;
        }
        
        iter = primaryPoints[i].begin();
@@ -310,7 +324,15 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        }
    }
 
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
+   rptHeading* pHeading = rptStyleManager::CreateHeading(2);
+   (*pChapter) << pHeading;
+   pHeading->SetName(_T("Geometry Formulas"));
+   *pHeading << _T("Geometry Formulas");
+
+   rptParagraph* pPara = new rptParagraph();
+   *pChapter << pPara;
 
    *pPara << rptRcEquation(std::_tstring(rptStyleManager::GetImagePath()) + _T("Area.png"),
        _T("A = \\sum{ (x_{i + 1} - x_i)y_i + \\frac{1}{2}(x_{i + 1} - x_i)(y_{i + 1} - y_i) }")) << rptNewLine << rptNewLine;
@@ -332,19 +354,9 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    //Properties
 
-
-   CComPtr<IShapeProperties> pShapeProps;
-   primaryShape->get_ShapeProperties(&pShapeProps);
-   (*pLayoutTable)(0, 1) << rptNewLine;
-   WriteSectionProperties((*pLayoutTable)(0, 1), pShapeProps);
-
-   CComPtr<IShapeProperties> cShapeProps;
-
    if (secondaryShape)
    {
-       rptRcTable* pSecondaryPointsTable = rptStyleManager::CreateDefaultTable(2, _T("Deck Section"));
 
-       (*pLayoutTable)(0, 2) << pSecondaryPointsTable;
        (*pSecondaryPointsTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
        (*pSecondaryPointsTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
 
@@ -360,18 +372,30 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            (*pSecondaryPointsTable)(row, 1) << length.SetValue(y);
        }
 
-
-       secondaryShape->get_ShapeProperties(&cShapeProps);
-       (*pLayoutTable)(0, 3) << rptNewLine;
-       WriteSectionProperties((*pLayoutTable)(0, 3), cShapeProps);
-
-       Float64 n = EcDeck / EcGdr;
-       n = ::RoundOff(n, 0.001);
-       (*pLayoutTable)(0, 2) << _T("n = ") << n << rptNewLine;
    }
 
+   pHeading = rptStyleManager::CreateHeading(2);
+   (*pChapter) << pHeading;
+   pHeading->SetName(_T("Gross Section Coordinates & Properties"));
+   *pHeading << _T("Gross Section Properties");
 
-   (*pPara) << pLayoutTable;
+   pPara = new rptParagraph();
+   *pChapter << pPara;
+
+   *pPara << pParentLayoutTable;
+   
+   if (numVoids > 0)
+   {
+       pHeading = rptStyleManager::CreateHeading(2);
+       (*pChapter) << pHeading;
+       pHeading->SetName(_T("Void Coordinates"));
+       *pHeading << _T("Void Coordinates");
+
+       pPara = new rptParagraph();
+       *pChapter << pPara;
+
+       *pPara << pVoidLayoutTable;
+   }
 
    *pPara << rptNewPage;
 
