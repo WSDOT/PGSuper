@@ -317,19 +317,22 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                diam.SetValue(ExtVoidDiameter);
                
                // Calculate c.g. for external voids
-               // If there are only external voids (no internal voids), they're spaced by S1
-               // If there are internal voids, external voids are positioned at -(S1 + S2) and +(S1 + S2)
                Float64 cgValue = 0.0;
                IndexType numInternalVoids = numVoids - 2;
                
                if (numInternalVoids == 0)
                {
-                   // Only external voids - space them by S1
+                   // Only external voids - space them by S1/2
                    cgValue = (i == 1) ? -(ExtVoidSpacing / 2.0) : (ExtVoidSpacing / 2.0);
+               }
+               else if (numInternalVoids == 1)
+               {
+                   // 1 internal void - external voids at ±S1
+                   cgValue = (i == 1) ? -ExtVoidSpacing : ExtVoidSpacing;
                }
                else
                {
-                   // External and internal voids present
+                   // 2 or more internal voids - external voids at ±(S1 + S2)
                    cgValue = (i == 1) ? -(ExtVoidSpacing + IntVoidSpacing) : (ExtVoidSpacing + IntVoidSpacing);
                }
                
@@ -346,9 +349,14 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                
                Float64 cgValue = 0.0;
                
-               if (numInternalVoids % 2 == 1)
+               if (numInternalVoids == 1)
                {
-                   // Odd number of internal voids - one is at center
+                   // Single internal void - always at center
+                   cgValue = 0.0;
+               }
+               else if (numInternalVoids % 2 == 1)
+               {
+                   // Odd number of internal voids (3, 5, 7, ...) - one is at center
                    IndexType centerIndex = numInternalVoids / 2;
                    if (internalVoidIndex == centerIndex)
                    {
