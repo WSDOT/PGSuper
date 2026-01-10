@@ -317,14 +317,22 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                diam.SetValue(ExtVoidDiameter);
                
                // Calculate c.g. for external voids
-               // S1 is spacing from external void to nearest internal void
-               // External voids are positioned symmetrically around neutral axis
-               // Left external void: -(S1 + S2/2) where S2/2 is to the center of first internal void
-               // But since internal voids start at ±S2/2, external void is at -(S1 + S2/2)
-               // Actually: -(S1 + S2) because first internal void to the left is at -S2
-               // No wait - if int void 1 is at -S2, then ext void should be at -(S1 + S2)
-               // But your data shows ext void at -40 = -(22 + 18)
-               Float64 cgValue = (i == 1) ? -(ExtVoidSpacing + IntVoidSpacing) : (ExtVoidSpacing + IntVoidSpacing);
+               // If there are only external voids (no internal voids), they're spaced by S1
+               // If there are internal voids, external voids are positioned at -(S1 + S2) and +(S1 + S2)
+               Float64 cgValue = 0.0;
+               IndexType numInternalVoids = numVoids - 2;
+               
+               if (numInternalVoids == 0)
+               {
+                   // Only external voids - space them by S1
+                   cgValue = (i == 1) ? -(ExtVoidSpacing / 2.0) : (ExtVoidSpacing / 2.0);
+               }
+               else
+               {
+                   // External and internal voids present
+                   cgValue = (i == 1) ? -(ExtVoidSpacing + IntVoidSpacing) : (ExtVoidSpacing + IntVoidSpacing);
+               }
+               
                cg.SetValue(cgValue);
            }
            else
@@ -333,9 +341,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                diam.SetValue(IntVoidDiameter);
                
                // Calculate c.g. for internal voids
-               // Internal voids are positioned symmetrically around the neutral axis (x = 0)
-               // For odd number of internal voids, the middle one is at x = 0
-               // For even number of internal voids, they're paired around x = 0
                IndexType internalVoidIndex = i - 3; // 0-based index for internal voids (0, 1, 2, ...)
                IndexType numInternalVoids = numVoids - 2; // Total number of internal voids
                
@@ -365,7 +370,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                else
                {
                    // Even number of internal voids - paired symmetrically around x = 0
-                   // First pair: ±S2/2, Second pair: ±3*S2/2, etc.
                    IndexType pairNumber = internalVoidIndex / 2 + 1;
                    bool isLeftSide = (internalVoidIndex % 2 == 0);
                    cgValue = (2.0 * pairNumber - 1.0) * IntVoidSpacing / 2.0;
