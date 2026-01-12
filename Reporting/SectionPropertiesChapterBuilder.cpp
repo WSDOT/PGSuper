@@ -71,6 +71,9 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    CComPtr<IShape> primaryShape;
    CComPtr<IShape> secondaryShape;
 
+   CComPtr<IShapeProperties> vShapeProps;
+   std::vector<CComPtr<IShapeProperties>> voidShapeProperties;
+
    if (compShape)
    {
        IndexType nShapes;
@@ -102,18 +105,36 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
                s->get_PolyPoints(&primaryShapePoints[i]);
 
+               s->get_ShapeProperties(&vShapeProps);
+
+               voidShapeProperties.emplace_back(vShapeProps);
+
            }
        }
 
        if (1 < nShapes)
        {
-           item.Release();
-           compShape->get_Item(1, &item);
-           item->get_Shape(&secondaryShape);
-           secondaryShape->get_PolyPoints(&secondaryShapePoints);
+		   for (IndexType i = 1; i < nShapes; i++)
+           {
+               item.Release();
+               compShape->get_Item(i, &item);
+               item->get_Shape(&secondaryShape);
+               secondaryShape->get_PolyPoints(&secondaryShapePoints);
+               IndexType nPtCount = 0;
+               secondaryShapePoints->get_Count(&nPtCount);
+               if (nPtCount != 1) // must be a deck shape
+               {
+                   secondaryShape->get_PolyPoints(&secondaryShapePoints);
+                   break;
+               }
+               else //transformed properties
+               {
+
+               }
+           }
        }
    }
-   else
+   else // non-composite shape
    {
        shape->get_PolyPoints(&primaryShapePoints[0]);
 
@@ -262,17 +283,21 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    WriteSectionProperties((*pNonCompositeLayoutTable)(0, 1), pShapeProps);
    (*pParentLayoutTable)(0, 0) << pNonCompositeLayoutTable;
 
-   (*pParentLayoutTable)(0, 1) << Bold(_T("Composite Section"));
-   rptRcTable* pCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
    rptRcTable* pSecondaryPointsTable = rptStyleManager::CreateDefaultTable(2);
-   (*pCompositeLayoutTable)(0, 0) << pSecondaryPointsTable;
-   Float64 n = EcDeck / EcGdr;
-   n = ::RoundOff(n, 0.001);
-   (*pCompositeLayoutTable)(0, 0) << _T("n = ") << n << rptNewLine;
-   CComPtr<IShapeProperties> cShapeProps;
-   secondaryShape->get_ShapeProperties(&cShapeProps);
-   WriteSectionProperties((*pCompositeLayoutTable)(0, 1), cShapeProps);
-   (*pParentLayoutTable)(0, 1) << pCompositeLayoutTable;
+   if (secondaryShape)
+   {
+       (*pParentLayoutTable)(0, 1) << Bold(_T("Composite Section"));
+       rptRcTable* pCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
+       (*pCompositeLayoutTable)(0, 0) << pSecondaryPointsTable;
+       Float64 n = EcDeck / EcGdr;
+       n = ::RoundOff(n, 0.001);
+       (*pCompositeLayoutTable)(0, 0) << _T("Modular ratio, n = ") << n << rptNewLine;
+       CComPtr<IShapeProperties> cShapeProps;
+       secondaryShape->get_ShapeProperties(&cShapeProps);
+       WriteSectionProperties((*pCompositeLayoutTable)(0, 1), cShapeProps);
+       (*pParentLayoutTable)(0, 1) << pCompositeLayoutTable;
+   }
+   
 
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
@@ -300,37 +325,14 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        {
            CString voidStr;
 
-           GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-           INIT_FRACTIONAL_LENGTH_PROTOTYPE(dim, IS_US_UNITS(pDisplayUnits), 8, RoundUp, pDisplayUnits->GetDeflectionUnit(), true, true);
-
-           const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
-           const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
-           Float64 ExtVoidDiameter = pGdrEntry->GetDimension(_T("D1"));
-           Float64 IntVoidDiameter = pGdrEntry->GetDimension(_T("D2"));
-
-           auto diam = dim;
-           auto cgx = dim;
-           auto cgy = dim;
-
-           const auto& x1 = primaryPoints[i].begin()->first;
-           const auto& y1 = primaryPoints[i].begin()->second;
-
            if (i <= 2)
            {
                voidStr.Format(_T("Ext. Void %d"), i);
-               diam.SetValue(ExtVoidDiameter);
-               Float64 eval = x1 - ExtVoidDiameter / 2.0;
-               cgx.SetValue(eval);
            }
            else
            { 
                voidStr.Format(_T("Int. Void %d"), i - 2);
-               diam.SetValue(IntVoidDiameter);
-               Float64 eval = x1 - IntVoidDiameter / 2.0;
-               cgx.SetValue(eval);
            }
-
-           cgy.SetValue(y1);
 
            row = pVoidPointsTable->GetNumberOfHeaderRows();
            ColumnIndexType col = (ColumnIndexType)(i - 1);
@@ -338,12 +340,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            auto pEmbedLayoutTable = rptStyleManager::CreateLayoutTable(2);
            (*pEmbedLayoutTable)(0, 0) << pVoidPointsTable;
 
-           const auto& diam_val = diam.GetValue(true);
-           (*pEmbedLayoutTable)(0, 1) << _T("Diameter: ") << diam_val << _T(" ") << diam.GetUnitTag().c_str() << rptNewLine;
-           const auto& cgx_val = cgx.GetValue(true);
-           (*pEmbedLayoutTable)(0, 1) << Sub2(_T("X"),_T("c.g.: ")) << cgx_val << _T(" ") << cgx.GetUnitTag().c_str() << rptNewLine;
-           const auto& cgy_val = cgy.GetValue(true);
-           (*pEmbedLayoutTable)(0, 1) << Sub2(_T("Y"),_T("c.g.: ")) << cgy_val << _T(" ") << cgy.GetUnitTag().c_str() << rptNewLine;
+           WriteSectionProperties((*pEmbedLayoutTable)(0, 1), voidShapeProperties[col]);
 
            (*pVoidLayoutTable)(0, col) << pEmbedLayoutTable;
        }
