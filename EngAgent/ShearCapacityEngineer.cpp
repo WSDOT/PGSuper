@@ -519,30 +519,53 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
       {
          // 90 day strength isn't applicable to strength limit states (only stress limit states, LRFD 5.12.3.2.4)
          // so use 28day properties
-         pscd->fc = pMaterial->GetSegmentFc28(segmentKey);
-         pscd->Ec = pMaterial->GetSegmentEc28(segmentKey);
+          if (bIsInClosureJoint)
+          {
+			  pscd->fc = pMaterial->GetClosureJointFc28(closureKey);
+			  pscd->Ec = pMaterial->GetClosureJointEc28(closureKey);
+          }
+          else
+          {
+              pscd->fc = pMaterial->GetSegmentFc28(segmentKey);
+              pscd->Ec = pMaterial->GetSegmentEc28(segmentKey);
+          }
       }
       else
       {
-         pscd->fc = pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx);
-         pscd->Ec = pMaterial->GetSegmentEc(segmentKey, intervalIdx);
+		  if (bIsInClosureJoint)
+          {
+			  pscd->fc = pMaterial->GetClosureJointDesignFc(closureKey, intervalIdx);
+			  pscd->Ec = pMaterial->GetClosureJointAgeAdjustedEc(closureKey, intervalIdx);
+          }
+          else
+          {
+              pscd->fc = pMaterial->GetSegmentDesignFc(segmentKey, intervalIdx);
+              pscd->Ec = pMaterial->GetSegmentEc(segmentKey, intervalIdx);
+          }
       }
    }
    else
    {
-      pscd->fc = pConfig->fc28;
+       if (bIsInClosureJoint)
+       {
+		   ATLASSERT(false); //pConfig is not applicable for PGSplice girders because they are not designed
+       }
+	   else
+       {
+           pscd->fc = pConfig->fc28;
 
-      if ( pConfig->bUserEc )
-      {
-         pscd->Ec = pConfig->Ec;
-      }
-      else
-      {
-         pscd->Ec = pMaterial->GetEconc(pMaterial->GetSegmentConcreteType(segmentKey),pscd->fc,
-                                        pMaterial->GetSegmentStrengthDensity(segmentKey),
-                                        pMaterial->GetSegmentEccK1(segmentKey),
-                                        pMaterial->GetSegmentEccK2(segmentKey));
-      }
+           if (pConfig->bUserEc)
+           {
+               pscd->Ec = pConfig->Ec;
+           }
+           else
+           {
+               pscd->Ec = pMaterial->GetEconc(pMaterial->GetSegmentConcreteType(segmentKey), pscd->fc,
+                   pMaterial->GetSegmentStrengthDensity(segmentKey),
+                   pMaterial->GetSegmentEccK1(segmentKey),
+                   pMaterial->GetSegmentEccK2(segmentKey));
+           }
+       }
    }
 
    const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight); // we just want E so straight strands is fine
