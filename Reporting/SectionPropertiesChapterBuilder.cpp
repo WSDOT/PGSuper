@@ -301,92 +301,36 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            CString voidStr;
 
            GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-           INIT_FRACTIONAL_LENGTH_PROTOTYPE(diam, IS_US_UNITS(pDisplayUnits), 8, RoundUp, pDisplayUnits->GetDeflectionUnit(), true, true);
-           INIT_FRACTIONAL_LENGTH_PROTOTYPE(cg, IS_US_UNITS(pDisplayUnits), 8, RoundUp, pDisplayUnits->GetDeflectionUnit(), true, true);
+           INIT_FRACTIONAL_LENGTH_PROTOTYPE(dim, IS_US_UNITS(pDisplayUnits), 8, RoundUp, pDisplayUnits->GetDeflectionUnit(), true, true);
 
            const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
            const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
            Float64 ExtVoidDiameter = pGdrEntry->GetDimension(_T("D1"));
            Float64 IntVoidDiameter = pGdrEntry->GetDimension(_T("D2"));
-           Float64 ExtVoidSpacing = pGdrEntry->GetDimension(_T("S1"));
-           Float64 IntVoidSpacing = pGdrEntry->GetDimension(_T("S2"));
+
+           auto diam = dim;
+           auto cgx = dim;
+           auto cgy = dim;
+
+           const auto& x1 = primaryPoints[i].begin()->first;
+           const auto& y1 = primaryPoints[i].begin()->second;
 
            if (i <= 2)
            {
                voidStr.Format(_T("Ext. Void %d"), i);
                diam.SetValue(ExtVoidDiameter);
-               
-               // Calculate c.g. for external voids
-               Float64 cgValue = 0.0;
-               IndexType numInternalVoids = numVoids - 2;
-               
-               if (numInternalVoids == 0)
-               {
-                   // Only external voids - space them by S1/2
-                   cgValue = (i == 1) ? -(ExtVoidSpacing / 2.0) : (ExtVoidSpacing / 2.0);
-               }
-               else if (numInternalVoids == 1)
-               {
-                   // 1 internal void - external voids at ±S1
-                   cgValue = (i == 1) ? -ExtVoidSpacing : ExtVoidSpacing;
-               }
-               else
-               {
-                   // 2 or more internal voids - external voids at ±(S1 + S2)
-                   cgValue = (i == 1) ? -(ExtVoidSpacing + IntVoidSpacing) : (ExtVoidSpacing + IntVoidSpacing);
-               }
-               
-               cg.SetValue(cgValue);
+               Float64 eval = x1 - ExtVoidDiameter / 2.0;
+               cgx.SetValue(eval);
            }
            else
            { 
                voidStr.Format(_T("Int. Void %d"), i - 2);
                diam.SetValue(IntVoidDiameter);
-               
-               // Calculate c.g. for internal voids
-               IndexType internalVoidIndex = i - 3; // 0-based index for internal voids (0, 1, 2, ...)
-               IndexType numInternalVoids = numVoids - 2; // Total number of internal voids
-               
-               Float64 cgValue = 0.0;
-               
-               if (numInternalVoids == 1)
-               {
-                   // Single internal void - always at center
-                   cgValue = 0.0;
-               }
-               else if (numInternalVoids % 2 == 1)
-               {
-                   // Odd number of internal voids (3, 5, 7, ...) - one is at center
-                   IndexType centerIndex = numInternalVoids / 2;
-                   if (internalVoidIndex == centerIndex)
-                   {
-                       cgValue = 0.0; // Center void at neutral axis
-                   }
-                   else if (internalVoidIndex < centerIndex)
-                   {
-                       // Left side voids
-                       int distanceFromCenter = centerIndex - internalVoidIndex;
-                       cgValue = -distanceFromCenter * IntVoidSpacing;
-                   }
-                   else
-                   {
-                       // Right side voids
-                       IndexType distanceFromCenter = internalVoidIndex - centerIndex;
-                       cgValue = distanceFromCenter * IntVoidSpacing;
-                   }
-               }
-               else
-               {
-                   // Even number of internal voids - paired symmetrically around x = 0
-                   IndexType pairNumber = internalVoidIndex / 2 + 1;
-                   bool isLeftSide = (internalVoidIndex % 2 == 0);
-                   cgValue = (2.0 * pairNumber - 1.0) * IntVoidSpacing / 2.0;
-                   if (isLeftSide)
-                       cgValue = -cgValue;
-               }
-               
-               cg.SetValue(cgValue);
+               Float64 eval = x1 - IntVoidDiameter / 2.0;
+               cgx.SetValue(eval);
            }
+
+           cgy.SetValue(y1);
 
            row = pVoidPointsTable->GetNumberOfHeaderRows();
            ColumnIndexType col = (ColumnIndexType)(i - 1);
@@ -396,8 +340,10 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
            const auto& diam_val = diam.GetValue(true);
            (*pEmbedLayoutTable)(0, 1) << _T("Diameter: ") << diam_val << _T(" ") << diam.GetUnitTag().c_str() << rptNewLine;
-           const auto& cg_val = cg.GetValue(true);
-           (*pEmbedLayoutTable)(0, 1) << Sub2(_T("X"),_T("c.g.: ")) << cg_val << _T(" ") << cg.GetUnitTag().c_str();
+           const auto& cgx_val = cgx.GetValue(true);
+           (*pEmbedLayoutTable)(0, 1) << Sub2(_T("X"),_T("c.g.: ")) << cgx_val << _T(" ") << cgx.GetUnitTag().c_str() << rptNewLine;
+           const auto& cgy_val = cgy.GetValue(true);
+           (*pEmbedLayoutTable)(0, 1) << Sub2(_T("Y"),_T("c.g.: ")) << cgy_val << _T(" ") << cgy.GetUnitTag().c_str() << rptNewLine;
 
            (*pVoidLayoutTable)(0, col) << pEmbedLayoutTable;
        }
