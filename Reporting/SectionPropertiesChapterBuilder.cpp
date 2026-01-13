@@ -66,6 +66,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    primaryShapePoints.emplace_back(p1);
 
    CComPtr<IPoint2dCollection> secondaryShapePoints;
+   CComPtr<IPoint2dCollection> compositeShapePoints;
+   std::vector<CComPtr<IPoint2dCollection>> vTransformedShapePoints;
    CComQIPtr<ICompositeShape> compShape(shape);
 
    CComPtr<IShape> primaryShape;
@@ -124,12 +126,11 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                secondaryShapePoints->get_Count(&nPtCount);
                if (nPtCount != 1) // must be a deck shape
                {
-                   secondaryShape->get_PolyPoints(&secondaryShapePoints);
-                   break;
+				   compositeShapePoints = secondaryShapePoints;
                }
                else //transformed properties
                {
-
+				   vTransformedShapePoints.emplace_back(secondaryShapePoints);
                }
            }
        }
@@ -172,7 +173,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        CComPtr<IPoint2d> point;
        while (enumPoints->Next(1, &point, nullptr) != S_FALSE)
        {
-           secondaryShapePoints->Add(point);
+           compositeShapePoints->Add(point);
            point.Release();
        }
    }
@@ -187,7 +188,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        CComPtr<IPoint2d> point;
        while (enumPoints->Next(1, &point, nullptr) != S_FALSE)
        {
-           secondaryShapePoints->Add(point);
+           compositeShapePoints->Add(point);
            point.Release();
        }
    }
@@ -253,13 +254,13 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        }
    }
 
-   if (secondaryShapePoints)
+   if (compositeShapePoints)
    {
-       secondaryShapePoints->get_Count(&nPoints);
+       compositeShapePoints->get_Count(&nPoints);
        for (IndexType i = 0; i < nPoints; i++)
        {
            CComPtr<IPoint2d> pnt;
-           secondaryShapePoints->get_Item(i, &pnt);
+           compositeShapePoints->get_Item(i, &pnt);
            Float64 x, y;
            pnt->Location(&x, &y);
 
@@ -272,7 +273,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    }
 
    // Organize Tables
-   rptRcTable* pParentLayoutTable = rptStyleManager::CreateLayoutTable(2);
+   rptRcTable* pParentLayoutTable = rptStyleManager::CreateLayoutTable(3);
 
    (*pParentLayoutTable)(0, 0) << Bold(_T("Non-Composite Section"));
    rptRcTable* pNonCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
@@ -284,6 +285,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    (*pParentLayoutTable)(0, 0) << pNonCompositeLayoutTable;
 
    rptRcTable* pSecondaryPointsTable = rptStyleManager::CreateDefaultTable(2);
+   rptRcTable* pTransformedSectionPropertiesTable = rptStyleManager::CreateDefaultTable(2);
+
    if (secondaryShape)
    {
        (*pParentLayoutTable)(0, 1) << Bold(_T("Composite Section"));
@@ -291,13 +294,21 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        (*pCompositeLayoutTable)(0, 0) << pSecondaryPointsTable;
        Float64 n = EcDeck / EcGdr;
        n = ::RoundOff(n, 0.001);
-       (*pCompositeLayoutTable)(0, 0) << _T("Modular ratio, n = ") << n << rptNewLine;
+       (*pCompositeLayoutTable)(0, 0) << _T("n = ") << n << rptNewLine << _T("(Modular Ratio)");
        CComPtr<IShapeProperties> cShapeProps;
        secondaryShape->get_ShapeProperties(&cShapeProps);
        WriteSectionProperties((*pCompositeLayoutTable)(0, 1), cShapeProps);
        (*pParentLayoutTable)(0, 1) << pCompositeLayoutTable;
    }
-   
+
+	if (!vTransformedShapePoints.empty())
+    {
+        (*pParentLayoutTable)(0, 2) << Bold(_T("Transformed Sections"));
+        rptRcTable* pTransformedLayoutTable = rptStyleManager::CreateLayoutTable(2);
+        (*pTransformedLayoutTable)(0, 0) << pTransformedSectionPropertiesTable;
+        (*pParentLayoutTable)(0, 2) << pTransformedLayoutTable;
+    }
+
 
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
@@ -414,6 +425,23 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            (*pSecondaryPointsTable)(row, 1) << length.SetValue(y);
        }
 
+   }
+
+   if (!vTransformedShapePoints.empty())
+   {
+       (*pTransformedSectionPropertiesTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+       (*pTransformedSectionPropertiesTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
+       row = pTransformedSectionPropertiesTable->GetNumberOfHeaderRows();
+       for (IndexType idx = 0; idx < vTransformedShapePoints.size() ; idx++)
+       {
+            CComPtr<IPoint2d> pntCG;
+		    auto x = vTransformedShapePoints[idx][0].get_Item(0, &pntCG);
+            Float64 xcg, ycg;
+            pntCG->Location(&xcg, &ycg);
+
+            (*pTransformedSectionPropertiesTable)(row + idx, 0) << length.SetValue(xcg);
+            (*pTransformedSectionPropertiesTable)(row + idx, 1) << length.SetValue(ycg);
+	   }
    }
 
    pHeading = rptStyleManager::CreateHeading(2);
