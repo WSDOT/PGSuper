@@ -132,8 +132,11 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 				   compositeShapePoints = secondaryShapePoints;
 				   deckShape = sShape;
                }
-               else //transformed properties
+               else //other composite pieces
                {
+                   
+
+
                    CComPtr<IShapeProperties> tShapeProps;
                    sShape->get_ShapeProperties(&tShapeProps);
 				   vTransformedShapeProperties.emplace_back(tShapeProps);
