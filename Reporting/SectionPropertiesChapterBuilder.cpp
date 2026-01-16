@@ -68,7 +68,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    primaryShapePoints.emplace_back(p1);
 
    CComPtr<IPoint2dCollection> compositeShapePoints;
-   std::vector<CComPtr<IShapeProperties>> vTransformedShapeProperties;
+   std::vector<Float64> vTransformedShapeProperties;
+   std::vector<CComPtr<IShapeProperties>> vGrossShapeProperties;
    CComQIPtr<ICompositeShape> compShape(shape);
 
    CComPtr<IShape> primaryShape;
@@ -76,6 +77,11 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    CComPtr<IShapeProperties> vShapeProps;
    std::vector<CComPtr<IShapeProperties>> voidShapeProperties;
+
+   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   SectProp sectProp = pSectProp->GetSectionProperties(intervalIdx, poi, pgsTypes::SectionPropertyType::sptTransformed);
+   CComQIPtr<ICompositeSectionEx> xcomposite(sectProp.Section);
+   
 
    if (compShape)
    {
@@ -134,12 +140,19 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                }
                else //other composite pieces
                {
-                   
+                   ////////////////
+                   CComPtr<ICompositeSectionItemEx> xitem;
+                   xcomposite->get_Item(i, &xitem);
 
+                   Float64 E;
+                   xitem->get_Efg(&E);
 
-                   CComPtr<IShapeProperties> tShapeProps;
-                   sShape->get_ShapeProperties(&tShapeProps);
-				   vTransformedShapeProperties.emplace_back(tShapeProps);
+                   vTransformedShapeProperties.emplace_back(E);
+                   ////////////////
+
+                   CComPtr<IShapeProperties> gShapeProps;
+                   sShape->get_ShapeProperties(&gShapeProps);
+				   vGrossShapeProperties.emplace_back(gShapeProps);
                }
            }
        }
@@ -235,10 +248,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        EcDeck = pMaterials->GetDeckEc(deckCastingRegionIdx, intervalIdx);
    }
 
-   Float64 Es, fy, fu;
-   pMaterials->GetDeckRebarProperties(&Es, &fy, &fu);
-   Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Temporary)->GetE();
-
    std::vector <std::vector<std::pair<Float64, Float64>>> primaryPoints;
    primaryPoints.resize(primaryShapePoints.size());
    std::vector<std::pair<Float64, Float64>> secondaryPoints;
@@ -287,6 +296,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
    INIT_UV_PROTOTYPE(rptStressUnitValue, modE, pDispUnits->ModE, true);
+   INIT_UV_PROTOTYPE(rptStressUnitValue, modE2, pDispUnits->ModE, false);
 
    // Organize Tables
    rptRcTable* pParentLayoutTable = rptStyleManager::CreateLayoutTable(3);
@@ -303,7 +313,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    (*pParentLayoutTable)(0, 0) << pNonCompositeLayoutTable;
 
    rptRcTable* pSecondaryPointsTable = rptStyleManager::CreateDefaultTable(2);
-   rptRcTable* pTransformedSectionPropertiesTable = rptStyleManager::CreateDefaultTable(3);
+   rptRcTable* pTransformedSectionPropertiesTable = rptStyleManager::CreateDefaultTable(4);
 
 
    if (deckShape)
@@ -319,16 +329,12 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        (*pParentLayoutTable)(0, 1) << pCompositeLayoutTable;
    }
 
-	if (!vTransformedShapeProperties.empty())
+	if (!vGrossShapeProperties.empty())
     {
         (*pParentLayoutTable)(0, 2) << Bold(_T("Other Composite Pieces"));
         rptRcTable* pTransformedLayoutTable = rptStyleManager::CreateLayoutTable(2);
         (*pTransformedLayoutTable)(0, 0) << pTransformedSectionPropertiesTable;
         (*pParentLayoutTable)(0, 2) << pTransformedLayoutTable;
-        modE.SetValue(Es);
-        (*pTransformedLayoutTable)(0, 0) << Sub2(_T("E"), _T("s")) << _T(" = ") << modE << rptNewLine;
-        modE.SetValue(Ep);
-        (*pTransformedLayoutTable)(0, 0) << Sub2(_T("E"), _T("p")) << _T(" = ") << modE << rptNewLine;
     }
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDispUnits->ComponentDim, false);
@@ -449,30 +455,34 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    {
 
        INIT_UV_PROTOTYPE(rptLength2UnitValue, area, pDispUnits->Area, true);
+       INIT_UV_PROTOTYPE(rptLength2UnitValue, area2, pDispUnits->Area, false);
        INIT_UV_PROTOTYPE(rptLength4UnitValue, momentOfInertia, pDispUnits->MomentOfInertia, true);
 
        (*pTransformedSectionPropertiesTable)(0, 0) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
        (*pTransformedSectionPropertiesTable)(0, 1) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
        (*pTransformedSectionPropertiesTable)(0, 2) << COLHDR(_T("Area"), rptLength2UnitTag, pDispUnits->Area);
+       (*pTransformedSectionPropertiesTable)(0, 3) << COLHDR(_T("E"), rptStressUnitTag, pDispUnits->ModE);
 
        row = pTransformedSectionPropertiesTable->GetNumberOfHeaderRows();
        for (IndexType idx = 0; idx < vTransformedShapeProperties.size() ; idx++)
        {
             CComPtr<IPoint2d> pntCG;
-            vTransformedShapeProperties[idx]->get_Centroid(&pntCG);
+            vGrossShapeProperties[idx]->get_Centroid(&pntCG);
 
             Float64 xcg, ycg;
             pntCG->Location(&xcg, &ycg);
 
             Float64 Area;
-            vTransformedShapeProperties[idx][0].get_Area(&Area);
-
-            Float64 E;
-            vTransformedShapeProperties[idx][0].get_Area(&E);
+            vGrossShapeProperties[idx][0].get_Area(&Area);
 
             (*pTransformedSectionPropertiesTable)(row + idx, 0) << length.SetValue(xcg);
             (*pTransformedSectionPropertiesTable)(row + idx, 1) << length.SetValue(ycg);
-            (*pTransformedSectionPropertiesTable)(row + idx, 2) << length.SetValue(Area);
+            (*pTransformedSectionPropertiesTable)(row + idx, 2) << area2.SetValue(Area);
+
+            Float64 E = vTransformedShapeProperties[idx];
+
+            (*pTransformedSectionPropertiesTable)(row + idx, 3) << modE2.SetValue(E);
+
 	   }
    }
 
