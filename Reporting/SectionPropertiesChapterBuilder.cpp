@@ -318,7 +318,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    if (deckShape)
    {
-       (*pParentLayoutTable)(0, 1) << Bold(_T("Composite Deck Piece"));
+       (*pParentLayoutTable)(0, 1) << Bold(_T("Composite Deck Component"));
        rptRcTable* pCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
        (*pCompositeLayoutTable)(0, 0) << pSecondaryPointsTable;
 	   modE.SetValue(EcDeck);
@@ -331,7 +331,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
 	if (!vGrossShapeProperties.empty())
     {
-        (*pParentLayoutTable)(0, 2) << Bold(_T("Other Composite Pieces"));
+        (*pParentLayoutTable)(0, 2) << Bold(_T("Steel Components"));
         rptRcTable* pTransformedLayoutTable = rptStyleManager::CreateLayoutTable(2);
         (*pTransformedLayoutTable)(0, 0) << pTransformedSectionPropertiesTable;
         (*pParentLayoutTable)(0, 2) << pTransformedLayoutTable;
@@ -348,17 +348,25 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    std::vector<std::pair<Float64, Float64>>::const_iterator iter;
    std::vector<std::pair<Float64, Float64>>::const_iterator end;
 
-   IndexType numVoids = primaryPoints.size() - 1;
-   rptRcTable* pVoidLayoutTable = rptStyleManager::CreateLayoutTable(max(1, numVoids));
+   auto pVoidPropertiesTable = rptStyleManager::CreateDefaultTable(6);
+
+   (*pVoidPropertiesTable)(0, 0) << Bold(_T("Void ID"));
+   (*pVoidPropertiesTable)(0, 1) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+   (*pVoidPropertiesTable)(0, 2) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+   (*pVoidPropertiesTable)(0, 3) << COLHDR(_T("Area"), rptLength2UnitTag, pDispUnits->Area);
+   (*pVoidPropertiesTable)(0, 4) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
+   (*pVoidPropertiesTable)(0, 5) << COLHDR(Sub2(_T("I"), _T("yy")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
+
    for (IndexType i = 0; i < primaryPoints.size(); i++)
    {
-       auto pVoidPointsTable = rptStyleManager::CreateDefaultTable(2);
-       (*pVoidPointsTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
-       (*pVoidPointsTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
+
+       iter = primaryPoints[i].begin();
+       end = primaryPoints[i].end();
 
        if (i > 0)
        {
            CString voidStr;
+           ColumnIndexType col = (ColumnIndexType)(i - 1);
 
            if (i <= 2)
            {
@@ -369,34 +377,44 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                voidStr.Format(_T("Int. Void %d"), i - 2);
            }
 
-           row = pVoidPointsTable->GetNumberOfHeaderRows();
-           ColumnIndexType col = (ColumnIndexType)(i - 1);
-           (*pVoidLayoutTable)(0, col) << Bold(voidStr);
-           auto pEmbedLayoutTable = rptStyleManager::CreateLayoutTable(2);
-           (*pEmbedLayoutTable)(0, 0) << pVoidPointsTable;
+           CComPtr<IPoint2d> pntCG;
+           voidShapeProperties[col]->get_Centroid(&pntCG);
 
-           WriteSectionProperties((*pEmbedLayoutTable)(0, 1), voidShapeProperties[col]);
+           Float64 xcg, ycg;
+           pntCG->Location(&xcg, &ycg);
 
-           (*pVoidLayoutTable)(0, col) << pEmbedLayoutTable;
+           Float64 Area;
+           voidShapeProperties[col]->get_Area(&Area);
+           Float64 Ixx;
+           voidShapeProperties[col]->get_Ixx(&Ixx);
+           Float64 Iyy;
+           voidShapeProperties[col]->get_Iyy(&Iyy);
+
+           INIT_UV_PROTOTYPE(rptLength2UnitValue, area, pDispUnits->Area, false);
+           INIT_UV_PROTOTYPE(rptLength4UnitValue, momentOfInertia, pDispUnits->MomentOfInertia, false);
+           
+           row = pVoidPropertiesTable->GetNumberOfHeaderRows();
+           IndexType c = 0;
+           (*pVoidPropertiesTable)(row + col, c++) << Bold(voidStr);
+           (*pVoidPropertiesTable)(row + col, c++) << length.SetValue(xcg);
+           (*pVoidPropertiesTable)(row + col, c++) << length.SetValue(ycg);
+           (*pVoidPropertiesTable)(row + col, c++) << area.SetValue(Area);
+           (*pVoidPropertiesTable)(row + col, c++) << momentOfInertia.SetValue(Ixx);
+           (*pVoidPropertiesTable)(row + col, c++) << momentOfInertia.SetValue(Iyy);
+
+
        }
-       
-       iter = primaryPoints[i].begin();
-       end = primaryPoints[i].end();
-
-       for (; iter != end; iter++, row++)
+       else
        {
-           Float64 x = iter->first;
-           Float64 y = iter->second;
-
-           if (i == 0)
+           for (; iter != end; iter++, row++)
            {
+               Float64 x = iter->first;
+               Float64 y = iter->second;
+
+
                (*pPrimaryPointsTable)(row, 0) << length.SetValue(x);
                (*pPrimaryPointsTable)(row, 1) << length.SetValue(y);
-           }
-           else
-           {
-               (*pVoidPointsTable)(row, 0) << length.SetValue(x);
-               (*pVoidPointsTable)(row, 1) << length.SetValue(y);
+
            }
        }
    }
@@ -496,6 +514,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    *pPara << pParentLayoutTable;
    
+   IndexType numVoids = primaryPoints.size() - 1;
    if (numVoids > 0)
    {
        pHeading = rptStyleManager::CreateHeading(2);
@@ -506,7 +525,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        pPara = new rptParagraph();
        *pChapter << pPara;
 
-       *pPara << pVoidLayoutTable;
+       *pPara << pVoidPropertiesTable;
    }
 
    *pPara << rptNewPage;
