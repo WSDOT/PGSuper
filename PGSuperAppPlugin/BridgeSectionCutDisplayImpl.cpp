@@ -135,6 +135,10 @@ std::pair<WBFL::Geometry::Point2d,WBFL::Geometry::Point2d> CBridgeSectionCutDisp
 
    CComPtr<IPoint2d> p;
    p.CoCreateInstance(CLSID_Point2d);
+   if (!p)
+   {
+      return { {0,0}, {0,0} };
+   }
    p->Move(userLoc.X(), userLoc.Y());
    Float64 station, offset;
    roadway->GetStationAndOffset(pgsTypes::pcGlobal,p,&station,&offset);
