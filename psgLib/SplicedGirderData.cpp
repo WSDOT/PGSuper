@@ -890,10 +890,11 @@ void CSplicedGirderData::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry)
 {
    if ( m_pGirderLibraryEntry != pEntry )
    {
-      m_pGirderLibraryEntry = pEntry;
-
-      if ( m_pGirderLibraryEntry != nullptr )
+      if (pEntry != nullptr )
       {
+         SetGirderName(pEntry->GetName().c_str());
+         m_pGirderLibraryEntry = pEntry; // set after setting name because setting name nulls m_pGirderLibraryEntry
+
          auto beamFactory = m_pGirderLibraryEntry->GetBeamFactory();
 
          auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(beamFactory);
