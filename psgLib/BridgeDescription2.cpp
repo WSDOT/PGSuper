@@ -1770,7 +1770,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
 
    // now, update the group pier references
    // notice that the comparison to refPierIdx is based on the pier indices prior to renumbering
-   // so that is why we had to capture the start/end pier indicies before renumbering.
+   // so that is why we had to capture the start/end pier indices before renumbering.
    // Updating the piers must be done after renumbering otherwise it messes up the girder objects
    // stored within the group objects
    bool bUpdateStartPier = (startPierIdx == refPierIdx && (bCreateNewGroup ? (pierFace == pgsTypes::Ahead) : (pierFace == pgsTypes::Back)));
@@ -4355,6 +4355,19 @@ bool CBridgeDescription2::IsValidLayout() const
 
 bool CBridgeDescription2::IsValidBridge() const
 {
+   for(const auto pGroup : m_GirderGroups)
+   {
+      for(const auto pGirder : pGroup->m_Girders)
+      {
+         auto factory = pGirder->GetGirderLibraryEntry()->GetBeamFactory();
+         auto orientations = factory->GetSupportedGirderOrientation();
+         if (std::find(orientations.begin(), orientations.end(), m_GirderOrientation) == orientations.end())
+         {
+            ASSERT(false); // incorrect girder orientation for this girder type
+            return false;
+         }
+      }
+   }
    return IsValidLayout();
 }
 
@@ -4627,7 +4640,7 @@ bool CBridgeDescription2::MoveBridge(PierIndexType pierIdx,Float64 newStation)
 bool CBridgeDescription2::MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,Float64 newStation)
 {
    // move pierIdx and all piers that come after it by delta
-   // this will retain the length of all spans execpt for the one
+   // this will retain the length of all spans except for the one
    // immedately before the pier
    CPierData2* pPier = GetPier(pierIdx);
    Float64 old_station = pPier->GetStation();
@@ -4659,7 +4672,7 @@ bool CBridgeDescription2::MoveBridgeAdjustPrevSpan(PierIndexType pierIdx,Float64
 bool CBridgeDescription2::MoveBridgeAdjustNextSpan(PierIndexType pierIdx,Float64 newStation)
 {
    // move pierIdx and all piers that come before it by delta
-   // this will retain the length of all spans execpt for the one
+   // this will retain the length of all spans except for the one
    // immedately after the pier
    CPierData2* pPier = GetPier(pierIdx);
    Float64 old_station = pPier->GetStation();

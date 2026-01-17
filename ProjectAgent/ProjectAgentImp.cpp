@@ -7044,11 +7044,13 @@ const CBridgeDescription2* CProjectAgentImp::GetBridgeDescription() const
 
 void CProjectAgentImp::SetBridgeDescription(const CBridgeDescription2& desc)
 {
+   ASSERT(desc.IsValidBridge());
+
    if ( m_BridgeDescription != desc )
    {
       ReleaseBridgeLibraryEntries();
 
-      m_BridgeDescription = desc; // make an assignement... copies everything including IDs and Indices
+      m_BridgeDescription = desc; // make an assignment... copies everything including IDs and Indices
       m_LoadManager.SetTimelineManager(m_BridgeDescription.GetTimelineManager());
 
       UseBridgeLibraryEntries();
