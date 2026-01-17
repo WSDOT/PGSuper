@@ -1336,7 +1336,7 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
                return FALSE;
             }
 
-            // update the bridge model with the new tempoary support data. the bridge model will give us back
+            // update the bridge model with the new temporary support data. the bridge model will give us back
             // the new index of the temporary support (the TS could have moved so it might have a new index)
             // Update all the temporary support rows in the grid based on the updated bridge model
             SupportIndexType newTsIdx = pDlg->m_BridgeDesc.SetTemporarySupportByIndex(currTsIdx, tsData);
