@@ -63,24 +63,24 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    CComPtr<IShape> shape;
    pShapes->GetSegmentShape(intervalIdx, poi, false, pgsTypes::scGirder, &shape);
 
-   std::vector<CComPtr<IPoint2dCollection>> primaryShapePoints;
-   CComPtr<IPoint2dCollection> p1;
-   primaryShapePoints.emplace_back(p1);
+   std::vector<CComPtr<IPoint2dCollection>> vGrossGirderShapePoints;
+   CComPtr<IPoint2dCollection> GrossGirderShapePoints;
+   vGrossGirderShapePoints.emplace_back(GrossGirderShapePoints);
 
-   CComPtr<IPoint2dCollection> compositeShapePoints;
-   std::vector<Float64> vTransformedShapeProperties;
-   std::vector<CComPtr<IShapeProperties>> vGrossShapeProperties;
+   CComPtr<IPoint2dCollection> deckShapePoints;
+   std::vector<Float64> vSteelElasticProperties;
+   std::vector<CComPtr<IShapeProperties>> vSteelShapeProperties;
    CComQIPtr<ICompositeShape> compShape(shape);
 
-   CComPtr<IShape> primaryShape;
-   CComPtr<IShape> deckShape;
+   CComPtr<IShape> pGrossGirderShape;
+   CComPtr<IShape> pDeckShape;
 
    CComPtr<IShapeProperties> vShapeProps;
    std::vector<CComPtr<IShapeProperties>> voidShapeProperties;
 
    GET_IFACE2(pBroker, ISectionProperties, pSectProp);
-   SectProp sectProp = pSectProp->GetSectionProperties(intervalIdx, poi, pgsTypes::SectionPropertyType::sptTransformed);
-   CComQIPtr<ICompositeSectionEx> xcomposite(sectProp.Section);
+   SectProp steelElasticProp = pSectProp->GetSectionProperties(intervalIdx, poi, pgsTypes::SectionPropertyType::sptTransformed);
+   CComQIPtr<ICompositeSectionEx> steelCompositeAdapter(steelElasticProp.Section);
    
 
    if (compShape)
@@ -90,11 +90,11 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
        CComPtr<ICompositeShapeItem> item;
        compShape->get_Item(0, &item);
-       item->get_Shape(&primaryShape);
+       item->get_Shape(&pGrossGirderShape);
 
-       shape->get_PolyPoints(&primaryShapePoints[0]);
+       shape->get_PolyPoints(&vGrossGirderShapePoints[0]);
 
-       CComQIPtr<ICompositeShape> voidedShape(primaryShape);
+       CComQIPtr<ICompositeShape> voidedShape(pGrossGirderShape);
 
        if (voidedShape)
        {
@@ -104,7 +104,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            for (IndexType i = 1; i < nVoidShapes; i++)
            {
                CComPtr<IPoint2dCollection> pi;
-               primaryShapePoints.emplace_back(pi);
+               vGrossGirderShapePoints.emplace_back(pi);
 
                CComPtr<ICompositeShapeItem> voidItem;
                voidedShape->get_Item(i, &voidItem);
@@ -112,7 +112,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                CComPtr<IShape> s;
                voidItem->get_Shape(&s);
 
-               s->get_PolyPoints(&primaryShapePoints[i]);
+               s->get_PolyPoints(&vGrossGirderShapePoints[i]);
 
                s->get_ShapeProperties(&vShapeProps);
 
@@ -135,33 +135,31 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                secondaryShapePoints->get_Count(&nPtCount);
                if (nPtCount != 1) // must be a deck shape
                {
-				   compositeShapePoints = secondaryShapePoints;
-				   deckShape = sShape;
+				   deckShapePoints = secondaryShapePoints;
+				   pDeckShape = sShape;
                }
-               else //other composite pieces
+               else
                {
-                   ////////////////
-                   CComPtr<ICompositeSectionItemEx> xitem;
-                   xcomposite->get_Item(i, &xitem);
+                   CComPtr<ICompositeSectionItemEx> comp_item;
+                   steelCompositeAdapter->get_Item(i, &comp_item);
 
                    Float64 E;
-                   xitem->get_Efg(&E);
+                   comp_item->get_Efg(&E);
 
-                   vTransformedShapeProperties.emplace_back(E);
-                   ////////////////
+                   vSteelElasticProperties.emplace_back(E);
 
-                   CComPtr<IShapeProperties> gShapeProps;
-                   sShape->get_ShapeProperties(&gShapeProps);
-				   vGrossShapeProperties.emplace_back(gShapeProps);
+                   CComPtr<IShapeProperties> steelShapeProps;
+                   sShape->get_ShapeProperties(&steelShapeProps);
+				   vSteelShapeProperties.emplace_back(steelShapeProps);
                }
            }
        }
    }
-   else // non-composite shape
+   else
    {
-       shape->get_PolyPoints(&primaryShapePoints[0]);
+       shape->get_PolyPoints(&vGrossGirderShapePoints[0]);
 
-       CComQIPtr<ICompositeShape> voidedShape(primaryShape);
+       CComQIPtr<ICompositeShape> voidedShape(pGrossGirderShape);
 
        if (voidedShape)
        {
@@ -176,7 +174,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                CComPtr<IShape> s;
                voidItem->get_Shape(&s);
 
-               s->get_PolyPoints(&primaryShapePoints[i + 1]);
+               s->get_PolyPoints(&vGrossGirderShapePoints[i + 1]);
 
            }
        }
@@ -186,7 +184,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    pShapes->GetJointShapes(intervalIdx, poi, false, pgsTypes::scGirder, &leftJointShape, &rightJointShape);
    if (leftJointShape)
    {
-
        CComPtr<IPoint2dCollection> points;
        leftJointShape->get_PolyPoints(&points);
 
@@ -195,7 +192,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        CComPtr<IPoint2d> point;
        while (enumPoints->Next(1, &point, nullptr) != S_FALSE)
        {
-           compositeShapePoints->Add(point);
+           deckShapePoints->Add(point);
            point.Release();
        }
    }
@@ -210,7 +207,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        CComPtr<IPoint2d> point;
        while (enumPoints->Next(1, &point, nullptr) != S_FALSE)
        {
-           compositeShapePoints->Add(point);
+           deckShapePoints->Add(point);
            point.Release();
        }
    }
@@ -248,40 +245,40 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        EcDeck = pMaterials->GetDeckEc(deckCastingRegionIdx, intervalIdx);
    }
 
-   std::vector <std::vector<std::pair<Float64, Float64>>> primaryPoints;
-   primaryPoints.resize(primaryShapePoints.size());
+   std::vector <std::vector<std::pair<Float64, Float64>>> vGrossGirderShapeXYPoints;
+   vGrossGirderShapeXYPoints.resize(vGrossGirderShapePoints.size());
    std::vector<std::pair<Float64, Float64>> secondaryPoints;
 
    IndexType nPoints;
 
-   for (IndexType j = 0; j < primaryShapePoints.size(); j++)
+   for (IndexType j = 0; j < vGrossGirderShapePoints.size(); j++)
    {
-       if (primaryShapePoints[j])
+       if (vGrossGirderShapePoints[j])
        {
-           primaryShapePoints[j]->get_Count(&nPoints);
+           vGrossGirderShapePoints[j]->get_Count(&nPoints);
            for (IndexType i = 0; i < nPoints; i++)
            {
                CComPtr<IPoint2d> pnt;
-               primaryShapePoints[j]->get_Item(i, &pnt);
+               vGrossGirderShapePoints[j]->get_Item(i, &pnt);
                Float64 x, y;
                pnt->Location(&x, &y);
 
                x = IsZero(x) ? 0 : x;
                y = IsZero(y) ? 0 : y;
 
-               primaryPoints[j].emplace_back(x, y);
+               vGrossGirderShapeXYPoints[j].emplace_back(x, y);
 
            }
        }
    }
 
-   if (compositeShapePoints)
+   if (deckShapePoints)
    {
-       compositeShapePoints->get_Count(&nPoints);
+       deckShapePoints->get_Count(&nPoints);
        for (IndexType i = 0; i < nPoints; i++)
        {
            CComPtr<IPoint2d> pnt;
-           compositeShapePoints->get_Item(i, &pnt);
+           deckShapePoints->get_Item(i, &pnt);
            Float64 x, y;
            pnt->Location(&x, &y);
 
@@ -296,7 +293,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
    INIT_UV_PROTOTYPE(rptStressUnitValue, modE, pDispUnits->ModE, true);
-   INIT_UV_PROTOTYPE(rptStressUnitValue, modE2, pDispUnits->ModE, false);
 
    // Organize Tables
    rptRcTable* pParentLayoutTable = rptStyleManager::CreateLayoutTable(3);
@@ -305,7 +301,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    rptRcTable* pPrimaryPointsTable = rptStyleManager::CreateDefaultTable(2);
    (*pNonCompositeLayoutTable)(0, 0) << pPrimaryPointsTable;
    CComPtr<IShapeProperties> pShapeProps;
-   primaryShape->get_ShapeProperties(&pShapeProps);
+   pGrossGirderShape->get_ShapeProperties(&pShapeProps);
    WriteSectionProperties((*pNonCompositeLayoutTable)(0, 1), pShapeProps);
    modE.SetValue(EcGdr);
    (*pNonCompositeLayoutTable)(0, 1) << Sub2(_T("E"), _T("c")) << _T(" = ") << modE << rptNewLine;
@@ -313,28 +309,28 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    (*pParentLayoutTable)(0, 0) << pNonCompositeLayoutTable;
 
    rptRcTable* pSecondaryPointsTable = rptStyleManager::CreateDefaultTable(2);
-   rptRcTable* pTransformedSectionPropertiesTable = rptStyleManager::CreateDefaultTable(4);
+   rptRcTable* pSteelComponentPropertiesTable = rptStyleManager::CreateDefaultTable(4);
 
 
-   if (deckShape)
+   if (pDeckShape)
    {
        (*pParentLayoutTable)(0, 1) << Bold(_T("Composite Deck Component"));
        rptRcTable* pCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
        (*pCompositeLayoutTable)(0, 0) << pSecondaryPointsTable;
 	   modE.SetValue(EcDeck);
        CComPtr<IShapeProperties> cShapeProps;
-       deckShape->get_ShapeProperties(&cShapeProps);
+       pDeckShape->get_ShapeProperties(&cShapeProps);
        WriteSectionProperties((*pCompositeLayoutTable)(0, 1), cShapeProps);
        (*pCompositeLayoutTable)(0, 1) << Sub2(_T("E"),_T("c deck")) << _T(" = ") << modE << rptNewLine;
        (*pParentLayoutTable)(0, 1) << pCompositeLayoutTable;
    }
 
-	if (!vGrossShapeProperties.empty())
+	if (!vSteelShapeProperties.empty())
     {
         (*pParentLayoutTable)(0, 2) << Bold(_T("Steel Components"));
-        rptRcTable* pTransformedLayoutTable = rptStyleManager::CreateLayoutTable(2);
-        (*pTransformedLayoutTable)(0, 0) << pTransformedSectionPropertiesTable;
-        (*pParentLayoutTable)(0, 2) << pTransformedLayoutTable;
+        rptRcTable* pSteelComponentLayoutTable = rptStyleManager::CreateLayoutTable(2);
+        (*pSteelComponentLayoutTable)(0, 0) << pSteelComponentPropertiesTable;
+        (*pParentLayoutTable)(0, 2) << pSteelComponentLayoutTable;
     }
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDispUnits->ComponentDim, false);
@@ -357,11 +353,11 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    (*pVoidPropertiesTable)(0, 4) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
    (*pVoidPropertiesTable)(0, 5) << COLHDR(Sub2(_T("I"), _T("yy")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
 
-   for (IndexType i = 0; i < primaryPoints.size(); i++)
+   for (IndexType i = 0; i < vGrossGirderShapeXYPoints.size(); i++)
    {
 
-       iter = primaryPoints[i].begin();
-       end = primaryPoints[i].end();
+       iter = vGrossGirderShapeXYPoints[i].begin();
+       end = vGrossGirderShapeXYPoints[i].end();
 
        if (i > 0)
        {
@@ -449,7 +445,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    //Properties
 
-   if (deckShape)
+   if (pDeckShape)
    {
 
        (*pSecondaryPointsTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
@@ -469,37 +465,37 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    }
 
-   if (!vTransformedShapeProperties.empty())
+   if (!vSteelShapeProperties.empty())
    {
-
-       INIT_UV_PROTOTYPE(rptLength2UnitValue, area, pDispUnits->Area, true);
-       INIT_UV_PROTOTYPE(rptLength2UnitValue, area2, pDispUnits->Area, false);
+       INIT_UV_PROTOTYPE(rptLength2UnitValue, area, pDispUnits->Area, false);
        INIT_UV_PROTOTYPE(rptLength4UnitValue, momentOfInertia, pDispUnits->MomentOfInertia, true);
 
-       (*pTransformedSectionPropertiesTable)(0, 0) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
-       (*pTransformedSectionPropertiesTable)(0, 1) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
-       (*pTransformedSectionPropertiesTable)(0, 2) << COLHDR(_T("Area"), rptLength2UnitTag, pDispUnits->Area);
-       (*pTransformedSectionPropertiesTable)(0, 3) << COLHDR(_T("E"), rptStressUnitTag, pDispUnits->ModE);
+       (*pSteelComponentPropertiesTable)(0, 0) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+       (*pSteelComponentPropertiesTable)(0, 1) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+       (*pSteelComponentPropertiesTable)(0, 2) << COLHDR(_T("Area"), rptLength2UnitTag, pDispUnits->Area);
+       (*pSteelComponentPropertiesTable)(0, 3) << COLHDR(_T("E"), rptStressUnitTag, pDispUnits->ModE);
 
-       row = pTransformedSectionPropertiesTable->GetNumberOfHeaderRows();
-       for (IndexType idx = 0; idx < vTransformedShapeProperties.size() ; idx++)
+       row = pSteelComponentPropertiesTable->GetNumberOfHeaderRows();
+       for (IndexType idx = 0; idx < vSteelShapeProperties.size() ; idx++)
        {
             CComPtr<IPoint2d> pntCG;
-            vGrossShapeProperties[idx]->get_Centroid(&pntCG);
+            vSteelShapeProperties[idx]->get_Centroid(&pntCG);
 
             Float64 xcg, ycg;
             pntCG->Location(&xcg, &ycg);
 
             Float64 Area;
-            vGrossShapeProperties[idx][0].get_Area(&Area);
+            vSteelShapeProperties[idx][0].get_Area(&Area);
 
-            (*pTransformedSectionPropertiesTable)(row + idx, 0) << length.SetValue(xcg);
-            (*pTransformedSectionPropertiesTable)(row + idx, 1) << length.SetValue(ycg);
-            (*pTransformedSectionPropertiesTable)(row + idx, 2) << area2.SetValue(Area);
+            (*pSteelComponentPropertiesTable)(row + idx, 0) << length.SetValue(xcg);
+            (*pSteelComponentPropertiesTable)(row + idx, 1) << length.SetValue(ycg);
+            (*pSteelComponentPropertiesTable)(row + idx, 2) << area.SetValue(Area);
 
-            Float64 E = vTransformedShapeProperties[idx];
+            Float64 E = vSteelElasticProperties[idx];
 
-            (*pTransformedSectionPropertiesTable)(row + idx, 3) << modE2.SetValue(E);
+			modE.ShowUnitTag(false);
+            
+            (*pSteelComponentPropertiesTable)(row + idx, 3) << modE.SetValue(E);
 
 	   }
    }
@@ -514,7 +510,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    *pPara << pParentLayoutTable;
    
-   IndexType numVoids = primaryPoints.size() - 1;
+   IndexType numVoids = vGrossGirderShapeXYPoints.size() - 1;
    if (numVoids > 0)
    {
        pHeading = rptStyleManager::CreateHeading(2);
@@ -530,7 +526,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    *pPara << rptNewPage;
 
-   *pPara << CreateImage(primaryPoints, secondaryPoints) << rptNewLine;
+   *pPara << CreateImage(vGrossGirderShapeXYPoints, secondaryPoints) << rptNewLine;
 
    return pChapter;
 }
