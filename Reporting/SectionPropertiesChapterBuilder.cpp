@@ -70,6 +70,10 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    CComPtr<IPoint2dCollection> deckShapePoints;
    std::vector<Float64> vSteelElasticProperties;
    std::vector<CComPtr<IShapeProperties>> vSteelShapeProperties;
+   CComPtr<IPoint2dCollection> vStraightStrandPositions;
+   CComPtr<IPoint2dCollection> vHarpedStrandPositions;
+   CComPtr<IPoint2dCollection> vTempStrandPositions;
+
    CComQIPtr<ICompositeShape> compShape(shape);
 
    CComPtr<IShape> pGrossGirderShape;
@@ -121,7 +125,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            }
        }
 
-       if (1 < nShapes)
+       if (nShapes > 1)
        {
 		   for (IndexType i = 1; i < nShapes; i++)
            {
@@ -293,9 +297,10 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
    INIT_UV_PROTOTYPE(rptStressUnitValue, modE, pDispUnits->ModE, true);
+   INIT_UV_PROTOTYPE(rptLength2UnitValue, area, pDispUnits->Area, true);
 
    // Organize Tables
-   rptRcTable* pParentLayoutTable = rptStyleManager::CreateLayoutTable(3);
+   rptRcTable* pParentLayoutTable = rptStyleManager::CreateLayoutTable(5);
    (*pParentLayoutTable)(0, 0) << Bold(_T("Gross Girder Section"));
    rptRcTable* pNonCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
    rptRcTable* pPrimaryPointsTable = rptStyleManager::CreateDefaultTable(2);
@@ -310,6 +315,9 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    rptRcTable* pSecondaryPointsTable = rptStyleManager::CreateDefaultTable(2);
    rptRcTable* pSteelComponentPropertiesTable = rptStyleManager::CreateDefaultTable(4);
+   rptRcTable* pStraightStrandPropertiesTable = rptStyleManager::CreateDefaultTable(3);
+   rptRcTable* pHarpedStrandPropertiesTable = rptStyleManager::CreateDefaultTable(3);
+   rptRcTable* pTemporaryStrandPropertiesTable = rptStyleManager::CreateDefaultTable(3);
 
 
    if (pDeckShape)
@@ -328,12 +336,45 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 	if (!vSteelShapeProperties.empty())
     {
         (*pParentLayoutTable)(0, 2) << Bold(_T("Steel Components"));
-        rptRcTable* pSteelComponentLayoutTable = rptStyleManager::CreateLayoutTable(2);
-        (*pSteelComponentLayoutTable)(0, 0) << pSteelComponentPropertiesTable;
-        (*pParentLayoutTable)(0, 2) << pSteelComponentLayoutTable;
+        (*pParentLayoutTable)(0, 2) << pSteelComponentPropertiesTable;
+        
+    }
+    else
+    {
+        CString str;
+
+        (*pParentLayoutTable)(0, 2) << Bold(_T("Straight Strands"));
+        (*pParentLayoutTable)(0, 2) << pStraightStrandPropertiesTable;
+        const auto& Eps = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Straight)->GetE();
+        modE.SetValue(Eps);
+        (*pParentLayoutTable)(0, 2) << Sub2(_T("E"),_T("ps")) << _T(" = ") << modE << rptNewLine;
+        const auto& apss = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Straight)->GetNominalArea();
+        area.SetValue(apss);
+        (*pParentLayoutTable)(0, 2) << Sub2(_T("A"),_T("ps")) << _T(" = ") << area;
+
+        (*pParentLayoutTable)(0, 3) << Bold(_T("Harped Strands"));
+        (*pParentLayoutTable)(0, 3) << pHarpedStrandPropertiesTable;
+        const auto& Eph = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Harped)->GetE();
+        modE.SetValue(Eph);
+        (*pParentLayoutTable)(0, 3) << Sub2(_T("E"), _T("ps")) << _T(" = ") << modE << rptNewLine;
+        const auto& apsh = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Harped)->GetNominalArea();
+        area.SetValue(apsh);
+        (*pParentLayoutTable)(0, 3) << Sub2(_T("A"), _T("ps")) << _T(" = ") << area;
+
+        (*pParentLayoutTable)(0, 4) << Bold(_T("Temporary Strands"));
+        (*pParentLayoutTable)(0, 4) << pTemporaryStrandPropertiesTable;
+        const auto& Ept = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Temporary)->GetE();
+        modE.SetValue(Ept);
+        (*pParentLayoutTable)(0, 4) << Sub2(_T("E"), _T("ps")) << _T(" = ") << modE << rptNewLine;
+        const auto& apst = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Temporary)->GetNominalArea();
+        area.SetValue(apst);
+        (*pParentLayoutTable)(0, 4) << Sub2(_T("A"), _T("ps")) << _T(" = ") << area;
     }
 
+    
+
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDispUnits->ComponentDim, false);
+   area.ShowUnitTag(false);
 
 
    (*pPrimaryPointsTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
@@ -498,6 +539,83 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
             (*pSteelComponentPropertiesTable)(row + idx, 3) << modE.SetValue(E);
 
 	   }
+   }
+   else
+   {
+       GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+       Float64 x, y;
+
+       pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Straight, &vStraightStrandPositions);
+       StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Straight);
+       
+	   if (nStrands > 0)
+       {
+           pStraightStrandPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
+           pStraightStrandPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
+           (*pStraightStrandPropertiesTable)(0, 0) << _T("Strand") << rptNewLine << _T("No.");
+           (*pStraightStrandPropertiesTable)(0, 1) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pStraightStrandPropertiesTable)(0, 2) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+
+           row = pStraightStrandPropertiesTable->GetNumberOfHeaderRows();
+
+           for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+           {
+               CComPtr<IPoint2d> strandPoint;
+               vStraightStrandPositions->get_Item(strandIdx, &strandPoint);
+               strandPoint->Location(&x, &y);
+               (*pStraightStrandPropertiesTable)(row + strandIdx, 0) << strandIdx + 1;
+               (*pStraightStrandPropertiesTable)(row + strandIdx, 1) << length.SetValue(x);
+               (*pStraightStrandPropertiesTable)(row + strandIdx, 2) << length.SetValue(y);
+           }
+       }
+
+       pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Harped, &vHarpedStrandPositions);
+       nStrands = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Harped);
+
+	   if (nStrands > 0)
+       {
+           pHarpedStrandPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
+           pHarpedStrandPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
+           (*pHarpedStrandPropertiesTable)(0, 0) << _T("Strand") << rptNewLine << _T("No.");
+           (*pHarpedStrandPropertiesTable)(0, 1) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pHarpedStrandPropertiesTable)(0, 2) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+
+           row = pHarpedStrandPropertiesTable->GetNumberOfHeaderRows();
+
+           for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+           {
+               CComPtr<IPoint2d> strandPoint;
+               vHarpedStrandPositions->get_Item(strandIdx, &strandPoint);
+               strandPoint->Location(&x, &y);
+               (*pHarpedStrandPropertiesTable)(row + strandIdx, 0) << strandIdx + 1;
+               (*pHarpedStrandPropertiesTable)(row + strandIdx, 1) << length.SetValue(x);
+               (*pHarpedStrandPropertiesTable)(row + strandIdx, 2) << length.SetValue(y);
+           }
+       }
+
+       pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Temporary, &vTempStrandPositions);
+       nStrands = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Temporary);
+
+	   if (nStrands > 0)
+       {
+           pTemporaryStrandPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
+           pTemporaryStrandPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
+           (*pTemporaryStrandPropertiesTable)(0, 0) << _T("Strand") << rptNewLine << _T("No.");
+           (*pTemporaryStrandPropertiesTable)(0, 1) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pTemporaryStrandPropertiesTable)(0, 2) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+
+           row = pTemporaryStrandPropertiesTable->GetNumberOfHeaderRows();
+
+           for (StrandIndexType strandIdx = 0; strandIdx < nStrands; strandIdx++)
+           {
+               CComPtr<IPoint2d> strandPoint;
+               vTempStrandPositions->get_Item(strandIdx, &strandPoint);
+               strandPoint->Location(&x, &y);
+               (*pTemporaryStrandPropertiesTable)(row + strandIdx, 0) << strandIdx + 1;
+               (*pTemporaryStrandPropertiesTable)(row + strandIdx, 1) << length.SetValue(x);
+               (*pTemporaryStrandPropertiesTable)(row + strandIdx, 2) << length.SetValue(y);
+           }
+       }
    }
 
    pHeading = rptStyleManager::CreateHeading(2);
