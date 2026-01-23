@@ -25,7 +25,6 @@
 #include <Reporting\SectionPropertiesReportSpecification.h>
 #include <IFace/Bridge.h>
 #include <IFace/Project.h>
-#include <IFace/ShearCapacity.h>
 #include <IFace/PointOfInterest.h>
 #include <PsgLib\BridgeDescription2.h>
 #include <psgLib/GirderLibraryEntry.h>
@@ -359,14 +358,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
     }
     else
     {
-        CString str;
-        SHEARCAPACITYDETAILS scd;
-        GET_IFACE2(pBroker, IShearCapacity, pShearCap);
-        pShearCap->GetShearCapacityDetails(pgsTypes::LimitState::StrengthI, intervalIdx, poi, nullptr, &scd);
-        rptRcScalar scalar;
-        scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Automatic);
-        scalar.SetWidth(6);
-        scalar.SetPrecision(3);
 
         if (Ns > 0)
         {
