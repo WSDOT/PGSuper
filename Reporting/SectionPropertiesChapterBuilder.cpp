@@ -302,15 +302,15 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    // Organize Tables
    rptRcTable* pParentLayoutTable = rptStyleManager::CreateLayoutTable(7);
-   (*pParentLayoutTable)(0, 0) << Bold(_T("Gross Girder Section"));
+   (*pParentLayoutTable)(0, 0) << Bold(_T("Gross")) << rptNewLine << Bold(_T("Non-Composite"));
    rptRcTable* pNonCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
    rptRcTable* pPrimaryPointsTable = rptStyleManager::CreateDefaultTable(2);
    (*pNonCompositeLayoutTable)(0, 0) << pPrimaryPointsTable;
    CComPtr<IShapeProperties> pShapeProps;
    pGrossGirderShape->get_ShapeProperties(&pShapeProps);
-   WriteSectionProperties((*pNonCompositeLayoutTable)(0, 1), pShapeProps);
+   WriteSectionProperties((*pNonCompositeLayoutTable)(0, 0), pShapeProps);
    modE.SetValue(EcGdr);
-   (*pNonCompositeLayoutTable)(0, 1) << Sub2(_T("E"), _T("c")) << _T(" = ") << modE << rptNewLine;
+   (*pNonCompositeLayoutTable)(0, 0) << Sub2(_T("E"), _T("c")) << _T(" = ") << modE << rptNewLine;
 
    (*pParentLayoutTable)(0, 0) << pNonCompositeLayoutTable;
 
@@ -324,14 +324,14 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    if (pDeckShape)
    {
-       (*pParentLayoutTable)(0, 1) << Bold(_T("Composite Deck Component"));
+       (*pParentLayoutTable)(0, 1) << Bold(_T("Gross")) << rptNewLine << Bold(_T("Composite"));
        rptRcTable* pCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
        (*pCompositeLayoutTable)(0, 0) << pSecondaryPointsTable;
 	   modE.SetValue(EcDeck);
        CComPtr<IShapeProperties> cShapeProps;
        pDeckShape->get_ShapeProperties(&cShapeProps);
-       WriteSectionProperties((*pCompositeLayoutTable)(0, 1), cShapeProps);
-       (*pCompositeLayoutTable)(0, 1) << Sub2(_T("E"),_T("c deck")) << _T(" = ") << modE << rptNewLine;
+       WriteSectionProperties((*pCompositeLayoutTable)(0, 0), cShapeProps);
+       (*pCompositeLayoutTable)(0, 0) << Sub2(_T("E"),_T("c")) << _T(" = ") << modE << rptNewLine;
        (*pParentLayoutTable)(0, 1) << pCompositeLayoutTable;
    }
 
@@ -353,7 +353,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
 	if (!vSteelShapeProperties.empty())
     {
-        (*pParentLayoutTable)(0, 2) << Bold(_T("Steel Components"));
+        (*pParentLayoutTable)(0, 2) << Bold(_T("Strands And")) << rptNewLine << Bold(_T("Longitudinal Rebar"));
         (*pParentLayoutTable)(0, 2) << pSteelComponentPropertiesTable;
         
     }
@@ -370,43 +370,43 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
         if (Ns > 0)
         {
-            (*pParentLayoutTable)(0, 2) << Bold(_T("Straight Strands"));
+            (*pParentLayoutTable)(0, 2) << Bold(_T("Straight")) << rptNewLine << Bold(_T("Strands"));
             (*pParentLayoutTable)(0, 2) << pStraightStrandPropertiesTable;
             const auto& Eps = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Straight)->GetE();
             modE.SetValue(Eps);
             (*pParentLayoutTable)(0, 2) << Sub2(_T("E"), _T("ps")) << _T(" = ") << modE << rptNewLine;
             const auto& apss = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Straight)->GetNominalArea();
             area.SetValue(apss);
-            (*pParentLayoutTable)(0, 2) << _T("Nominal ") << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
+            (*pParentLayoutTable)(0, 2) << _T("Nom. ") << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
         }
 
         if (Nh > 0)
         {
-            (*pParentLayoutTable)(0, 3) << Bold(_T("Harped Strands"));
+            (*pParentLayoutTable)(0, 3) << Bold(_T("Harped")) << rptNewLine << Bold(_T("Strands"));
             (*pParentLayoutTable)(0, 3) << pHarpedStrandPropertiesTable;
             const auto& Eph = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Harped)->GetE();
             modE.SetValue(Eph);
             (*pParentLayoutTable)(0, 3) << Sub2(_T("E"), _T("ps")) << _T(" = ") << modE << rptNewLine;
             const auto& apsh = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Harped)->GetNominalArea();
             area.SetValue(apsh);
-            (*pParentLayoutTable)(0, 3) << _T("Nominal ") << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
+            (*pParentLayoutTable)(0, 3) << _T("Nom. ") << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
         }
 
 		if (Nt > 0)
         {
-            (*pParentLayoutTable)(0, 4) << Bold(_T("Temporary Strands"));
+            (*pParentLayoutTable)(0, 4) << Bold(_T("Temporary")) << rptNewLine << Bold(_T("Strands"));
             (*pParentLayoutTable)(0, 4) << pTemporaryStrandPropertiesTable;
             const auto& Ept = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Temporary)->GetE();
             modE.SetValue(Ept);
             (*pParentLayoutTable)(0, 4) << Sub2(_T("E"), _T("ps")) << _T(" = ") << modE << rptNewLine;
             const auto& apst = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Temporary)->GetNominalArea();
             area.SetValue(apst);
-            (*pParentLayoutTable)(0, 4) << _T("Nominal ") << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
+            (*pParentLayoutTable)(0, 4) << _T("Nom. ") << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
         }
 
 		if (nBars > 0)
         {
-            (*pParentLayoutTable)(0, 5) << Bold(_T("Longitudinal Rebar"));
+            (*pParentLayoutTable)(0, 5) << Bold(_T("Longitudinal")) << rptNewLine << Bold(_T("Rebar"));
             (*pParentLayoutTable)(0, 5) << pRebarPropertiesTable;
 
             CClosureKey closureKey;
@@ -449,7 +449,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    (*pVoidPropertiesTable)(0, 0) << Bold(_T("Void ID"));
    (*pVoidPropertiesTable)(0, 1) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
    (*pVoidPropertiesTable)(0, 2) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
-   (*pVoidPropertiesTable)(0, 3) << COLHDR(_T("Area"), rptLength2UnitTag, pDispUnits->Area);
+   (*pVoidPropertiesTable)(0, 3) << COLHDR(Sub2(_T("A"), _T("g")), rptLength2UnitTag, pDispUnits->Area);
    (*pVoidPropertiesTable)(0, 4) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
    (*pVoidPropertiesTable)(0, 5) << COLHDR(Sub2(_T("I"), _T("yy")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
 
@@ -572,7 +572,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
        (*pSteelComponentPropertiesTable)(0, 0) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
        (*pSteelComponentPropertiesTable)(0, 1) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
-       (*pSteelComponentPropertiesTable)(0, 2) << COLHDR(_T("Area"), rptLength2UnitTag, pDispUnits->Area);
+       (*pSteelComponentPropertiesTable)(0, 2) << COLHDR(Sub2(_T("A"), _T("s")), rptLength2UnitTag, pDispUnits->Area);
        (*pSteelComponentPropertiesTable)(0, 3) << COLHDR(_T("E"), rptStressUnitTag, pDispUnits->ModE);
 
        row = pSteelComponentPropertiesTable->GetNumberOfHeaderRows();
@@ -673,7 +673,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            pRebarPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
            (*pRebarPropertiesTable)(0, 0) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
            (*pRebarPropertiesTable)(0, 1) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pRebarPropertiesTable)(0, 2) << _T("Nominal") << rptNewLine << Sub2(_T("A"), _T("s")) << rptNewLine;
+           (*pRebarPropertiesTable)(0, 2) << _T("Nom.") << rptNewLine << Sub2(_T("A"), _T("s")) << rptNewLine;
 
            CComPtr<IEnumRebarSectionItem> enumItems;
            rebar_section->get__EnumRebarSectionItem(&enumItems);
@@ -722,8 +722,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    {
        pHeading = rptStyleManager::CreateHeading(2);
        (*pChapter) << pHeading;
-       pHeading->SetName(_T("Void Section Properties"));
-       *pHeading << _T("Void Section Properties");
+       pHeading->SetName(_T("Voids"));
+       *pHeading << _T("Voids");
 
        pPara = new rptParagraph();
        *pChapter << pPara;
@@ -772,7 +772,7 @@ void CSectionPropertiesChapterBuilder::WriteSectionProperties(rptParagraph& para
 
     para << Sub2(_T("X"), _T("c.g.")) << _T(" = ") << length.SetValue(xcg) << rptNewLine;
     para << Sub2(_T("Y"), _T("c.g.")) << _T(" = ") << length.SetValue(ycg) << rptNewLine;
-    para << _T("Area = ") << area.SetValue(Area) << rptNewLine;
+    para << Sub2(_T("A"), _T("g")) << _T(" = ") << area.SetValue(Area) << rptNewLine;
     para << _T("Ix = ") << momentOfInertia.SetValue(Ixx) << rptNewLine;
     para << _T("Iy = ") << momentOfInertia.SetValue(Iyy) << rptNewLine;
 }
