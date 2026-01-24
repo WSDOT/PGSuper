@@ -137,7 +137,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                sShape->get_PolyPoints(&secondaryShapePoints);
                IndexType nPtCount = 0;
                secondaryShapePoints->get_Count(&nPtCount);
-               if (nPtCount != 1) // must be a deck shape
+               if (nPtCount == 4) // must be a deck shape
                {
 				   deckShapePoints = secondaryShapePoints;
 				   pDeckShape = sShape;
