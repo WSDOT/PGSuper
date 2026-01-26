@@ -272,6 +272,6 @@ void CSelectSectionDlg::FillIntervalCtrl()
         pcbIntervals->SetItemData(idx, intervalIdx);
     }
 
-    pcbIntervals->SetCurSel(m_IntervalIdx - 1);
+    pcbIntervals->SetCurSel(m_IntervalIdx - startIntervalIdx);
 
 }
