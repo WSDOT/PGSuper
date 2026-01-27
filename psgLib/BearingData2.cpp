@@ -34,8 +34,8 @@ void CBearingData2::Init()
 
     DefinitionType = btBasic;
     Shape = bsRectangular;
-    Length = WBFL::Units::ConvertToSysUnits(11.0, WBFL::Units::Measure::Inch);
-    Width = WBFL::Units::ConvertToSysUnits(27.0, WBFL::Units::Measure::Inch);
+    Length = WBFL::Units::ConvertToSysUnits(12.0, WBFL::Units::Measure::Inch);
+    Width = WBFL::Units::ConvertToSysUnits(12.0, WBFL::Units::Measure::Inch);
     BearingCount = 1;
     Spacing = 0.0;
     Height = 0.0;
