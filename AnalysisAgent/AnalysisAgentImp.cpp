@@ -699,7 +699,8 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       }
       else
       {
-         Pt = -1*pPrestressForce->GetPrestressForce(poiMiddle, pgsTypes::Temporary, tsRemovalIntervalIdx, pgsTypes::Start, pgsTypes::TransferLengthType::Minimum, pConfig);
+         // temporary strands are 100% removed at the removal interval, so get the force at the end of the previous interval
+         Pt = -1*pPrestressForce->GetPrestressForce(poiMiddle, pgsTypes::Temporary, tsRemovalIntervalIdx-1, pgsTypes::End, pgsTypes::TransferLengthType::Minimum, pConfig);
       }
 
       ecc_temporary_start = pStrandGeom->GetEccentricity(tsInstallationIntervalIdx, poiStart, pgsTypes::Temporary, pConfig);
@@ -712,7 +713,7 @@ std::vector<EquivPretensionLoad> CAnalysisAgentImp::GetEquivPretensionLoads(cons
       Mtry = Pt*ecc_temporary_end.X();
 
       // The UI forces TTS to be post-tensioned if there is precamber
-      // For PT TTS, the tendency of the strand to straightend when
+      // For PT TTS, the tendency of the strand to straighten when
       // tensioned causes a uniformly distributed downward force on the
       // girder.
       // If pretensioned TTS are used, we assume the strands are straight.

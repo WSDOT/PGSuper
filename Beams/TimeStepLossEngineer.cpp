@@ -1726,7 +1726,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                TIME_STEP_DETAILS& prevTimeStepDetails(details.TimeStepDetails[intervalIdx - 1]);
 
                // strands were stressed in a previous interval
-               if (intervalIdx == releaseIntervalIdx)
+               if (intervalIdx == releaseIntervalIdx || intervalIdx == removeStrandsIntervalIdx)
                {
                   // accounts for lack of development and location of debonding
                   Float64 xfer_factor = m_pPSForce->GetTransferLengthAdjustment(poi, strandType, pgsTypes::TransferLengthType::Minimum);
@@ -1742,7 +1742,24 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                   // the effective stress in the strands at the end of the previous interval (fpj - initial relaxation).
                   // Negative sign because the force resisted by the girder section is equal and opposite
                   // the force in the strand (strands put a compression force into the girder)
-                  Float64 dP = -xfer_factor * tsDetails.Strands[strandType].As * prevTimeStepDetails.Strands[strandType].dfpe;
+                  Float64 dP = 0.0;
+                  if (intervalIdx == releaseIntervalIdx)
+                  {
+                     dP = -xfer_factor * tsDetails.Strands[strandType].As * prevTimeStepDetails.Strands[strandType].dfpe;
+                  }
+                  else
+                  {
+                     // this is the temporary strand removal interval
+                     // so the full force at the end of the previous increment is
+                     // applied opposite to the force applied at release
+                     // Notice, no negative here but negative xfer_factor at the release interval.
+                     if (strandType == pgsTypes::Temporary)
+                     { // only temporary strands can be removed
+                        dP = xfer_factor * prevTimeStepDetails.Strands[strandType].P; // Remove the force at the end of the previous interval
+                        tsDetails.Strands[strandType].dP = -dP;
+                        tsDetails.Strands[strandType].P += tsDetails.Strands[strandType].dP;
+                     }
+                  }
                   tsDetails.dPi[pgsTypes::pftPretension] += dP;
                   tsDetails.dMi[pgsTypes::pftPretension] += dP*(tsDetails.Ytr - tsDetails.Strands[strandType].Ys);
                   tsDetails.Pi[pgsTypes::pftPretension] += prevTimeStepDetails.Pi[pgsTypes::pftPretension] + tsDetails.dPi[pgsTypes::pftPretension];

@@ -16929,7 +16929,7 @@ std::pair<StrandIndexType, StrandIndexType> CBridgeAgentImp::GetStrandCount(cons
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    if (intervalIdx < GetStressStrandInterval(segmentKey) // strands aren't stressed so they aren't even in play yet
       || 
-      (strandType == pgsTypes::Temporary && GetTemporaryStrandRemovalInterval(segmentKey) < intervalIdx)) // strand are temporary and they have been removed
+      (strandType == pgsTypes::Temporary && GetTemporaryStrandRemovalInterval(segmentKey) <= intervalIdx)) // strand are temporary and they have been removed
    {
       return std::make_pair(0, 0); 
    }
