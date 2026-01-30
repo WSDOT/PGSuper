@@ -22,16 +22,18 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
+#include "ReactionLocation.h"
 
 class PGSEXTCLASS CSelection
 {
 public:
-   enum Type { None, Pier, Span, Girder, Segment, ClosureJoint, TemporarySupport, Deck, Alignment, LeftRailingSystem, RightRailingSystem } Type;
+   enum Type { None, Pier, Span, Girder, Segment, Bearing, ClosureJoint, TemporarySupport, Deck, Alignment, LeftRailingSystem, RightRailingSystem } Type;
    SpanIndexType SpanIdx;
    PierIndexType PierIdx;
    GroupIndexType GroupIdx;
    GirderIndexType GirderIdx;
    SegmentIndexType SegmentIdx;
+   PierReactionFaceType Face;
    SupportIDType tsID; // ID of the selected temporary support
 
    CSelection();

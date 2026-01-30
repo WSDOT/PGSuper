@@ -151,6 +151,7 @@ public:
    void SelectSpan(SpanIndexType spanIdx,BOOL bNotify=TRUE);
    void SelectGirder(const CGirderKey& girderKey,BOOL bNotify=TRUE);
    void SelectSegment(const CSegmentKey& segmentKey,BOOL bNotify=TRUE);
+   void SelectBearing(const ReactionLocation& reactionLocation,BOOL bNotify=TRUE);
    void SelectClosureJoint(const CClosureKey& closureKey,BOOL bNotify=TRUE);
    void SelectTemporarySupport(SupportIDType tsID,BOOL bNotify=TRUE);
    void SelectDeck(BOOL bNotify=TRUE);
@@ -347,6 +348,7 @@ protected:
 
    bool m_bSelectingGirder;
    bool m_bSelectingSegment;
+   bool m_bSelectingBearing;
    bool m_bClearingSelection;
 
    CFileCompatibilityState m_FileCompatibilityState;

@@ -401,6 +401,7 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
       switch( pSelection->Type )
       {
       case CSelection::None:
+      case CSelection::Bearing:
          this->ClearSelection();
          break;
 

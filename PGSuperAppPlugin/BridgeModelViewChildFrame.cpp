@@ -741,6 +741,19 @@ void CBridgeModelViewChildFrame::SelectSegment(const CSegmentKey& segmentKey)
    m_bSelecting = false;
 }
 
+void CBridgeModelViewChildFrame::SelectBearing(const ReactionLocation& reactionLocation)
+{
+    if (m_bSelecting)
+        return;
+
+    ATLASSERT(reactionLocation.GirderKey.girderIndex != INVALID_INDEX);
+
+    m_bSelecting = true;
+    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
+    pDoc->SelectBearing(reactionLocation);
+    m_bSelecting = false;
+}
+
 void CBridgeModelViewChildFrame::SelectClosureJoint(const CSegmentKey& closureKey)
 {
    if ( m_bSelecting )

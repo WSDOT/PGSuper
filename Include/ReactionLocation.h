@@ -46,5 +46,15 @@ struct ReactionLocation
       return ::IsEqual(PierIdx, r.PierIdx) && Face == r.Face && GirderKey == r.GirderKey ? true : false;
    };
 
+   bool operator<(const ReactionLocation& r) const
+   {
+       if (PierIdx != r.PierIdx)
+           return PierIdx < r.PierIdx;
+       if (Face != r.Face)
+           return Face < r.Face;
+       return GirderKey < r.GirderKey;
+   }
+
 };
+
 

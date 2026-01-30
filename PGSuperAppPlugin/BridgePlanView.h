@@ -60,6 +60,13 @@ protected:
       IDType DisplayListID;
    };
 
+   struct BearingDisplayObjectInfo
+   {
+       BearingDisplayObjectInfo(const ReactionLocation& reactionLocation, IDType listID) : m_ReactionLocation(reactionLocation), DisplayListID(listID) {}
+       ReactionLocation m_ReactionLocation;
+       IDType DisplayListID;
+   };
+
    struct TemporarySupportDisplayObjectInfo
    {
       TemporarySupportDisplayObjectInfo(SupportIndexType tsIdx, IDType listID) : tsIdx(tsIdx), DisplayListID(listID) {}
@@ -88,6 +95,9 @@ protected:
    std::map<CSegmentKey,IDType> m_SegmentIDs;
    IDType m_NextSegmentID;
 
+   std::map<ReactionLocation,IDType> m_BearingIDs;
+   IDType m_NextBearingID;
+
    std::map<CSegmentKey,IDType> m_ClosureJointIDs;
    IDType m_NextClosureJointID;
 
@@ -99,7 +109,9 @@ public:
    bool GetSelectedSpan(SpanIndexType* pSpanIdx);
    void SelectSpan(SpanIndexType spanIdx,bool bSelect);
    bool GetSelectedPier(PierIndexType* pPierIdx);
+   bool GetSelectedBearing(ReactionLocation* pReactionLocation);
    void SelectPier(PierIndexType pierIdx,bool bSelect);
+   void SelectBearing(const ReactionLocation& reactionLocation,bool bSelect);
    bool GetSelectedGirder(CGirderKey* pGirderKey);
    void SelectGirder(const CGirderKey& girderKey,bool bSelect);
    bool GetSelectedSegment(CSegmentKey* pSegmentKey);
@@ -161,6 +173,7 @@ protected:
    void BuildTitleDisplayObjects();
    void BuildAlignmentDisplayObjects();
    void BuildPierDisplayObjects();
+   void BuildBearingDisplayObjects();
    void BuildTemporarySupportDisplayObjects();
    void BuildClosureJointDisplayObjects();
    void BuildSegmentDisplayObjects();

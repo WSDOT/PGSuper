@@ -3438,6 +3438,48 @@ void CPGSDocBase::SelectSegment(const CSegmentKey& segmentKey,BOOL bNotify)
    }
 }
 
+void CPGSDocBase::SelectBearing(const ReactionLocation& reactionLocation,BOOL bNotify)
+{
+   if ( m_Selection.Type == CSelection::Bearing && m_Selection.GroupIdx == reactionLocation.GirderKey.groupIndex && 
+       m_Selection.GirderIdx == reactionLocation.GirderKey.girderIndex &&(m_Selection.PierIdx == reactionLocation.Face 
+           && m_Selection.Face == reactionLocation.Face) )
+   {
+      return;
+   }
+
+   if ( m_bSelectingGirder || m_bClearingSelection )
+   {
+      return;
+   }
+
+   if (m_bSelectingSegment || m_bClearingSelection)
+   {
+       return;
+   }
+
+   m_Selection.Type       = CSelection::Bearing;
+   m_Selection.GroupIdx   = reactionLocation.GirderKey.groupIndex;
+   m_Selection.GirderIdx  = reactionLocation.GirderKey.girderIndex;
+   m_Selection.PierIdx    = reactionLocation.PierIdx;
+   m_Selection.Face       = reactionLocation.Face;
+   m_Selection.SpanIdx    = INVALID_INDEX;
+   m_Selection.tsID       = INVALID_INDEX;
+
+   static bool bProcessingSelectionChanged = false;
+   if ( !bProcessingSelectionChanged )
+   {
+      bProcessingSelectionChanged = true;
+      CSelection selection = m_Selection;
+      if ( bNotify )
+      {
+         m_bSelectingBearing = true;
+         UpdateAllViews(0,HINT_SELECTIONCHANGED,(CObject*)&selection);
+         m_bSelectingBearing = false;
+      }
+      bProcessingSelectionChanged = false;
+   }
+}
+
 void CPGSDocBase::SelectClosureJoint(const CClosureKey& closureKey,BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::ClosureJoint && m_Selection.GroupIdx == closureKey.groupIndex && m_Selection.GirderIdx == closureKey.girderIndex && m_Selection.SegmentIdx == closureKey.segmentIndex )
