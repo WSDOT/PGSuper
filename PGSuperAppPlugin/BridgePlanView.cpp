@@ -1999,10 +1999,16 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
          if (pPier->GetPierModelType() == pgsTypes::pmtIdealized)
          {
+             Float64 bearing_length_back = 0;
+             Float64 bearing_length_ahead = 0;
+
             if (CPierData2::pcfBothFaces==conFlag || CPierData2::pcfBackOnly == conFlag)
             {
                ConnectionLibraryEntry::BearingOffsetMeasurementType left_brg_offset_measure_type;
                std::tie(left_offset,left_brg_offset_measure_type) = pPier->GetBearingOffset(pgsTypes::Back);
+               const auto& pBD_Back = pPier->GetBearingData(0, pgsTypes::PierFaceType::Back);
+               bearing_length_back = pBD_Back->Length / 2;
+               left_offset += bearing_length_back + WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Inch);
                if (left_brg_offset_measure_type == ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier)
                {
                   left_offset /= cos(skew);
@@ -2013,6 +2019,9 @@ void CBridgePlanView::BuildPierDisplayObjects()
             {
                ConnectionLibraryEntry::BearingOffsetMeasurementType right_brg_offset_measure_type;
                std::tie(right_offset,right_brg_offset_measure_type) = pPier->GetBearingOffset(pgsTypes::Ahead);
+               const auto& pBD_Ahead = pPier->GetBearingData(0, pgsTypes::PierFaceType::Ahead);
+               bearing_length_ahead = pBD_Ahead->Length / 2;
+               right_offset += bearing_length_ahead + WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Inch);
                if (right_brg_offset_measure_type == ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier)
                {
                   right_offset /= cos(skew);
