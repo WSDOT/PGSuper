@@ -2427,9 +2427,9 @@ void CBridgePlanView::BuildBearingDisplayObjects()
 
                     //get selected reaction location
 
-                    PierIndexType pierIdx = pGroup->GetPierIndex(pgsTypes::MemberEndType::metStart);
+                    PierIndexType pierIdx = pGroup->GetPierIndex(pgsTypes::MemberEndType::metEnd);
                     const auto& pPD = pBridgeDesc->GetPier(pierIdx);
-                    const auto& pBD = pPD->GetBearingData(gdrIdx, pgsTypes::PierFaceType::Ahead);
+                    const auto& pBD = pPD->GetBearingData(gdrIdx, pgsTypes::PierFaceType::Back);
 
                     Float64 bearing_width = pBD->Width;
                     Float64 bearing_length = pBD->Length;
@@ -2465,13 +2465,14 @@ void CBridgePlanView::BuildBearingDisplayObjects()
 
                     display_list->AddDisplayObject(doBearingEnd);
 
+                    ReactionLocation reactionLocation;
+                    reactionLocation.GirderKey = segmentKey;
+                    reactionLocation.PierIdx = pierIdx;
+                    reactionLocation.Face = PierReactionFaceType::rftBack;
+
                     // Register an event sink with the bearing display object so that we can handle double clicks
                     // on the segment differently then a general double click
                     CBridgeModelViewChildFrame* pFrame = GetFrame();
-					ReactionLocation reactionLocation;
-					reactionLocation.GirderKey = segmentKey;
-                    reactionLocation.PierIdx = 0;
-					reactionLocation.Face = PierReactionFaceType::rftAhead;
                     auto events = std::make_shared<CBridgePlanViewBearingDisplayObjectEvents>(reactionLocation, pFrame);
                     doBearingEnd->RegisterEventSink(events);
 
