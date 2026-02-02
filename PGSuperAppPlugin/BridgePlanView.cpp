@@ -2380,8 +2380,6 @@ void CBridgePlanView::BuildBearingDisplayObjects()
 
                     Float64 dir;
                     direction->get_Value(&dir);
-                    //long angle = long(1800. * dir / M_PI);
-                    //angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
 
                     CComQIPtr<IXYPosition> position(rect);
                     position->RotateEx(pntBrg1, dir);
@@ -2426,22 +2424,38 @@ void CBridgePlanView::BuildBearingDisplayObjects()
                     // For now, create a placeholder rectangle
                     CComPtr<IPolyShape> rect;
                     rect.CoCreateInstance(CLSID_PolyShape);
-                    Float64 bearing_width = 1.0; // placeholder dimension
-                    Float64 bearing_length = 1.0; // placeholder dimension
+
+                    //get selected reaction location
+
+                    PierIndexType pierIdx = pGroup->GetPierIndex(pgsTypes::MemberEndType::metStart);
+                    const auto& pPD = pBridgeDesc->GetPier(pierIdx);
+                    const auto& pBD = pPD->GetBearingData(gdrIdx, pgsTypes::PierFaceType::Ahead);
+
+                    Float64 bearing_width = pBD->Width;
+                    Float64 bearing_length = pBD->Length;
                     Float64 x, y;
                     pntBrg2->get_X(&x);
                     pntBrg2->get_Y(&y);
 
-                    rect->AddPoint(x - bearing_width / 2, y - bearing_length / 2);
-                    rect->AddPoint(x - bearing_width / 2, y + bearing_length / 2);
-                    rect->AddPoint(x + bearing_width / 2, y + bearing_length / 2);
-                    rect->AddPoint(x + bearing_width / 2, y - bearing_length / 2);
+                    rect->AddPoint(x - bearing_length / 2, y - bearing_width / 2);
+                    rect->AddPoint(x - bearing_length / 2, y + bearing_width / 2);
+                    rect->AddPoint(x + bearing_length / 2, y + bearing_width / 2);
+                    rect->AddPoint(x + bearing_length / 2, y - bearing_width / 2);
+
+                    CComPtr<IDirection> direction;
+                    pGirder->GetSegmentDirection(segmentKey, &direction);
+
+                    Float64 dir;
+                    direction->get_Value(&dir);
+
+                    CComQIPtr<IXYPosition> position(rect);
+                    position->RotateEx(pntBrg2, dir);
 
                     CComQIPtr<IShape> shape(rect);
                     shapeDrawStrategy->SetShape(geomUtil::ConvertShape(shape));
+                    shapeDrawStrategy->SetSolidFillColor(BEARING_FILL_COLOR);
+                    shapeDrawStrategy->SetSolidLineColor(BEARING_BORDER_COLOR);
                     shapeDrawStrategy->Fill(true);
-                    shapeDrawStrategy->SetSolidFillColor(RGB(0, 0, 0)); // Light gray for bearing
-                    shapeDrawStrategy->SetSolidLineColor(RGB(0, 0, 0));
 
                     doBearingEnd->SetDrawingStrategy(shapeDrawStrategy);
                     doBearingEnd->SetSelectionType(WBFL::DManip::SelectionType::All);
