@@ -49,18 +49,15 @@ using namespace WBFL::DManip;
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewBearingDisplayObjectEvents
 
-CBridgePlanViewBearingDisplayObjectEvents::CBridgePlanViewBearingDisplayObjectEvents(const ReactionLocation& reactionLocation,CBridgeModelViewChildFrame* pFrame)
+CBridgePlanViewBearingDisplayObjectEvents::CBridgePlanViewBearingDisplayObjectEvents(
+    const ReactionLocation& reactionLocation,GroupIndexType nGroups, 
+    GirderIndexType nGirderThisGroup,
+    CBridgeModelViewChildFrame* pFrame)
 {
-   m_ReactionLocation = reactionLocation;
-   m_pFrame     = pFrame;
-
-   
-   auto pBroker = EAFGetBroker();
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_ReactionLocation.GirderKey.groupIndex);
-   const CSplicedGirderData* pGirder = pGroup->GetGirder(m_ReactionLocation.GirderKey.girderIndex);
-   m_nGirders = pGroup->GetGirderCount();
+   m_ReactionLocation  = reactionLocation;
+   m_nGroups           = nGroups;
+   m_nGirdersThisGroup = nGirderThisGroup;
+   m_pFrame            = pFrame;
 }
 
 void CBridgePlanViewBearingDisplayObjectEvents::EditBearing(std::shared_ptr<iDisplayObject> pDO)
@@ -99,18 +96,32 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectPrevBearing()
 
 void CBridgePlanViewBearingDisplayObjectEvents::SelectNextBearing()
 {
-   if ( m_ReactionLocation.Face == m_nReactionLocations-1 )
-   {
-      // this is the last segment, select the entire girder line
-      CGirderKey girderKey(m_ReactionLocation.GirderKey.groupIndex, m_ReactionLocation.GirderKey.girderIndex);
-      m_pFrame->SelectGirder(girderKey);
-   }
-   else
-   {
-      // select closure joint at the right end of this segment
-      CSegmentKey closureKey(m_ReactionLocation.GirderKey.groupIndex, m_ReactionLocation.GirderKey.girderIndex,m_ReactionLocation.Face);
-      m_pFrame->SelectClosureJoint(closureKey);
-   }
+    ReactionLocation nextLocation = m_ReactionLocation;
+
+    if (m_ReactionLocation.GirderKey.girderIndex == m_nGirdersThisGroup - 1)
+    {
+        // if this is the last girder in this group
+        if (m_ReactionLocation.GirderKey.groupIndex == m_nGroups - 1) // and this is the last group
+        {
+            // select the first segment
+			nextLocation.GirderKey = CGirderKey(0, 0);
+            m_pFrame->SelectBearing(nextLocation);
+        }
+        else
+        {
+            // select the first girder in the next group
+            nextLocation.GirderKey = CGirderKey(nextLocation.GirderKey.groupIndex + 1, 0);
+            m_pFrame->SelectBearing(nextLocation);
+        }
+    }
+    else
+    {
+        // select the next girder in this group
+        nextLocation.GirderKey.girderIndex++;
+        m_pFrame->SelectBearing(nextLocation);
+    }
+
+    
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -178,12 +189,12 @@ bool CBridgePlanViewBearingDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDispl
       EditBearing(pDO);
       return true;
    }
-   else if ( nChar == VK_LEFT )
+   else if ( nChar == VK_UP )
    {
       SelectPrevBearing();
       return true;
    }
-   else if ( nChar == VK_RIGHT )
+   else if ( nChar == VK_DOWN )
    {
       SelectNextBearing();
       return true;

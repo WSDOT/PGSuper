@@ -37,7 +37,10 @@
 class CBridgePlanViewBearingDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents
 {
 public:
-	CBridgePlanViewBearingDisplayObjectEvents(const ReactionLocation& reactionLocation,CBridgeModelViewChildFrame* pFrame);
+   CBridgePlanViewBearingDisplayObjectEvents(
+        const ReactionLocation& reactionLocation, GroupIndexType nGroups,
+        GirderIndexType nGirderThisGroup,
+        CBridgeModelViewChildFrame* pFrame);
 
    bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
    bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
@@ -60,7 +63,8 @@ protected:
    ReactionLocation m_ReactionLocation;
 
    GirderIndexType m_nGirders; // number of girders in the associated group
-   IndexType m_nReactionLocations; // number of reaction locations in the associated girder 
+   GirderIndexType m_nGirdersThisGroup;
+   GroupIndexType m_nGroups;
 
    CBridgeModelViewChildFrame* m_pFrame;
 

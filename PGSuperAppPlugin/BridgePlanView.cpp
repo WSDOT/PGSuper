@@ -2319,6 +2319,9 @@ void CBridgePlanView::BuildBearingDisplayObjects()
     auto display_list = m_pDispMgr->FindDisplayList(ELASTOMERIC_DISPLAY_LIST);
     display_list->Clear();
 
+    m_BearingIDs.clear();
+    m_NextBearingID = 0;
+
     GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
     GET_IFACE2(pBroker, IBridge, pBridge);
     GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
@@ -2432,13 +2435,20 @@ void CBridgePlanView::BuildBearingDisplayObjects()
                 auto gravity_well = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(shapeDrawStrategy);
                 doBearing->SetGravityWellStrategy(gravity_well);
 
+                IDType ID = m_NextBearingID++;
+                m_BearingIDs.insert(std::make_pair(reactionLocation, ID));
+                doBearing->SetID(ID);
+
+                BearingDisplayObjectInfo* pInfo = new BearingDisplayObjectInfo(reactionLocation, ELASTOMERIC_DISPLAY_LIST);
+                doBearing->SetItemData((void*)pInfo, true);
+
                 display_list->AddDisplayObject(doBearing);
 
                 // Register an event sink with the bearing display object so that we can handle double clicks
                 // on the segment differently then a general double click
 
                 CBridgeModelViewChildFrame* pFrame = GetFrame();
-                auto events = std::make_shared<CBridgePlanViewBearingDisplayObjectEvents>(reactionLocation, pFrame);
+                auto events = std::make_shared<CBridgePlanViewBearingDisplayObjectEvents>(reactionLocation, nGroups, nGirders, pFrame);
                 doBearing->RegisterEventSink(events);
 
             } // reaction loop
@@ -3571,7 +3581,8 @@ void CBridgePlanView::Select(const CSelection* pSelection)
       break;
 
    case CSelection::Bearing:
-      SelectBearing(ReactionLocation(), true);
+      SelectBearing(ReactionLocation(pSelection->PierIdx, pSelection->Face, 
+          CGirderKey(pSelection->GroupIdx, pSelection->GirderIdx)), true);
       break;
 
    case CSelection::ClosureJoint:
