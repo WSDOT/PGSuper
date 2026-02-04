@@ -72,26 +72,30 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectBearing(std::shared_ptr<iD
 
 void CBridgePlanViewBearingDisplayObjectEvents::SelectPrevBearing()
 {
-   if ( m_ReactionLocation.GirderKey.groupIndex == 0 && m_ReactionLocation.GirderKey.girderIndex == 0 && m_ReactionLocation.Face == 0 )
-   {
-      // this is the first segment in the first girder in the first group... select the alignment
-      m_pFrame->GetBridgePlanView()->SelectAlignment(true);
-   }
-   else
-   {
-      if ( m_ReactionLocation.Face == 0 )
-      {
-         // select previous spliced girder
-         CGirderKey girderKey(m_ReactionLocation.GirderKey.groupIndex, m_ReactionLocation.GirderKey.girderIndex-1);
-         m_pFrame->SelectGirder(girderKey);
-      }
-      else
-      {
-         // select closure joint at left end of this segment
-         CSegmentKey closureKey(m_ReactionLocation.GirderKey.groupIndex, m_ReactionLocation.GirderKey.girderIndex,m_ReactionLocation.Face-1);
-         m_pFrame->SelectClosureJoint(closureKey);
-      }
-   }
+    ReactionLocation prevLocation = m_ReactionLocation;
+
+    if (m_ReactionLocation.GirderKey.girderIndex == 0)
+    {
+        // if this is the first girder in this group
+        if (m_ReactionLocation.GirderKey.groupIndex == 0) // and this is the first group
+        {
+            // select the last segment
+            prevLocation.GirderKey = CGirderKey(m_nGroups - 1, m_nGirdersThisGroup - 1);
+            m_pFrame->SelectBearing(prevLocation);
+        }
+        else
+        {
+            // select the last girder in the previous group
+            prevLocation.GirderKey = CGirderKey(prevLocation.GirderKey.groupIndex - 1, m_nGirdersThisGroup - 1);
+            m_pFrame->SelectBearing(prevLocation);
+        }
+    }
+    else
+    {
+        // select the next girder in this group
+        prevLocation.GirderKey.girderIndex--;
+        m_pFrame->SelectBearing(prevLocation);
+    }
 }
 
 void CBridgePlanViewBearingDisplayObjectEvents::SelectNextBearing()
@@ -121,7 +125,6 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectNextBearing()
         m_pFrame->SelectBearing(nextLocation);
     }
 
-    
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -62,7 +62,6 @@ public:
 protected:
    ReactionLocation m_ReactionLocation;
 
-   GirderIndexType m_nGirders; // number of girders in the associated group
    GirderIndexType m_nGirdersThisGroup;
    GroupIndexType m_nGroups;
 
