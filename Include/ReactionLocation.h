@@ -51,7 +51,7 @@ struct ReactionLocation
        if (PierIdx != r.PierIdx)
            return PierIdx < r.PierIdx;
        if (Face != r.Face)
-           return Face < r.Face;
+           return (Face == rftBack && r.Face == rftAhead);
        return GirderKey < r.GirderKey;
    }
 

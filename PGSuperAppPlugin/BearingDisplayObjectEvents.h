@@ -38,7 +38,9 @@ class CBridgePlanViewBearingDisplayObjectEvents : public WBFL::DManip::iDisplayO
 {
 public:
    CBridgePlanViewBearingDisplayObjectEvents(
-        const ReactionLocation& reactionLocation, GroupIndexType nGroups,
+        const ReactionLocation& reactionLocation,
+        PierIndexType nPiers,
+        GroupIndexType nGroups,
         GirderIndexType nGirderThisGroup,
         CBridgeModelViewChildFrame* pFrame);
 
@@ -64,6 +66,7 @@ protected:
 
    GirderIndexType m_nGirdersThisGroup;
    GroupIndexType m_nGroups;
+   PierIndexType m_nPiers;
 
    CBridgeModelViewChildFrame* m_pFrame;
 
@@ -73,8 +76,8 @@ protected:
    // select prev/next/above/below bearing
    void SelectBearingAbove();
    void SelectBearingBelow();
-   void SelectPrevBearing();
-   void SelectNextBearing();
+   void SelectLeftBearing();
+   void SelectRightBearing();
 
 };
 

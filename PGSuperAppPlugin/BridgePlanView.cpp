@@ -2447,8 +2447,10 @@ void CBridgePlanView::BuildBearingDisplayObjects()
                 // Register an event sink with the bearing display object so that we can handle double clicks
                 // on the segment differently then a general double click
 
+
+                PierIndexType nPiers = pBridgeDesc->GetPierCount();
                 CBridgeModelViewChildFrame* pFrame = GetFrame();
-                auto events = std::make_shared<CBridgePlanViewBearingDisplayObjectEvents>(reactionLocation, nGroups, nGirders, pFrame);
+                auto events = std::make_shared<CBridgePlanViewBearingDisplayObjectEvents>(reactionLocation, nPiers, nGroups, nGirders, pFrame);
                 doBearing->RegisterEventSink(events);
 
             } // reaction loop

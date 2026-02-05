@@ -50,11 +50,14 @@ using namespace WBFL::DManip;
 // CBridgePlanViewBearingDisplayObjectEvents
 
 CBridgePlanViewBearingDisplayObjectEvents::CBridgePlanViewBearingDisplayObjectEvents(
-    const ReactionLocation& reactionLocation,GroupIndexType nGroups, 
+    const ReactionLocation& reactionLocation,
+	PierIndexType nPiers,
+    GroupIndexType nGroups, 
     GirderIndexType nGirderThisGroup,
     CBridgeModelViewChildFrame* pFrame)
 {
    m_ReactionLocation  = reactionLocation;
+   m_nPiers            = nPiers;
    m_nGroups           = nGroups;
    m_nGirdersThisGroup = nGirderThisGroup;
    m_pFrame            = pFrame;
@@ -127,22 +130,59 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectBearingBelow()
 
 }
 
-void CBridgePlanViewBearingDisplayObjectEvents::SelectNextBearing()
+void CBridgePlanViewBearingDisplayObjectEvents::SelectRightBearing()
 {
-    ReactionLocation nextLocation = m_ReactionLocation;
+    ReactionLocation rightLocation = m_ReactionLocation;
 
     if (m_ReactionLocation.Face == rftAhead)
     {
-        nextLocation.Face = rftBack;
-		nextLocation.PierIdx++;
+        rightLocation.Face = rftBack;
+		rightLocation.PierIdx++;
     }
     else
     {
-        nextLocation.Face = rftAhead;
-        nextLocation.PierIdx--;
+        if (m_ReactionLocation.PierIdx == m_nPiers - 1)
+        {
+            rightLocation.Face = rftAhead;
+            rightLocation.PierIdx = 0;
+            rightLocation.GirderKey.groupIndex = 0;
+        }
+        else
+        {
+            rightLocation.Face = rftAhead;
+            rightLocation.GirderKey.groupIndex++;
+        }
     }
     
-    m_pFrame->SelectBearing(nextLocation);
+    m_pFrame->SelectBearing(rightLocation);
+
+}
+
+void CBridgePlanViewBearingDisplayObjectEvents::SelectLeftBearing()
+{
+    ReactionLocation leftLocation = m_ReactionLocation;
+
+    if (m_ReactionLocation.Face == rftBack)
+    {
+        leftLocation.Face = rftAhead;
+		leftLocation.PierIdx--;
+    }
+    else
+    {
+        if (m_ReactionLocation.PierIdx == 0)
+        {
+            leftLocation.Face = rftBack;
+            leftLocation.PierIdx = m_nPiers - 1;
+            leftLocation.GirderKey.groupIndex = m_nGroups - 1;
+        }
+		else
+        {
+            leftLocation.Face = rftBack;
+            leftLocation.GirderKey.groupIndex--;
+        }
+    }
+    
+    m_pFrame->SelectBearing(leftLocation);
 
 }
 
@@ -213,12 +253,12 @@ bool CBridgePlanViewBearingDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDispl
    }
    else if (nChar == VK_LEFT)
    {
-       SelectNextBearing();
+       SelectLeftBearing();
        return true;
    }
    else if (nChar == VK_RIGHT)
    {
-       SelectNextBearing();
+       SelectRightBearing();
        return true;
    }
    else if ( nChar == VK_UP )
