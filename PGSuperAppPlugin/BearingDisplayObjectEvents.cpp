@@ -176,9 +176,20 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectRightBearing()
     {
         if (m_ReactionLocation.PierIdx == m_nPiers - 1)
         {
-            rightLocation.Face = rftAhead;
-            rightLocation.PierIdx = 0;
-            rightLocation.GirderKey.groupIndex = 0;
+            if (m_ReactionLocation.GirderKey.girderIndex == m_nGirdersThisGroup - 1)
+            {
+                rightLocation.Face = rftAhead;
+                rightLocation.PierIdx = 0;
+                rightLocation.GirderKey.groupIndex = 0;
+                rightLocation.GirderKey.girderIndex = 0;
+            }
+            else
+            {
+                rightLocation.Face = rftAhead;
+                rightLocation.PierIdx = 0;
+                rightLocation.GirderKey.groupIndex = 0;
+                rightLocation.GirderKey.girderIndex++;
+            }
         }
         else
         {
@@ -204,9 +215,20 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectLeftBearing()
     {
         if (m_ReactionLocation.PierIdx == 0)
         {
-            leftLocation.Face = rftBack;
-            leftLocation.PierIdx = m_nPiers - 1;
-            leftLocation.GirderKey.groupIndex = m_nGroups - 1;
+            if (m_ReactionLocation.GirderKey.girderIndex == 0)
+            {
+                leftLocation.Face = rftBack;
+                leftLocation.PierIdx = m_nPiers - 1;
+                leftLocation.GirderKey.groupIndex = m_nGroups - 1;
+                leftLocation.GirderKey.girderIndex = m_nGirdersThisGroup - 1;
+            }
+            else
+            {
+                leftLocation.Face = rftBack;
+                leftLocation.PierIdx = m_nPiers - 1;
+				leftLocation.GirderKey.girderIndex--;
+                leftLocation.GirderKey.groupIndex = m_nGroups - 1;
+            }
         }
 		else
         {
