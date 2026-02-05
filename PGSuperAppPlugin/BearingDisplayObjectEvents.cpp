@@ -79,26 +79,42 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectBearingAbove()
 
     if (m_ReactionLocation.GirderKey.girderIndex == 0)
     {
-        // if this is the first girder in this group
-        if (m_ReactionLocation.GirderKey.groupIndex == 0) // and this is the first group
+        if (m_ReactionLocation.GirderKey.groupIndex == 0)
         {
-            // select the last segment
-            aboveLocation.GirderKey = CGirderKey(m_nGroups - 1, m_nGirdersThisGroup - 1);
-            m_pFrame->SelectBearing(aboveLocation);
+            if (aboveLocation.Face == rftAhead)
+            {
+                aboveLocation.GirderKey = CGirderKey(m_nGroups - 1, m_nGirdersThisGroup - 1);
+                aboveLocation.PierIdx = m_nPiers - 1;
+                aboveLocation.Face = rftBack;
+            }
+            else
+            {
+                aboveLocation.PierIdx--;
+				aboveLocation.GirderKey.girderIndex = m_nGirdersThisGroup - 1;
+                aboveLocation.Face = rftAhead;
+            }
         }
         else
         {
-            // select the last girder in the previous group
-            aboveLocation.GirderKey = CGirderKey(aboveLocation.GirderKey.groupIndex - 1, m_nGirdersThisGroup - 1);
-            m_pFrame->SelectBearing(aboveLocation);
+            if (aboveLocation.Face == rftAhead)
+            {
+                aboveLocation.GirderKey = CGirderKey(aboveLocation.GirderKey.groupIndex - 1, m_nGirdersThisGroup - 1);
+                aboveLocation.Face = rftBack;
+            }
+            else
+            {
+                aboveLocation.GirderKey.girderIndex = m_nGirdersThisGroup - 1;
+				aboveLocation.PierIdx--;
+                aboveLocation.Face = rftAhead;
+            }
         }
     }
     else
     {
-        // select the next girder in this group
         aboveLocation.GirderKey.girderIndex--;
-        m_pFrame->SelectBearing(aboveLocation);
     }
+
+    m_pFrame->SelectBearing(aboveLocation);
 }
 
 void CBridgePlanViewBearingDisplayObjectEvents::SelectBearingBelow()
@@ -107,27 +123,44 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectBearingBelow()
 
     if (m_ReactionLocation.GirderKey.girderIndex == m_nGirdersThisGroup - 1)
     {
-        // if this is the last girder in this group
-        if (m_ReactionLocation.GirderKey.groupIndex == m_nGroups - 1) // and this is the last group
+        if (m_ReactionLocation.GirderKey.groupIndex == m_nGroups - 1)
         {
-            // select the first segment
-			belowLocation.GirderKey = CGirderKey(0, 0);
-            m_pFrame->SelectBearing(belowLocation);
+            if (belowLocation.Face == rftBack)
+            {
+                belowLocation.GirderKey.girderIndex = 0;
+                belowLocation.GirderKey.groupIndex = 0;
+                belowLocation.PierIdx = 0;
+                belowLocation.Face = rftAhead;
+            }
+            else
+            {
+                belowLocation.GirderKey.girderIndex = 0;
+                belowLocation.PierIdx++;
+                belowLocation.Face = rftBack;
+            }
         }
         else
         {
-            // select the first girder in the next group
-            belowLocation.GirderKey = CGirderKey(belowLocation.GirderKey.groupIndex + 1, 0);
-            m_pFrame->SelectBearing(belowLocation);
+            if (belowLocation.Face == rftAhead)
+            {
+                belowLocation.GirderKey.girderIndex = 0;
+                belowLocation.PierIdx++;
+                belowLocation.Face = rftBack;
+            }
+            else
+            {
+                belowLocation.GirderKey.girderIndex = 0;
+                belowLocation.GirderKey.groupIndex++;
+                belowLocation.Face = rftAhead;
+            }
         }
     }
     else
     {
-        // select the next girder in this group
         belowLocation.GirderKey.girderIndex++;
-        m_pFrame->SelectBearing(belowLocation);
     }
 
+    m_pFrame->SelectBearing(belowLocation);
 }
 
 void CBridgePlanViewBearingDisplayObjectEvents::SelectRightBearing()
