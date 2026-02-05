@@ -81,7 +81,7 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectBearingAbove()
     {
         if (m_ReactionLocation.GirderKey.groupIndex == 0)
         {
-            if (aboveLocation.Face == rftAhead)
+            if (m_ReactionLocation.Face == rftAhead)
             {
                 aboveLocation.GirderKey = CGirderKey(m_nGroups - 1, m_nGirdersThisGroup - 1);
                 aboveLocation.PierIdx = m_nPiers - 1;
@@ -91,7 +91,17 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectBearingAbove()
             {
                 aboveLocation.PierIdx--;
 				aboveLocation.GirderKey.girderIndex = m_nGirdersThisGroup - 1;
-                aboveLocation.Face = rftAhead;
+                auto pBroker = EAFGetBroker();
+                GET_IFACE2(pBroker, IBridge, pBridge);
+                bool bInterior = pBridge->IsInteriorPier(m_ReactionLocation.PierIdx - 1);
+				if (bInterior)
+                {
+                    aboveLocation.Face = rftMid;
+                }
+                else
+                {
+                    aboveLocation.Face = rftAhead;
+                }
             }
         }
         else
