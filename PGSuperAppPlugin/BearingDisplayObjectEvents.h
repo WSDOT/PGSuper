@@ -70,7 +70,9 @@ protected:
    void EditBearing(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
    void SelectBearing(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
 
-   // select prev/next segment in this girderline (longitudinal selection)
+   // select prev/next/above/below bearing
+   void SelectBearingAbove();
+   void SelectBearingBelow();
    void SelectPrevBearing();
    void SelectNextBearing();
 

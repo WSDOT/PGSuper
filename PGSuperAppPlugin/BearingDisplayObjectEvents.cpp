@@ -70,9 +70,9 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectBearing(std::shared_ptr<iD
    m_pFrame->SelectBearing(m_ReactionLocation);
 }
 
-void CBridgePlanViewBearingDisplayObjectEvents::SelectPrevBearing()
+void CBridgePlanViewBearingDisplayObjectEvents::SelectBearingAbove()
 {
-    ReactionLocation prevLocation = m_ReactionLocation;
+    ReactionLocation aboveLocation = m_ReactionLocation;
 
     if (m_ReactionLocation.GirderKey.girderIndex == 0)
     {
@@ -80,27 +80,27 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectPrevBearing()
         if (m_ReactionLocation.GirderKey.groupIndex == 0) // and this is the first group
         {
             // select the last segment
-            prevLocation.GirderKey = CGirderKey(m_nGroups - 1, m_nGirdersThisGroup - 1);
-            m_pFrame->SelectBearing(prevLocation);
+            aboveLocation.GirderKey = CGirderKey(m_nGroups - 1, m_nGirdersThisGroup - 1);
+            m_pFrame->SelectBearing(aboveLocation);
         }
         else
         {
             // select the last girder in the previous group
-            prevLocation.GirderKey = CGirderKey(prevLocation.GirderKey.groupIndex - 1, m_nGirdersThisGroup - 1);
-            m_pFrame->SelectBearing(prevLocation);
+            aboveLocation.GirderKey = CGirderKey(aboveLocation.GirderKey.groupIndex - 1, m_nGirdersThisGroup - 1);
+            m_pFrame->SelectBearing(aboveLocation);
         }
     }
     else
     {
         // select the next girder in this group
-        prevLocation.GirderKey.girderIndex--;
-        m_pFrame->SelectBearing(prevLocation);
+        aboveLocation.GirderKey.girderIndex--;
+        m_pFrame->SelectBearing(aboveLocation);
     }
 }
 
-void CBridgePlanViewBearingDisplayObjectEvents::SelectNextBearing()
+void CBridgePlanViewBearingDisplayObjectEvents::SelectBearingBelow()
 {
-    ReactionLocation nextLocation = m_ReactionLocation;
+    ReactionLocation belowLocation = m_ReactionLocation;
 
     if (m_ReactionLocation.GirderKey.girderIndex == m_nGirdersThisGroup - 1)
     {
@@ -108,22 +108,41 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectNextBearing()
         if (m_ReactionLocation.GirderKey.groupIndex == m_nGroups - 1) // and this is the last group
         {
             // select the first segment
-			nextLocation.GirderKey = CGirderKey(0, 0);
-            m_pFrame->SelectBearing(nextLocation);
+			belowLocation.GirderKey = CGirderKey(0, 0);
+            m_pFrame->SelectBearing(belowLocation);
         }
         else
         {
             // select the first girder in the next group
-            nextLocation.GirderKey = CGirderKey(nextLocation.GirderKey.groupIndex + 1, 0);
-            m_pFrame->SelectBearing(nextLocation);
+            belowLocation.GirderKey = CGirderKey(belowLocation.GirderKey.groupIndex + 1, 0);
+            m_pFrame->SelectBearing(belowLocation);
         }
     }
     else
     {
         // select the next girder in this group
-        nextLocation.GirderKey.girderIndex++;
-        m_pFrame->SelectBearing(nextLocation);
+        belowLocation.GirderKey.girderIndex++;
+        m_pFrame->SelectBearing(belowLocation);
     }
+
+}
+
+void CBridgePlanViewBearingDisplayObjectEvents::SelectNextBearing()
+{
+    ReactionLocation nextLocation = m_ReactionLocation;
+
+    if (m_ReactionLocation.Face == rftAhead)
+    {
+        nextLocation.Face = rftBack;
+		nextLocation.PierIdx++;
+    }
+    else
+    {
+        nextLocation.Face = rftAhead;
+        nextLocation.PierIdx--;
+    }
+    
+    m_pFrame->SelectBearing(nextLocation);
 
 }
 
@@ -192,14 +211,24 @@ bool CBridgePlanViewBearingDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDispl
       EditBearing(pDO);
       return true;
    }
+   else if (nChar == VK_LEFT)
+   {
+       SelectNextBearing();
+       return true;
+   }
+   else if (nChar == VK_RIGHT)
+   {
+       SelectNextBearing();
+       return true;
+   }
    else if ( nChar == VK_UP )
    {
-      SelectPrevBearing();
+      SelectBearingAbove();
       return true;
    }
    else if ( nChar == VK_DOWN )
    {
-      SelectNextBearing();
+      SelectBearingBelow();
       return true;
    }
 
