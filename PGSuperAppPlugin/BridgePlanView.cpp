@@ -2415,7 +2415,7 @@ void CBridgePlanView::BuildBearingDisplayObjects()
                 rect->AddPoint(x + bearing_length * 0.5, y - bearing_width * 0.5);
 
                 CComPtr<IDirection> direction;
-                pGirder->GetSegmentDirection(CSegmentKey(reactionLocation.GirderKey, 0), &direction);
+                pGirder->GetSegmentDirection(poi.GetSegmentKey(), &direction);
 
                 Float64 dir;
                 direction->get_Value(&dir);
