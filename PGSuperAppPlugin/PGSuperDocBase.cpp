@@ -3441,7 +3441,7 @@ void CPGSDocBase::SelectSegment(const CSegmentKey& segmentKey,BOOL bNotify)
 void CPGSDocBase::SelectBearing(const ReactionLocation& reactionLocation,BOOL bNotify)
 {
    if ( m_Selection.Type == CSelection::Bearing && m_Selection.GroupIdx == reactionLocation.GirderKey.groupIndex && 
-       m_Selection.GirderIdx == reactionLocation.GirderKey.girderIndex &&(m_Selection.PierIdx == reactionLocation.Face 
+       m_Selection.GirderIdx == reactionLocation.GirderKey.girderIndex &&(m_Selection.PierIdx == reactionLocation.PierIdx 
            && m_Selection.Face == reactionLocation.Face) )
    {
       return;
