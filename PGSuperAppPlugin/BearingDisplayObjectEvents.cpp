@@ -177,11 +177,39 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectRightBearing()
 {
     ReactionLocation rightLocation = m_ReactionLocation;
 
+    bool bInterior = false;
+	if (m_ReactionLocation.PierIdx + 1 < m_nPiers)
+    {
+        auto pBroker = EAFGetBroker();
+        GET_IFACE2(pBroker, IBridge, pBridge);
+        bInterior = pBridge->IsInteriorPier(m_ReactionLocation.PierIdx + 1);
+    }
+
     if (m_ReactionLocation.Face == rftAhead)
     {
-        rightLocation.Face = rftBack;
-		rightLocation.PierIdx++;
+        if (bInterior)
+        {
+            rightLocation.Face = rftMid;
+            rightLocation.PierIdx++;
+        }
+        else
+        {
+            rightLocation.Face = rftBack;
+            rightLocation.PierIdx++;
+        }
     }
+    else if (m_ReactionLocation.Face == rftMid)
+    {
+        if (bInterior)
+        {
+            rightLocation.PierIdx++;
+        }
+        else
+        {
+            rightLocation.Face = rftBack;
+            rightLocation.PierIdx++;
+        }
+	}
     else
     {
         if (m_ReactionLocation.PierIdx == m_nPiers - 1)
