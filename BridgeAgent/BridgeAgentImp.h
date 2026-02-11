@@ -874,7 +874,7 @@ public:
 
 // ISectionProperties
 public:
-   const SectProp GetSectionProperties(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::SectionPropertyType sectPropType) const override;
+   const SectProp& GetSectionProperties(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::SectionPropertyType sectPropType) const override;
 
    pgsTypes::SectionPropertyMode GetSectionPropertiesMode() const override;
 

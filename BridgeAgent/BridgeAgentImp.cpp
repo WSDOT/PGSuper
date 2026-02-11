@@ -31613,7 +31613,7 @@ PoiIntervalKey CBridgeAgentImp::GetSectionPropertiesKey(IntervalIndexType interv
    // we can make this concept more efficient by considering the section property type (gross, net, transformed) and if the segment is prismatic or not.
 }
 
-const SectProp CBridgeAgentImp::GetSectionProperties(IntervalIndexType ivalIdx,const pgsPointOfInterest& thePoi,pgsTypes::SectionPropertyType sectPropType) const
+const SectProp& CBridgeAgentImp::GetSectionProperties(IntervalIndexType ivalIdx,const pgsPointOfInterest& thePoi,pgsTypes::SectionPropertyType sectPropType) const
 {
    VALIDATE(BRIDGE);
 

@@ -1388,7 +1388,7 @@ class ISectionProperties
 {
 public:
 
-   virtual const SectProp GetSectionProperties(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::SectionPropertyType sectPropType) const = 0;
+   virtual const SectProp& GetSectionProperties(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::SectionPropertyType sectPropType) const = 0;
 
    // returns the current section properties mode
    virtual pgsTypes::SectionPropertyMode GetSectionPropertiesMode() const = 0;
