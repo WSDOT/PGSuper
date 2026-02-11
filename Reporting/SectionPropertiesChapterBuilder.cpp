@@ -438,9 +438,9 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    auto pVoidPropertiesTable = rptStyleManager::CreateDefaultTable(6);
 
    (*pVoidPropertiesTable)(0, 0) << Bold(_T("Void ID"));
-   (*pVoidPropertiesTable)(0, 1) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
-   (*pVoidPropertiesTable)(0, 2) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
-   (*pVoidPropertiesTable)(0, 3) << COLHDR(Sub2(_T("A"), _T("g")), rptLength2UnitTag, pDispUnits->Area);
+   (*pVoidPropertiesTable)(0, 1) << COLHDR(Sub2(_T("A"), _T("g")), rptLength2UnitTag, pDispUnits->Area);
+   (*pVoidPropertiesTable)(0, 2) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
+   (*pVoidPropertiesTable)(0, 3) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
    (*pVoidPropertiesTable)(0, 4) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
    (*pVoidPropertiesTable)(0, 5) << COLHDR(Sub2(_T("I"), _T("yy")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
 
@@ -784,9 +784,9 @@ void CSectionPropertiesChapterBuilder::WriteSectionProperties(rptParagraph& para
     Float64 xcg, ycg;
     pntCG->Location(&xcg, &ycg);
 
+    para << Sub2(_T("A"), _T("g")) << _T(" = ") << area.SetValue(Area) << rptNewLine;
     para << Overline(_T("x")) << _T(" = ") << length.SetValue(xcg) << rptNewLine;
     para << Overline(_T("y")) << _T(" = ") << length.SetValue(ycg) << rptNewLine;
-    para << Sub2(_T("A"), _T("g")) << _T(" = ") << area.SetValue(Area) << rptNewLine;
     para << _T("Ix = ") << momentOfInertia.SetValue(Ixx) << rptNewLine;
     para << _T("Iy = ") << momentOfInertia.SetValue(Iyy) << rptNewLine;
 }
