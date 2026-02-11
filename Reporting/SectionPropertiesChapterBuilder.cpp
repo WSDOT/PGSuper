@@ -301,7 +301,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    // Organize Tables
    rptRcTable* pParentLayoutTable = rptStyleManager::CreateLayoutTable(7);
-   (*pParentLayoutTable)(0, 0) << Bold(_T("Gross")) << rptNewLine << Bold(_T("Non-Composite"));
+   (*pParentLayoutTable)(0, 0) << Bold(_T("Girder"));
    rptRcTable* pNonCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
    rptRcTable* pPrimaryPointsTable = rptStyleManager::CreateDefaultTable(2);
    (*pNonCompositeLayoutTable)(0, 0) << pPrimaryPointsTable;
@@ -323,7 +323,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    if (pDeckShape)
    {
-       (*pParentLayoutTable)(0, 1) << Bold(_T("Gross")) << rptNewLine << Bold(_T("Composite"));
+       (*pParentLayoutTable)(0, 1) << Bold(_T("Deck"));
        rptRcTable* pCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
        (*pCompositeLayoutTable)(0, 0) << pSecondaryPointsTable;
 	   modE.SetValue(EcDeck);
@@ -352,7 +352,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
 	if (!vSteelShapeProperties.empty())
     {
-        (*pParentLayoutTable)(0, 2) << Bold(_T("Strands And")) << rptNewLine << Bold(_T("Longitudinal Rebar"));
+        (*pParentLayoutTable)(0, 2) << Bold(_T("Strands And Longitudinal Rebar"));
         (*pParentLayoutTable)(0, 2) << pSteelComponentPropertiesTable;
         
     }
@@ -361,7 +361,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
         if (Ns > 0)
         {
-            (*pParentLayoutTable)(0, 2) << Bold(_T("Straight")) << rptNewLine << Bold(_T("Strands"));
+            (*pParentLayoutTable)(0, 2) << Bold(_T("Straight Strands"));
             (*pParentLayoutTable)(0, 2) << pStraightStrandPropertiesTable;
             const auto& Eps = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Straight)->GetE();
             modE.SetValue(Eps);
@@ -373,7 +373,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
         if (Nh > 0)
         {
-            (*pParentLayoutTable)(0, 3) << Bold(_T("Harped")) << rptNewLine << Bold(_T("Strands"));
+            (*pParentLayoutTable)(0, 3) << Bold(_T("Harped Strands"));
             (*pParentLayoutTable)(0, 3) << pHarpedStrandPropertiesTable;
             const auto& Eph = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Harped)->GetE();
             modE.SetValue(Eph);
@@ -385,7 +385,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
 		if (Nt > 0)
         {
-            (*pParentLayoutTable)(0, 4) << Bold(_T("Temporary")) << rptNewLine << Bold(_T("Strands"));
+            (*pParentLayoutTable)(0, 4) << Bold(_T("Temporary Strands"));
             (*pParentLayoutTable)(0, 4) << pTemporaryStrandPropertiesTable;
             const auto& Ept = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Temporary)->GetE();
             modE.SetValue(Ept);
@@ -397,7 +397,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
 		if (nBars > 0)
         {
-            (*pParentLayoutTable)(0, 5) << Bold(_T("Longitudinal")) << rptNewLine << Bold(_T("Rebar"));
+            (*pParentLayoutTable)(0, 5) << Bold(_T("Longitudinal Rebar"));
             (*pParentLayoutTable)(0, 5) << pRebarPropertiesTable;
 
             CClosureKey closureKey;
@@ -438,8 +438,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    auto pVoidPropertiesTable = rptStyleManager::CreateDefaultTable(6);
 
    (*pVoidPropertiesTable)(0, 0) << Bold(_T("Void ID"));
-   (*pVoidPropertiesTable)(0, 1) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
-   (*pVoidPropertiesTable)(0, 2) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+   (*pVoidPropertiesTable)(0, 1) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
+   (*pVoidPropertiesTable)(0, 2) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
    (*pVoidPropertiesTable)(0, 3) << COLHDR(Sub2(_T("A"), _T("g")), rptLength2UnitTag, pDispUnits->Area);
    (*pVoidPropertiesTable)(0, 4) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
    (*pVoidPropertiesTable)(0, 5) << COLHDR(Sub2(_T("I"), _T("yy")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
@@ -510,10 +510,26 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    rptHeading* pHeading = rptStyleManager::CreateHeading(2);
    (*pChapter) << pHeading;
+   pHeading->SetName(_T("Overall Properties"));
+   *pHeading << _T("Overall Properties");
+
+   rptParagraph* pPara = new rptParagraph();
+   *pChapter << pPara;
+
+
+   ////////////
+
+   //// Add tables here
+
+   ///////////
+
+
+   pHeading = rptStyleManager::CreateHeading(2);
+   (*pChapter) << pHeading;
    pHeading->SetName(_T("Geometry Formulas"));
    *pHeading << _T("Geometry Formulas");
 
-   rptParagraph* pPara = new rptParagraph();
+   pPara = new rptParagraph();
    *pChapter << pPara;
 
    *pPara << rptRcEquation(std::_tstring(rptStyleManager::GetImagePath()) + _T("Area.png"),
@@ -561,8 +577,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        INIT_UV_PROTOTYPE(rptLength2UnitValue, area, pDispUnits->Area, false);
        INIT_UV_PROTOTYPE(rptLength4UnitValue, momentOfInertia, pDispUnits->MomentOfInertia, true);
 
-       (*pSteelComponentPropertiesTable)(0, 0) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
-       (*pSteelComponentPropertiesTable)(0, 1) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+       (*pSteelComponentPropertiesTable)(0, 0) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
+       (*pSteelComponentPropertiesTable)(0, 1) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
        (*pSteelComponentPropertiesTable)(0, 2) << COLHDR(Sub2(_T("A"), _T("s")), rptLength2UnitTag, pDispUnits->Area);
        (*pSteelComponentPropertiesTable)(0, 3) << COLHDR(_T("E"), rptStressUnitTag, pDispUnits->ModE);
 
@@ -600,8 +616,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            pStraightStrandPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
            pStraightStrandPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
            (*pStraightStrandPropertiesTable)(0, 0) << _T("Strand") << rptNewLine << _T("No.");
-           (*pStraightStrandPropertiesTable)(0, 1) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pStraightStrandPropertiesTable)(0, 2) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pStraightStrandPropertiesTable)(0, 1) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pStraightStrandPropertiesTable)(0, 2) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
 
            row = pStraightStrandPropertiesTable->GetNumberOfHeaderRows();
 
@@ -621,8 +637,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            pHarpedStrandPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
            pHarpedStrandPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
            (*pHarpedStrandPropertiesTable)(0, 0) << _T("Strand") << rptNewLine << _T("No.");
-           (*pHarpedStrandPropertiesTable)(0, 1) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pHarpedStrandPropertiesTable)(0, 2) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pHarpedStrandPropertiesTable)(0, 1) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pHarpedStrandPropertiesTable)(0, 2) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
 
            row = pHarpedStrandPropertiesTable->GetNumberOfHeaderRows();
 
@@ -642,8 +658,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            pTemporaryStrandPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
            pTemporaryStrandPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
            (*pTemporaryStrandPropertiesTable)(0, 0) << _T("Strand") << rptNewLine << _T("No.");
-           (*pTemporaryStrandPropertiesTable)(0, 1) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pTemporaryStrandPropertiesTable)(0, 2) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pTemporaryStrandPropertiesTable)(0, 1) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pTemporaryStrandPropertiesTable)(0, 2) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
 
            row = pTemporaryStrandPropertiesTable->GetNumberOfHeaderRows();
 
@@ -662,8 +678,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        {
            pRebarPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
            pRebarPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
-           (*pRebarPropertiesTable)(0, 0) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pRebarPropertiesTable)(0, 1) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pRebarPropertiesTable)(0, 0) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pRebarPropertiesTable)(0, 1) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
            (*pRebarPropertiesTable)(0, 2) << _T("Nom.") << rptNewLine << Sub2(_T("A"), _T("s")) << rptNewLine;
 
            CComPtr<IEnumRebarSectionItem> enumItems;
@@ -724,7 +740,14 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    *pPara << rptNewPage;
 
-   *pPara << CreateImage(vGrossGirderShapeXYPoints, secondaryPoints) << rptNewLine;
+
+   CComPtr<IPoint2d> sectCG;
+   pSectProp->GetCentroid(intervalIdx, poi, &sectCG);
+   Float64 xcg, ycg;
+   sectCG->Location(&xcg, &ycg);
+   const std::pair<Float64, Float64> cg_pair = { xcg, ycg };
+
+   *pPara << CreateImage(vGrossGirderShapeXYPoints, secondaryPoints, cg_pair) << rptNewLine;
 
    return pChapter;
 }
@@ -761,16 +784,16 @@ void CSectionPropertiesChapterBuilder::WriteSectionProperties(rptParagraph& para
     Float64 xcg, ycg;
     pntCG->Location(&xcg, &ycg);
 
-    para << Sub2(_T("X"), _T("c.g.")) << _T(" = ") << length.SetValue(xcg) << rptNewLine;
-    para << Sub2(_T("Y"), _T("c.g.")) << _T(" = ") << length.SetValue(ycg) << rptNewLine;
+    para << Overline(_T("x")) << _T(" = ") << length.SetValue(xcg) << rptNewLine;
+    para << Overline(_T("y")) << _T(" = ") << length.SetValue(ycg) << rptNewLine;
     para << Sub2(_T("A"), _T("g")) << _T(" = ") << area.SetValue(Area) << rptNewLine;
     para << _T("Ix = ") << momentOfInertia.SetValue(Ixx) << rptNewLine;
     para << _T("Iy = ") << momentOfInertia.SetValue(Iyy) << rptNewLine;
 }
 
 
-rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(
-    const std::vector<Points2D>& primaryPoints, const Points2D& secondaryPoints) const
+rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(const std::vector<Points2D>& primaryPoints,
+    const Points2D& secondaryPoints, const std::pair<Float64, Float64>& cg) const
 {
     CEAFApp* pApp = EAFGetApp();
     const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
@@ -791,12 +814,13 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(
     WBFL::Graphing::GraphXY graph(&lengthTool, &lengthTool);
 
     graph.SetOutputRect(rect);
-    //graph.SetClientAreaColor(GRAPH_BACKGROUND);
-    //graph.SetGridPenStyle(GRAPH_GRID_PEN_STYLE, GRAPH_GRID_PEN_WEIGHT, GRAPH_GRID_COLOR);
+    graph.SetClientAreaColor(SNOW);
+    graph.SetGridPenStyle(0, 1, GRAY);
 
     graph.IsotropicAxes(true);
     graph.DrawGrid(true);
-    graph.DrawLegend(false);
+    graph.DrawLegend(true);
+	graph.SetLegendBorderStyle(WBFL::Graphing::GraphXY::Style::None);
 
     //graph.SetTitle(_T("Interaction Diagram"));
 
@@ -823,12 +847,15 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(
     primarySeries.resize(primaryPoints.size());
     for (IndexType i = 0; i < primaryPoints.size(); i++)
     {
-        primarySeries[i] = graph.CreateDataSeries(_T(""), PS_SOLID, 1, BLUE);
+        primarySeries[i] = graph.CreateDataSeries(_T(""), PS_SOLID, 1, BLACK);
     }
-    IndexType secondarySeries = graph.CreateDataSeries(_T(""), PS_SOLID, 1, BLUE);
+    IndexType secondarySeries = graph.CreateDataSeries(_T(""), PS_SOLID, 1, BLACK);
 
     std::vector<std::pair<Float64, Float64>>::const_iterator iter;
     std::vector<std::pair<Float64, Float64>>::const_iterator end;
+
+    // Collect bounds from all points
+    Float64 xMax = -Float64_Max;
 
     for (IndexType i = 0; i < primaryPoints.size(); i++)
     {
@@ -838,6 +865,9 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(
         {
             WBFL::Graphing::Point point(WBFL::Units::ConvertFromSysUnits(iter->first, pDispUnits->ComponentDim.UnitOfMeasure), WBFL::Units::ConvertFromSysUnits(iter->second, pDispUnits->ComponentDim.UnitOfMeasure));
             graph.AddPoint(primarySeries[i], point);
+
+            xMax = Max(xMax, iter->first);
+
         }
 
         if (0 < primaryPoints.size())
@@ -853,6 +883,8 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(
     {
         WBFL::Graphing::Point point(WBFL::Units::ConvertFromSysUnits(iter->first, pDispUnits->ComponentDim.UnitOfMeasure), WBFL::Units::ConvertFromSysUnits(iter->second, pDispUnits->ComponentDim.UnitOfMeasure));
         graph.AddPoint(secondarySeries, point);
+
+        xMax = Max(xMax, iter->first);
     }
 
     if (0 < secondaryPoints.size())
@@ -860,6 +892,23 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(
         WBFL::Graphing::Point point(WBFL::Units::ConvertFromSysUnits(secondaryPoints.front().first, pDispUnits->ComponentDim.UnitOfMeasure), WBFL::Units::ConvertFromSysUnits(secondaryPoints.front().second, pDispUnits->ComponentDim.UnitOfMeasure));
         graph.AddPoint(secondarySeries, point);
     }
+
+    // Create centroidal axes
+
+    Float64 cgX = WBFL::Units::ConvertFromSysUnits(cg.first, pDispUnits->ComponentDim.UnitOfMeasure);
+    Float64 cgY = WBFL::Units::ConvertFromSysUnits(cg.second, pDispUnits->ComponentDim.UnitOfMeasure);
+    Float64 xMaxGraph = WBFL::Units::ConvertFromSysUnits(xMax, pDispUnits->ComponentDim.UnitOfMeasure);
+
+    // Horizontal axis through centroid
+    IndexType cgXAxisSeries = graph.CreateDataSeries(_T(""), PS_DASHDOT, 2, BLUE);
+    graph.AddPoint(cgXAxisSeries, WBFL::Graphing::Point(cgX - xMaxGraph * 0.25, cgY));
+    graph.AddPoint(cgXAxisSeries, WBFL::Graphing::Point(cgX + xMaxGraph * 0.25, cgY));
+	graph.SetDataSeriesLabel(cgXAxisSeries, _T("Section Centroidal Axes"));
+
+    // Vertical axis through centroid
+    IndexType cgYAxisSeries = graph.CreateDataSeries(_T(""), PS_DASHDOT, 2, BLUE);
+    graph.AddPoint(cgYAxisSeries, WBFL::Graphing::Point(cgX, cgY - xMaxGraph * 0.25));
+    graph.AddPoint(cgYAxisSeries, WBFL::Graphing::Point(cgX, cgY + xMaxGraph * 0.25));
 
     // Updates the graph metrics based on "nice" axis ranges
     graph.UpdateGraphMetrics(pDC->GetSafeHdc());
