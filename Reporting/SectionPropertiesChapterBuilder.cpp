@@ -1055,7 +1055,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        if (bComposite)
        {
            // there is a deck so we have composite, non-prismatic results
-           pTable = WriteXSTable2(pBroker, pgsTypes::sptGross, poi, lastIntervalIdx, pDisplayUnits);
+           pTable = WriteXSTable2(pBroker, pgsTypes::sptGross, poi, intervalIdx, pDisplayUnits);
            *pPara << pTable << rptNewLine;
        }
    }
