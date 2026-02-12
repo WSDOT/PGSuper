@@ -1040,22 +1040,23 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    if (bIsPrismatic_CastingYard && bIsPrismatic_Final)
    {
-       // simple table
-       GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-       rptRcTable* pTable = WriteXSTable(pBroker, segmentKey, bComposite, pDisplayUnits);
-       *pPara << pTable << rptNewLine;
+       //// simple table
+       //GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+       //rptRcTable* pTable = WriteXSTable(pBroker, segmentKey, bComposite, pDisplayUnits);
+       //*pPara << pTable << rptNewLine;
    }
    else if (bIsPrismatic_CastingYard && !bIsPrismatic_Final)
    {
        // simple table for bare girder (don't report composite)
-       GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-       rptRcTable* pTable = WriteXSTable(pBroker, segmentKey, false, pDisplayUnits);
-       *pPara << pTable << rptNewLine;
+       //GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+       //rptRcTable* pTable = WriteXSTable(pBroker, segmentKey, false, pDisplayUnits);
+       //*pPara << pTable << rptNewLine;
 
        if (bComposite)
        {
            // there is a deck so we have composite, non-prismatic results
-           pTable = WriteXSTable2(pBroker, pgsTypes::sptGross, poi, intervalIdx, pDisplayUnits);
+           GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+           rptRcTable* pTable = WriteXSTable2(pBroker, pgsTypes::sptGross, poi, intervalIdx, pDisplayUnits);
            *pPara << pTable << rptNewLine;
        }
    }
@@ -1076,16 +1077,16 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
        if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
        {
-           pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-           *pChapter << pPara;
-           (*pPara) << _T("Net Section Properties") << rptNewLine;
+           //pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+           //*pChapter << pPara;
+           //(*pPara) << _T("Net Section Properties") << rptNewLine;
 
-           pPara = new rptParagraph;
-           *pChapter << pPara;
+           //pPara = new rptParagraph;
+           //*pChapter << pPara;
 
-           GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-           rptRcTable* pTable = WriteXSTable(pBroker, segmentKey, intervalIdx, pDisplayUnits);
-           *pPara << pTable << rptNewLine;
+           //GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+           //rptRcTable* pTable = WriteXSTable(pBroker, segmentKey, intervalIdx, pDisplayUnits);
+           //*pPara << pTable << rptNewLine;
        }
    }
    else if (!bIsPrismatic_CastingYard && bIsPrismatic_Final)
@@ -1093,7 +1094,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        ATLASSERT(false); // this is an impossible case
    }
 
-   *pPara << rptNewPage;
+   //*pPara << rptNewPage;
 
    pHeading = rptStyleManager::CreateHeading(2);
    (*pChapter) << pHeading;
