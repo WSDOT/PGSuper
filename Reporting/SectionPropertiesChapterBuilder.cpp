@@ -25,6 +25,8 @@
 #include <Reporting\SectionPropertiesReportSpecification.h>
 #include <IFace/Bridge.h>
 #include <IFace/Project.h>
+#include <IFace/Intervals.h>
+#include <IFace/Limits.h>
 #include <IFace/PointOfInterest.h>
 #include <PsgLib\BridgeDescription2.h>
 #include <psgLib/GirderLibraryEntry.h>
@@ -521,11 +523,92 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    *pChapter << pPara;
 
 
-   ////////////
+   ////////////>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-   //// Add tables here
+   GET_IFACE2(pBroker, IGirder, pGirder);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IIntervals, pIntervals);
 
-   ///////////
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+
+   bool bIsPrismatic_CastingYard = pGirder->IsPrismatic(releaseIntervalIdx, segmentKey);
+   bool bIsPrismatic_Final = pGirder->IsPrismatic(lastIntervalIdx, segmentKey);
+
+   bool bComposite = pBridge->IsCompositeDeck();
+   if (pGirder->HasStructuralLongitudinalJoints())
+   {
+       bComposite = true;
+   }
+
+   if (bIsPrismatic_CastingYard && bIsPrismatic_Final)
+   {
+       // simple table
+       //rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker, thisSegmentKey, bComposite, pDisplayUnits);
+       //*pPara << pTable << rptNewLine;
+   }
+   else if (bIsPrismatic_CastingYard && !bIsPrismatic_Final)
+   {
+       // simple table for bare girder (don't report composite)
+       //rptRcTable* pTable = CSectionPropertiesTable().Build(pBroker, thisSegmentKey, false, pDisplayUnits);
+       //*pPara << pTable << rptNewLine;
+
+       if (bComposite)
+       {
+           // there is a deck so we have composite, non-prismatic results
+           //pTable = CSectionPropertiesTable2().Build(pBroker, pgsTypes::sptGross, thisSegmentKey, lastIntervalIdx, pDisplayUnits);
+           //*pPara << pTable << rptNewLine;
+       }
+   }
+   else if (!bIsPrismatic_CastingYard && !bIsPrismatic_Final)
+   {
+       pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
+       GET_IFACE2(pBroker, ILossParameters, pLossParams);
+       GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+       std::vector<IntervalIndexType> vIntervals = pStressCheck->GetStressCheckIntervals(segmentKey);
+       vIntervals.push_back(pIntervals->GetLiveLoadInterval());
+       std::sort(vIntervals.begin(), vIntervals.end());
+       vIntervals.erase(std::unique(vIntervals.begin(), vIntervals.end()), vIntervals.end());
+       for (const auto& intervalIdx : vIntervals)
+       {
+           //rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker, spType, thisSegmentKey, intervalIdx, pDisplayUnits);
+           //*pPara << pTable << rptNewLine;
+
+           if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed && pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+           {
+               //rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker, pgsTypes::sptGross, thisSegmentKey, intervalIdx, pDisplayUnits);
+               //*pPara << pTable << rptNewLine;
+           }
+       }
+
+       if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
+       {
+           pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+           *pChapter << pPara;
+           (*pPara) << _T("Net Section Properties") << rptNewLine;
+
+           pPara = new rptParagraph;
+           *pChapter << pPara;
+
+           GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+           std::vector<IntervalIndexType> vIntervals = pStressCheck->GetStressCheckIntervals(segmentKey);
+           vIntervals.push_back(pIntervals->GetLiveLoadInterval());
+           std::sort(vIntervals.begin(), vIntervals.end());
+           vIntervals.erase(std::unique(vIntervals.begin(), vIntervals.end()), vIntervals.end());
+           for (const auto& intervalIdx : vIntervals)
+           {
+               //rptRcTable* pTable = CNetGirderPropertiesTable().Build(pBroker, thisSegmentKey, intervalIdx, pDisplayUnits);
+               //*pPara << pTable << rptNewLine;
+           }
+       }
+   }
+   else if (!bIsPrismatic_CastingYard && bIsPrismatic_Final)
+   {
+       ATLASSERT(false); // this is an impossible case
+   }
+
+
+   ///////////>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 
    pHeading = rptStyleManager::CreateHeading(2);
