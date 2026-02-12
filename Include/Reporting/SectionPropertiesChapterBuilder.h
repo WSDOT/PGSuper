@@ -46,6 +46,15 @@ private:
 // Delete them in the destructor
    mutable std::vector<std::_tstring> m_TemporaryFiles;
 
+   rptRcTable* WriteXSTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, 
+	   bool bComposite, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+
+   rptRcTable* WriteXSTable2(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+       pgsTypes::SectionPropertyType spType,
+       const CSegmentKey& segmentKey,
+       IntervalIndexType intervalIdx,
+       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+
    void WriteSectionProperties(rptParagraph& para, CComPtr<IShapeProperties>& shapeProps) const;
 
    rptRcImage* CreateImage(const std::vector<Points2D>& primary, const Points2D& secondary, 
