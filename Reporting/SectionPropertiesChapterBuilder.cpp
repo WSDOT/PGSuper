@@ -1016,8 +1016,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    rptHeading* pHeading = rptStyleManager::CreateHeading(2);
    (*pChapter) << pHeading;
-   pHeading->SetName(_T("Overall Properties"));
-   *pHeading << _T("Overall Properties");
+   pHeading->SetName(_T("Combined Section Properties"));
+   *pHeading << _T("Combined Section Properties");
 
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
@@ -1287,8 +1287,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    pHeading = rptStyleManager::CreateHeading(2);
    (*pChapter) << pHeading;
-   pHeading->SetName(_T("Section Coordinates & Properties"));
-   *pHeading << _T("Section Coordinates & Properties");
+   pHeading->SetName(_T("Indivisual Section Coordinates & Properties"));
+   *pHeading << _T("Individual Section Coordinates & Properties");
 
    pPara = new rptParagraph();
    *pChapter << pPara;
