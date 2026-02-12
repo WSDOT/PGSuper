@@ -435,14 +435,15 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    std::vector<std::pair<Float64, Float64>>::const_iterator iter;
    std::vector<std::pair<Float64, Float64>>::const_iterator end;
 
-   auto pVoidPropertiesTable = rptStyleManager::CreateDefaultTable(6);
+   auto pVoidPropertiesTable = rptStyleManager::CreateDefaultTable(7);
 
    (*pVoidPropertiesTable)(0, 0) << Bold(_T("Void ID"));
    (*pVoidPropertiesTable)(0, 1) << COLHDR(Sub2(_T("A"), _T("g")), rptLength2UnitTag, pDispUnits->Area);
-   (*pVoidPropertiesTable)(0, 2) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
-   (*pVoidPropertiesTable)(0, 3) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
+   (*pVoidPropertiesTable)(0, 2) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+   (*pVoidPropertiesTable)(0, 3) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
    (*pVoidPropertiesTable)(0, 4) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
    (*pVoidPropertiesTable)(0, 5) << COLHDR(Sub2(_T("I"), _T("yy")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
+   (*pVoidPropertiesTable)(0, 6) << COLHDR(Sub2(_T("I"), _T("xy")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
 
    for (IndexType i = 0; i < vGrossGirderShapeXYPoints.size(); i++)
    {
@@ -476,6 +477,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            voidShapeProperties[col]->get_Ixx(&Ixx);
            Float64 Iyy;
            voidShapeProperties[col]->get_Iyy(&Iyy);
+           Float64 Ixy;
+           voidShapeProperties[col]->get_Ixy(&Ixy);
 
            INIT_UV_PROTOTYPE(rptLength2UnitValue, area, pDispUnits->Area, false);
            INIT_UV_PROTOTYPE(rptLength4UnitValue, momentOfInertia, pDispUnits->MomentOfInertia, false);
@@ -488,6 +491,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            (*pVoidPropertiesTable)(row + col, c++) << area.SetValue(Area);
            (*pVoidPropertiesTable)(row + col, c++) << momentOfInertia.SetValue(Ixx);
            (*pVoidPropertiesTable)(row + col, c++) << momentOfInertia.SetValue(Iyy);
+           (*pVoidPropertiesTable)(row + col, c++) << momentOfInertia.SetValue(Ixy);
 
 
        }
@@ -577,8 +581,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        INIT_UV_PROTOTYPE(rptLength2UnitValue, area, pDispUnits->Area, false);
        INIT_UV_PROTOTYPE(rptLength4UnitValue, momentOfInertia, pDispUnits->MomentOfInertia, true);
 
-       (*pSteelComponentPropertiesTable)(0, 0) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
-       (*pSteelComponentPropertiesTable)(0, 1) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
+       (*pSteelComponentPropertiesTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+       (*pSteelComponentPropertiesTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
        (*pSteelComponentPropertiesTable)(0, 2) << COLHDR(Sub2(_T("A"), _T("s")), rptLength2UnitTag, pDispUnits->Area);
        (*pSteelComponentPropertiesTable)(0, 3) << COLHDR(_T("E"), rptStressUnitTag, pDispUnits->ModE);
 
@@ -616,8 +620,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            pStraightStrandPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
            pStraightStrandPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
            (*pStraightStrandPropertiesTable)(0, 0) << _T("Strand") << rptNewLine << _T("No.");
-           (*pStraightStrandPropertiesTable)(0, 1) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pStraightStrandPropertiesTable)(0, 2) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pStraightStrandPropertiesTable)(0, 1) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pStraightStrandPropertiesTable)(0, 2) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
 
            row = pStraightStrandPropertiesTable->GetNumberOfHeaderRows();
 
@@ -637,8 +641,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            pHarpedStrandPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
            pHarpedStrandPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
            (*pHarpedStrandPropertiesTable)(0, 0) << _T("Strand") << rptNewLine << _T("No.");
-           (*pHarpedStrandPropertiesTable)(0, 1) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pHarpedStrandPropertiesTable)(0, 2) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pHarpedStrandPropertiesTable)(0, 1) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pHarpedStrandPropertiesTable)(0, 2) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
 
            row = pHarpedStrandPropertiesTable->GetNumberOfHeaderRows();
 
@@ -658,8 +662,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            pTemporaryStrandPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
            pTemporaryStrandPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
            (*pTemporaryStrandPropertiesTable)(0, 0) << _T("Strand") << rptNewLine << _T("No.");
-           (*pTemporaryStrandPropertiesTable)(0, 1) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pTemporaryStrandPropertiesTable)(0, 2) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pTemporaryStrandPropertiesTable)(0, 1) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pTemporaryStrandPropertiesTable)(0, 2) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
 
            row = pTemporaryStrandPropertiesTable->GetNumberOfHeaderRows();
 
@@ -678,8 +682,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        {
            pRebarPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
            pRebarPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
-           (*pRebarPropertiesTable)(0, 0) << COLHDR(Overline(_T("x")), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pRebarPropertiesTable)(0, 1) << COLHDR(Overline(_T("y")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pRebarPropertiesTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pRebarPropertiesTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
            (*pRebarPropertiesTable)(0, 2) << _T("Nom.") << rptNewLine << Sub2(_T("A"), _T("s")) << rptNewLine;
 
            CComPtr<IEnumRebarSectionItem> enumItems;
@@ -787,8 +791,9 @@ void CSectionPropertiesChapterBuilder::WriteSectionProperties(rptParagraph& para
     para << Sub2(_T("A"), _T("g")) << _T(" = ") << area.SetValue(Area) << rptNewLine;
     para << Overline(_T("x")) << _T(" = ") << length.SetValue(xcg) << rptNewLine;
     para << Overline(_T("y")) << _T(" = ") << length.SetValue(ycg) << rptNewLine;
-    para << _T("Ix = ") << momentOfInertia.SetValue(Ixx) << rptNewLine;
-    para << _T("Iy = ") << momentOfInertia.SetValue(Iyy) << rptNewLine;
+    para << Sub2(_T("I"), _T("xx")) << _T(" = ") << momentOfInertia.SetValue(Ixx) << rptNewLine;
+    para << Sub2(_T("I"), _T("xy")) << _T(" = ") << momentOfInertia.SetValue(Iyy) << rptNewLine;
+    para << Sub2(_T("I"), _T("xy")) << _T(" = ") << momentOfInertia.SetValue(Ixy) << rptNewLine;
 }
 
 
