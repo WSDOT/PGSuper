@@ -267,7 +267,7 @@ rptRcTable* CSectionPropertiesChapterBuilder::WriteXSTable(std::shared_ptr<WBFL:
 
 rptRcTable* CSectionPropertiesChapterBuilder::WriteXSTable2(std::shared_ptr<WBFL::EAF::Broker> pBroker,
     pgsTypes::SectionPropertyType spType,
-    const CSegmentKey& segmentKey,
+    const pgsPointOfInterest& poi,
     IntervalIndexType intervalIdx,
     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
@@ -276,6 +276,7 @@ rptRcTable* CSectionPropertiesChapterBuilder::WriteXSTable2(std::shared_ptr<WBFL
     GET_IFACE2(pBroker, IBridge, pBridge);
     GET_IFACE2(pBroker, ISectionProperties, pSectProp);
 
+	const auto& segmentKey = poi.GetSegmentKey();
     IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
     IntervalIndexType firstCompositeDeckIntervalIdx = pIntervals->GetFirstCompositeDeckInterval();
     IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
@@ -467,94 +468,82 @@ rptRcTable* CSectionPropertiesChapterBuilder::WriteXSTable2(std::shared_ptr<WBFL
 
     location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS || segmentKey.segmentIndex == ALL_SEGMENTS);
 
-    // Get the interface pointers we need
-    GET_IFACE2(pBroker, IPointOfInterest, pIPoi);
-
     // Get all the tabular poi's for flexure and shear
     // Merge the two vectors to form one vector to report on.
     PoiAttributeType poiRefAttribute = (intervalIdx < erectionIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
-    PoiList vPoi;
-    pIPoi->GetPointsOfInterest(segmentKey, poiRefAttribute, &vPoi);
-    PoiList vPoiSpecial;
-    pIPoi->GetPointsOfInterest(segmentKey, POI_SPECIAL | POI_START_FACE | POI_END_FACE | POI_SECTCHANGE, &vPoiSpecial);
-    pIPoi->MergePoiLists(vPoi, vPoiSpecial, &vPoi);
 
     RowIndexType row = xs_table->GetNumberOfHeaderRows();
 
-    for (const pgsPointOfInterest& poi : vPoi)
+    col = 0;
+
+    Float64 depth = pSectProp->GetHg(spType, intervalIdx, poi);
+
+    (*xs_table)(row, col++) << location.SetValue(poiRefAttribute, poi);
+    (*xs_table)(row, col++) << l2.SetValue(pSectProp->GetAg(spType, intervalIdx, poi));
+    (*xs_table)(row, col++) << l1.SetValue(depth);
+    (*xs_table)(row, col++) << l4.SetValue(pSectProp->GetIxx(spType, intervalIdx, poi));
+    if (intervalIdx < erectionIntervalIdx)
     {
-        col = 0;
-
-        Float64 depth = pSectProp->GetHg(spType, intervalIdx, poi);
-
-        (*xs_table)(row, col++) << location.SetValue(poiRefAttribute, poi);
-        (*xs_table)(row, col++) << l2.SetValue(pSectProp->GetAg(spType, intervalIdx, poi));
-        (*xs_table)(row, col++) << l1.SetValue(depth);
-        (*xs_table)(row, col++) << l4.SetValue(pSectProp->GetIxx(spType, intervalIdx, poi));
-        if (intervalIdx < erectionIntervalIdx)
+        (*xs_table)(row, col++) << l4.SetValue(pSectProp->GetIyy(spType, intervalIdx, poi));
+        if (bAsymmetricGirders)
         {
-            (*xs_table)(row, col++) << l4.SetValue(pSectProp->GetIyy(spType, intervalIdx, poi));
-            if (bAsymmetricGirders)
-            {
-                (*xs_table)(row, col++) << l4.SetValue(pSectProp->GetIxy(spType, intervalIdx, poi));
-            }
+            (*xs_table)(row, col++) << l4.SetValue(pSectProp->GetIxy(spType, intervalIdx, poi));
         }
-
-        (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetXleft(spType, intervalIdx, poi));
-        (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetXright(spType, intervalIdx, poi));
-
-        if (intervalIdx < firstCompositeDeckIntervalIdx || (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite))
-        {
-            (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetY(spType, intervalIdx, poi, pgsTypes::TopGirder));
-            (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetY(spType, intervalIdx, poi, pgsTypes::BottomGirder));
-            (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetS(spType, intervalIdx, poi, pgsTypes::TopGirder));
-            (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetS(spType, intervalIdx, poi, pgsTypes::BottomGirder));
-        }
-        else
-        {
-            (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetY(spType, intervalIdx, poi, pgsTypes::TopGirder));
-            (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetY(spType, intervalIdx, poi, pgsTypes::BottomGirder));
-            if (bIsCompositeDeck)
-            {
-                (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetY(spType, intervalIdx, poi, pgsTypes::TopDeck));
-                (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetY(spType, intervalIdx, poi, pgsTypes::BottomDeck));
-            }
-
-            (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetS(spType, intervalIdx, poi, pgsTypes::TopGirder));
-            (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetS(spType, intervalIdx, poi, pgsTypes::BottomGirder));
-            if (bIsCompositeDeck)
-            {
-                (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetS(spType, intervalIdx, poi, pgsTypes::TopDeck));
-                (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetS(spType, intervalIdx, poi, pgsTypes::BottomDeck));
-            }
-        }
-
-        if ((intervalIdx < firstCompositeDeckIntervalIdx) ||
-            (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite) ||
-            (lastTendonStressingIntervalIdx != INVALID_INDEX && lastCompositeDeckIntervalIdx <= lastTendonStressingIntervalIdx)
-            )
-        {
-            (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetKt(spType, intervalIdx, poi));
-            (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetKb(spType, intervalIdx, poi));
-        }
-
-        if (firstCompositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed))
-        {
-            (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetQSlab(intervalIdx, poi));
-            (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetEffectiveFlangeWidth(poi));
-        }
-        else if (intervalIdx <= firstCompositeDeckIntervalIdx)
-        {
-            (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetPerimeter(poi));
-        }
-
-        if (lastCompositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck && pgsTypes::hspZeroHaunch != haunchAType && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed))
-        {
-            (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetStructuralHaunchDepth(poi, haunchAType));
-        }
-
-        row++;
     }
+
+    (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetXleft(spType, intervalIdx, poi));
+    (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetXright(spType, intervalIdx, poi));
+
+    if (intervalIdx < firstCompositeDeckIntervalIdx || (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite))
+    {
+        (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetY(spType, intervalIdx, poi, pgsTypes::TopGirder));
+        (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetY(spType, intervalIdx, poi, pgsTypes::BottomGirder));
+        (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetS(spType, intervalIdx, poi, pgsTypes::TopGirder));
+        (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetS(spType, intervalIdx, poi, pgsTypes::BottomGirder));
+    }
+    else
+    {
+        (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetY(spType, intervalIdx, poi, pgsTypes::TopGirder));
+        (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetY(spType, intervalIdx, poi, pgsTypes::BottomGirder));
+        if (bIsCompositeDeck)
+        {
+            (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetY(spType, intervalIdx, poi, pgsTypes::TopDeck));
+            (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetY(spType, intervalIdx, poi, pgsTypes::BottomDeck));
+        }
+
+        (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetS(spType, intervalIdx, poi, pgsTypes::TopGirder));
+        (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetS(spType, intervalIdx, poi, pgsTypes::BottomGirder));
+        if (bIsCompositeDeck)
+        {
+            (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetS(spType, intervalIdx, poi, pgsTypes::TopDeck));
+            (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetS(spType, intervalIdx, poi, pgsTypes::BottomDeck));
+        }
+    }
+
+    if ((intervalIdx < firstCompositeDeckIntervalIdx) ||
+        (spType == pgsTypes::sptGrossNoncomposite || spType == pgsTypes::sptTransformedNoncomposite) ||
+        (lastTendonStressingIntervalIdx != INVALID_INDEX && lastCompositeDeckIntervalIdx <= lastTendonStressingIntervalIdx)
+        )
+    {
+        (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetKt(spType, intervalIdx, poi));
+        (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetKb(spType, intervalIdx, poi));
+    }
+
+    if (firstCompositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed))
+    {
+        (*xs_table)(row, col++) << l3.SetValue(pSectProp->GetQSlab(intervalIdx, poi));
+        (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetEffectiveFlangeWidth(poi));
+    }
+    else if (intervalIdx <= firstCompositeDeckIntervalIdx)
+    {
+        (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetPerimeter(poi));
+    }
+
+    if (lastCompositeDeckIntervalIdx <= intervalIdx && bIsCompositeDeck && pgsTypes::hspZeroHaunch != haunchAType && (spType == pgsTypes::sptGross || spType == pgsTypes::sptTransformed))
+    {
+        (*xs_table)(row, col++) << l1.SetValue(pSectProp->GetStructuralHaunchDepth(poi, haunchAType));
+    }
+    
 
     return xs_table;
 }
@@ -1033,9 +1022,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
 
-
-   ////////////>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
    GET_IFACE2(pBroker, IGirder, pGirder);
    GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2_NOCHECK(pBroker, IIntervals, pIntervals);
@@ -1069,7 +1055,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        if (bComposite)
        {
            // there is a deck so we have composite, non-prismatic results
-           pTable = WriteXSTable2(pBroker, pgsTypes::sptGross, segmentKey, lastIntervalIdx, pDisplayUnits);
+           pTable = WriteXSTable2(pBroker, pgsTypes::sptGross, poi, lastIntervalIdx, pDisplayUnits);
            *pPara << pTable << rptNewLine;
        }
    }
@@ -1077,22 +1063,15 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    {
        pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
        GET_IFACE2(pBroker, ILossParameters, pLossParams);
-       GET_IFACE2(pBroker, IStressCheck, pStressCheck);
-       std::vector<IntervalIndexType> vIntervals = pStressCheck->GetStressCheckIntervals(segmentKey);
-       vIntervals.push_back(pIntervals->GetLiveLoadInterval());
-       std::sort(vIntervals.begin(), vIntervals.end());
-       vIntervals.erase(std::unique(vIntervals.begin(), vIntervals.end()), vIntervals.end());
-       for (const auto& intervalIdx : vIntervals)
-       {
-           GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-           rptRcTable* pTable = WriteXSTable2(pBroker, spType, segmentKey, intervalIdx, pDisplayUnits);
-           *pPara << pTable << rptNewLine;
 
-           if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed && pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
-           {
-               rptRcTable* pTable = WriteXSTable2(pBroker, pgsTypes::sptGross, segmentKey, intervalIdx, pDisplayUnits);
-               *pPara << pTable << rptNewLine;
-           }
+       GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+       rptRcTable* pTable = WriteXSTable2(pBroker, spType, poi, intervalIdx, pDisplayUnits);
+       *pPara << pTable << rptNewLine;
+
+       if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed && pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+       {
+           rptRcTable* pTable = WriteXSTable2(pBroker, pgsTypes::sptGross, poi, intervalIdx, pDisplayUnits);
+           *pPara << pTable << rptNewLine;
        }
 
        if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
@@ -1104,17 +1083,9 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            pPara = new rptParagraph;
            *pChapter << pPara;
 
-           GET_IFACE2(pBroker, IStressCheck, pStressCheck);
-           std::vector<IntervalIndexType> vIntervals = pStressCheck->GetStressCheckIntervals(segmentKey);
-           vIntervals.push_back(pIntervals->GetLiveLoadInterval());
-           std::sort(vIntervals.begin(), vIntervals.end());
-           vIntervals.erase(std::unique(vIntervals.begin(), vIntervals.end()), vIntervals.end());
-           for (const auto& intervalIdx : vIntervals)
-           {
-               GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-               rptRcTable* pTable = WriteXSTable(pBroker, segmentKey, intervalIdx, pDisplayUnits);
-               *pPara << pTable << rptNewLine;
-           }
+           GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+           rptRcTable* pTable = WriteXSTable(pBroker, segmentKey, intervalIdx, pDisplayUnits);
+           *pPara << pTable << rptNewLine;
        }
    }
    else if (!bIsPrismatic_CastingYard && bIsPrismatic_Final)
@@ -1122,9 +1093,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        ATLASSERT(false); // this is an impossible case
    }
 
-
-   ///////////>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
+   *pPara << rptNewPage;
 
    pHeading = rptStyleManager::CreateHeading(2);
    (*pChapter) << pHeading;

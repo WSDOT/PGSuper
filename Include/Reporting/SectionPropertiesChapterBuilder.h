@@ -51,7 +51,7 @@ private:
 
    rptRcTable* WriteXSTable2(std::shared_ptr<WBFL::EAF::Broker> pBroker,
        pgsTypes::SectionPropertyType spType,
-       const CSegmentKey& segmentKey,
+       const pgsPointOfInterest& poi,
        IntervalIndexType intervalIdx,
        std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
