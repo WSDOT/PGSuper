@@ -943,8 +943,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    (*pVoidPropertiesTable)(0, 1) << COLHDR(Sub2(_T("A"), _T("g")), rptLength2UnitTag, pDispUnits->Area);
    (*pVoidPropertiesTable)(0, 2) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
    (*pVoidPropertiesTable)(0, 3) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
-   (*pVoidPropertiesTable)(0, 4) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
-   (*pVoidPropertiesTable)(0, 5) << COLHDR(Sub2(_T("I"), _T("yy")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
+   (*pVoidPropertiesTable)(0, 4) << COLHDR(Sub2(_T("I"), _T("x")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
+   (*pVoidPropertiesTable)(0, 5) << COLHDR(Sub2(_T("I"), _T("y")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
    (*pVoidPropertiesTable)(0, 6) << COLHDR(Sub2(_T("I"), _T("xy")), rptLength4UnitTag, pDispUnits->MomentOfInertia);
 
    for (IndexType i = 0; i < vGrossGirderShapeXYPoints.size(); i++)
@@ -1016,8 +1016,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    rptHeading* pHeading = rptStyleManager::CreateHeading(2);
    (*pChapter) << pHeading;
-   pHeading->SetName(_T("Combined Section Properties"));
-   *pHeading << _T("Combined Section Properties");
+   pHeading->SetName(_T("Computed Bridge Section Properties"));
+   *pHeading << _T("Computed Bridge Section Properties");
 
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
@@ -1358,8 +1358,8 @@ void CSectionPropertiesChapterBuilder::WriteSectionProperties(rptParagraph& para
     para << Sub2(_T("A"), _T("g")) << _T(" = ") << area.SetValue(Area) << rptNewLine;
     para << Overline(_T("x")) << _T(" = ") << length.SetValue(xcg) << rptNewLine;
     para << Overline(_T("y")) << _T(" = ") << length.SetValue(ycg) << rptNewLine;
-    para << Sub2(_T("I"), _T("xx")) << _T(" = ") << momentOfInertia.SetValue(Ixx) << rptNewLine;
-    para << Sub2(_T("I"), _T("xy")) << _T(" = ") << momentOfInertia.SetValue(Iyy) << rptNewLine;
+    para << Sub2(_T("I"), _T("x")) << _T(" = ") << momentOfInertia.SetValue(Ixx) << rptNewLine;
+    para << Sub2(_T("I"), _T("y")) << _T(" = ") << momentOfInertia.SetValue(Iyy) << rptNewLine;
     para << Sub2(_T("I"), _T("xy")) << _T(" = ") << momentOfInertia.SetValue(Ixy) << rptNewLine;
 }
 
