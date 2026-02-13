@@ -835,16 +835,19 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    else if (!bIsPrismatic_CastingYard && !bIsPrismatic_Final)
    {
        pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
-       GET_IFACE2(pBroker, ILossParameters, pLossParams);
 
        GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
        rptRcTable* pTable = WriteXSTable2(pBroker, spType, poi, intervalIdx, pDisplayUnits);
        *pPara << pTable << rptNewLine;
 
-       if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed && pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+       if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed)
        {
-           rptRcTable* pTable = WriteXSTable2(pBroker, pgsTypes::sptGross, poi, intervalIdx, pDisplayUnits);
-           *pPara << pTable << rptNewLine;
+           GET_IFACE2(pBroker, ILossParameters, pLossParams);
+           if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+           {
+               rptRcTable* pTable = WriteXSTable2(pBroker, pgsTypes::sptGross, poi, intervalIdx, pDisplayUnits);
+               *pPara << pTable << rptNewLine;
+           }
        }
 
    }
