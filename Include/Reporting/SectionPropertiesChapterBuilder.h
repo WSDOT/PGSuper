@@ -46,9 +46,6 @@ private:
 // Delete them in the destructor
    mutable std::vector<std::_tstring> m_TemporaryFiles;
 
-   rptRcTable* WriteXSTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, 
-	   bool bComposite, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
-
    rptRcTable* WriteXSTable2(std::shared_ptr<WBFL::EAF::Broker> pBroker,
        pgsTypes::SectionPropertyType spType,
        const pgsPointOfInterest& poi,
