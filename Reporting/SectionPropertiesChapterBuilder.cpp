@@ -637,7 +637,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
 	if (!vSteelShapeProperties.empty())
     {
-        (*pParentLayoutTable)(0, 2) << Bold(_T("Strands And Longitudinal Rebar"));
+        (*pParentLayoutTable)(0, 2) << Bold(_T("Strands, Long. Rebar & Ducts"));
         (*pParentLayoutTable)(0, 2) << pSteelComponentPropertiesTable;
         
     }
