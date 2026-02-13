@@ -46,6 +46,10 @@ private:
 // Delete them in the destructor
    mutable std::vector<std::_tstring> m_TemporaryFiles;
 
+   void ExportCoordinatesToExcel(
+       const std::vector<std::vector<std::pair<Float64, Float64>>>& primaryPoints,
+       const std::_tstring& outputFilePath) const;
+
    rptRcTable* WriteXSTable2(std::shared_ptr<WBFL::EAF::Broker> pBroker,
        pgsTypes::SectionPropertyType spType,
        const pgsPointOfInterest& poi,

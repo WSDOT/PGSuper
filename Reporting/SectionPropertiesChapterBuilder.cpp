@@ -48,6 +48,48 @@ LPCTSTR CSectionPropertiesChapterBuilder::GetName() const
    return TEXT("Section Properties");
 }
 
+void CSectionPropertiesChapterBuilder::ExportCoordinatesToExcel(
+    const std::vector<std::vector<std::pair<Float64, Float64>>>& primaryPoints,
+    const std::_tstring& outputFilePath) const
+{
+    std::_tofstream file(outputFilePath);
+
+    if (!file.is_open())
+    {
+        return;
+    }
+
+    CEAFApp* pApp = EAFGetApp();
+    const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
+
+    for (IndexType i = 0; i < primaryPoints.size(); i++)
+    {
+        if (i == 0)
+        {
+            file << _T("GIRDER OUTLINE") << std::endl;
+        }
+        else if (i <= 2)
+        {
+            file << _T("EXTERNAL VOID ") << i << std::endl;
+        }
+        else
+        {
+            file << _T("INTERNAL VOID ") << (i - 2) << std::endl;
+        }
+
+        file << _T("X,Y") << std::endl;
+        for (auto iter = primaryPoints[i].rbegin(); iter != primaryPoints[i].rend(); ++iter)
+        {
+            Float64 x = WBFL::Units::ConvertFromSysUnits(iter->first, pDispUnits->ComponentDim.UnitOfMeasure);
+            Float64 y = WBFL::Units::ConvertFromSysUnits(iter->second, pDispUnits->ComponentDim.UnitOfMeasure);
+            file << x << _T(",") << y << std::endl;
+        }
+        file << std::endl;
+    }
+
+    file.close();
+}
+
 rptRcTable* CSectionPropertiesChapterBuilder::WriteXSTable2(std::shared_ptr<WBFL::EAF::Broker> pBroker,
     pgsTypes::SectionPropertyType spType,
     const pgsPointOfInterest& poi,
@@ -1082,6 +1124,15 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    const std::pair<Float64, Float64> cg_pair = { xcg, ycg };
 
    *pPara << CreateImage(vGrossGirderShapeXYPoints, secondaryPoints, cg_pair) << rptNewLine;
+
+   // Export coordinates to CSV (FOR DEBUGGING PURPOSE ONLY)
+   //TCHAR szPath[MAX_PATH];
+   //if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_MYDOCUMENTS, NULL, 0, szPath)))
+   //{
+   //    std::_tstring outputFile(szPath);
+   //    outputFile += _T("\\SectionCoordinates.csv");
+   //    ExportCoordinatesToExcel(vGrossGirderShapeXYPoints, outputFile);
+   //}
 
    return pChapter;
 }
