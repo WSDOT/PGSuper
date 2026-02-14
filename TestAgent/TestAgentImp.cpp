@@ -2323,6 +2323,16 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 
    }
 
+   //Debond tests
+   const pgsDebondArtifact* pDebondArtifact = pSegmentArtifact->GetDebondArtifact();
+
+   if (pDebondArtifact && pDebondArtifact->GetNumDebondedStrands() > 0)
+   {
+       resultsFile << bridgeId << _T(", ") << pid << _T(", 100400, ") << -1 << _T(", ") << pDebondArtifact->GetNumDebondedStrands() << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+       resultsFile << bridgeId << _T(", ") << pid << _T(", 100401, ") << -1 << _T(", ") << pDebondArtifact->GetNumDebondSections() << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+       resultsFile << bridgeId << _T(", ") << pid << _T(", 100402, ") << -1 << _T(", ") << (int)(pDebondArtifact->Passed() ? 1 : 0) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+   }
+
    return true;
 }
 

@@ -5971,8 +5971,6 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
       prev_location = location;
    }
 
-   lmin_section[pgsTypes::metStart] = lmin_section[pgsTypes::metStart] == Float64_Max ? 0 : lmin_section[pgsTypes::metStart];
-   lmin_section[pgsTypes::metEnd] = lmin_section[pgsTypes::metEnd] == Float64_Max ? 0 : lmin_section[pgsTypes::metEnd];
    pArtifact->SetMinDebondSectionSpacing(Min(lmin_section[pgsTypes::metStart], lmin_section[pgsTypes::metEnd]));
 
    Float64 dll;
