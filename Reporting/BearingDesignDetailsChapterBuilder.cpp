@@ -267,7 +267,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << _T("-Bearing reset effects are ignored") << rptNewLine;
     if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
     {
-        *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
+        *p << _T("-Deck shrinkage effects are ignored") << rptNewLine << rptNewLine;
     }
 
     p = new rptParagraph;

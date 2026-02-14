@@ -106,7 +106,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
         true, true, are_user_loads,  true, pDisplayUnits, false, true) << rptNewLine;
 
     *p << Sub2(symbol(theta), _T("s-st")) << _T(" = static component of ") << Sub2(symbol(theta), _T("s")) << rptNewLine;
-    *p << _T("*") << Sub2(symbol(theta), _T("s-st")) << _T("includes ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
+    *p << _T("*") << Sub2(symbol(theta), _T("s-st")) << _T(" includes ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
     *p << Sub2(symbol(theta), _T("s-cy")) << _T(" = cyclic component of ") << Sub2(symbol(theta), _T("s")) << rptNewLine;
     *p << Sub2(symbol(theta), _T("s")) << _T(" = total service limit design rotation (") << symbol(PLUS_MINUS) << _T(" largest magnitude)") << rptNewLine;
     *p << _T("**") << _T("The computation of ") << Sub2(symbol(theta), _T("s")) << _T(" accounts for the signed contribution of each rotation component") << rptNewLine;
@@ -116,7 +116,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
         true, true, are_user_loads, true, pDisplayUnits, false, false) << rptNewLine;
 
     *p << Sub2(symbol(theta), _T("s-st")) << _T(" = static component of ") << Sub2(symbol(theta), _T("s")) << rptNewLine;
-    *p << _T("*") << Sub2(symbol(theta), _T("s-st")) << _T("includes ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
+    *p << _T("*") << Sub2(symbol(theta), _T("s-st")) << _T(" includes ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
     *p << Sub2(symbol(theta), _T("s-cy")) << _T(" = cyclic component of ") << Sub2(symbol(theta), _T("s")) << rptNewLine;
     *p << Sub2(symbol(theta), _T("s")) << _T(" = total service limit design rotation (") << symbol(PLUS_MINUS) << _T(" largest magnitude)") << rptNewLine;
     *p << _T("**") << _T("The computation of ") << Sub2(symbol(theta), _T("s")) << _T(" accounts for the signed contribution of each rotation component") << rptNewLine;
