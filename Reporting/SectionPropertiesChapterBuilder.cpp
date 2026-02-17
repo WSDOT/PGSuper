@@ -634,6 +634,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    (*pNonCompositeLayoutTable)(0, 0) << pPrimaryPointsTable;
    CComPtr<IShapeProperties> pShapeProps;
    pGrossGirderShape->get_ShapeProperties(&pShapeProps);
+   (*pNonCompositeLayoutTable)(0, 0) << Bold(_T("Gross")) << rptNewLine;
    WriteSectionProperties((*pNonCompositeLayoutTable)(0, 0), pShapeProps);
    modE.SetValue(EcGdr);
    (*pNonCompositeLayoutTable)(0, 0) << Sub2(_T("E"), _T("c")) << _T(" = ") << modE << rptNewLine;
@@ -656,6 +657,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 	   modE.SetValue(EcDeck);
        CComPtr<IShapeProperties> cShapeProps;
        pDeckShape->get_ShapeProperties(&cShapeProps);
+       (*pCompositeLayoutTable)(0, 0) << Bold(_T("Gross")) << rptNewLine;
        WriteSectionProperties((*pCompositeLayoutTable)(0, 0), cShapeProps);
        (*pCompositeLayoutTable)(0, 0) << Sub2(_T("E"),_T("c")) << _T(" = ") << modE << rptNewLine;
        (*pParentLayoutTable)(0, 1) << pCompositeLayoutTable;
