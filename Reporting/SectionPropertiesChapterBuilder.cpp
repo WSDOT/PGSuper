@@ -695,7 +695,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
             (*pParentLayoutTable)(0, 2) << Sub2(_T("E"), _T("ps")) << _T(" = ") << modE << rptNewLine;
             const auto& apss = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Straight)->GetNominalArea();
             area.SetValue(apss);
-            (*pParentLayoutTable)(0, 2) << _T("Nom. ") << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
+            (*pParentLayoutTable)(0, 2) << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
         }
 
         if (Nh > 0)
@@ -707,7 +707,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
             (*pParentLayoutTable)(0, 3) << Sub2(_T("E"), _T("ps")) << _T(" = ") << modE << rptNewLine;
             const auto& apsh = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Harped)->GetNominalArea();
             area.SetValue(apsh);
-            (*pParentLayoutTable)(0, 3) << _T("Nom. ") << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
+            (*pParentLayoutTable)(0, 3) << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
         }
 
 		if (Nt > 0)
@@ -719,7 +719,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
             (*pParentLayoutTable)(0, 4) << Sub2(_T("E"), _T("ps")) << _T(" = ") << modE << rptNewLine;
             const auto& apst = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Temporary)->GetNominalArea();
             area.SetValue(apst);
-            (*pParentLayoutTable)(0, 4) << _T("Nom. ") << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
+            (*pParentLayoutTable)(0, 4) << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
         }
 
 		if (nBars > 0)
@@ -1054,9 +1054,9 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        {
            pRebarPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
            pRebarPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
-           (*pRebarPropertiesTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pRebarPropertiesTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pRebarPropertiesTable)(0, 2) << _T("Nom.") << rptNewLine << Sub2(_T("A"), _T("s")) << rptNewLine;
+           (*pRebarPropertiesTable)(0, 0) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pRebarPropertiesTable)(0, 1) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pRebarPropertiesTable)(0, 2) << COLHDR(Sub2(_T("A"), _T("s")), rptAreaUnitTag, pDispUnits->Area);
 
            CComPtr<IEnumRebarSectionItem> enumItems;
            rebar_section->get__EnumRebarSectionItem(&enumItems);
