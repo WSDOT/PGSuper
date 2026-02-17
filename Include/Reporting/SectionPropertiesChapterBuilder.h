@@ -35,9 +35,9 @@ public:
 
    CSectionPropertiesChapterBuilder(bool bSelect = true,bool simplifiedVersion=false);
 
-   virtual LPCTSTR GetName() const override;
+   LPCTSTR GetName() const override;
 
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+   rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
 private:
    bool m_SimplifiedVersion;

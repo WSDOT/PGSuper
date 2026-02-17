@@ -410,6 +410,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    std::vector<CComPtr<IShapeProperties>> voidShapeProperties;
 
    GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+
    SectProp steelElasticProp = pSectProp->GetSectionProperties(intervalIdx, poi, pgsTypes::SectionPropertyType::sptTransformed);
    CComQIPtr<ICompositeSectionEx> steelCompositeAdapter(steelElasticProp.Section);
    
@@ -775,16 +776,10 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-   rptHeading* pHeading = rptStyleManager::CreateHeading(2);
-   (*pChapter) << pHeading;
-   pHeading->SetName(_T("Computed Bridge Section Properties"));
-   *pHeading << _T("Computed Bridge Section Properties");
-
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
 
    GET_IFACE2(pBroker, IGirder, pGirder);
-   GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2_NOCHECK(pBroker, IIntervals, pIntervals);
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -793,50 +788,28 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    bool bIsPrismatic_CastingYard = pGirder->IsPrismatic(releaseIntervalIdx, segmentKey);
    bool bIsPrismatic_Final = pGirder->IsPrismatic(lastIntervalIdx, segmentKey);
 
-   bool bComposite = pBridge->IsCompositeDeck();
-   if (pGirder->HasStructuralLongitudinalJoints())
+   if (!bIsPrismatic_CastingYard && bIsPrismatic_Final)
    {
-       bComposite = true;
+       ATLASSERT(false); // this is an impossible case
    }
-
-   if (bIsPrismatic_CastingYard && !bIsPrismatic_Final)
+   else
    {
 
-       if (bComposite)
-       {
-           // there is a deck so we have composite, non-prismatic results
-           GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-           rptRcTable* pTable = WriteXSTable2(pBroker, pgsTypes::sptGross, poi, intervalIdx, pDisplayUnits);
-           *pPara << pTable << rptNewLine;
-       }
-   }
-   else if (!bIsPrismatic_CastingYard && !bIsPrismatic_Final)
-   {
+       rptHeading* pHeading = rptStyleManager::CreateHeading(2);
+       (*pChapter) << pHeading;
+       pHeading->SetName(_T("Computed Bridge Section Properties"));
+       *pHeading << _T("Computed Bridge Section Properties");
+
        pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
 
        GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
        rptRcTable* pTable = WriteXSTable2(pBroker, spType, poi, intervalIdx, pDisplayUnits);
        *pPara << pTable << rptNewLine;
-
-       if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed)
-       {
-           GET_IFACE2(pBroker, ILossParameters, pLossParams);
-           if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
-           {
-               rptRcTable* pTable = WriteXSTable2(pBroker, pgsTypes::sptGross, poi, intervalIdx, pDisplayUnits);
-               *pPara << pTable << rptNewLine;
-           }
-       }
-
-   }
-   else if (!bIsPrismatic_CastingYard && bIsPrismatic_Final)
-   {
-       ATLASSERT(false); // this is an impossible case
    }
 
    //*pPara << rptNewPage;
 
-   pHeading = rptStyleManager::CreateHeading(2);
+   rptHeading* pHeading = rptStyleManager::CreateHeading(2);
    (*pChapter) << pHeading;
    pHeading->SetName(_T("Geometry Formulas"));
    *pHeading << _T("Geometry Formulas");
