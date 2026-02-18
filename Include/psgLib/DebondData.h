@@ -30,7 +30,7 @@ class CStrandData;
 class PSGLIBCLASS CDebondData
 {
 public:
-   GridIndexType strandTypeGridIdx; // Index of debonded strand in GirderLibraryEntry strand grid
+   GridIndexType strandTypeGridIdx; // Index of debonded strand in the strand grid
    std::array<Float64,2> Length; // debond length (use pgsTypes::MemberEndType to access this array)
 
    CDebondData();

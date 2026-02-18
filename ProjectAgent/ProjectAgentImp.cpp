@@ -6674,7 +6674,7 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
 
       // Check validity of debond data for direct filled strands
       bool debond_changed(false);
-      std::vector<CDebondData>& vDebond(pSegment->Strands.GetDebonding(pgsTypes::Straight));
+      auto vDebond(pSegment->Strands.GetDebonding(pgsTypes::Straight));
       if ( !vDebond.empty() )
       {
          StrandIndexType nStrandCoordinates = pGirderEntry->GetNumStraightStrandCoordinates();
@@ -6720,6 +6720,11 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
             {
                it++;
             }
+         }
+
+         if (debond_changed)
+         {
+            pSegment->Strands.SetDebonding(pgsTypes::Straight,vDebond);
          }
 
          clean &= !debond_changed;
@@ -6787,7 +6792,7 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
       if (clean)
       {
          // check validity of debond data - this can come from library, or project changes
-         std::vector<CDebondData>& vDebond(pSegment->Strands.GetDebonding(pgsTypes::Straight));
+         auto vDebond(pSegment->Strands.GetDebonding(pgsTypes::Straight));
          if ( !vDebond.empty() )
          {
             StrandIndexType nStrandCoordinates = pGirderEntry->GetNumStraightStrandCoordinates();
@@ -6836,6 +6841,11 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
                {
                   iter++;
                }
+            }
+
+            if (debond_changed)
+            {
+               pSegment->Strands.SetDebonding(pgsTypes::Straight,vDebond);
             }
 
             clean &= !debond_changed;
@@ -8880,8 +8890,13 @@ const CHandlingData* CProjectAgentImp::GetHandlingData(const CSegmentKey& segmen
 
 void CProjectAgentImp::ConvertLegacyDebondData(CPrecastSegmentData* pSegment, const GirderLibraryEntry* pGdrEntry)
 {
+   if (IsDirectStrandModel(pSegment->Strands.GetStrandDefinitionType()))
+   {
+      return;
+   }
+
    // legacy versions only had straight debonding
-   std::vector<CDebondData>& rdebonds = pSegment->Strands.GetDebonding(pgsTypes::Straight);
+   auto rdebonds = pSegment->Strands.GetDebonding(pgsTypes::Straight);
 
    std::vector<CDebondData>::iterator it = rdebonds.begin();
    std::vector<CDebondData>::iterator itend = rdebonds.end();
@@ -8930,6 +8945,8 @@ void CProjectAgentImp::ConvertLegacyDebondData(CPrecastSegmentData* pSegment, co
          it++;
       }
    }
+
+   pSegment->Strands.SetDebonding(pgsTypes::Straight, rdebonds);
 }
 
 void CProjectAgentImp::ConvertLegacyExtendedStrandData(CPrecastSegmentData* pSegment, const GirderLibraryEntry* pGdrEntry)

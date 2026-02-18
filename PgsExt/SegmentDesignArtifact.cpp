@@ -1070,7 +1070,10 @@ void pgsSegmentDesignArtifact::ModSegmentDataForFlexureDesign(std::shared_ptr<WB
       cdbi.Length[pgsTypes::metStart] = rdbrinfo.DebondLength[pgsTypes::metStart];
       cdbi.Length[pgsTypes::metEnd]   = rdbrinfo.DebondLength[pgsTypes::metEnd];
 
-      pSegmentData->Strands.GetDebonding(pgsTypes::Straight).push_back(cdbi);
+      ASSERT(IsGridBasedStrandModel(pSegmentData->Strands.GetStrandDefinitionType()));
+      auto debonding = pSegmentData->Strands.GetDebonding(pgsTypes::Straight);
+      debonding.push_back(cdbi);
+      pSegmentData->Strands.SetDebonding(pgsTypes::Straight, debonding);
    }
    
    // concrete

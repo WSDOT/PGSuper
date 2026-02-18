@@ -418,12 +418,9 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
       gridIdx++;
    }
 
-   const std::vector<CDebondData>& vDebond(segment.Strands.GetDebonding(pgsTypes::Straight));
-   std::vector<CDebondData>::const_iterator debond_iter(vDebond.begin());
-   std::vector<CDebondData>::const_iterator debond_iter_end(vDebond.end());
-   for ( ; debond_iter != debond_iter_end; debond_iter++ )
+   auto vDebond(segment.Strands.GetDebonding(pgsTypes::Straight));
+   for(const auto& debond_info : vDebond)
    {
-      const CDebondData& debond_info = *debond_iter;
       ROWCOL row = GetRow(debond_info.strandTypeGridIdx);
 
       // set debond check mark
@@ -501,6 +498,7 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
 void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
 {
    segment.Strands.GetDebonding(pgsTypes::Straight).clear();
+   segment.Strands.ClearDebondData(pgsTypes::Straight);
    segment.Strands.ClearExtendedStrands(pgsTypes::Straight,pgsTypes::metStart);
    segment.Strands.ClearExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
    
@@ -548,7 +546,9 @@ void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
             debond_info.Length[pgsTypes::metEnd] = length;
          }
 
-         segment.Strands.GetDebonding(pgsTypes::Straight).push_back(debond_info);
+         auto vDebond = segment.Strands.GetDebonding(pgsTypes::Straight);
+         vDebond.push_back(debond_info);
+         segment.Strands.SetDebonding(pgsTypes::Straight, vDebond);
       }
       else
       {

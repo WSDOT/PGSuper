@@ -489,26 +489,11 @@ CStrandData::CStrandData()
    m_bConvertExtendedStrands = false;
 }  
 
-CStrandData::CStrandData(const CStrandData& rOther)
-{
-   MakeCopy(rOther);
-}
-
 CStrandData::~CStrandData()
 {
 }
 
 //======================== OPERATORS  =======================================
-CStrandData& CStrandData::operator= (const CStrandData& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
 bool CStrandData::operator==(const CStrandData& rOther) const
 {
    for ( Uint16 i = 0; i < 3; i++ )
@@ -1477,6 +1462,11 @@ void CStrandData::ClearExtendedStrands(pgsTypes::StrandType strandType,pgsTypes:
    m_NextendedStrands[strandType][endType].clear();
 }
 
+void CStrandData::ClearDebondData(pgsTypes::StrandType strandType)
+{
+   m_Debond[strandType].clear();
+}
+
 void CStrandData::ClearDebondData()
 {
    for (int i = 0; i < 3; i++)
@@ -1869,22 +1859,39 @@ StrandIndexType CStrandData::GetDebondCount(pgsTypes::StrandType strandType,pgsT
    return nDebondedStrands;
 }
 
-const std::vector<CDebondData>& CStrandData::GetDebonding(pgsTypes::StrandType strandType) const
-{
-   ATLASSERT(strandType != pgsTypes::Permanent);
-   return m_Debond[strandType];
-}
-
 void CStrandData::SetDebonding(pgsTypes::StrandType strandType,const std::vector<CDebondData>& vDebond)
 {
    ATLASSERT(strandType != pgsTypes::Permanent);
    m_Debond[strandType] = vDebond;
 }
 
-std::vector<CDebondData>& CStrandData::GetDebonding(pgsTypes::StrandType strandType)
+std::vector<CDebondData> CStrandData::GetDebonding(pgsTypes::StrandType strandType) const
 {
    ATLASSERT(strandType != pgsTypes::Permanent);
-   return m_Debond[strandType];
+   if (IsDirectStrandModel(m_NumPermStrandsType))
+   {
+      std::vector<CDebondData> vDebond;
+      IndexType idx = 0;
+      for (const auto& strand_row : m_StrandRows)
+      {
+         if (strand_row.m_StrandType != strandType)
+            continue;
+
+         if (strand_row.m_bIsDebonded[pgsTypes::metStart] || strand_row.m_bIsDebonded[pgsTypes::metEnd])
+         {
+            CDebondData debond_data;
+            debond_data.strandTypeGridIdx = idx;
+            debond_data.Length = strand_row.m_DebondLength;
+            vDebond.push_back(debond_data);
+         }
+         idx++;
+      }
+      return vDebond;
+   }
+   else
+   {
+      return m_Debond[strandType];
+   }
 }
 
 bool CStrandData::IsSymmetricDebond() const
@@ -2014,59 +2021,6 @@ pgsTypes::StrandDefinitionType CStrandData::GetStrandDefinitionType() const
 }
 
 ////////////////////////// PROTECTED  ///////////////////////////////////////
-
-void CStrandData::MakeCopy(const CStrandData& rOther)
-{
-   m_StrandMaterial[pgsTypes::Straight]  = rOther.m_StrandMaterial[pgsTypes::Straight];
-   m_StrandMaterial[pgsTypes::Harped]    = rOther.m_StrandMaterial[pgsTypes::Harped];
-   m_StrandMaterial[pgsTypes::Temporary] = rOther.m_StrandMaterial[pgsTypes::Temporary];
-
-   m_HsoEndMeasurement  = rOther.m_HsoEndMeasurement;
-   m_HsoHpMeasurement   = rOther.m_HsoHpMeasurement;
-
-   for ( int i = 0; i < 2; i++ )
-   {
-      m_HpOffsetAtEnd[i]      = rOther.m_HpOffsetAtEnd[i];
-      m_HpOffsetAtHp[i]       = rOther.m_HpOffsetAtHp[i];
-   }
-
-   m_NumPermStrandsType = rOther.m_NumPermStrandsType;
-
-   m_StraightStrandFill    = rOther.m_StraightStrandFill;
-   m_HarpedStrandFill      = rOther.m_HarpedStrandFill;
-   m_TemporaryStrandFill   = rOther.m_TemporaryStrandFill;
-
-   for ( Uint16 i = 0; i < 4; i++ )
-   {
-      m_HarpPoint[i] = rOther.m_HarpPoint[i];
-
-      m_Nstrands[i]         = rOther.m_Nstrands[i];
-      m_Pjack[i]            = rOther.m_Pjack[i];
-      m_bPjackCalculated[i] = rOther.m_bPjackCalculated[i];
-      m_LastUserPjack[i]    = rOther.m_LastUserPjack[i];
-
-      if (i < 3)
-      {
-         m_Debond[i]           = rOther.m_Debond[i];
-         m_NextendedStrands[i][pgsTypes::metStart]  = rOther.m_NextendedStrands[i][pgsTypes::metStart];
-         m_NextendedStrands[i][pgsTypes::metEnd]    = rOther.m_NextendedStrands[i][pgsTypes::metEnd];
-      }
-   }
-
-   m_TempStrandUsage    = rOther.m_TempStrandUsage;
-   m_bSymmetricDebond   = rOther.m_bSymmetricDebond;
-
-   m_AdjustableStrandType = rOther.m_AdjustableStrandType;
-
-   m_bConvertExtendedStrands = rOther.m_bConvertExtendedStrands;
-
-   m_StrandRows = rOther.m_StrandRows;
-}
-
-void CStrandData::MakeAssignment(const CStrandData& rOther)
-{
-   MakeCopy( rOther );
-}
 
 StrandIndexType CStrandData::ProcessDirectFillData(const CDirectStrandFillCollection& rInCollection, CDirectStrandFillCollection& rLocalCollection)
 {

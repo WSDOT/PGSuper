@@ -505,7 +505,7 @@ public:
 
          strandGridModel->ClearStraightStrandDebonding();
 
-         const std::vector<CDebondData>& vDebond = m_pSegment->Strands.GetDebonding(pgsTypes::Straight);
+         auto vDebond = m_pSegment->Strands.GetDebonding(pgsTypes::Straight);
          for (const auto& debond_data : vDebond)
          {
             // debond data index is in same order as grid fill
@@ -5344,13 +5344,9 @@ void CBridgeAgentImp::LayoutPrestressTransferAndDebondPoi(const CSegmentKey& seg
 
       Float64 xfer_length = pPrestress->GetTransferLength(segmentKey, strandType, pgsTypes::TransferLengthType::Minimum);
 
-      const std::vector<CDebondData>& vDebond(pStrands->GetDebonding(strandType));
-      std::vector<CDebondData>::const_iterator iter(vDebond.begin());
-      std::vector<CDebondData>::const_iterator end(vDebond.end());
-      for ( ; iter != end; iter++ )
+      auto vDebond(pStrands->GetDebonding(strandType));
+      for(const auto& debond_info : vDebond)
       {
-         const CDebondData& debond_info = *iter;
-
          Float64 d1 = debond_info.Length[pgsTypes::metStart];
          Float64 d2 = d1 + xfer_length;
 
@@ -9980,7 +9976,7 @@ GDRCONFIG CBridgeAgentImp::GetSegmentConfiguration(const CSegmentKey& segmentKey
       // Use tool to compute strand position index from grid index used by CDebondInfo
       ConfigStrandFillTool fillTool(fillVec[strandType]);
 
-      const std::vector<CDebondData>& vDebond(pStrands->GetDebonding(strandType));
+      auto vDebond = pStrands->GetDebonding(strandType);
       for (const auto& debond_data : vDebond)
       {
          // convert grid index to strands index

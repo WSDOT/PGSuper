@@ -66,8 +66,6 @@ public:
    virtual const CSegmentKey& GetSegmentKey();
    virtual ConfigStrandFillVector ComputeStrandFillVector(pgsTypes::StrandType type);
 
-   const std::vector<CDebondData>& GetDebondInfo() const;
-
 // Implementation
 protected:
    CComPtr<IIndexArray> m_Debondables;

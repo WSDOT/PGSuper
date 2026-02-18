@@ -570,7 +570,12 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
       // Get rid of any debonded strands that aren't filled
       ConfigStrandFillVector strtvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
-      ReconcileDebonding(strtvec, pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight)); 
+      auto debonding = pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight);
+      ASSERT(IsGridBasedStrandModel(pParent->m_pSegment->Strands.GetStrandDefinitionType()));
+      if (ReconcileDebonding(strtvec, debonding))
+      {
+         pParent->m_pSegment->Strands.SetDebonding(pgsTypes::Straight, debonding);
+      }
 
       for ( int i = 0; i < 2; i++ )
       {
@@ -2640,7 +2645,12 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
    // Strands have changed - take care of any invalid debonding
    ConfigStrandFillVector fillvec = ComputeStraightStrandFillVector(num_straight);
     
-   ReconcileDebonding(fillvec, pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight));
+   auto debonding = pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight);
+   ASSERT(IsGridBasedStrandModel(pParent->m_pSegment->Strands.GetStrandDefinitionType()));
+   if (ReconcileDebonding(fillvec, debonding))
+   {
+      pParent->m_pSegment->Strands.SetDebonding(pgsTypes::Straight, debonding);
+   }
 
    for ( int i = 0; i < 2; i++ )
    {

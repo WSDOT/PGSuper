@@ -220,7 +220,7 @@ Float64 pgsTransferLengthEngineer::GetTransferLengthAdjustment(const pgsPointOfI
       }
       else
       {
-         const auto& debonding = pStrands->GetDebonding(strandType);
+         auto debonding = pStrands->GetDebonding(strandType);
          for (const auto& debond_data : debonding)
          {
             Float64 Xleft_bond = debond_data.Length[pgsTypes::metStart];

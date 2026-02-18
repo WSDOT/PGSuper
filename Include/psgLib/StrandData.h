@@ -164,10 +164,10 @@ class PSGLIBCLASS CStrandData
 {
 public:
    CStrandData();
-   CStrandData(const CStrandData& rOther);
+   CStrandData(const CStrandData& rOther) = default;
    ~CStrandData();
 
-   CStrandData& operator = (const CStrandData& rOther);
+   CStrandData& operator = (const CStrandData& rOther) = default;
 
    bool operator==(const CStrandData& rOther) const;
    bool operator!=(const CStrandData& rOther) const;
@@ -232,10 +232,10 @@ public:
    void ClearExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType);
 
    void ClearDebondData();
+   void ClearDebondData(pgsTypes::StrandType strandType);
    StrandIndexType GetDebondCount(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,const GirderLibraryEntry* pGirderLibEntry) const;
    void SetDebonding(pgsTypes::StrandType strandType,const std::vector<CDebondData>& vDebond);
-   const std::vector<CDebondData>& GetDebonding(pgsTypes::StrandType strandType) const;
-   std::vector<CDebondData>& GetDebonding(pgsTypes::StrandType strandType);
+   std::vector<CDebondData> GetDebonding(pgsTypes::StrandType strandType) const;
    bool IsSymmetricDebond() const;
    void IsSymmetricDebond(bool bIsSymmetric);
    bool IsDebonded(pgsTypes::StrandType strandType,GridIndexType gridIdx,pgsTypes::MemberEndType endType,Float64* pLdebond) const;
@@ -276,9 +276,6 @@ public:
 #endif
 
 protected:
-   void MakeCopy(const CStrandData& rOther);
-   void MakeAssignment(const CStrandData& rOther);
-
    StrandIndexType ProcessDirectFillData(const CDirectStrandFillCollection& rInCollection, CDirectStrandFillCollection& rLocalCollection);
    void ProcessStrandRowData();
 
