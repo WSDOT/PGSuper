@@ -413,7 +413,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    SectProp steelElasticProp = pSectProp->GetSectionProperties(intervalIdx, poi, pgsTypes::SectionPropertyType::sptTransformed);
    CComQIPtr<ICompositeSectionEx> steelCompositeAdapter(steelElasticProp.Section);
-   
 
    if (compShape)
    {
@@ -637,8 +636,14 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    pGrossGirderShape->get_ShapeProperties(&pShapeProps);
    (*pNonCompositeLayoutTable)(0, 0) << Bold(_T("Gross")) << rptNewLine;
    WriteSectionProperties((*pNonCompositeLayoutTable)(0, 0), pShapeProps);
+   if (!vSteelShapeProperties.empty())
+   {
+       (*pNonCompositeLayoutTable)(0, 0) << Bold(_T("Net")) << rptNewLine;
+       SectProp netGirderSectionProp = pSectProp->GetSectionProperties(intervalIdx, poi, pgsTypes::SectionPropertyType::sptNetGirder);
+       WriteSectionProperties((*pNonCompositeLayoutTable)(0, 0), netGirderSectionProp.ShapeProps);
+   }
    modE.SetValue(EcGdr);
-   (*pNonCompositeLayoutTable)(0, 0) << Sub2(_T("E"), _T("c")) << _T(" = ") << modE << rptNewLine;
+   (*pNonCompositeLayoutTable)(0, 0) << rptNewLine << Sub2(_T("E"), _T("c")) << _T(" = ") << modE << rptNewLine;
 
    (*pParentLayoutTable)(0, 0) << pNonCompositeLayoutTable;
 
@@ -660,7 +665,13 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        pDeckShape->get_ShapeProperties(&cShapeProps);
        (*pCompositeLayoutTable)(0, 0) << Bold(_T("Gross")) << rptNewLine;
        WriteSectionProperties((*pCompositeLayoutTable)(0, 0), cShapeProps);
-       (*pCompositeLayoutTable)(0, 0) << Sub2(_T("E"),_T("c")) << _T(" = ") << modE << rptNewLine;
+       if (!vSteelShapeProperties.empty())
+       {
+           (*pCompositeLayoutTable)(0, 0) << Bold(_T("Net")) << rptNewLine;
+           SectProp netDeckSectionProp = pSectProp->GetSectionProperties(intervalIdx, poi, pgsTypes::SectionPropertyType::sptNetDeck);
+           WriteSectionProperties((*pCompositeLayoutTable)(0, 0), netDeckSectionProp.ShapeProps);
+       }
+       (*pCompositeLayoutTable)(0, 0) << rptNewLine << Sub2(_T("E"),_T("c")) << _T(" = ") << modE << rptNewLine;
        (*pParentLayoutTable)(0, 1) << pCompositeLayoutTable;
    }
 
@@ -971,14 +982,13 @@ void CSectionPropertiesChapterBuilder::WriteSectionProperties(rptParagraph& para
     Float64 xcg, ycg;
     pntCG->Location(&xcg, &ycg);
 
-    para << Sub2(_T("A"), _T("g")) << _T(" = ") << area.SetValue(Area) << rptNewLine;
+    para << _T("A")<< _T(" = ") << area.SetValue(Area) << rptNewLine;
     para << Overline(_T("x")) << _T(" = ") << length.SetValue(xcg) << rptNewLine;
     para << Overline(_T("y")) << _T(" = ") << length.SetValue(ycg) << rptNewLine;
     para << Sub2(_T("I"), _T("x")) << _T(" = ") << momentOfInertia.SetValue(Ixx) << rptNewLine;
     para << Sub2(_T("I"), _T("y")) << _T(" = ") << momentOfInertia.SetValue(Iyy) << rptNewLine;
     para << Sub2(_T("I"), _T("xy")) << _T(" = ") << momentOfInertia.SetValue(Ixy) << rptNewLine;
 }
-
 
 rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(const std::vector<Points2D>& primaryPoints,
     const Points2D& secondaryPoints, const std::pair<Float64, Float64>& cg) const
