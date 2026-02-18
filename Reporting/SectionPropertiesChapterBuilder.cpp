@@ -28,6 +28,7 @@
 #include <IFace/Intervals.h>
 #include <IFace/Limits.h>
 #include <IFace/PointOfInterest.h>
+#include "PGSuperColors.h"
 #include <PsgLib\BridgeDescription2.h>
 #include <psgLib/GirderLibraryEntry.h>
 #include <AgentTools.h>
@@ -397,9 +398,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    CComPtr<IPoint2dCollection> deckShapePoints;
    std::vector<Float64> vSteelElasticProperties;
    std::vector<CComPtr<IShapeProperties>> vSteelShapeProperties;
-   CComPtr<IPoint2dCollection> vStraightStrandPositions;
-   CComPtr<IPoint2dCollection> vHarpedStrandPositions;
-   CComPtr<IPoint2dCollection> vTempStrandPositions;
 
    CComQIPtr<ICompositeShape> compShape(shape);
 
@@ -675,26 +673,12 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        (*pParentLayoutTable)(0, 1) << pCompositeLayoutTable;
    }
 
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
-   pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Straight, &vStraightStrandPositions);
-   pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Harped, &vHarpedStrandPositions);
-   pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Temporary, &vTempStrandPositions);
-   StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Straight);
-   StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Harped);
-   StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Temporary);
 
-   GET_IFACE2(pBroker, ILongRebarGeometry, pRebarGeom);
-   pgsPointOfInterest barCutPoi(poi);
-   CComPtr<IRebarSection> rebar_section;
-   pRebarGeom->GetRebars(barCutPoi, &rebar_section);
-
-   IndexType nBars;
-   rebar_section->get_Count(&nBars);
 
 	if (!vSteelShapeProperties.empty())
     {
-        (*pParentLayoutTable)(0, 2) << Bold(_T("Strands, Long. Rebar & Ducts"));
-        (*pParentLayoutTable)(0, 2) << pSteelComponentPropertiesTable;
+
+        //////add old code here for straight strands, harp strands etc
         
     }
 
@@ -787,6 +771,10 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
+   rptHeading* pHeading = rptStyleManager::CreateHeading(2);
+   (*pChapter) << pHeading;
+   pHeading->SetName(_T("Computed Bridge Section Properties"));
+
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
 
@@ -806,9 +794,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    else
    {
 
-       rptHeading* pHeading = rptStyleManager::CreateHeading(2);
-       (*pChapter) << pHeading;
-       pHeading->SetName(_T("Computed Bridge Section Properties"));
        *pHeading << _T("Computed Bridge Section Properties");
 
        pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
@@ -820,7 +805,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    //*pPara << rptNewPage;
 
-   rptHeading* pHeading = rptStyleManager::CreateHeading(2);
+   pHeading = rptStyleManager::CreateHeading(2);
    (*pChapter) << pHeading;
    pHeading->SetName(_T("Geometry Formulas"));
    *pHeading << _T("Geometry Formulas");
@@ -868,44 +853,9 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    }
 
-   if (!vSteelShapeProperties.empty())
-   {
-       INIT_UV_PROTOTYPE(rptLength2UnitValue, area, pDispUnits->Area, false);
-       INIT_UV_PROTOTYPE(rptLength4UnitValue, momentOfInertia, pDispUnits->MomentOfInertia, true);
-
-       (*pSteelComponentPropertiesTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
-       (*pSteelComponentPropertiesTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
-       (*pSteelComponentPropertiesTable)(0, 2) << COLHDR(Sub2(_T("A"), _T("s")), rptLength2UnitTag, pDispUnits->Area);
-       (*pSteelComponentPropertiesTable)(0, 3) << COLHDR(_T("E"), rptStressUnitTag, pDispUnits->ModE);
-
-       row = pSteelComponentPropertiesTable->GetNumberOfHeaderRows();
-       for (IndexType idx = 0; idx < vSteelShapeProperties.size(); idx++)
-       {
-           CComPtr<IPoint2d> pntCG;
-           vSteelShapeProperties[idx]->get_Centroid(&pntCG);
-
-           Float64 xcg, ycg;
-           pntCG->Location(&xcg, &ycg);
-
-           Float64 Area;
-           vSteelShapeProperties[idx][0].get_Area(&Area);
-
-           (*pSteelComponentPropertiesTable)(row + idx, 0) << length.SetValue(xcg);
-           (*pSteelComponentPropertiesTable)(row + idx, 1) << length.SetValue(ycg);
-           (*pSteelComponentPropertiesTable)(row + idx, 2) << area.SetValue(Area);
-
-           Float64 E = vSteelElasticProperties[idx];
-
-           modE.ShowUnitTag(false);
-
-           (*pSteelComponentPropertiesTable)(row + idx, 3) << modE.SetValue(E);
-
-       }
-   }
-
    pHeading = rptStyleManager::CreateHeading(2);
    (*pChapter) << pHeading;
-   pHeading->SetName(_T("Indivisual Section Coordinates & Properties"));
+   pHeading->SetName(_T("Individual Section Coordinates & Properties"));
    *pHeading << _T("Individual Section Coordinates & Properties");
 
    pPara = new rptParagraph();
@@ -936,7 +886,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    sectCG->Location(&xcg, &ycg);
    const std::pair<Float64, Float64> cg_pair = { xcg, ycg };
 
-   *pPara << CreateImage(vGrossGirderShapeXYPoints, secondaryPoints, cg_pair) << rptNewLine;
+   *pPara << CreateImage(vGrossGirderShapeXYPoints, secondaryPoints, vSteelShapeProperties, vSteelElasticProperties, cg_pair) << rptNewLine;
 
    // Export coordinates to CSV (FOR DEBUGGING PURPOSE ONLY)
    //TCHAR szPath[MAX_PATH];
@@ -990,8 +940,10 @@ void CSectionPropertiesChapterBuilder::WriteSectionProperties(rptParagraph& para
     para << Sub2(_T("I"), _T("xy")) << _T(" = ") << momentOfInertia.SetValue(Ixy) << rptNewLine;
 }
 
-rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(const std::vector<Points2D>& primaryPoints,
-    const Points2D& secondaryPoints, const std::pair<Float64, Float64>& cg) const
+rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(const std::vector<Points2D>& primaryPoints, const Points2D& secondaryPoints,
+    const std::vector<CComPtr<IShapeProperties>>& steelShape, 
+    const std::vector<Float64>& steelElastic, 
+    const std::pair<Float64, Float64>& cg) const
 {
     CEAFApp* pApp = EAFGetApp();
     const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
@@ -1019,8 +971,6 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(const std::vector<Poin
     graph.DrawGrid(true);
     graph.DrawLegend(true);
 	graph.SetLegendBorderStyle(WBFL::Graphing::GraphXY::Style::None);
-
-    //graph.SetTitle(_T("Interaction Diagram"));
 
     // Setup X-axis
     CString strXAxis;
