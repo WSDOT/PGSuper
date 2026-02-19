@@ -626,6 +626,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    (*pNonCompositeLayoutTable)(0, 0) << pPrimaryPointsTable;
    CComPtr<IShapeProperties> pShapeProps;
    pGrossGirderShape->get_ShapeProperties(&pShapeProps);
+   modE.SetValue(EcGdr);
+   (*pNonCompositeLayoutTable)(0, 0) << Sub2(_T("E"), _T("c")) << _T(" = ") << modE << rptNewLine;
    (*pNonCompositeLayoutTable)(0, 0) << Bold(_T("Gross")) << rptNewLine;
    WriteSectionProperties((*pNonCompositeLayoutTable)(0, 0), pShapeProps);
    if (bNetProps)
@@ -634,8 +636,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        SectProp netGirderSectionProp = pSectProp->GetSectionProperties(intervalIdx, poi, pgsTypes::SectionPropertyType::sptNetGirder);
        WriteSectionProperties((*pNonCompositeLayoutTable)(0, 0), netGirderSectionProp.ShapeProps);
    }
-   modE.SetValue(EcGdr);
-   (*pNonCompositeLayoutTable)(0, 0) << rptNewLine << Sub2(_T("E"), _T("c")) << _T(" = ") << modE << rptNewLine;
 
    (*pParentLayoutTable)(0, 0) << pNonCompositeLayoutTable;
 
@@ -654,6 +654,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        rptRcTable* pCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
        (*pCompositeLayoutTable)(0, 0) << pSecondaryPointsTable;
 	   modE.SetValue(EcDeck);
+       (*pCompositeLayoutTable)(0, 0) << Sub2(_T("E"), _T("c")) << _T(" = ") << modE << rptNewLine;
+
        CComPtr<IShapeProperties> cShapeProps;
        pDeckShape->get_ShapeProperties(&cShapeProps);
        (*pCompositeLayoutTable)(0, 0) << Bold(_T("Gross")) << rptNewLine;
@@ -664,7 +666,6 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            SectProp netDeckSectionProp = pSectProp->GetSectionProperties(intervalIdx, poi, pgsTypes::SectionPropertyType::sptNetDeck);
            WriteSectionProperties((*pCompositeLayoutTable)(0, 0), netDeckSectionProp.ShapeProps);
        }
-       (*pCompositeLayoutTable)(0, 0) << rptNewLine << Sub2(_T("E"),_T("c")) << _T(" = ") << modE << rptNewLine;
        (*pParentLayoutTable)(0, 1) << pCompositeLayoutTable;
    }
 
