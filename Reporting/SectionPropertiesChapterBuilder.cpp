@@ -669,26 +669,19 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    }
 
 
-   GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
-   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
-   pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Straight, &vStraightStrandPositions);
-   pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Harped, &vHarpedStrandPositions);
-   pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Temporary, &vTempStrandPositions);
-   StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Straight);
-   StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Harped);
-   StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Temporary);
-
-   GET_IFACE2(pBroker, ILongRebarGeometry, pRebarGeom);
-   pgsPointOfInterest barCutPoi(poi);
-   CComPtr<IRebarSection> rebar_section;
-   pRebarGeom->GetRebars(barCutPoi, &rebar_section);
-
-   IndexType nBars;
-   rebar_section->get_Count(&nBars);
-
    if (bNetProps)
    {
+
+       GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
+       DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
+       GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+       pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Straight, &vStraightStrandPositions);
+       pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Harped, &vHarpedStrandPositions);
+       pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Temporary, &vTempStrandPositions);
+       StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Straight);
+       StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Harped);
+       StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Temporary);
+
        INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDispUnits->ComponentDim, false);
        Float64 x, y;
 
@@ -788,68 +781,93 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            }
        }
 
-       if (nBars > 0)
+
+       (*pParentLayoutTable)(0, 5) << Bold(_T("Longitudinal Rebar"));
+       (*pParentLayoutTable)(0, 5) << pRebarPropertiesTable;
+
+       CClosureKey closureKey;
+       bool bIsInClosure = pPoi->IsInClosureJoint(poi, &closureKey);
+
+       Float64 EDeckRebar, EGirderRebar, Fy, Fu;
+       pMaterials->GetDeckRebarProperties(&EDeckRebar, &Fy, &Fu);
+
+       if (bIsInClosure)
        {
-           (*pParentLayoutTable)(0, 5) << Bold(_T("Longitudinal Rebar"));
-           (*pParentLayoutTable)(0, 5) << pRebarPropertiesTable;
-
-           CClosureKey closureKey;
-           bool bIsInClosure = pPoi->IsInClosureJoint(poi, &closureKey);
-
-           Float64 EDeckRebar, EGirderRebar, Fy, Fu;
-           pMaterials->GetDeckRebarProperties(&EDeckRebar, &Fy, &Fu);
-
-           if (bIsInClosure)
-           {
-               pMaterials->GetClosureJointLongitudinalRebarProperties(closureKey, &EGirderRebar, &Fy, &Fu);
-           }
-           else
-           {
-               pMaterials->GetSegmentLongitudinalRebarProperties(segmentKey, &EGirderRebar, &Fy, &Fu);
-           }
-           modE.SetValue(EGirderRebar);
-           (*pParentLayoutTable)(0, 5) << _T("Girder ") << Sub2(_T("E"), _T("s")) << _T(" = ") << modE << rptNewLine;
-           modE.SetValue(EDeckRebar);
-           (*pParentLayoutTable)(0, 5) << _T("Deck ") << Sub2(_T("E"), _T("s")) << _T(" = ") << modE << rptNewLine;
-
-           pRebarPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
-           pRebarPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
-           (*pRebarPropertiesTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pRebarPropertiesTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pRebarPropertiesTable)(0, 2) << COLHDR(Sub2(_T("A"), _T("s")), rptAreaUnitTag, pDispUnits->Area);
-
-           RowIndexType row = pRebarPropertiesTable->GetNumberOfHeaderRows();
-
-           CComPtr<IEnumRebarSectionItem> enumItems;
-           rebar_section->get__EnumRebarSectionItem(&enumItems);
-
-           CComPtr<IRebarSectionItem> item;
-           IndexType idx = 0;
-           while (enumItems->Next(1, &item, nullptr) != S_FALSE)
-           {
-               CComPtr<IPoint2d> location;
-               item->get_Location(&location);
-
-               location->get_X(&x);
-               location->get_Y(&y);
-
-               vSteelProperties.emplace_back(Rebar, x, y);
-
-               CComPtr<IRebar> rebar;
-               item->get_Rebar(&rebar);
-               Float64 as;
-               rebar->get_NominalArea(&as);
-
-               (*pRebarPropertiesTable)(row + idx, 0) << length.SetValue(x);
-               (*pRebarPropertiesTable)(row + idx, 1) << length.SetValue(y);
-               area.ShowUnitTag(false);
-               (*pRebarPropertiesTable)(row + idx, 2) << area.SetValue(as);
-
-               idx++;
-
-               item.Release();
-           }
+           pMaterials->GetClosureJointLongitudinalRebarProperties(closureKey, &EGirderRebar, &Fy, &Fu);
        }
+       else
+       {
+           pMaterials->GetSegmentLongitudinalRebarProperties(segmentKey, &EGirderRebar, &Fy, &Fu);
+       }
+       modE.SetValue(EGirderRebar);
+       (*pParentLayoutTable)(0, 5) << _T("Girder ") << Sub2(_T("E"), _T("s")) << _T(" = ") << modE << rptNewLine;
+       modE.SetValue(EDeckRebar);
+       (*pParentLayoutTable)(0, 5) << _T("Deck ") << Sub2(_T("E"), _T("s")) << _T(" = ") << modE << rptNewLine;
+
+       pRebarPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
+       pRebarPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
+       (*pRebarPropertiesTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+       (*pRebarPropertiesTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
+       (*pRebarPropertiesTable)(0, 2) << COLHDR(Sub2(_T("A"), _T("s")), rptAreaUnitTag, pDispUnits->Area);
+
+       RowIndexType row = pRebarPropertiesTable->GetNumberOfHeaderRows();
+
+       GET_IFACE2(pBroker, ILongRebarGeometry, pRebarGeom);
+       pgsPointOfInterest barCutPoi(poi);
+       CComPtr<IRebarSection> rebar_section;
+       pRebarGeom->GetRebars(barCutPoi, &rebar_section);
+
+       IndexType idx = 0;
+
+       Float64 dta, dty, dba, dby;
+       pRebarGeom->GetDeckReinforcing(barCutPoi, pgsTypes::drmTop, pgsTypes::drbAll, pgsTypes::drcAll, false, &dta, &dty);
+       pRebarGeom->GetDeckReinforcing(barCutPoi, pgsTypes::drmBottom, pgsTypes::drbAll, pgsTypes::drcAll, false, &dba, &dby);
+
+       (*pRebarPropertiesTable)(row + idx, 0) << length.SetValue(0.0);
+       (*pRebarPropertiesTable)(row + idx, 1) << length.SetValue(dty);
+       area.ShowUnitTag(false);
+       (*pRebarPropertiesTable)(row + idx, 2) << area.SetValue(dta);
+       idx++;
+
+	   vSteelProperties.emplace_back(DeckRebar, 0.0, dty);
+
+       (*pRebarPropertiesTable)(row + idx, 0) << length.SetValue(0.0);
+       (*pRebarPropertiesTable)(row + idx, 1) << length.SetValue(dby);
+       area.ShowUnitTag(false);
+       (*pRebarPropertiesTable)(row + idx, 2) << area.SetValue(dba);
+       idx++;
+
+       vSteelProperties.emplace_back(DeckRebar, 0.0, dby);
+
+       CComPtr<IEnumRebarSectionItem> enumItems;
+       rebar_section->get__EnumRebarSectionItem(&enumItems);
+
+       CComPtr<IRebarSectionItem> item;
+       while (enumItems->Next(1, &item, nullptr) != S_FALSE)
+       {
+           CComPtr<IPoint2d> location;
+           item->get_Location(&location);
+
+           location->get_X(&x);
+           location->get_Y(&y);
+
+           vSteelProperties.emplace_back(Rebar, x, y);
+
+           CComPtr<IRebar> rebar;
+           item->get_Rebar(&rebar);
+           Float64 as;
+           rebar->get_NominalArea(&as);
+
+           (*pRebarPropertiesTable)(row + idx, 0) << length.SetValue(x);
+           (*pRebarPropertiesTable)(row + idx, 1) << length.SetValue(y);
+           area.ShowUnitTag(false);
+           (*pRebarPropertiesTable)(row + idx, 2) << area.SetValue(as);
+
+           idx++;
+
+           item.Release();
+       }
+       
 
        if (nDucts > 0)
        {
@@ -1276,6 +1294,19 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(const std::vector<Poin
                 graph.AddPoint(steelSeries, point);
                 graph.AddPoint(steelSeries, point2);
 			}
+            else if (steelProp.Type == DeckRebar)
+            {
+
+                steelSeries = graph.CreateDataSeries(_T(""), PS_DOT, 4, REBAR_COLOR);
+                WBFL::Graphing::Point point(
+                    WBFL::Units::ConvertFromSysUnits(steelProp.X - 0.9, pDispUnits->ComponentDim.UnitOfMeasure),
+                    WBFL::Units::ConvertFromSysUnits(steelProp.Y, pDispUnits->ComponentDim.UnitOfMeasure));
+                WBFL::Graphing::Point point2(
+                    WBFL::Units::ConvertFromSysUnits(steelProp.X + 0.9, pDispUnits->ComponentDim.UnitOfMeasure),
+                    WBFL::Units::ConvertFromSysUnits(steelProp.Y, pDispUnits->ComponentDim.UnitOfMeasure));
+                graph.AddPoint(steelSeries, point);
+				graph.AddPoint(steelSeries, point2);
+            }
             else if (steelProp.Type == Tendon)
             {
                 steelSeries = graph.CreateDataSeries(_T(""), PS_DOT, 10, SEGMENT_TENDON_FILL_COLOR);

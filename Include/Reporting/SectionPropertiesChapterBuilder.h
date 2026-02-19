@@ -58,7 +58,7 @@ private:
 
    void WriteSectionProperties(rptParagraph& para, CComPtr<IShapeProperties>& shapeProps) const;
 
-   typedef enum SteelPropType { Straight, Harped, Temporary, Rebar, Tendon } SteelPropType;
+   typedef enum SteelPropType { Straight, Harped, Temporary, Rebar, DeckRebar, Tendon } SteelPropType;
 
    struct SteelProps
    {
