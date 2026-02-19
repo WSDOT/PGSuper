@@ -471,7 +471,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 				   deckShapePoints = secondaryShapePoints;
 				   pDeckShape = sShape;
                }
-               else
+               else if (nPtCount == 1)
                {
                    bNetProps = true;
                }
