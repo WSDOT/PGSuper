@@ -654,6 +654,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    rptRcTable* pHarpedStrandPropertiesTable = rptStyleManager::CreateDefaultTable(3);
    rptRcTable* pTemporaryStrandPropertiesTable = rptStyleManager::CreateDefaultTable(3);
    rptRcTable* pRebarPropertiesTable = rptStyleManager::CreateDefaultTable(3);
+   rptRcTable* pTendonPropertiesTable = rptStyleManager::CreateDefaultTable(3);
 
 
    if (pDeckShape)
@@ -677,7 +678,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    }
 
 
-
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
+   DuctIndexType nDucts = pTendonGeom->GetDuctCount(segmentKey);
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
    pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Straight, &vStraightStrandPositions);
    pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Harped, &vHarpedStrandPositions);
@@ -815,8 +817,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
            pRebarPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
            pRebarPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
-           (*pRebarPropertiesTable)(0, 0) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
-           (*pRebarPropertiesTable)(0, 1) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pRebarPropertiesTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pRebarPropertiesTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
            (*pRebarPropertiesTable)(0, 2) << COLHDR(Sub2(_T("A"), _T("s")), rptAreaUnitTag, pDispUnits->Area);
 
            RowIndexType row = pRebarPropertiesTable->GetNumberOfHeaderRows();
@@ -847,6 +849,38 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                idx++;
 
                item.Release();
+           }
+       }
+
+       if (nDucts > 0)
+       {
+           (*pParentLayoutTable)(0, 6) << Bold(_T("Tendons"));
+           (*pParentLayoutTable)(0, 6) << pTendonPropertiesTable;
+
+		   const auto& Eps = pMaterials->GetGirderTendonMaterial(segmentKey)->GetE();
+           modE.SetValue(Eps);
+           (*pParentLayoutTable)(0, 6) << Sub2(_T("E"), _T("ps")) << _T(" = ") << modE << rptNewLine;
+
+           pTendonPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
+           pTendonPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
+           (*pTendonPropertiesTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pTendonPropertiesTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pTendonPropertiesTable)(0, 2) << COLHDR(Sub2(_T("A"), _T("s")), rptAreaUnitTag, pDispUnits->Area);
+
+           RowIndexType row = pTendonPropertiesTable->GetNumberOfHeaderRows();
+
+           for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+           {
+               CComPtr<IPoint2d> point;
+               pTendonGeom->GetGirderDuctPoint(poi, ductIdx, &point);
+               point->get_X(&x);
+               point->get_Y(&y);
+               Float64 as = pTendonGeom->GetGirderTendonArea(segmentKey, intervalIdx, ductIdx);
+
+               (*pTendonPropertiesTable)(row + ductIdx, 0) << length.SetValue(x);
+               (*pTendonPropertiesTable)(row + ductIdx, 1) << length.SetValue(y);
+               area.ShowUnitTag(false);
+               (*pTendonPropertiesTable)(row + ductIdx, 2) << area.SetValue(as);
            }
        }
    }
