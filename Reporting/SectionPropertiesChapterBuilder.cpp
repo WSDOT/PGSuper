@@ -398,6 +398,9 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    CComPtr<IPoint2dCollection> deckShapePoints;
    std::vector<Float64> vSteelElasticProperties;
    std::vector<CComPtr<IShapeProperties>> vSteelShapeProperties;
+   CComPtr<IPoint2dCollection> vStraightStrandPositions;
+   CComPtr<IPoint2dCollection> vHarpedStrandPositions;
+   CComPtr<IPoint2dCollection> vTempStrandPositions;
 
    CComQIPtr<ICompositeShape> compShape(shape);
 
@@ -675,12 +678,179 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
 
 
-	if (!vSteelShapeProperties.empty())
-    {
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+   pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Straight, &vStraightStrandPositions);
+   pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Harped, &vHarpedStrandPositions);
+   pStrandGeom->GetStrandPositions(poi, pgsTypes::StrandType::Temporary, &vTempStrandPositions);
+   StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Straight);
+   StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Harped);
+   StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::StrandType::Temporary);
 
-        //////add old code here for straight strands, harp strands etc
-        
-    }
+   GET_IFACE2(pBroker, ILongRebarGeometry, pRebarGeom);
+   pgsPointOfInterest barCutPoi(poi);
+   CComPtr<IRebarSection> rebar_section;
+   pRebarGeom->GetRebars(barCutPoi, &rebar_section);
+
+   IndexType nBars;
+   rebar_section->get_Count(&nBars);
+
+   if (!vSteelShapeProperties.empty())
+   {
+       INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDispUnits->ComponentDim, false);
+       Float64 x, y;
+
+       if (Ns > 0)
+       {
+           (*pParentLayoutTable)(0, 2) << Bold(_T("Straight Strands"));
+           (*pParentLayoutTable)(0, 2) << pStraightStrandPropertiesTable;
+           const auto& Eps = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Straight)->GetE();
+           modE.SetValue(Eps);
+           (*pParentLayoutTable)(0, 2) << Sub2(_T("E"), _T("ps")) << _T(" = ") << modE << rptNewLine;
+           const auto& apss = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Straight)->GetNominalArea();
+           area.SetValue(apss);
+           (*pParentLayoutTable)(0, 2) << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
+
+           pStraightStrandPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
+           pStraightStrandPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
+           (*pStraightStrandPropertiesTable)(0, 0) << _T("Strand") << rptNewLine << _T("No.");
+           (*pStraightStrandPropertiesTable)(0, 1) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pStraightStrandPropertiesTable)(0, 2) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
+
+           RowIndexType row = pStraightStrandPropertiesTable->GetNumberOfHeaderRows();
+
+           for (StrandIndexType strandIdx = 0; strandIdx < Ns; strandIdx++)
+           {
+               CComPtr<IPoint2d> strandPoint;
+               vStraightStrandPositions->get_Item(strandIdx, &strandPoint);
+               strandPoint->Location(&x, &y);
+               (*pStraightStrandPropertiesTable)(row + strandIdx, 0) << strandIdx + 1;
+               (*pStraightStrandPropertiesTable)(row + strandIdx, 1) << length.SetValue(x);
+               (*pStraightStrandPropertiesTable)(row + strandIdx, 2) << length.SetValue(y);
+           }
+       }
+
+       if (Nh > 0)
+       {
+           (*pParentLayoutTable)(0, 3) << Bold(_T("Harped Strands"));
+           (*pParentLayoutTable)(0, 3) << pHarpedStrandPropertiesTable;
+           const auto& Eph = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Harped)->GetE();
+           modE.SetValue(Eph);
+           (*pParentLayoutTable)(0, 3) << Sub2(_T("E"), _T("ps")) << _T(" = ") << modE << rptNewLine;
+           const auto& apsh = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Harped)->GetNominalArea();
+           area.SetValue(apsh);
+           (*pParentLayoutTable)(0, 3) << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
+
+           pHarpedStrandPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
+           pHarpedStrandPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
+           (*pHarpedStrandPropertiesTable)(0, 0) << _T("Strand") << rptNewLine << _T("No.");
+           (*pHarpedStrandPropertiesTable)(0, 1) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pHarpedStrandPropertiesTable)(0, 2) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
+
+           RowIndexType row = pHarpedStrandPropertiesTable->GetNumberOfHeaderRows();
+
+           for (StrandIndexType strandIdx = 0; strandIdx < Nh; strandIdx++)
+           {
+               CComPtr<IPoint2d> strandPoint;
+               vHarpedStrandPositions->get_Item(strandIdx, &strandPoint);
+               strandPoint->Location(&x, &y);
+               (*pHarpedStrandPropertiesTable)(row + strandIdx, 0) << strandIdx + 1;
+               (*pHarpedStrandPropertiesTable)(row + strandIdx, 1) << length.SetValue(x);
+               (*pHarpedStrandPropertiesTable)(row + strandIdx, 2) << length.SetValue(y);
+           }
+       }
+
+       if (Nt > 0)
+       {
+           (*pParentLayoutTable)(0, 4) << Bold(_T("Temporary Strands"));
+           (*pParentLayoutTable)(0, 4) << pTemporaryStrandPropertiesTable;
+           const auto& Ept = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Temporary)->GetE();
+           modE.SetValue(Ept);
+           (*pParentLayoutTable)(0, 4) << Sub2(_T("E"), _T("ps")) << _T(" = ") << modE << rptNewLine;
+           const auto& apst = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::StrandType::Temporary)->GetNominalArea();
+           area.SetValue(apst);
+           (*pParentLayoutTable)(0, 4) << Sub2(_T("A"), _T("ps")) << _T(" = ") << area << rptNewLine;
+
+           pTemporaryStrandPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
+           pTemporaryStrandPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
+           (*pTemporaryStrandPropertiesTable)(0, 0) << _T("Strand") << rptNewLine << _T("No.");
+           (*pTemporaryStrandPropertiesTable)(0, 1) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pTemporaryStrandPropertiesTable)(0, 2) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
+
+           RowIndexType row = pTemporaryStrandPropertiesTable->GetNumberOfHeaderRows();
+
+           for (StrandIndexType strandIdx = 0; strandIdx < Nt; strandIdx++)
+           {
+               CComPtr<IPoint2d> strandPoint;
+               vTempStrandPositions->get_Item(strandIdx, &strandPoint);
+               strandPoint->Location(&x, &y);
+               (*pTemporaryStrandPropertiesTable)(row + strandIdx, 0) << strandIdx + 1;
+               (*pTemporaryStrandPropertiesTable)(row + strandIdx, 1) << length.SetValue(x);
+               (*pTemporaryStrandPropertiesTable)(row + strandIdx, 2) << length.SetValue(y);
+           }
+       }
+
+       if (nBars > 0)
+       {
+           (*pParentLayoutTable)(0, 5) << Bold(_T("Longitudinal Rebar"));
+           (*pParentLayoutTable)(0, 5) << pRebarPropertiesTable;
+
+           CClosureKey closureKey;
+           bool bIsInClosure = pPoi->IsInClosureJoint(poi, &closureKey);
+
+           Float64 EDeckRebar, EGirderRebar, Fy, Fu;
+           pMaterials->GetDeckRebarProperties(&EDeckRebar, &Fy, &Fu);
+
+           if (bIsInClosure)
+           {
+               pMaterials->GetClosureJointLongitudinalRebarProperties(closureKey, &EGirderRebar, &Fy, &Fu);
+           }
+           else
+           {
+               pMaterials->GetSegmentLongitudinalRebarProperties(segmentKey, &EGirderRebar, &Fy, &Fu);
+           }
+           modE.SetValue(EGirderRebar);
+           (*pParentLayoutTable)(0, 5) << _T("Girder ") << Sub2(_T("E"), _T("s")) << _T(" = ") << modE << rptNewLine;
+           modE.SetValue(EDeckRebar);
+           (*pParentLayoutTable)(0, 5) << _T("Deck ") << Sub2(_T("E"), _T("s")) << _T(" = ") << modE << rptNewLine;
+
+           pRebarPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
+           pRebarPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
+           (*pRebarPropertiesTable)(0, 0) << COLHDR(Sub2(_T("X"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pRebarPropertiesTable)(0, 1) << COLHDR(Sub2(_T("Y"), _T("c.g.")), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pRebarPropertiesTable)(0, 2) << COLHDR(Sub2(_T("A"), _T("s")), rptAreaUnitTag, pDispUnits->Area);
+
+           RowIndexType row = pRebarPropertiesTable->GetNumberOfHeaderRows();
+
+           CComPtr<IEnumRebarSectionItem> enumItems;
+           rebar_section->get__EnumRebarSectionItem(&enumItems);
+
+           CComPtr<IRebarSectionItem> item;
+           IndexType idx = 0;
+           while (enumItems->Next(1, &item, nullptr) != S_FALSE)
+           {
+               CComPtr<IPoint2d> location;
+               item->get_Location(&location);
+
+               location->get_X(&x);
+               location->get_Y(&y);
+
+               CComPtr<IRebar> rebar;
+               item->get_Rebar(&rebar);
+               Float64 as;
+               rebar->get_NominalArea(&as);
+
+               (*pRebarPropertiesTable)(row + idx, 0) << length.SetValue(x);
+               (*pRebarPropertiesTable)(row + idx, 1) << length.SetValue(y);
+               area.ShowUnitTag(false);
+               (*pRebarPropertiesTable)(row + idx, 2) << area.SetValue(as);
+
+               idx++;
+
+               item.Release();
+           }
+       }
+   }
+
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDispUnits->ComponentDim, false);
    area.ShowUnitTag(false);
