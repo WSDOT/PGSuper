@@ -1295,15 +1295,15 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(const std::vector<Poin
                 graph.AddPoint(steelSeries, point);
                 graph.AddPoint(steelSeries, point2);
 			}
-            else if (steelProp.Type == DeckRebar)
+            else if ((steelProp.Type == DeckRebar) && (0 < secondaryPoints.size()))
             {
 
                 steelSeries = graph.CreateDataSeries(_T(""), PS_DOT, 4, REBAR_COLOR);
                 WBFL::Graphing::Point point(
-                    WBFL::Units::ConvertFromSysUnits(steelProp.X - 0.9, pDispUnits->ComponentDim.UnitOfMeasure),
+                    WBFL::Units::ConvertFromSysUnits(steelProp.X - xMax, pDispUnits->ComponentDim.UnitOfMeasure),
                     WBFL::Units::ConvertFromSysUnits(steelProp.Y, pDispUnits->ComponentDim.UnitOfMeasure));
                 WBFL::Graphing::Point point2(
-                    WBFL::Units::ConvertFromSysUnits(steelProp.X + 0.9, pDispUnits->ComponentDim.UnitOfMeasure),
+                    WBFL::Units::ConvertFromSysUnits(steelProp.X + xMax, pDispUnits->ComponentDim.UnitOfMeasure),
                     WBFL::Units::ConvertFromSysUnits(steelProp.Y, pDispUnits->ComponentDim.UnitOfMeasure));
                 graph.AddPoint(steelSeries, point);
 				graph.AddPoint(steelSeries, point2);
