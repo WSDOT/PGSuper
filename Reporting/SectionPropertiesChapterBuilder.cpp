@@ -396,11 +396,10 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    vGrossGirderShapePoints.emplace_back(GrossGirderShapePoints);
 
    CComPtr<IPoint2dCollection> deckShapePoints;
-   std::vector<Float64> vSteelElasticProperties;
-   std::vector<CComPtr<IShapeProperties>> vSteelShapeProperties;
    CComPtr<IPoint2dCollection> vStraightStrandPositions;
    CComPtr<IPoint2dCollection> vHarpedStrandPositions;
    CComPtr<IPoint2dCollection> vTempStrandPositions;
+   std::vector<SteelProps> vSteelProperties;
 
    CComQIPtr<ICompositeShape> compShape(shape);
 
@@ -414,6 +413,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
    SectProp steelElasticProp = pSectProp->GetSectionProperties(intervalIdx, poi, pgsTypes::SectionPropertyType::sptTransformed);
    CComQIPtr<ICompositeSectionEx> steelCompositeAdapter(steelElasticProp.Section);
+
+   bool bNetProps = false;
 
    if (compShape)
    {
@@ -472,17 +473,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                }
                else
                {
-                   CComPtr<ICompositeSectionItemEx> comp_item;
-                   steelCompositeAdapter->get_Item(i, &comp_item);
-
-                   Float64 E;
-                   comp_item->get_Efg(&E);
-
-                   vSteelElasticProperties.emplace_back(E);
-
-                   CComPtr<IShapeProperties> steelShapeProps;
-                   sShape->get_ShapeProperties(&steelShapeProps);
-				   vSteelShapeProperties.emplace_back(steelShapeProps);
+                   bNetProps = true;
                }
            }
        }
@@ -637,7 +628,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    pGrossGirderShape->get_ShapeProperties(&pShapeProps);
    (*pNonCompositeLayoutTable)(0, 0) << Bold(_T("Gross")) << rptNewLine;
    WriteSectionProperties((*pNonCompositeLayoutTable)(0, 0), pShapeProps);
-   if (!vSteelShapeProperties.empty())
+   if (bNetProps)
    {
        (*pNonCompositeLayoutTable)(0, 0) << Bold(_T("Net")) << rptNewLine;
        SectProp netGirderSectionProp = pSectProp->GetSectionProperties(intervalIdx, poi, pgsTypes::SectionPropertyType::sptNetGirder);
@@ -667,7 +658,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
        pDeckShape->get_ShapeProperties(&cShapeProps);
        (*pCompositeLayoutTable)(0, 0) << Bold(_T("Gross")) << rptNewLine;
        WriteSectionProperties((*pCompositeLayoutTable)(0, 0), cShapeProps);
-       if (!vSteelShapeProperties.empty())
+       if (bNetProps)
        {
            (*pCompositeLayoutTable)(0, 0) << Bold(_T("Net")) << rptNewLine;
            SectProp netDeckSectionProp = pSectProp->GetSectionProperties(intervalIdx, poi, pgsTypes::SectionPropertyType::sptNetDeck);
@@ -696,7 +687,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    IndexType nBars;
    rebar_section->get_Count(&nBars);
 
-   if (!vSteelShapeProperties.empty())
+   if (bNetProps)
    {
        INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDispUnits->ComponentDim, false);
        Float64 x, y;
@@ -728,6 +719,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                (*pStraightStrandPropertiesTable)(row + strandIdx, 0) << strandIdx + 1;
                (*pStraightStrandPropertiesTable)(row + strandIdx, 1) << length.SetValue(x);
                (*pStraightStrandPropertiesTable)(row + strandIdx, 2) << length.SetValue(y);
+
+               vSteelProperties.emplace_back(Straight, x, y);
            }
        }
 
@@ -758,6 +751,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                (*pHarpedStrandPropertiesTable)(row + strandIdx, 0) << strandIdx + 1;
                (*pHarpedStrandPropertiesTable)(row + strandIdx, 1) << length.SetValue(x);
                (*pHarpedStrandPropertiesTable)(row + strandIdx, 2) << length.SetValue(y);
+
+               vSteelProperties.emplace_back(Harped, x, y);
            }
        }
 
@@ -788,6 +783,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                (*pTemporaryStrandPropertiesTable)(row + strandIdx, 0) << strandIdx + 1;
                (*pTemporaryStrandPropertiesTable)(row + strandIdx, 1) << length.SetValue(x);
                (*pTemporaryStrandPropertiesTable)(row + strandIdx, 2) << length.SetValue(y);
+
+               vSteelProperties.emplace_back(Temporary, x, y);
            }
        }
 
@@ -836,6 +833,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                location->get_X(&x);
                location->get_Y(&y);
 
+               vSteelProperties.emplace_back(Rebar, x, y);
+
                CComPtr<IRebar> rebar;
                item->get_Rebar(&rebar);
                Float64 as;
@@ -876,6 +875,8 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                point->get_X(&x);
                point->get_Y(&y);
                Float64 as = pTendonGeom->GetGirderTendonArea(segmentKey, intervalIdx, ductIdx);
+
+               vSteelProperties.emplace_back(Tendon, x, y);
 
                (*pTendonPropertiesTable)(row + ductIdx, 0) << length.SetValue(x);
                (*pTendonPropertiesTable)(row + ductIdx, 1) << length.SetValue(y);
@@ -1090,7 +1091,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    sectCG->Location(&xcg, &ycg);
    const std::pair<Float64, Float64> cg_pair = { xcg, ycg };
 
-   *pPara << CreateImage(vGrossGirderShapeXYPoints, secondaryPoints, vSteelShapeProperties, vSteelElasticProperties, cg_pair) << rptNewLine;
+   *pPara << CreateImage(vGrossGirderShapeXYPoints, secondaryPoints, vSteelProperties, cg_pair) << rptNewLine;
 
    // Export coordinates to CSV (FOR DEBUGGING PURPOSE ONLY)
    //TCHAR szPath[MAX_PATH];
@@ -1144,9 +1145,9 @@ void CSectionPropertiesChapterBuilder::WriteSectionProperties(rptParagraph& para
     para << Sub2(_T("I"), _T("xy")) << _T(" = ") << momentOfInertia.SetValue(Ixy) << rptNewLine;
 }
 
+
 rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(const std::vector<Points2D>& primaryPoints, const Points2D& secondaryPoints,
-    const std::vector<CComPtr<IShapeProperties>>& steelShape, 
-    const std::vector<Float64>& steelElastic, 
+    const std::vector<SteelProps>& steelProps,
     const std::pair<Float64, Float64>& cg) const
 {
     CEAFApp* pApp = EAFGetApp();
@@ -1197,6 +1198,7 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(const std::vector<Poin
 
     std::vector<IndexType> primarySeries;
     primarySeries.resize(primaryPoints.size());
+
     for (IndexType i = 0; i < primaryPoints.size(); i++)
     {
         primarySeries[i] = graph.CreateDataSeries(_T(""), PS_SOLID, 1, BLACK);
@@ -1243,6 +1245,51 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(const std::vector<Poin
     {
         WBFL::Graphing::Point point(WBFL::Units::ConvertFromSysUnits(secondaryPoints.front().first, pDispUnits->ComponentDim.UnitOfMeasure), WBFL::Units::ConvertFromSysUnits(secondaryPoints.front().second, pDispUnits->ComponentDim.UnitOfMeasure));
         graph.AddPoint(secondarySeries, point);
+    }
+
+	if (0 < steelProps.size())
+    {
+        for (const auto& steelProp : steelProps)
+        {
+            IndexType steelSeries;
+            if ((steelProp.Type == Straight) || (steelProp.Type == Harped) || (steelProp.Type == Temporary))
+            {
+                steelSeries = graph.CreateDataSeries(_T(""), PS_DOT, 4, STRAND_FILL_COLOR);
+                WBFL::Graphing::Point point(
+                    WBFL::Units::ConvertFromSysUnits(steelProp.X, pDispUnits->ComponentDim.UnitOfMeasure),
+                    WBFL::Units::ConvertFromSysUnits(steelProp.Y, pDispUnits->ComponentDim.UnitOfMeasure));
+                WBFL::Graphing::Point point2(
+                    WBFL::Units::ConvertFromSysUnits(steelProp.X + 0.01, pDispUnits->ComponentDim.UnitOfMeasure),
+                    WBFL::Units::ConvertFromSysUnits(steelProp.Y, pDispUnits->ComponentDim.UnitOfMeasure));
+                graph.AddPoint(steelSeries, point);
+                graph.AddPoint(steelSeries, point2);
+            }
+            else if (steelProp.Type == Rebar)
+            {
+                steelSeries = graph.CreateDataSeries(_T(""), PS_DOT, 4, REBAR_COLOR);
+                WBFL::Graphing::Point point(
+                    WBFL::Units::ConvertFromSysUnits(steelProp.X, pDispUnits->ComponentDim.UnitOfMeasure),
+                    WBFL::Units::ConvertFromSysUnits(steelProp.Y, pDispUnits->ComponentDim.UnitOfMeasure));
+                WBFL::Graphing::Point point2(
+                    WBFL::Units::ConvertFromSysUnits(steelProp.X + 0.01, pDispUnits->ComponentDim.UnitOfMeasure),
+                    WBFL::Units::ConvertFromSysUnits(steelProp.Y, pDispUnits->ComponentDim.UnitOfMeasure));
+                graph.AddPoint(steelSeries, point);
+                graph.AddPoint(steelSeries, point2);
+			}
+            else if (steelProp.Type == Tendon)
+            {
+                steelSeries = graph.CreateDataSeries(_T(""), PS_DOT, 10, SEGMENT_TENDON_FILL_COLOR);
+                WBFL::Graphing::Point point(
+                    WBFL::Units::ConvertFromSysUnits(steelProp.X, pDispUnits->ComponentDim.UnitOfMeasure),
+                    WBFL::Units::ConvertFromSysUnits(steelProp.Y, pDispUnits->ComponentDim.UnitOfMeasure));
+                WBFL::Graphing::Point point2(
+                    WBFL::Units::ConvertFromSysUnits(steelProp.X + 0.01, pDispUnits->ComponentDim.UnitOfMeasure),
+                    WBFL::Units::ConvertFromSysUnits(steelProp.Y, pDispUnits->ComponentDim.UnitOfMeasure));
+                graph.AddPoint(steelSeries, point);
+                graph.AddPoint(steelSeries, point2);
+			}
+
+        }
     }
 
     // Create centroidal axes

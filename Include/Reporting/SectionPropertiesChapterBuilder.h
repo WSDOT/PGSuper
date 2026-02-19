@@ -58,9 +58,18 @@ private:
 
    void WriteSectionProperties(rptParagraph& para, CComPtr<IShapeProperties>& shapeProps) const;
 
-   rptRcImage* CreateImage(const std::vector<Points2D>& primaryPoints, const Points2D& secondaryPoints,
-       const std::vector<CComPtr<IShapeProperties>>& steelShape, 
-       const std::vector<Float64>& steelElastic,
+   typedef enum SteelPropType { Straight, Harped, Temporary, Rebar, Tendon } SteelPropType;
+
+   struct SteelProps
+   {
+	   SteelPropType Type;
+       Float64 X;
+       Float64 Y;
+   };
+
+   rptRcImage* CreateImage(const std::vector<Points2D>& primaryPoints, 
+       const Points2D& secondaryPoints,
+       const std::vector<SteelProps>& steelProps,
        const std::pair<Float64, Float64>& cg) const;
 
 };
