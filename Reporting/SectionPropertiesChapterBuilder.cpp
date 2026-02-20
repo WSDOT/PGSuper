@@ -1412,12 +1412,12 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(const std::vector<Poin
         _tcscpy_s(temp_path, _MAX_PATH, _T("C:\\"));
 
     // This creates a file called _T("temp_file").TMP
-    if (::GetTempFileName(temp_path, _T("gencomp_"), 0, temp_file) == 0)
+    if (::GetTempFileName(temp_path, _T("sectprop_"), 0, temp_file) == 0)
     {
         // We could not get a temp name, so just use this default
         // (Use a tmp extension so it is in the same format as the one
         //  the OS would have created for us)
-        _tcscpy_s(temp_file, _MAX_PATH, _T("gencomp.tmp"));
+        _tcscpy_s(temp_file, _MAX_PATH, _T("sectprop.tmp"));
         should_delete = false;
     }
 
