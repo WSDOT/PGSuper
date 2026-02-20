@@ -1560,7 +1560,7 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
       *pParagraph << rptNewLine;
    }
 
-   Int16 nCol = (bAfter1999 && shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables ? 17 : 15);
+   Int16 nCol = (bAfter1999 && shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables ? 16 : 14);
    if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2001 ||
       shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007 ||
       shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTEquations
@@ -1594,7 +1594,6 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    *pParagraph << _T("All areas and corresponding adjustment factors used in this equation are based on the tension side of the girder section") << rptNewLine;
    *pParagraph << Sub2(_T("K"), _T("db")) << _T(" = factor that accounts for lack of full bar development ") << rptNewLine;
    *pParagraph << Sub2(_T("K"), _T("ds")) << _T(" = factor that accounts for lack of full strand development ") << rptNewLine;
-   *pParagraph << Sub2(_T("K"), _T("dt")) << _T(" = factor that accounts for lack of full transfer of prestressing force") << rptNewLine;
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol);
 
@@ -1670,7 +1669,6 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    (*table)(0,col++) << COLHDR( Sub2(_T("E"),_T("s")), rptStressUnitTag, pDisplayUnits->GetModEUnit() );
    (*table)(0,col++) << Sub2(_T("K"),_T("ds"));
    (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("ps")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0, col++) << Sub2(_T("K"), _T("dt"));
    (*table)(0,col++) << COLHDR( Sub2(_T("E"),_T("ps")), rptStressUnitTag, pDisplayUnits->GetModEUnit() );
 
    if (0 < nMaxSegmentDucts)
@@ -1793,7 +1791,6 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
       (*table)(row,col++) << mod_e.SetValue( scd.Es );
       (*table)(row,col++) << scalar.SetValue( scd.Kds );
       (*table)(row,col++) << area.SetValue( scd.Aps );
-      (*table)(row, col++) << scalar.SetValue(scd.Kdt);
       (*table)(row,col++) << mod_e.SetValue( scd.Eps );
 
       if (0 < nMaxSegmentDucts)
