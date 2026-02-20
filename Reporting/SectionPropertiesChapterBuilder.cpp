@@ -619,7 +619,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    INIT_UV_PROTOTYPE(rptLength2UnitValue, area, pDispUnits->Area, true);
 
    // Organize Tables
-   rptRcTable* pParentLayoutTable = rptStyleManager::CreateLayoutTable(7);
+   rptRcTable* pParentLayoutTable = rptStyleManager::CreateLayoutTable(8);
    (*pParentLayoutTable)(0, 0) << Bold(_T("Girder"));
    rptRcTable* pNonCompositeLayoutTable = rptStyleManager::CreateLayoutTable(2);
    rptRcTable* pPrimaryPointsTable = rptStyleManager::CreateDefaultTable(2);
@@ -646,6 +646,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
    rptRcTable* pTemporaryStrandPropertiesTable = rptStyleManager::CreateDefaultTable(3);
    rptRcTable* pRebarPropertiesTable = rptStyleManager::CreateDefaultTable(3);
    rptRcTable* pTendonPropertiesTable = rptStyleManager::CreateDefaultTable(3);
+   rptRcTable* pDuctPropertiesTable = rptStyleManager::CreateDefaultTable(3);
 
 
    if (pDeckShape)
@@ -901,6 +902,33 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
                (*pTendonPropertiesTable)(row + ductIdx, 1) << length.SetValue(y);
                area.ShowUnitTag(false);
                (*pTendonPropertiesTable)(row + ductIdx, 2) << area.SetValue(as);
+           }
+
+           (*pParentLayoutTable)(0, 7) << Bold(_T("Ducts"));
+           (*pParentLayoutTable)(0, 7) << pDuctPropertiesTable;
+
+           pDuctPropertiesTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_CENTER));
+           pDuctPropertiesTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_CENTER));
+           (*pDuctPropertiesTable)(0, 0) << COLHDR(_T("X"), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pDuctPropertiesTable)(0, 1) << COLHDR(_T("Y"), rptLengthUnitTag, pDispUnits->ComponentDim);
+           (*pDuctPropertiesTable)(0, 2) << COLHDR(_T("A"), rptAreaUnitTag, pDispUnits->Area);
+
+           row = pDuctPropertiesTable->GetNumberOfHeaderRows();
+
+           for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
+           {
+               CComPtr<IPoint2d> point;
+               pTendonGeom->GetGirderDuctPoint(poi, ductIdx, &point);
+               point->get_X(&x);
+               point->get_Y(&y);
+               Float64 a = pTendonGeom->GetInsideDuctArea(segmentKey, ductIdx);
+
+               vSteelProperties.emplace_back(Duct, x, y);
+
+               (*pDuctPropertiesTable)(row + ductIdx, 0) << length.SetValue(x);
+               (*pDuctPropertiesTable)(row + ductIdx, 1) << length.SetValue(y);
+               area.ShowUnitTag(false);
+               (*pDuctPropertiesTable)(row + ductIdx, 2) << area.SetValue(a);
            }
        }
    }
@@ -1320,6 +1348,18 @@ rptRcImage* CSectionPropertiesChapterBuilder::CreateImage(const std::vector<Poin
                 graph.AddPoint(steelSeries, point);
                 graph.AddPoint(steelSeries, point2);
 			}
+            else if (steelProp.Type == Duct)
+            {
+                steelSeries = graph.CreateDataSeries(_T(""), PS_DOT, 10, SEGMENT_TENDON_FILL_COLOR);
+                WBFL::Graphing::Point point(
+                    WBFL::Units::ConvertFromSysUnits(steelProp.X, pDispUnits->ComponentDim.UnitOfMeasure),
+                    WBFL::Units::ConvertFromSysUnits(steelProp.Y, pDispUnits->ComponentDim.UnitOfMeasure));
+                WBFL::Graphing::Point point2(
+                    WBFL::Units::ConvertFromSysUnits(steelProp.X + 0.01, pDispUnits->ComponentDim.UnitOfMeasure),
+                    WBFL::Units::ConvertFromSysUnits(steelProp.Y, pDispUnits->ComponentDim.UnitOfMeasure));
+                graph.AddPoint(steelSeries, point);
+                graph.AddPoint(steelSeries, point2);
+            }
 
         }
     }
