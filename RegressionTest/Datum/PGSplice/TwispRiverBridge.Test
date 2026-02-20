@@ -18,7 +18,6 @@ Tension stress check failed for Service III Limit State in Interval 27 Load Rati
 Tension stress check failed for Service I Limit State in Interval 10 Erect Segments for Segment 3
 Tension stress check failed for Service I Limit State in Interval 14 Cast closure joint and Cast Deck for Segment 3
 Debond arrangement checks failed for Segment 1.
-Debond arrangement checks failed for Segment 2.
 Debond arrangement checks failed for Segment 3.
 Girder Dimension Detailing check failed for Segment 1.
 Girder Dimension Detailing check failed for Segment 2.
@@ -51,7 +50,6 @@ Compression stress check failed for Service I Limit State in Interval 17 Stress 
 Tension stress check failed for Service I Limit State in Interval 10 Erect Segments for Segment 3
 Tension stress check failed for Service I Limit State in Interval 14 Cast closure joint and Cast Deck for Segment 3
 Debond arrangement checks failed for Segment 1.
-Debond arrangement checks failed for Segment 2.
 Debond arrangement checks failed for Segment 3.
 Girder Dimension Detailing check failed for Segment 1.
 Girder Dimension Detailing check failed for Segment 2.
