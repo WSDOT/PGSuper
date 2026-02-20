@@ -874,6 +874,8 @@ public:
 
 // ISectionProperties
 public:
+   const SectProp& GetSectionProperties(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::SectionPropertyType sectPropType) const override;
+
    pgsTypes::SectionPropertyMode GetSectionPropertiesMode() const override;
 
    pgsTypes::HaunchAnalysisSectionPropertiesType GetHaunchAnalysisSectionPropertiesType() const override;
@@ -1348,29 +1350,7 @@ private:
    // Section Properties
    CComPtr<ISectionCutTool> m_SectCutTool;
    CComPtr<IEffectiveFlangeWidthTool> m_EffFlangeWidthTool;
-   typedef struct SectProp
-   {
-      CComPtr<ISection> Section; // this is going to be a composite section, in girder section coordinates
-      IndexType GirderShapeIndex; // index into the composite for the girder shape
-      IndexType SlabShapeIndex; // index into the composite for the slab shape
 
-      Float64 dx, dy; // these are the offset values to get the section into bridge section coordinates
-
-      CComPtr<IElasticProperties> ElasticProps; // Elastic Properties (EA, EI, etc)
-      CComPtr<IShapeProperties> ShapeProps; // Shape Properties (Area, I, CG, etc)
-
-      Float64 YtopGirder; // distance from centroid to the top of the basic girder
-      Float64 Perimeter; // perimeter of the basic girder
-
-      bool bComposite; // If false, Qslab is undefined
-      Float64 Qslab; // first moment of aread
-      Float64 AcBottomHalf; // for LRFD Fig 5.7.3.4.2-3 (pre2017: 5.8.3.4.2-3)
-      Float64 AcTopHalf;    // for LRFD Fig 5.7.3.4.2-3 (pre2017: 5.8.3.4.2-3)
-
-      mutable std::map<Float64, Float64> Q; // key is Yclip and value is Q
-
-      SectProp() { GirderShapeIndex = INVALID_INDEX; SlabShapeIndex = INVALID_INDEX; dx = -99999;dy = -99999;YtopGirder = 0; Perimeter = 0; bComposite = false; Qslab = 0; AcBottomHalf = 0; AcTopHalf = 0; }
-   } SectProp;
    typedef std::map<PoiIntervalKey,SectProp> SectPropContainer; // Key = PoiIntervalKey object
    std::array<std::unique_ptr<SectPropContainer>, pgsTypes::sptSectionPropertyTypeCount> m_pSectProps; // index = one of the pgsTypes::SectionPropertyType constants
 
@@ -1384,7 +1364,7 @@ private:
    static UINT DeleteSectionProperties(LPVOID pParam);
    pgsTypes::SectionPropertyType GetSectionPropertiesType() const; // returns the section properties types for the current section properties mode
    PoiIntervalKey GetSectionPropertiesKey(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType) const;
-   const SectProp& GetSectionProperties(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::SectionPropertyType sectPropType) const;
+
    HRESULT CreateSection(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType sectPropType,pgsTypes::SectionCoordinateType coordinateType,IndexType* pGdrIdx,IndexType* pSlabIdx,ISection** ppSection) const;
    Float64 ComputeY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,IShapeProperties* sprops) const;
    Float64 ComputeYtopGirder(IShapeProperties* compositeProps,IShape* pShape) const;

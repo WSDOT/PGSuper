@@ -23,49 +23,61 @@
 #pragma once
 
 #include "resource.h"
-#include <Reporting\SpanGirderReportSpecification.h>
+#include "PoiReportSpecification.h"
 #include "afxcmn.h"
+#include <Reporting/SectionPropertiesReportSpecification.h>
 
-// CSelectPointOfInterestDlg dialog
+// CSelectSectionDlg dialog
 
-class CSelectPointOfInterestDlg : public CDialog
+class CSelectSectionDlg : public CDialog
 {
-	DECLARE_DYNAMIC(CSelectPointOfInterestDlg)
+	DECLARE_DYNAMIC(CSelectSectionDlg)
 
 public:
-	CSelectPointOfInterestDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CPointOfInterestReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,PoiAttributeType poiReferenceAttribute,CWnd* pParent = nullptr);   // standard constructor
-	virtual ~CSelectPointOfInterestDlg();
+	CSelectSectionDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CSectionPropertiesReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,CWnd* pParent = nullptr);   // standard constructor
+	CSelectSectionDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<CSectionPropertiesReportSpecification>& pRptSpec, CWnd* pParent = nullptr);   // standard constructor
+	virtual ~CSelectSectionDlg();
 
 // Dialog Data
 	enum { IDD = IDD_POI_SELECT };
 
    pgsPointOfInterest GetPointOfInterest();
 
+   pgsPointOfInterest m_InitialPOI;
+   IntervalIndexType m_IntervalIdx;
+   CGirderKey m_GirderKey;
+
+
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 
 	DECLARE_MESSAGE_MAP()
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
-   std::shared_ptr<CPointOfInterestReportSpecification> m_pRptSpec;
-
-   PoiAttributeType m_PoiReferenceAttribute;
-   pgsPointOfInterest m_InitialPOI;
-   CGirderKey m_GirderKey;
-
-   PoiList m_vPOI;
-
-   CSliderCtrl m_Slider;
-   CStatic m_Label;
-   int m_SliderPos;
-
-   void UpdateSliderLabel();
-   void UpdatePOI();
-
-   void InitFromRptSpec();
+	std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+	std::shared_ptr<CSectionPropertiesReportSpecification> m_pRptSpec;
 
 public:
-   virtual BOOL OnInitDialog();
-   afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	virtual BOOL OnInitDialog() override;
+
+	PoiList m_vPOI;
+
+	CComboBox m_cbGroup;
+	CComboBox m_cbGirder;
+	CSliderCtrl m_Slider;
+	CStatic m_Label;
+	int m_SliderPos;
+
+	void UpdateGirderComboBox();
+	void UpdateSliderLabel();
+	void UpdatePOI();
+
+	void InitFromRptSpec();
+	void FillIntervalCtrl();
+
+	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
+	afx_msg void OnGroupChanged();
+	afx_msg void OnGirderChanged();
+
+
 };

@@ -27,7 +27,7 @@
 #define IDD_SELECT_POI                  299
 #define IDD_CONCRETE_DETAILS            300
 #define IDC_CONCRETE_TYPE               301
-#define IDD_UHPC_CONCRETE           301
+#define IDD_UHPC_CONCRETE               301
 #define IDC_FC_LABEL                    302
 #define IDC_FC                          303
 #define IDC_FC_UNIT                     304
@@ -167,7 +167,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        303
+#define _APS_NEXT_RESOURCE_VALUE        304
 #define _APS_NEXT_COMMAND_VALUE         32776
 #define _APS_NEXT_CONTROL_VALUE         1371
 #define _APS_NEXT_SYMED_VALUE           101

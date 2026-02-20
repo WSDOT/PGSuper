@@ -54,6 +54,7 @@
 #define IDC_COMBO1                      3016
 #define IDC_GIRDERLINE                  3016
 #define IDC_RADIO_GIRDERLINE            3017
+#define IDC_POI_INTERVAL                3017
 #define IDC_RADIO_INDIV_GIRDER          3018
 #define IDC_CHECK1                      3019
 #define IDC_SHEAR                       3019
@@ -61,15 +62,19 @@
 #define IDC_BUTTON2                     3021
 #define IDC_DESELECT_ALL                3021
 #define IDD_TIMESTEP_SHEAR_DEFORMATION_DETAILS 3022
-#define IDC_GIRDERLINE_SHEAR_DEF        3023
 #define IDD_MULTIBEARINGREPORT          3023
-#define IDC_INTERVAL_SHEAR_DEF          3024
-#define IDC_ALL_LOCATIONS_SHEAR_DEF     3026
-#define IDC_SLIDER_SHEAR_DEF            3027
-#define IDC_LOCATION_SHEAR_DEF          3028
 #define IDC_STATIC_MULTI_SELECT_ITEM    3028
 #define IDC_GROUP_GIRDER_SELECT         3029
 #define IDC_STATIC_XC                   3030
+#define IDC_GIRDERLINE_SHEAR_DEF        3022
+#define IDC_INTERVAL_SHEAR_DEF          3023
+#define IDC_ALL_LOCATIONS_SHEAR_DEF     3024
+#define IDC_SLIDER_SHEAR_DEF            3025
+#define IDC_LOCATION_SHEAR_DEF          3026
+#define IDC_POI_GIRDER                  3027
+#define IDC_POI_GROUP                   3028
+#define IDC_POI_SLIDER                  3029
+#define IDC_POI_LOCATION                3030
 
 // Next default values for new objects
 // 
