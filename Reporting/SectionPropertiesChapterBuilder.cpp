@@ -827,21 +827,27 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
            pRebarGeom->GetDeckReinforcing(barCutPoi, pgsTypes::drmTop, pgsTypes::drbAll, pgsTypes::drcAll, false, &dta, &dty);
            pRebarGeom->GetDeckReinforcing(barCutPoi, pgsTypes::drmBottom, pgsTypes::drbAll, pgsTypes::drcAll, false, &dba, &dby);
 
-           (*pRebarPropertiesTable)(row + idx, 0) << length.SetValue(0.0);
-           (*pRebarPropertiesTable)(row + idx, 1) << length.SetValue(dty);
-           area.ShowUnitTag(false);
-           (*pRebarPropertiesTable)(row + idx, 2) << area.SetValue(dta);
-           idx++;
+           if (dta > 0.0)
+           {
+               (*pRebarPropertiesTable)(row + idx, 0) << length.SetValue(0.0);
+               (*pRebarPropertiesTable)(row + idx, 1) << length.SetValue(dty);
+               area.ShowUnitTag(false);
+               (*pRebarPropertiesTable)(row + idx, 2) << area.SetValue(dta);
+               idx++;
 
-           vSteelProperties.emplace_back(DeckRebar, 0.0, dty);
+               vSteelProperties.emplace_back(DeckRebar, 0.0, dty);
+           }
 
-           (*pRebarPropertiesTable)(row + idx, 0) << length.SetValue(0.0);
-           (*pRebarPropertiesTable)(row + idx, 1) << length.SetValue(dby);
-           area.ShowUnitTag(false);
-           (*pRebarPropertiesTable)(row + idx, 2) << area.SetValue(dba);
-           idx++;
+           if (dba > 0.0)
+           {
+               (*pRebarPropertiesTable)(row + idx, 0) << length.SetValue(0.0);
+               (*pRebarPropertiesTable)(row + idx, 1) << length.SetValue(dby);
+               area.ShowUnitTag(false);
+               (*pRebarPropertiesTable)(row + idx, 2) << area.SetValue(dba);
+               idx++;
 
-           vSteelProperties.emplace_back(DeckRebar, 0.0, dby);
+               vSteelProperties.emplace_back(DeckRebar, 0.0, dby);
+           }
        }
 
        CComPtr<IEnumRebarSectionItem> enumItems;
