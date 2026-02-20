@@ -1,0 +1,172 @@
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2025  Washington State Department of Transportation
+//                        Bridge and Structures Office
+//
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
+// The moment Capacity Details report was contributed by BridgeSight Inc.
+
+#include "StdAfx.h"
+#include "resource.h"
+#include <Reporting\SectionPropertiesReportSpecificationBuilder.h>
+#include <Reporting\SectionPropertiesReportSpecification.h>
+
+#include <IFace\Tools.h>
+#include <IFace\Selection.h>
+#include <IFace\Bridge.h>
+#include <IFace\Intervals.h>
+#include <IFace\PointOfInterest.h>
+#include "SelectSectionDlg.h"
+
+
+
+
+CSectionPropertiesReportSpecificationBuilder::CSectionPropertiesReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
+CBrokerReportSpecificationBuilder(pBroker)
+{
+}
+
+CSectionPropertiesReportSpecificationBuilder::~CSectionPropertiesReportSpecificationBuilder(void)
+{
+}
+
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CSectionPropertiesReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // Prompt for span, girder, and chapter list
+   // initialize dialog for the current cut location
+   pgsPointOfInterest current_poi;
+
+   GET_IFACE2(GetBroker(), IIntervals, pIntervals);
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType intervalIdx = nIntervals - 1;
+
+   // Old report spec will be null at initialization
+   std::shared_ptr<CSectionPropertiesReportSpecification> pInitRptSpec(std::dynamic_pointer_cast<CSectionPropertiesReportSpecification>(pOldRptSpec));
+   if (!pInitRptSpec)
+   {
+      // Fist time through get CL of selected segment
+      CSegmentKey segmentKey;
+      GET_IFACE2(GetBroker(),ISelection, pSelection);
+      CSelection selection = pSelection->GetSelection();
+
+      if (selection.Type == CSelection::Girder)
+      {
+         segmentKey.groupIndex   = selection.GroupIdx;
+         segmentKey.girderIndex  = selection.GirderIdx;
+      }
+      else if (selection.Type == CSelection::Segment)
+      {
+         segmentKey.groupIndex   = selection.GroupIdx;
+         segmentKey.girderIndex  = selection.GirderIdx;
+         segmentKey.segmentIndex = selection.SegmentIdx;
+      }
+      else
+      {
+         segmentKey.groupIndex   = 0;
+         segmentKey.girderIndex  = 0;
+      }
+
+      if (segmentKey.groupIndex == ALL_GROUPS)
+      {
+         segmentKey.groupIndex = 0;
+      }
+
+      if (segmentKey.girderIndex == ALL_GIRDERS)
+      {
+         segmentKey.girderIndex = 0;
+      }
+
+      if (segmentKey.segmentIndex == ALL_SEGMENTS)
+      {
+         segmentKey.segmentIndex = 0;
+      }
+
+      if (selection.Type != CSelection::Segment)
+      {
+         GET_IFACE2(GetBroker(),IBridge, pBridge);
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
+         segmentKey.segmentIndex = (nSegments - 1) / 2;
+      }
+
+      GET_IFACE2(GetBroker(),IPointOfInterest, pPOI);
+      PoiList vPoi;
+      pPOI->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
+      ATLASSERT(vPoi.size() == 1);
+      current_poi = vPoi.front();
+   }
+   else
+   {
+      // Need to check if POI is still on the bridge. It's possible that girder could have been deleted or shortened
+      if (pInitRptSpec->IsValid())
+      {
+         current_poi = pInitRptSpec->GetPOI();
+         intervalIdx = pInitRptSpec->GetInterval();
+      }
+      else
+      {
+         // Not on the bridge. Default to something safe
+         ::AfxMessageBox(_T("The selected location for this report no longer exists. The report has been moved to a valid location."), MB_OK | MB_ICONEXCLAMATION);
+         GET_IFACE2(GetBroker(),IPointOfInterest, pPOI);
+         PoiList vPoi;
+         pPOI->GetPointsOfInterest(CSegmentKey(0,0,0), POI_5L | POI_ERECTED_SEGMENT, &vPoi);
+         ATLASSERT(vPoi.size() == 1);
+
+         current_poi = vPoi.front();
+         pInitRptSpec->SetPOI(current_poi);
+
+      }
+   }
+
+   CSelectSectionDlg dlg(GetBroker(), pInitRptSpec);
+   dlg.m_InitialPOI = current_poi;
+   dlg.m_IntervalIdx = intervalIdx;
+
+   if ( dlg.DoModal() == IDOK )
+   {
+      std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec;
+      if (pInitRptSpec)
+      {
+         std::shared_ptr<CSectionPropertiesReportSpecification>pSPRptSpec(std::make_shared<CSectionPropertiesReportSpecification>(*pInitRptSpec) );
+         pSPRptSpec->SetOptions( dlg.GetPointOfInterest(), dlg.m_IntervalIdx);
+
+         pRptSpec = pSPRptSpec;
+      }
+      else
+      {
+         pRptSpec = std::make_shared<CSectionPropertiesReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.GetPointOfInterest(), dlg.m_IntervalIdx);
+      }
+
+      rptDesc.ConfigureReportSpecification(pRptSpec);
+
+      return pRptSpec;
+   }
+
+   return nullptr;
+}
+
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CSectionPropertiesReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+{
+   // there is no default configuration for this report. The user must be prompted every time for
+   // the station information.
+
+   // a future improvement might be to cache the last station range used and use it again ???
+   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>());
+}

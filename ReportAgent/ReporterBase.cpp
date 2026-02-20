@@ -130,6 +130,8 @@
 
 #include <IFace\Tools.h>
 #include <IFace\Project.h>
+#include <Reporting/SectionPropertiesChapterBuilder.h>
+#include <Reporting/SectionPropertiesReportSpecificationBuilder.h>
 
 
 HRESULT CReporterBase::InitCommonReportBuilders(std::shared_ptr<WBFL::EAF::Broker> broker)
@@ -137,6 +139,7 @@ HRESULT CReporterBase::InitCommonReportBuilders(std::shared_ptr<WBFL::EAF::Broke
    GET_IFACE2_NOCHECK(broker, IEAFReportManager, pRptMgr);
 
    CreateBridgeGeometryReport(pRptMgr);
+   CreateSectionPropertiesReport(pRptMgr);
    CreateDetailsReport(pRptMgr);
    CreateLoadRatingReport(pRptMgr);
    CreateLoadRatingSummaryReport(pRptMgr);
@@ -190,6 +193,24 @@ void CReporterBase::CreateBridgeGeometryReport(std::shared_ptr<IEAFReportManager
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingSeatElevationsDetailsChapterBuilder2>()) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
+
+//////////////////
+
+void CReporterBase::CreateSectionPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr)
+{
+    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pSectionPropertiesRptSpecBuilder(std::make_shared<CSectionPropertiesReportSpecificationBuilder>(m_pBroker));
+
+    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Section Properties Report")));
+
+
+    pRptBuilder->SetReportSpecificationBuilder(pSectionPropertiesRptSpecBuilder);
+    pRptBuilder->AddTitlePageBuilder(std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
+    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSectionPropertiesChapterBuilder>()));
+    pRptMgr->AddReportBuilder(pRptBuilder);
+}
+
+
+///////////////
 
 void CReporterBase::CreateDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {

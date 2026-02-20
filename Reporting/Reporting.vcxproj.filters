@@ -340,9 +340,6 @@
     <ClCompile Include="SectPropTable2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SelectPointOfInterestDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ShearCapacityDetailsChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -664,6 +661,19 @@
     <ClCompile Include="HorizontalTensionTieCheckDetailsChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SectionPropertiesChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SectionPropertiesReportSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SectionPropertiesReportSpecificationBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SelectSectionDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SelectPointOfInterestDlg.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h">
@@ -1014,9 +1024,6 @@
     <ClInclude Include="..\Include\Reporting\SectPropTable2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SelectPointOfInterestDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\Reporting\ShearCapacityDetailsChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1336,6 +1343,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\HorizontalTensionTieCheckDetailsChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SectionPropertiesChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SectionPropertiesReportSpecification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SectionPropertiesReportSpecificationBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectSectionDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

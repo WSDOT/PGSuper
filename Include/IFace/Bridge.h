@@ -1355,12 +1355,41 @@ INTERFACE
 DESCRIPTION
    Interface for obtaining section properties.
 ****************************************************************************/
+
+typedef struct SectProp
+{
+    CComPtr<ISection> Section; // this is going to be a composite section, in girder section coordinates
+    IndexType GirderShapeIndex; // index into the composite for the girder shape
+    IndexType SlabShapeIndex; // index into the composite for the slab shape
+
+    Float64 dx, dy; // these are the offset values to get the section into bridge section coordinates
+
+    CComPtr<IElasticProperties> ElasticProps; // Elastic Properties (EA, EI, etc)
+    CComPtr<IShapeProperties> ShapeProps; // Shape Properties (Area, I, CG, etc)
+
+    Float64 YtopGirder; // distance from centroid to the top of the basic girder
+    Float64 Perimeter; // perimeter of the basic girder
+
+    bool bComposite; // If false, Qslab is undefined
+    Float64 Qslab; // first moment of aread
+    Float64 AcBottomHalf; // for LRFD Fig 5.7.3.4.2-3 (pre2017: 5.8.3.4.2-3)
+    Float64 AcTopHalf;    // for LRFD Fig 5.7.3.4.2-3 (pre2017: 5.8.3.4.2-3)
+
+    mutable std::map<Float64, Float64> Q; // key is Yclip and value is Q
+
+    SectProp() { GirderShapeIndex = INVALID_INDEX; SlabShapeIndex = INVALID_INDEX; dx = -99999; dy = -99999; YtopGirder = 0; Perimeter = 0; bComposite = false; Qslab = 0; AcBottomHalf = 0; AcTopHalf = 0; }
+} SectProp;
+
+
 // {28D53414-E8FD-4b53-A9B7-B395EB1E11E7}
 DEFINE_GUID(IID_ISectionProperties, 
 0x28d53414, 0xe8fd, 0x4b53, 0xa9, 0xb7, 0xb3, 0x95, 0xeb, 0x1e, 0x11, 0xe7);
 class ISectionProperties
 {
 public:
+
+   virtual const SectProp& GetSectionProperties(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::SectionPropertyType sectPropType) const = 0;
+
    // returns the current section properties mode
    virtual pgsTypes::SectionPropertyMode GetSectionPropertiesMode() const = 0;
 
