@@ -277,6 +277,7 @@ struct SHEARCAPACITYDETAILS
    bool bIgnoreMiniumStirrupRequirementForBeta;
 
    // [OUT]
+   Float64 Kdt;
    Float64 fpops; // fpo for strand
    Float64 fpoptSegment; // fpo for segment tendons
    Float64 fpoptGirder; // fpo for girder tendons
