@@ -28,15 +28,11 @@ Kdb = factor accounting for lack of full bar development.
 
 Kds = factor accounting for lack of full strand development.
 
-Kdt = factor accounting for lack of full transfer of prestressing force.
-
 Previously, the provided As, Aps, and fpo were scaled by the percentage of the corresponding 
-bar/strand development. In the revised equation, the true values of As. Aps, and fpo are provided 
-and multiplied by Kdb, Kds and Kdt respectively. Values of Kdb and Kds are determined by linearly interpolating
+bar/strand development. In the revised equation, the true values of As are provided 
+and multiplied by Kdb, and Aps and fpo are multiplied by Kds. Values of Kdb and Kds are determined by linearly interpolating
 the percentage from zero at the location where the bond between the bars or strands and concrete commences to 
-the full development length of the bars or strands. Similarily, Kdt can be determined by linearly interpolating 
-the percentage from zero at the location where the bond between the strands and concrete commences to its full 
-value at the end of the transfer length.
+the full development length of the bars (Kdb) or strands (Kds).
 
 
 
