@@ -2375,18 +2375,6 @@ void CBridgePlanView::BuildBearingDisplayObjects()
                 PoiList vPoi = pBearingParams->GetBearingPoiList(girderKey, &details);
 
                 const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
-                
-                CComPtr<IPoint2d> point;
-                pBridge->GetPoint(poi, pgsTypes::PlanCoordinateType::pcGlobal, &point);
-
-                auto doBearing = WBFL::DManip::PointDisplayObject::Create();
-                doBearing->SetPosition(geomUtil::GetPoint(point), false, false);
-
-                // Create a simple rectangle strategy for the bearing
-                auto shapeDrawStrategy = WBFL::DManip::ShapeDrawStrategy::Create();
-
-                CComPtr<IPolyShape> rect;
-                rect.CoCreateInstance(CLSID_PolyShape);
 
                 pgsTypes::PierFaceType faceType;
                 if (reactionLocation.Face == rftBack)
@@ -2398,41 +2386,75 @@ void CBridgePlanView::BuildBearingDisplayObjects()
                 {
                     faceType = pgsTypes::PierFaceType::Ahead;
                 }
-
+                
                 const auto& pBD = pIBridgeDesc->GetBearingData(
                     reactionLocation.PierIdx, faceType,
                     reactionLocation.GirderKey.girderIndex);
 
-                Float64 bearing_width = pBD->Width;
-                Float64 bearing_length = pBD->Length;
-                Float64 x, y;
-                point->get_X(&x);
-                point->get_Y(&y);
+                CComPtr<IPoint2d> point;
+                pBridge->GetPoint(poi, pgsTypes::PlanCoordinateType::pcGlobal, &point);
 
-                rect->AddPoint(x - bearing_length * 0.5, y - bearing_width * 0.5);
-                rect->AddPoint(x - bearing_length * 0.5, y + bearing_width * 0.5);
-                rect->AddPoint(x + bearing_length * 0.5, y + bearing_width * 0.5);
-                rect->AddPoint(x + bearing_length * 0.5, y - bearing_width * 0.5);
+                auto doBearing = WBFL::DManip::PointDisplayObject::Create();
+                doBearing->SetPosition(geomUtil::GetPoint(point), false, false);
 
-                CComPtr<IDirection> direction;
-                pGirder->GetSegmentDirection(poi.GetSegmentKey(), &direction);
+                // Create a simple rectangle strategy for the bearing(s)
+                auto strategy = WBFL::DManip::CompoundDrawPointStrategy::Create();
+                auto bearingCnt = pBD->BearingCount;
 
-                Float64 dir;
-                direction->get_Value(&dir);
+				for (BearingIndexType brgIdx = 0; brgIdx < bearingCnt; brgIdx++)
+                {
+                    auto shapeDrawStrategy = WBFL::DManip::ShapeDrawStrategy::Create();
 
-                CComQIPtr<IXYPosition> position(rect);
-                position->RotateEx(point, dir);
+                    CComPtr<IPolyShape> rect;
+                    rect.CoCreateInstance(CLSID_PolyShape);
 
-                CComQIPtr<IShape> shape(rect);
-                shapeDrawStrategy->SetShape(geomUtil::ConvertShape(shape));
-                shapeDrawStrategy->SetSolidFillColor(BEARING_FILL_COLOR);
-                shapeDrawStrategy->SetSolidLineColor(BEARING_BORDER_COLOR);
-                shapeDrawStrategy->Fill(true);
+                    Float64 bearing_width = pBD->Width;
+                    Float64 bearing_length = pBD->Length;
+                    Float64 x, y;
+                    point->get_X(&x);
+                    point->get_Y(&y);
 
-                doBearing->SetDrawingStrategy(shapeDrawStrategy);
+                    CComPtr<IAngle> pSkew;
+                    pBridge->GetPierSkew(reactionLocation.PierIdx, &pSkew);
+                    Float64 skew;
+                    pSkew->get_Value(&skew);
+
+                    Float64 mid = ((int)bearingCnt - 1) / 2.0;
+                    Float64 d = ((int)brgIdx - mid) * pBD->Spacing;
+
+                    Float64 ux = std::sin(-skew);
+                    Float64 uy = std::cos(-skew);
+
+                    x += d * ux;
+                    y += d * uy;
+
+                    rect->AddPoint(x - bearing_length * 0.5, y - bearing_width * 0.5);
+                    rect->AddPoint(x - bearing_length * 0.5, y + bearing_width * 0.5);
+                    rect->AddPoint(x + bearing_length * 0.5, y + bearing_width * 0.5);
+                    rect->AddPoint(x + bearing_length * 0.5, y - bearing_width * 0.5);
+
+                    CComPtr<IDirection> direction;
+                    pGirder->GetSegmentDirection(poi.GetSegmentKey(), &direction);
+
+                    Float64 dir;
+                    direction->get_Value(&dir);
+
+                    CComQIPtr<IXYPosition> position(rect);
+                    position->RotateEx(point, dir);
+
+                    CComQIPtr<IShape> shape(rect);
+                    shapeDrawStrategy->SetShape(geomUtil::ConvertShape(shape));
+                    shapeDrawStrategy->SetSolidFillColor(BEARING_FILL_COLOR);
+                    shapeDrawStrategy->SetSolidLineColor(BEARING_BORDER_COLOR);
+                    shapeDrawStrategy->Fill(true);
+
+                    strategy->AddStrategy(shapeDrawStrategy);
+                }
+
+                doBearing->SetDrawingStrategy(strategy);
                 doBearing->SetSelectionType(WBFL::DManip::SelectionType::All);
 
-                auto gravity_well = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(shapeDrawStrategy);
+                auto gravity_well = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(strategy);
                 doBearing->SetGravityWellStrategy(gravity_well);
 
                 IDType ID = m_NextBearingID++;
