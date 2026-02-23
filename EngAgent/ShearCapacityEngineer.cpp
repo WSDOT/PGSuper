@@ -790,7 +790,6 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    }
 
    pscd->Kds = (Aps == 0.0 ? 0.0 : apsu / Aps);
-   pscd->Kdt = (Aps == 0.0 ? 0.0 : (bAfter2000 ? apst / Aps : 1.0));
    pscd->Aps = Aps;
 
    if ( pscd->bTensionBottom )
@@ -1018,7 +1017,6 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
    data.AptGirder    = pscd->AptGirder;
    data.Ec           = pscd->Ec;
    data.Ac           = pscd->Ac;
-   data.Kdt          = pscd->Kdt;
    data.fpops        = pscd->fpops;
    data.fpoptSegment = pscd->fpoptSegment;
    data.fpoptGirder  = pscd->fpoptGirder;
@@ -1293,7 +1291,6 @@ bool pgsShearCapacityEngineer::ComputeVuhpc(const pgsPointOfInterest& poi, SHEAR
    data.Eps = pscd->Eps;
    data.Kds = pscd->Kds;
    data.Aps = pscd->Aps;
-   data.Kdt = pscd->Kdt;
    data.fpo = pscd->fpops;
    data.Ec = pscd->Ec;
    data.Ac = pscd->Ac;

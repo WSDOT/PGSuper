@@ -2118,7 +2118,6 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       resultsFile<<bridgeId<<", "<<pid<<", 50055, "<<loc<<", "<< QUIET(scd.Fe) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50056, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.Theta, WBFL::Units::Measure::Degree)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50057, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.fpops, WBFL::Units::Measure::MPa)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
-      resultsFile << bridgeId << ", " << pid << ", 50057a, " << loc << ", " << QUIET(scd.Kdt) << ", 15, " << SEGMENT(segmentKey) << std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50058, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.fpeps, WBFL::Units::Measure::MPa)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile << bridgeId << ", " << pid << ", 50059s, " << loc << ", " << QUIET(WBFL::Units::ConvertFromSysUnits(scd.fpoptSegment, WBFL::Units::Measure::MPa)) << ", 15, " << SEGMENT(segmentKey) << std::endl;
       resultsFile << bridgeId << ", " << pid << ", 50060s, " << loc << ", " << QUIET(WBFL::Units::ConvertFromSysUnits(scd.fpeptSegment, WBFL::Units::Measure::MPa)) << ", 15, " << SEGMENT(segmentKey) << std::endl;
