@@ -70,7 +70,8 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
    *pParagraph << _T("In determining the resistance of pretensioned concrete components in their end zones, the gradual buildup of the strand force in the transfer and development lengths shall be taken into account. (5.9.4.3.1)") << rptNewLine;
-   *pParagraph << Sub2(_T("P"), _T("pe")) << _T(" = ") << RPT_FPE << _T("[") << symbol(SUM) << _T("(") << Sub2(_T("K"),_T("ds")) << RPT_APS << _T(")]") << rptNewLine;
+   *pParagraph << Sub2(_T("P"), _T("pe")) << _T(" = ") << RPT_FPE << _T("[") << symbol(SUM) << _T("(") << Sub2(_T("K"), _T("dt")) << RPT_APS << _T(")]") << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("dt")) << _T(" = Prestress Transfer Length Reduction Factor");
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
@@ -88,7 +89,7 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
 
    table->SetColumnSpan(0, col, 2);
    (*table)(0, col) << _T("Straight") << rptNewLine << _T("Strands");
-   (*table)(1, col++) << Sub2(_T("K"), _T("ds"));
+   (*table)(1, col++) << Sub2(_T("K"), _T("dt"));
    (*table)(1, col++) << COLHDR(RPT_APS, rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
@@ -97,7 +98,7 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    std::_tstring strAdj(pgsTypes::asHarped == adj_type ? _T("Harped") : _T("Adj. Straight"));
    table->SetColumnSpan(0, col, 2);
    (*table)(0, col) << strAdj << rptNewLine << _T("Strands");
-   (*table)(1, col++) << Sub2(_T("K"), _T("ds"));
+   (*table)(1, col++) << Sub2(_T("K"), _T("dt"));
    (*table)(1, col++) << COLHDR(RPT_APS, rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
 
    table->SetColumnSpan(0, col, 2);
