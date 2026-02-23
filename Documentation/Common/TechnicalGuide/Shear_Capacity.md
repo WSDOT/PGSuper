@@ -1,43 +1,42 @@
 Shear Capacity {#tg_shear_capacity}
 ======================================
 
-## General
-One of the features that distinguish the AASHTO LRFD Bridge Design Specifications from the Standard Specifications is the introduction of the Modified Compression Field Theory (MCFT) for the prediction of ultimate shear capacity. The shear capacity provisions of the LRFD specifications have changed many times over the years. Changes have been made to simplify the application of the MCFT method and provide alternatives that more closely resembled the Standard Specifications.
-
-WSDOT has issued three design memorandums relating to shear capacity analysis, establishing office policy that deviates slightly from what is described in the AASHTO LRFD. Listed below are the design memorandums. Each describes a method of computing shear capacity.
-
-[June 2001 Design Memorandum](http://www.wsdot.wa.gov/eesc/bridge/designmemos/07-2001.htm)<br>
-Simplified computation of longitudinal strain by letting 0.5cot(<span style="font-family:symbol">q</span>) = 1.0.
-
-[April 2007 Design Memorandum](http://www.wsdot.wa.gov/eesc/bridge/designmemos/06-2007.htm)<br>
-Directs engineers to follow the June 2001 design memorandum and not apply the provisions of LRFD 5.8.3.4.3 (Vci - Vcw method)
-
-[August 2007 Design Memorandum](http://www.wsdot.wa.gov/eesc/bridge/designmemos/12-2007.htm)<br>
-Supercedes June 2001 design memorandum and directs engineers to use, what will be known as the "General Procedure" when published in the 2008 interim provisions.
-
-### Adjustment Factors for Net Longitunal Tensile Strain
+## Adjustment Factors for Net Longitunal Tensile Strain
 
 
-The Shear Capacity Details Report includes the following revised form of LRFD Equation 5.7.3.4.2-4:
+LRFD 5.7.3.4.2 provides guidance for estimating the beta and theta parameters for shear capacity. The net longitudinal strain is a key parameter and it is computed by LRFD Equation 5.7.3.4.2-4. Within this software, they equation has been modified as described herein.
+
+The net longitudinal strain is computed as:
 
 ![](ex_2005.png)
 
-where the following adjustment factors for As, Aps, and fpo have been added:
+where the following adjustment factors:
 
-Kdb = factor accounting for lack of full bar development.
+K<sub>db</sub> = factor accounting for lack of full bar development.
 
-Kds = factor accounting for lack of full strand development.
+K<sub>ds</sub> = factor accounting for lack of full strand development.
 
-Previously, the provided As, Aps, and fpo were scaled by the percentage of the corresponding 
-bar/strand development. In the revised equation, the true values of As are provided 
-and multiplied by Kdb, and Aps and fpo are multiplied by Kds. Values of Kdb and Kds are determined by linearly interpolating
-the percentage from zero at the location where the bond between the bars or strands and concrete commences to 
-the full development length of the bars (Kdb) or strands (Kds).
+Previously, the provided As and Aps were scaled by factors accounting for lack of full development making it difficult to verify their values. In the revised equation, the true values of As and Aps are provided and multiplied by K<sub>db</sub> and K<sub>ds</sub>, respectively. 
 
+K<sub>db</sub> is determined by linearly interpolating the distance from the end of the reinforcement to the section underconsider along the development length computer per LRFD 5.10.8.
 
+K<sub>ds</sub> is determined by interpolating the distance from the end of the strand to the section under consideration along the development length per LRFD 5.9.4.3.2-1 and Figure C5.9.4.3.2-1
 
+LRFD 5.7.3.4.2 states that "Within the transfer length, f<sub>po</sub> shall be increased linearly from zero at the location where the bond between the strands and concrete commences to its full value at the end of the transfer length". Additionally, LRFD 5.7.3.4.2 states that "In calculating As and Aps the area of bars or tendons terminated less than their development length from the section under consideration should be reduced in proportion to their lack of full development." Applying both reductions in the numerator of Equation 5.7.3.4.2-4 amounts reducing A<sub>ps</sub>f<sub>po</sub> twice.
 
+Equation 5.7.3.4.2-4 is essentially a statement of force equilibrium of the internal force provided by the section reinforcement and the external force from the applied loads. The equation, rearranged into the form of equal forces is
 
+![](Forces.png)
+
+Applying the K<sub>db</sub> and K<sub>ds</sub> reductions for a lack of full development leads to
+
+![](Reduced_Forces.png)
+
+Solving for the net longitudinal strain
+
+![](Corrected_Net_Longitudinal_Strain.png)
+
+From the corrected net longitudinal strain equation, it is clear that f<sub>po</sub> should not be reduced in perportion to its transfer length. For this reason, f<sub>po</sub> is not reduced in these calculations.
 
 ## Load Rating
 One of the unique features of the MCFT is that ultimate shear capacity is a function of loading. Even though load ratings are computed for individual vehicles the shear capacity is computed based on the live load envelope of which the vehicle belongs. For example, the shear rating for the legal load rating for routine commercial traffic may be controlled by the Type 3-3 vehicle, the shear capacity will be based on the envelope of all the AASHTO Legal Load vehicles. In most all cases, the vehicle causing the maximum shear in the live load envelope will be the same vehicle governing the load rating.
