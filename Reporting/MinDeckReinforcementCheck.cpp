@@ -53,9 +53,9 @@ LPCTSTR CMinDeckReinforcementCheck::GetName() const
 void CMinDeckReinforcementCheck::Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, ISpecification, pSpec);
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
 
-   bool doCheck = pSpec->GetSpecificationType() >= WBFL::LRFD::BDSManager::Edition::TenthEdition2024 && pBridge->IsCompositeDeck();
+   bool doCheck = WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= pSpec->GetSpecificationType() && pBridge->IsCompositeDeck();
    if (!doCheck)
    {
       return;
