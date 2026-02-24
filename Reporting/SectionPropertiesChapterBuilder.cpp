@@ -447,6 +447,7 @@ rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const 
 
                s->get_PolyPoints(&vGrossGirderShapePoints[i]);
 
+               vShapeProps.Release();
                s->get_ShapeProperties(&vShapeProps);
 
                voidShapeProperties.emplace_back(vShapeProps);
