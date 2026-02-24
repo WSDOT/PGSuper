@@ -2405,8 +2405,6 @@ void CBridgePlanView::BuildBearingDisplayObjects()
                 {
                     auto shapeDrawStrategy = WBFL::DManip::ShapeDrawStrategy::Create();
 
-                    CComPtr<IPolyShape> rect;
-                    rect.CoCreateInstance(CLSID_PolyShape);
 
                     Float64 bearing_width = pBD->Width;
                     Float64 bearing_length = pBD->Length;
@@ -2428,21 +2426,41 @@ void CBridgePlanView::BuildBearingDisplayObjects()
                     x += d * ux;
                     y += d * uy;
 
-                    rect->AddPoint(x - bearing_length * 0.5, y - bearing_width * 0.5);
-                    rect->AddPoint(x - bearing_length * 0.5, y + bearing_width * 0.5);
-                    rect->AddPoint(x + bearing_length * 0.5, y + bearing_width * 0.5);
-                    rect->AddPoint(x + bearing_length * 0.5, y - bearing_width * 0.5);
-
                     CComPtr<IDirection> direction;
                     pGirder->GetSegmentDirection(poi.GetSegmentKey(), &direction);
 
                     Float64 dir;
                     direction->get_Value(&dir);
 
-                    CComQIPtr<IXYPosition> position(rect);
+                    CComQIPtr<IShape> shape;
+                    CComPtr<IPolyShape> rect;
+                    CComPtr<ICircle> circle;
+
+					if (pBD->Shape == BearingShape::bsRound)
+                    {
+                        circle.CoCreateInstance(CLSID_Circle);
+                        CComPtr<IPoint2d>  circle_pnt;
+                        circle_pnt.CoCreateInstance(CLSID_Point2d);
+                        circle_pnt->put_X(x);
+                        circle_pnt->put_Y(y);
+                        circle->putref_Center(circle_pnt);
+                        circle->put_Radius(pBD->Width / 2);
+                        shape = circle;
+                    }
+                    else
+                    {
+                        rect.CoCreateInstance(CLSID_PolyShape);
+                        rect->AddPoint(x - bearing_length * 0.5, y - bearing_width * 0.5);
+                        rect->AddPoint(x - bearing_length * 0.5, y + bearing_width * 0.5);
+                        rect->AddPoint(x + bearing_length * 0.5, y + bearing_width * 0.5);
+                        rect->AddPoint(x + bearing_length * 0.5, y - bearing_width * 0.5);
+                        shape = rect;
+                    }
+
+
+                    CComQIPtr<IXYPosition> position(shape);
                     position->RotateEx(point, dir);
 
-                    CComQIPtr<IShape> shape(rect);
                     shapeDrawStrategy->SetShape(geomUtil::ConvertShape(shape));
                     shapeDrawStrategy->SetSolidFillColor(BEARING_FILL_COLOR);
                     shapeDrawStrategy->SetSolidLineColor(BEARING_BORDER_COLOR);
