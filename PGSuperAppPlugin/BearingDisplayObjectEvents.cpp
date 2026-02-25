@@ -216,17 +216,25 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectRightBearing()
         {
             if (m_ReactionLocation.GirderKey.girderIndex == m_nGirdersThisGroup - 1)
             {
-                rightLocation.Face = rftAhead;
-                rightLocation.PierIdx = 0;
-                rightLocation.GirderKey.groupIndex = 0;
-                rightLocation.GirderKey.girderIndex = 0;
+                m_pFrame->SelectAlignment();
             }
             else
             {
-                rightLocation.Face = rftAhead;
-                rightLocation.PierIdx = 0;
-                rightLocation.GirderKey.groupIndex = 0;
-                rightLocation.GirderKey.girderIndex++;
+                auto pBroker = EAFGetBroker();
+                GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+                const auto& bearingType = pBridgeDesc->GetBearingType();
+                
+                if (bearingType == pgsTypes::brtGirder)
+                {
+                    rightLocation.Face = rftBack;
+                    rightLocation.PierIdx = 0;
+                    rightLocation.GirderKey.groupIndex = 0;
+                    rightLocation.GirderKey.girderIndex++;
+                }
+				else
+                {
+                    m_pFrame->SelectAlignment();
+                }
             }
         }
         else

@@ -66,12 +66,24 @@ void CBridgePlanViewSlabDisplayObjectEvents::EditSlab()
 
 void CBridgePlanViewSlabDisplayObjectEvents::SelectPrev()
 {
-   m_pFrame->SelectAlignment();
+    ReactionLocation rl;
+    GET_IFACE(IBridge, pBridge);
+	const auto& nGroups = pBridge->GetGirderGroupCount();
+	const auto& nGirdersThisGroup = pBridge->GetGirderCount(nGroups - 1);
+    rl.GirderKey = CGirderKey(nGroups - 1, nGirdersThisGroup - 1);
+    m_nPiers = pBridge->GetPierCount();
+    rl.PierIdx = m_nPiers - 1;
+    rl.Face = PierReactionFaceType::rftBack;
+    m_pFrame->SelectBearing(rl);
 }
 
 void CBridgePlanViewSlabDisplayObjectEvents::SelectNext()
 {
-   m_pFrame->SelectAlignment();
+   ReactionLocation rl;
+   rl.GirderKey = CGirderKey(0, 0);
+   rl.Face = PierReactionFaceType::rftAhead;
+   rl.PierIdx = 0;
+   m_pFrame->SelectBearing(rl);
 }
 
 /////////////////////////////////////////////////////////////////////////////

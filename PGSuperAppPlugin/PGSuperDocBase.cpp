@@ -3457,6 +3457,11 @@ void CPGSDocBase::SelectBearing(const ReactionLocation& reactionLocation,BOOL bN
        return;
    }
 
+   if (m_Selection.Type == CSelection::Alignment || m_bClearingSelection)
+   {
+       return;
+   }
+
    m_Selection.Type       = CSelection::Bearing;
    m_Selection.GroupIdx   = reactionLocation.GirderKey.groupIndex;
    m_Selection.GirderIdx  = reactionLocation.GirderKey.girderIndex;
