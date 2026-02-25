@@ -2312,6 +2312,144 @@ void CBridgePlanView::BuildPierDisplayObjects()
    } // next group
 }
 
+void CBridgePlanView::DrawBearings(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, const ReactionLocation& reactionLocation, PierIndexType startPierIdx, GirderIndexType nGirders,
+    std::shared_ptr<WBFL::DManip::CompoundDrawPointStrategy>& pStrategy)
+    {
+        SHEARDEFORMATIONDETAILS details;
+        GET_IFACE2(pBroker, IBearingDesignParameters, pBearingParams);
+        BEARINGPARAMETERS params;
+        pBearingParams->GetBearingParameters(girderKey, &params);
+
+        PoiList vPoi = pBearingParams->GetBearingPoiList(girderKey, &details);
+
+        const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
+
+
+        pgsTypes::PierFaceType faceType;
+        if (reactionLocation.Face == rftBack)
+        {
+            faceType = pgsTypes::PierFaceType::Back;
+
+        }
+        else
+        {
+            faceType = pgsTypes::PierFaceType::Ahead;
+        }
+
+        GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+        GET_IFACE2(pBroker, IBridge, pBridge);
+        GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
+
+        const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+        const auto& pBD = pIBridgeDesc->GetBearingData(
+            reactionLocation.PierIdx, faceType,
+            reactionLocation.GirderKey.girderIndex);
+
+        CComPtr<IPoint2d> point;
+        pBridge->GetPoint(poi, pgsTypes::PlanCoordinateType::pcGlobal, &point);
+
+        auto doBearing = WBFL::DManip::PointDisplayObject::Create();
+        doBearing->SetPosition(geomUtil::GetPoint(point), false, false);
+
+        auto bearingCnt = pBD->BearingCount;
+
+        for (BearingIndexType brgIdx = 0; brgIdx < bearingCnt; brgIdx++)
+        {
+            auto shapeDrawStrategy = WBFL::DManip::ShapeDrawStrategy::Create();
+
+
+            Float64 bearing_width = pBD->Width;
+            Float64 bearing_length = pBD->Length;
+            Float64 x, y;
+            point->get_X(&x);
+            point->get_Y(&y);
+
+            CComPtr<IAngle> pSkew;
+            pBridge->GetPierSkew(reactionLocation.PierIdx, &pSkew);
+            Float64 skew;
+            pSkew->get_Value(&skew);
+
+            Float64 mid = ((int)bearingCnt - 1) / 2.0;
+            Float64 d = ((int)brgIdx - mid) * pBD->Spacing;
+
+            Float64 ux = std::sin(-skew);
+            Float64 uy = std::cos(-skew);
+
+            x += d * ux;
+            y += d * uy;
+
+            CComPtr<IDirection> direction;
+            pGirder->GetSegmentDirection(poi.GetSegmentKey(), &direction);
+
+            Float64 dir;
+            direction->get_Value(&dir);
+
+            CComQIPtr<IShape> shape;
+            CComPtr<IPolyShape> rect;
+            CComPtr<ICircle> circle;
+
+            if (pBD->Shape == BearingShape::bsRound)
+            {
+                circle.CoCreateInstance(CLSID_Circle);
+                CComPtr<IPoint2d>  circle_pnt;
+                circle_pnt.CoCreateInstance(CLSID_Point2d);
+                circle_pnt->put_X(x);
+                circle_pnt->put_Y(y);
+                circle->putref_Center(circle_pnt);
+                circle->put_Radius(pBD->Width / 2);
+                shape = circle;
+            }
+            else
+            {
+                rect.CoCreateInstance(CLSID_PolyShape);
+                rect->AddPoint(x - bearing_length * 0.5, y - bearing_width * 0.5);
+                rect->AddPoint(x - bearing_length * 0.5, y + bearing_width * 0.5);
+                rect->AddPoint(x + bearing_length * 0.5, y + bearing_width * 0.5);
+                rect->AddPoint(x + bearing_length * 0.5, y - bearing_width * 0.5);
+                shape = rect;
+            }
+
+
+            CComQIPtr<IXYPosition> position(shape);
+            position->RotateEx(point, dir);
+
+            shapeDrawStrategy->SetShape(geomUtil::ConvertShape(shape));
+            shapeDrawStrategy->SetSolidFillColor(BEARING_FILL_COLOR);
+            shapeDrawStrategy->SetSolidLineColor(BEARING_BORDER_COLOR);
+            shapeDrawStrategy->Fill(true);
+
+            pStrategy->AddStrategy(shapeDrawStrategy);
+        }
+
+        doBearing->SetDrawingStrategy(pStrategy);
+        doBearing->SetSelectionType(WBFL::DManip::SelectionType::All);
+
+        auto gravity_well = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(pStrategy);
+        doBearing->SetGravityWellStrategy(gravity_well);
+
+        IDType ID = m_NextBearingID++;
+        m_BearingIDs.insert(std::make_pair(reactionLocation, ID));
+        doBearing->SetID(ID);
+
+        BearingDisplayObjectInfo* pInfo = new BearingDisplayObjectInfo(reactionLocation, ELASTOMERIC_DISPLAY_LIST);
+        doBearing->SetItemData((void*)pInfo, true);
+
+        auto display_list = m_pDispMgr->FindDisplayList(ELASTOMERIC_DISPLAY_LIST);
+
+        display_list->AddDisplayObject(doBearing);
+
+        // Register an event sink with the bearing display object so that we can handle double clicks
+        // on the segment differently then a general double click
+
+
+        PierIndexType nPiers = pBridgeDesc->GetPierCount();
+        CBridgeModelViewChildFrame* pFrame = GetFrame();
+        GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+        auto events = std::make_shared<CBridgePlanViewBearingDisplayObjectEvents>(reactionLocation, nPiers, nGroups, nGirders, pFrame);
+        doBearing->RegisterEventSink(events);
+
+    };
+
 void CBridgePlanView::BuildBearingDisplayObjects()
 {
     auto pBroker = EAFGetBroker();
@@ -2324,7 +2462,6 @@ void CBridgePlanView::BuildBearingDisplayObjects()
 
     GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
     GET_IFACE2(pBroker, IBridge, pBridge);
-    GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
 
     const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -2335,138 +2472,7 @@ void CBridgePlanView::BuildBearingDisplayObjects()
     GroupIndexType lastGroupIdx = (m_EndGroupIdx == ALL_GROUPS ? nGroups - 1 : m_EndGroupIdx);
 
 
-    //lambda function added so that compound draw strategies for bearings can be created by bearing line when bearings are edited by Pier
-    //lambda function is preferred within this method since it extensively uses CBridgePlanView methods, members, and objects within this method,
-    // but want to avoid adding this as a method to CBridgePlanView for this one and only purpose.
-    auto draw_bearings =
-		[&](const CGirderKey& girderKey, const ReactionLocation& reactionLocation, PierIndexType startPierIdx, GirderIndexType nGirders,
-            std::shared_ptr<WBFL::DManip::CompoundDrawPointStrategy>& pStrategy) -> void
-            {
-                SHEARDEFORMATIONDETAILS details;
-                GET_IFACE2(pBroker, IBearingDesignParameters, pBearingParams);
-                BEARINGPARAMETERS params;
-                pBearingParams->GetBearingParameters(girderKey, &params);
 
-                PoiList vPoi = pBearingParams->GetBearingPoiList(girderKey, &details);
-
-                const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
-
-                pgsTypes::PierFaceType faceType;
-                if (reactionLocation.Face == rftBack)
-                {
-                    faceType = pgsTypes::PierFaceType::Back;
-
-                }
-                else
-                {
-                    faceType = pgsTypes::PierFaceType::Ahead;
-                }
-
-                const auto& pBD = pIBridgeDesc->GetBearingData(
-                    reactionLocation.PierIdx, faceType,
-                    reactionLocation.GirderKey.girderIndex);
-
-                CComPtr<IPoint2d> point;
-                pBridge->GetPoint(poi, pgsTypes::PlanCoordinateType::pcGlobal, &point);
-
-                auto doBearing = WBFL::DManip::PointDisplayObject::Create();
-                doBearing->SetPosition(geomUtil::GetPoint(point), false, false);
-
-                auto bearingCnt = pBD->BearingCount;
-
-                for (BearingIndexType brgIdx = 0; brgIdx < bearingCnt; brgIdx++)
-                {
-                    auto shapeDrawStrategy = WBFL::DManip::ShapeDrawStrategy::Create();
-
-
-                    Float64 bearing_width = pBD->Width;
-                    Float64 bearing_length = pBD->Length;
-                    Float64 x, y;
-                    point->get_X(&x);
-                    point->get_Y(&y);
-
-                    CComPtr<IAngle> pSkew;
-                    pBridge->GetPierSkew(reactionLocation.PierIdx, &pSkew);
-                    Float64 skew;
-                    pSkew->get_Value(&skew);
-
-                    Float64 mid = ((int)bearingCnt - 1) / 2.0;
-                    Float64 d = ((int)brgIdx - mid) * pBD->Spacing;
-
-                    Float64 ux = std::sin(-skew);
-                    Float64 uy = std::cos(-skew);
-
-                    x += d * ux;
-                    y += d * uy;
-
-                    CComPtr<IDirection> direction;
-                    pGirder->GetSegmentDirection(poi.GetSegmentKey(), &direction);
-
-                    Float64 dir;
-                    direction->get_Value(&dir);
-
-                    CComQIPtr<IShape> shape;
-                    CComPtr<IPolyShape> rect;
-                    CComPtr<ICircle> circle;
-
-                    if (pBD->Shape == BearingShape::bsRound)
-                    {
-                        circle.CoCreateInstance(CLSID_Circle);
-                        CComPtr<IPoint2d>  circle_pnt;
-                        circle_pnt.CoCreateInstance(CLSID_Point2d);
-                        circle_pnt->put_X(x);
-                        circle_pnt->put_Y(y);
-                        circle->putref_Center(circle_pnt);
-                        circle->put_Radius(pBD->Width / 2);
-                        shape = circle;
-                    }
-                    else
-                    {
-                        rect.CoCreateInstance(CLSID_PolyShape);
-                        rect->AddPoint(x - bearing_length * 0.5, y - bearing_width * 0.5);
-                        rect->AddPoint(x - bearing_length * 0.5, y + bearing_width * 0.5);
-                        rect->AddPoint(x + bearing_length * 0.5, y + bearing_width * 0.5);
-                        rect->AddPoint(x + bearing_length * 0.5, y - bearing_width * 0.5);
-                        shape = rect;
-                    }
-
-
-                    CComQIPtr<IXYPosition> position(shape);
-                    position->RotateEx(point, dir);
-
-                    shapeDrawStrategy->SetShape(geomUtil::ConvertShape(shape));
-                    shapeDrawStrategy->SetSolidFillColor(BEARING_FILL_COLOR);
-                    shapeDrawStrategy->SetSolidLineColor(BEARING_BORDER_COLOR);
-                    shapeDrawStrategy->Fill(true);
-
-                    pStrategy->AddStrategy(shapeDrawStrategy);
-                }
-
-                doBearing->SetDrawingStrategy(pStrategy);
-                doBearing->SetSelectionType(WBFL::DManip::SelectionType::All);
-
-                auto gravity_well = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(pStrategy);
-                doBearing->SetGravityWellStrategy(gravity_well);
-
-                IDType ID = m_NextBearingID++;
-                m_BearingIDs.insert(std::make_pair(reactionLocation, ID));
-                doBearing->SetID(ID);
-
-                BearingDisplayObjectInfo* pInfo = new BearingDisplayObjectInfo(reactionLocation, ELASTOMERIC_DISPLAY_LIST);
-                doBearing->SetItemData((void*)pInfo, true);
-
-                display_list->AddDisplayObject(doBearing);
-
-                // Register an event sink with the bearing display object so that we can handle double clicks
-                // on the segment differently then a general double click
-
-
-                PierIndexType nPiers = pBridgeDesc->GetPierCount();
-                CBridgeModelViewChildFrame* pFrame = GetFrame();
-                auto events = std::make_shared<CBridgePlanViewBearingDisplayObjectEvents>(reactionLocation, nPiers, nGroups, nGirders, pFrame);
-                doBearing->RegisterEventSink(events);
-
-            };
 
     auto strategy = WBFL::DManip::CompoundDrawPointStrategy::Create();
 
@@ -2515,7 +2521,7 @@ void CBridgePlanView::BuildBearingDisplayObjects()
 
                         CGirderKey girderKey(grpIdx, gdrIdx);
 
-						draw_bearings(girderKey, reactionLocation, startPierIdx, nGirders, strategy);
+						DrawBearings(pBroker, girderKey, reactionLocation, startPierIdx, nGirders, strategy);
 
                     }
 
@@ -2524,7 +2530,7 @@ void CBridgePlanView::BuildBearingDisplayObjects()
                 {
                     const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
 
-                    draw_bearings(thisGirderKey, reactionLocation, startPierIdx, nGirders, strategy);
+                    DrawBearings(pBroker, thisGirderKey, reactionLocation, startPierIdx, nGirders, strategy);
                 }
 
             } // reaction loop

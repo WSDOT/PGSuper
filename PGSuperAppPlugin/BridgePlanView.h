@@ -173,6 +173,10 @@ protected:
    void BuildTitleDisplayObjects();
    void BuildAlignmentDisplayObjects();
    void BuildPierDisplayObjects();
+
+   void DrawBearings(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, const ReactionLocation& reactionLocation, PierIndexType startPierIdx, GirderIndexType nGirders,
+       std::shared_ptr<WBFL::DManip::CompoundDrawPointStrategy>& pStrategy);
+
    void BuildBearingDisplayObjects();
    void BuildTemporarySupportDisplayObjects();
    void BuildClosureJointDisplayObjects();
