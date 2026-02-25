@@ -2334,7 +2334,10 @@ void CBridgePlanView::BuildBearingDisplayObjects()
     GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
     GroupIndexType lastGroupIdx = (m_EndGroupIdx == ALL_GROUPS ? nGroups - 1 : m_EndGroupIdx);
 
-    // lambda function to draw bearings for a given girder
+
+    //lambda function added so that compound draw strategies for bearings can be created by bearing line when bearings are edited by Pier
+    //lambda function is preferred within this method since it extensively uses CBridgePlanView methods, members, and objects within this method,
+    // but want to avoid adding this as a method to CBridgePlanView for this one and only purpose.
     auto draw_bearings =
 		[&](const CGirderKey& girderKey, const ReactionLocation& reactionLocation, PierIndexType startPierIdx, GirderIndexType nGirders,
             std::shared_ptr<WBFL::DManip::CompoundDrawPointStrategy>& pStrategy) -> void
