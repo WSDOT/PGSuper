@@ -175,6 +175,16 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectBearingBelow()
 
 void CBridgePlanViewBearingDisplayObjectEvents::SelectRightBearing()
 {
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+    const auto& bearingType = pBridgeDesc->GetBearingType();
+
+	if (bearingType == pgsTypes::brtBridge)
+    {
+        m_pFrame->SelectAlignment();
+        return;
+    }
+
     ReactionLocation rightLocation = m_ReactionLocation;
 
     bool bInterior = false;
@@ -219,11 +229,7 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectRightBearing()
                 m_pFrame->SelectAlignment();
             }
             else
-            {
-                auto pBroker = EAFGetBroker();
-                GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
-                const auto& bearingType = pBridgeDesc->GetBearingType();
-                
+            {   
                 if (bearingType == pgsTypes::brtGirder)
                 {
                     rightLocation.Face = rftBack;
@@ -251,12 +257,21 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectRightBearing()
 
 void CBridgePlanViewBearingDisplayObjectEvents::SelectLeftBearing()
 {
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+    const auto& bearingType = pBridgeDesc->GetBearingType();
+
+    if (bearingType == pgsTypes::brtBridge)
+    {
+        m_pFrame->SelectDeck();
+        return;
+    }
+
     ReactionLocation leftLocation = m_ReactionLocation;
 
     bool bInterior = false;
     if (m_ReactionLocation.PierIdx != 0)
     {
-        auto pBroker = EAFGetBroker();
         GET_IFACE2(pBroker, IBridge, pBridge);
         bInterior = pBridge->IsInteriorPier(m_ReactionLocation.PierIdx - 1);
     }
