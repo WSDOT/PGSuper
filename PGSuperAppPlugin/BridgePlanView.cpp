@@ -2353,9 +2353,10 @@ void CBridgePlanView::DrawBearings(std::shared_ptr<WBFL::EAF::Broker> pBroker, c
 
         auto bearingCnt = pBD->BearingCount;
 
+        auto shapeDrawStrategy = WBFL::DManip::ShapeDrawStrategy::Create();
+
         for (BearingIndexType brgIdx = 0; brgIdx < bearingCnt; brgIdx++)
         {
-            auto shapeDrawStrategy = WBFL::DManip::ShapeDrawStrategy::Create();
 
 
             Float64 bearing_width = pBD->Width;
@@ -2424,7 +2425,7 @@ void CBridgePlanView::DrawBearings(std::shared_ptr<WBFL::EAF::Broker> pBroker, c
         doBearing->SetDrawingStrategy(pStrategy);
         doBearing->SetSelectionType(WBFL::DManip::SelectionType::All);
 
-        auto gravity_well = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(pStrategy);
+        auto gravity_well = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(shapeDrawStrategy);
         doBearing->SetGravityWellStrategy(gravity_well);
 
         IDType ID = m_NextBearingID++;
