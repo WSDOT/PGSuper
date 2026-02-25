@@ -78,7 +78,7 @@ void CPierDisplayObjectEvents::SelectPrev(std::shared_ptr<WBFL::DManip::iDisplay
       }
       else
       {
-         m_pFrame->SelectDeck();  // select deck if there is one
+         m_pFrame->SelectAlignment();  // select deck if there is one
       }
    }
    else

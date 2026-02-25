@@ -234,6 +234,7 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectRightBearing()
 				else
                 {
                     m_pFrame->SelectAlignment();
+                    return;
                 }
             }
         }
@@ -291,10 +292,8 @@ void CBridgePlanViewBearingDisplayObjectEvents::SelectLeftBearing()
         {
             if (m_ReactionLocation.GirderKey.girderIndex == 0)
             {
-                leftLocation.Face = rftBack;
-                leftLocation.PierIdx = m_nPiers - 1;
-                leftLocation.GirderKey.groupIndex = m_nGroups - 1;
-                leftLocation.GirderKey.girderIndex = m_nGirdersThisGroup - 1;
+				m_pFrame->SelectDeck();
+                return;
             }
             else
             {
