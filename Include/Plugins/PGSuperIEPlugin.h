@@ -86,7 +86,7 @@ namespace PGS
       virtual HRESULT Import(std::shared_ptr<WBFL::EAF::Broker> pBroker) = 0;
       virtual HICON GetIcon() const = 0;
       virtual CLSID GetCLSID() const = 0;
-      virtual LPCTSTR GetTemplateFilePath() const = 0;
+      virtual CString GetTemplateFilePath() const = 0;
    };
 
    class IPluginDocumentation
