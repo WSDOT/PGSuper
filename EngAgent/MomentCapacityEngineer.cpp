@@ -3554,11 +3554,11 @@ bool pgsMomentCapacityEngineer::IsDiaphragmConfined(const pgsPointOfInterest& po
    ATLASSERT(vPoi.size() == 1);
    pgsPointOfInterest poiB = vPoi.front();
 
-   Float64 Wba = pGirder->GetBottomWidth(poiA);
-   Float64 Wbb = pGirder->GetBottomWidth(poiB);
-   W = Min(Wa, Wb);
+   Float64 Wb_a = pGirder->GetBottomWidth(poiA);
+   Float64 Wb_b = pGirder->GetBottomWidth(poiB);
+   Float64 W_bot = Min(Wb_a, Wb_b);
 
-   if (0.05*W < dist)
+   if (0.05*W_bot < dist)
    {
       return false;
    }
