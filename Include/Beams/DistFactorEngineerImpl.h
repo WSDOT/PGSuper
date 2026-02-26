@@ -79,7 +79,18 @@ namespace PGS
       class DistFactorEngineerImpl : public DistFactorEngineer 
       {
       public:
-         using DistFactorEngineer::DistFactorEngineer;
+         DistFactorEngineerImpl() = delete;
+         DistFactorEngineerImpl(const DistFactorEngineerImpl&) = delete;
+
+         DistFactorEngineerImpl(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) : 
+            DistFactorEngineer(pBroker,statusGroupID)
+         {
+            GET_IFACE2(pBroker.lock(), IEAFStatusCenter, pStatusCenter);
+            m_scidRefinedAnalysis = pStatusCenter->RegisterCallback(std::make_shared<pgsRefinedAnalysisStatusCallback>());
+         }
+         virtual ~DistFactorEngineerImpl() = default;
+
+         DistFactorEngineerImpl& operator=(const DistFactorEngineerImpl&) = delete;
 
          Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,const GDRCONFIG* pConfig = nullptr) override;
          Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace, const GDRCONFIG* pConfig = nullptr) override;
