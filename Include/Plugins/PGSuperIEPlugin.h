@@ -86,6 +86,7 @@ namespace PGS
       virtual HRESULT Import(std::shared_ptr<WBFL::EAF::Broker> pBroker) = 0;
       virtual HICON GetIcon() const = 0;
       virtual CLSID GetCLSID() const = 0;
+      virtual LPCTSTR GetTemplateFilePath() const = 0;
    };
 
    class IPluginDocumentation
@@ -95,4 +96,24 @@ namespace PGS
       virtual HRESULT LoadDocumentationMap() = 0;
       virtual std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(UINT nHID) const = 0;
    };
+};
+
+#include <EAF\EAFTemplateGroup.h>
+class CPGSProjectImporterTemplateItem : public CEAFTemplateItem
+{
+public:
+   CPGSProjectImporterTemplateItem(CEAFDocTemplate* pDocTemplate, LPCTSTR name, LPCTSTR path, HICON hIcon, std::shared_ptr<PGS::IProjectImporter> pImporter) :
+      CEAFTemplateItem(pDocTemplate, name, path, hIcon)
+   {
+      m_Importer = pImporter;
+   }
+
+   virtual CEAFTemplateItem* Clone() const
+   {
+      CPGSProjectImporterTemplateItem* pClone = new CPGSProjectImporterTemplateItem(m_pDocTemplate, m_Name, m_Path, m_hIcon, m_Importer);
+      return pClone;
+   }
+
+   std::shared_ptr<PGS::IProjectImporter> m_Importer;
+   DECLARE_DYNAMIC(CPGSProjectImporterTemplateItem)
 };

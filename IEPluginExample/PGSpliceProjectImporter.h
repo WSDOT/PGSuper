@@ -39,4 +39,5 @@ public:
    HICON GetIcon() const override;
    HRESULT Import(std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
    CLSID GetCLSID() const override;
+   LPCTSTR GetTemplateFilePath() const override { return nullptr; }
 };

@@ -30,26 +30,7 @@
 #include <EAF\EAFDisplayUnits.h>
 
 
-class CMyTemplateItem : public CEAFTemplateItem
-{
-public:
-   CMyTemplateItem(CEAFDocTemplate* pDocTemplate,LPCTSTR name,LPCTSTR path,HICON hIcon,std::shared_ptr<PGS::IProjectImporter> pImporter) :
-      CEAFTemplateItem(pDocTemplate,name,path,hIcon)
-      {
-         m_Importer = pImporter;
-      }
-
-   virtual CEAFTemplateItem* Clone() const
-   {
-      CMyTemplateItem* pClone = new CMyTemplateItem(m_pDocTemplate,m_Name,m_Path,m_hIcon,m_Importer);
-      return pClone;
-   }
-
-   std::shared_ptr<PGS::IProjectImporter> m_Importer;
-   DECLARE_DYNAMIC(CMyTemplateItem)
-};
-
-IMPLEMENT_DYNAMIC(CMyTemplateItem,CEAFTemplateItem)
+IMPLEMENT_DYNAMIC(CPGSProjectImporterTemplateItem,CEAFTemplateItem)
 
 
 IMPLEMENT_DYNAMIC(CPGSImportPluginDocTemplateBase,CEAFDocTemplate)
@@ -84,60 +65,28 @@ CDocTemplate::Confidence CPGSImportPluginDocTemplateBase::MatchDocType(LPCTSTR l
 
 BOOL CPGSImportPluginDocTemplateBase::DoOpenDocumentFile(LPCTSTR lpszPathName,BOOL bMakeVisible,CEAFDocument* pDocument,CFrameWnd* pFrame)
 {
-   // Importers "open" documents completely different then the default base class method
-   // Don't call the base class version of this method
-   // CEAFDocTemplate::DoOpenDocumentFile(lpszPathName,bMakeVisible,pDocument,pFrame);
+   CEAFDocTemplate::DoOpenDocumentFile(lpszPathName,bMakeVisible,pDocument,pFrame);
 
-   // Creating a new document
-   ASSERT_KINDOF(CMyTemplateItem,m_pTemplateItem);
-   CMyTemplateItem* pTemplateItem = (CMyTemplateItem*)m_pTemplateItem;
+   ASSERT_KINDOF(CPGSProjectImporterTemplateItem,m_pTemplateItem);
+   CPGSProjectImporterTemplateItem* pTemplateItem = (CPGSProjectImporterTemplateItem*)m_pTemplateItem;
 
-   // create a new document - with default document name
-	SetDefaultTitle(pDocument);
-
-	// avoid creating temporary compound file when starting up invisible
-	if (!bMakeVisible)
-   {
-		pDocument->m_bEmbedded = TRUE;
-   }
-
-	if (!pDocument->OnNewDocument())
-	{
-		// user has be alerted to what failed in OnNewDocument
-		TRACE(traceAppMsg, 0, "CPGSImportPluginDocTemplateBase::OnNewDocument returned FALSE.\n");
-      return FALSE;
-	}
-
-   // Hold the UI events (release in CPGSuperDoc::OnCreateFinalize)
-   auto broker = EAFGetBroker();
+   // Hold the UI events (release in CPGSDocBase::OnCreateFinalize)
+   ASSERT_KINDOF(CEAFBrokerDocument, pDocument);
+   auto broker = ((CEAFBrokerDocument*)pDocument)->GetBroker();
    GET_IFACE2(broker,IEvents,pEvents);
    GET_IFACE2(broker,IUIEvents,pUIEvents);
    pEvents->HoldEvents();
    pUIEvents->HoldEvents();
 
    // do the importing
-   try
+   // this is where the importer does its thing and build a new bridge model
+   if ( FAILED(pTemplateItem->m_Importer->Import(broker)) )
    {
-      if ( FAILED(pTemplateItem->m_Importer->Import(broker)) )
-      {
-         return FALSE;
-      }
+      return FALSE;
    }
-   catch(...)
-   {
-   }
-
-   CPGSDocBase* pDoc = (CPGSDocBase*)pDocument;
-   CComPtr<IDocUnitSystem> docUnitSystem;
-   pDoc->GetDocUnitSystem(&docUnitSystem);
-   GET_IFACE2(broker,IEAFDisplayUnits, pDisplayUnits);
-   docUnitSystem->put_UnitMode(IS_US_UNITS(pDisplayUnits) ? umUS : umSI);
-
-   // it worked, now bump untitled count (for untitled documents... from MFC for multidoc applications)
-	m_nUntitledCount++;
 
    // Can't release events here because the views have not yet been created
-   // Events are released in CPGSuperDoc::OnCreateFinalize
+   // Events are released in CPGSDocBase::OnCreateFinalize
 
    return TRUE;
 }
@@ -177,14 +126,16 @@ CPGSProjectImporterMgrBase* CPGSImportPluginDocTemplateBase::GetProjectImporterM
       // For each registered importer, add a template item to the template group
 
       IndexType nImporters = m_pProjectImporterMgr->GetImporterCount();
-      for ( IndexType idx = 0; idx < nImporters; idx++ )
+      for (IndexType idx = 0; idx < nImporters; idx++)
       {
          auto importer = m_pProjectImporterMgr->GetImporter(idx);
 
          auto strText = importer->GetItemText();
          HICON hIcon = importer->GetIcon();
+         auto path = importer->GetTemplateFilePath();
+         auto template_item = new CPGSProjectImporterTemplateItem((CEAFDocTemplate*)this, strText, path, hIcon, importer);
 
-         m_TemplateGroup.AddItem( new CMyTemplateItem((CEAFDocTemplate*)this,strText,nullptr,hIcon,importer) );
+         m_TemplateGroup.AddItem( template_item );
       }
    }
 
@@ -197,9 +148,9 @@ CEAFTemplateItem* CPGSImportPluginDocTemplateBase::GetTemplateItem(const CLSID& 
    for (IndexType idx = 0; idx < nItems; idx++)
    {
       CEAFTemplateItem* pItem = m_TemplateGroup.GetItem(idx);
-      if (pItem->IsKindOf(RUNTIME_CLASS(CMyTemplateItem)))
+      if (pItem->IsKindOf(RUNTIME_CLASS(CPGSProjectImporterTemplateItem)))
       {
-         CMyTemplateItem* pMyItem = (CMyTemplateItem*)pItem;
+         CPGSProjectImporterTemplateItem* pMyItem = (CPGSProjectImporterTemplateItem*)pItem;
          CLSID itemCLSID = pMyItem->m_Importer->GetCLSID();
          if (clsid == itemCLSID)
          {
