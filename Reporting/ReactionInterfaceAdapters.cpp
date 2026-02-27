@@ -22,9 +22,12 @@
 
 #include "StdAfx.h"
 #include <Reporting\ReactionInterfaceAdapters.h>
+#include <AgentTools.h>
 #include <EAF\EAFUtilities.h>
 #include <IFace\Bridge.h>
+#include <IFace\Project.h>
 #include <IFace/PointOfInterest.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <sstream>
 
 
@@ -107,15 +110,23 @@ ReactionLocationContainer CmbLsBearingDesignReactionAdapter::GetBearingReactionL
             poi_attributes |= POI_0L;
          }
 
-         PoiList poi_list;
+         auto pBroker = EAFGetBroker();
+         GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+         const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
          SpanIndexType spanIdx = min(pierIdx, nSpans - 1);
-         CSpanKey spanKey(spanIdx, thisGirderKey.girderIndex);
-         pPoi->GetPointsOfInterest(spanKey, poi_attributes, &poi_list);
-         ASSERT(poi_list.size() == 1);
-         pgsPointOfInterest poi = poi_list[0];
+         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(spanIdx);
+         GirderIndexType max_girderIndex = pGroup->GetGirderCount() - 1;
+         if (thisGirderKey.girderIndex <= max_girderIndex) 
+         {
+             PoiList poi_list;
+             CSpanKey spanKey(spanIdx, thisGirderKey.girderIndex);
+             pPoi->GetPointsOfInterest(spanKey, poi_attributes, &poi_list);
+             ASSERT(poi_list.size() == 1);
+             pgsPointOfInterest poi = poi_list[0];
 
-         ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey, poi);
-         container.push_back( location );
+             ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey, poi);
+             container.push_back(location);
+         }
       }
    }
 
