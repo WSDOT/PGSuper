@@ -94,39 +94,35 @@ ReactionLocationContainer CmbLsBearingDesignReactionAdapter::GetBearingReactionL
       {
          PierReactionFaceType face;
          PoiAttributeType poi_attributes = POI_SPAN;
+         SpanIndexType spanIdx = INVALID_INDEX;
          if ( pierIdx == startPierIdx )
          {
             face = rftAhead;
             poi_attributes |= POI_0L;
+            spanIdx = pierIdx;
          }
          else if ( pierIdx == endPierIdx )
          {
             face = rftBack;
             poi_attributes |= POI_10L;
+            spanIdx = pierIdx - 1;
          }
          else
          {
             face = rftMid;
             poi_attributes |= POI_0L;
+            spanIdx = min(pierIdx, nSpans - 1);
          }
+         ASSERT(spanIdx != INVALID_INDEX); // if this assert fires, then something is wrong with the logic above
 
-         auto pBroker = EAFGetBroker();
-         GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-         const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-         SpanIndexType spanIdx = min(pierIdx, nSpans - 1);
-         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(spanIdx);
-         GirderIndexType max_girderIndex = pGroup->GetGirderCount() - 1;
-         if (thisGirderKey.girderIndex <= max_girderIndex) 
-         {
-             PoiList poi_list;
-             CSpanKey spanKey(spanIdx, thisGirderKey.girderIndex);
-             pPoi->GetPointsOfInterest(spanKey, poi_attributes, &poi_list);
-             ASSERT(poi_list.size() == 1);
-             pgsPointOfInterest poi = poi_list[0];
+         PoiList poi_list;
+         CSpanKey spanKey(spanIdx, thisGirderKey.girderIndex);
+         pPoi->GetPointsOfInterest(spanKey, poi_attributes, &poi_list);
+         ASSERT(poi_list.size() == 1);
+         pgsPointOfInterest poi = poi_list.front();
 
-             ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey, poi);
-             container.push_back(location);
-         }
+         ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey, poi);
+         container.push_back(location);
       }
    }
 
