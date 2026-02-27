@@ -22,12 +22,9 @@
 
 #include "StdAfx.h"
 #include <Reporting\ReactionInterfaceAdapters.h>
-#include <AgentTools.h>
 #include <EAF\EAFUtilities.h>
 #include <IFace\Bridge.h>
-#include <IFace\Project.h>
 #include <IFace/PointOfInterest.h>
-#include <PsgLib\BridgeDescription2.h>
 #include <sstream>
 
 
