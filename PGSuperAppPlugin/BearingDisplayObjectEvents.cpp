@@ -396,22 +396,135 @@ bool CBridgePlanViewBearingDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDispl
    }
    else if (nChar == VK_LEFT)
    {
-       SelectLeftBearing();
+       auto pBroker = EAFGetBroker();
+       GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+       const auto& bearingType = pBridgeDesc->GetBearingType();
+
+       if (bearingType == pgsTypes::brtBridge)
+       {
+           m_pFrame->SelectDeck();
+       }
+       else if (bearingType == pgsTypes::brtGirder)
+       {
+           m_pFrame->SelectGirder(m_ReactionLocation.GirderKey);
+       }
+       else if (bearingType == pgsTypes::brtPier && m_ReactionLocation.Face == rftAhead)
+       {
+           m_pFrame->SelectPier(m_ReactionLocation.PierIdx);
+       }
+       else if (bearingType == pgsTypes::brtPier && (m_ReactionLocation.Face == rftBack || m_ReactionLocation.Face == rftMid))
+       {
+           m_pFrame->SelectSpan(m_ReactionLocation.PierIdx - 1);
+       }
+       else
+       {
+           m_pFrame->SelectGirder(m_ReactionLocation.GirderKey);
+       }
        return true;
    }
    else if (nChar == VK_RIGHT)
    {
-       SelectRightBearing();
+       auto pBroker = EAFGetBroker();
+       GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+       const auto& bearingType = pBridgeDesc->GetBearingType();
+
+       if (bearingType == pgsTypes::brtBridge)
+       {
+           m_pFrame->SelectAlignment();
+           return true;
+       }
+       else if (bearingType == pgsTypes::brtGirder)
+       {
+           m_pFrame->SelectGirder(m_ReactionLocation.GirderKey);
+           return true;
+       }
+
+       ReactionLocation rightLocation = m_ReactionLocation;
+
+       bool bInterior = false;
+       if (m_ReactionLocation.PierIdx + 1 < m_nPiers)
+       {
+           auto pBroker = EAFGetBroker();
+           GET_IFACE2(pBroker, IBridge, pBridge);
+           bInterior = pBridge->IsInteriorPier(m_ReactionLocation.PierIdx);
+       }
+
+       if (m_ReactionLocation.Face == rftAhead)
+       {
+           if (bInterior)
+           {
+               rightLocation.Face = rftMid;
+               rightLocation.PierIdx++;
+           }
+           else
+           {
+               rightLocation.Face = rftBack;
+               rightLocation.PierIdx++;
+           }
+       }
+       else if (m_ReactionLocation.Face == rftMid)
+       {
+           if (bInterior)
+           {
+               m_pFrame->SelectPier(rightLocation.PierIdx);
+               return true;
+           }
+           else
+           {
+               rightLocation.Face = rftBack;
+               rightLocation.PierIdx++;
+           }
+       }
+       else
+       {
+           if (m_ReactionLocation.PierIdx == m_nPiers - 1 && bearingType != pgsTypes::brtPier)
+           {
+               if (m_ReactionLocation.GirderKey.girderIndex == m_nGirdersThisGroup - 1)
+               {
+                   m_pFrame->SelectAlignment();
+                   return true;
+               }
+               else
+               {
+                   if (bearingType == pgsTypes::brtGirder)
+                   {
+                       rightLocation.Face = rftBack;
+                       rightLocation.PierIdx = 0;
+                       rightLocation.GirderKey.groupIndex = 0;
+                       rightLocation.GirderKey.girderIndex++;
+                   }
+                   else
+                   {
+                       m_pFrame->SelectAlignment();
+                       return true;
+                   }
+               }
+           }
+           else
+           {
+               rightLocation.Face = rftAhead;
+			   m_pFrame->SelectPier(rightLocation.PierIdx);
+               return true;
+           }
+       }
+
+       m_pFrame->SelectSpan(rightLocation.PierIdx - 1);
        return true;
    }
-   else if ( nChar == VK_UP )
+   else if ( nChar == VK_UP  || nChar == VK_DOWN)
    {
-      SelectBearingAbove();
-      return true;
-   }
-   else if ( nChar == VK_DOWN )
-   {
-      SelectBearingBelow();
+       auto pBroker = EAFGetBroker();
+       GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+       const auto& bearingType = pBridgeDesc->GetBearingType();
+
+       if (bearingType == pgsTypes::brtBridge)
+       {
+           m_pFrame->SelectGirder(CGirderKey(0,0));
+       }
+       else
+       {
+           m_pFrame->SelectGirder(m_ReactionLocation.GirderKey);
+       }
       return true;
    }
 

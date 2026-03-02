@@ -31,6 +31,7 @@
 
 #include <IFace/Tools.h>
 #include <IFace\Project.h>
+#include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
 
 #include <PsgLib\BridgeDescription2.h>
@@ -83,7 +84,26 @@ void CPierDisplayObjectEvents::SelectPrev(std::shared_ptr<WBFL::DManip::iDisplay
    }
    else
    {
-      m_pFrame->SelectSpan(m_PierIdx-1);
+       auto pBroker = EAFGetBroker();
+       GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+       const auto& bearingType = pBridgeDesc->GetBearingType();
+       if (bearingType == pgsTypes::brtPier)
+       {
+           ReactionLocation rl;
+           rl.PierIdx = m_PierIdx;
+           rl.Face = PierReactionFaceType::rftBack;
+
+           const CPierData2* pPier = m_pBridgeDesc->GetPier(m_PierIdx);
+           const CSpanData2* pPrevSpan = pPier->GetPrevSpan();
+           const CGirderGroupData* pPrevGroup = m_pBridgeDesc->GetGirderGroup(pPrevSpan);
+           CGirderKey girderKey(pPrevGroup->GetIndex(), 0);
+           rl.GirderKey = girderKey;
+           m_pFrame->SelectBearing(rl);
+       }
+       else
+       {
+           m_pFrame->SelectSpan(m_PierIdx - 1);
+       }
    }
 }
 
@@ -103,7 +123,38 @@ void CPierDisplayObjectEvents::SelectNext(std::shared_ptr<WBFL::DManip::iDisplay
    }
    else
    {
-      m_pFrame->SelectSpan(m_PierIdx);
+	   bool bInterior = false;
+       auto pBroker = EAFGetBroker();
+       GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+       const auto& bearingType = pBridgeDesc->GetBearingType();
+       if (bearingType == pgsTypes::brtPier)
+       {
+           auto pBroker = EAFGetBroker();
+           GET_IFACE2(pBroker, IBridge, pBridge);
+           bInterior = pBridge->IsInteriorPier(m_PierIdx);
+           if (bInterior)
+           {
+               m_pFrame->SelectSpan(m_PierIdx);
+           }
+           else
+           {
+               ReactionLocation rl;
+               rl.PierIdx = m_PierIdx;
+               rl.Face = PierReactionFaceType::rftAhead;
+
+               const CPierData2* pPier = m_pBridgeDesc->GetPier(m_PierIdx);
+               const CSpanData2* pNextSpan = pPier->GetNextSpan();
+               const CGirderGroupData* pNextGroup = m_pBridgeDesc->GetGirderGroup(pNextSpan);
+
+               CGirderKey girderKey(pNextGroup->GetIndex(), 0);
+               rl.GirderKey = girderKey;
+               m_pFrame->SelectBearing(rl);
+           }
+       }
+       else
+       {
+           m_pFrame->SelectSpan(m_PierIdx);
+       }       
    }
 }
 

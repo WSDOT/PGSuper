@@ -71,11 +71,22 @@ void CBridgePlanViewSlabDisplayObjectEvents::SelectPrev()
 
 void CBridgePlanViewSlabDisplayObjectEvents::SelectNext()
 {
-   ReactionLocation rl;
-   rl.GirderKey = CGirderKey(0, 0);
-   rl.Face = PierReactionFaceType::rftAhead;
-   rl.PierIdx = 0;
-   m_pFrame->SelectBearing(rl);
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+    const auto& bearingType = pBridgeDesc->GetBearingType();
+
+    if (bearingType == pgsTypes::brtBridge)
+    {
+        ReactionLocation rl;
+        rl.GirderKey = CGirderKey(0, 0);
+        rl.Face = PierReactionFaceType::rftAhead;
+        rl.PierIdx = 0;
+        m_pFrame->SelectBearing(rl);
+    }
+    else
+    {
+        m_pFrame->SelectAlignment();
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -194,13 +194,96 @@ bool CBridgePlanViewGirderDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDispla
    }
    else if ( nChar == VK_UP )
    {
-      SelectPrevGirder();
-      return true;
+       auto pBroker = EAFGetBroker();
+       GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+       const auto& bearingType = pBridgeDesc->GetBearingType();
+       if (bearingType == pgsTypes::brtGirder)
+       {
+           ReactionLocation rl;
+           if (m_GirderKey.girderIndex == 0)
+           {
+               // if this is the first girder in this group
+               if (m_GirderKey.groupIndex == 0) // and this is the first group
+               {
+                   // select the alignment
+                   m_pFrame->GetBridgePlanView()->SelectAlignment(true);
+                   return true;
+               }
+               else
+               {
+                   // select the last girder in the previous group
+                   CGirderKey girderKey(m_GirderKey);
+                   girderKey.groupIndex--;
+
+
+                   auto pBroker = EAFGetBroker();
+                   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+                   GirderIndexType nGirders = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(girderKey.groupIndex)->GetGirderCount();
+                   girderKey.girderIndex = nGirders - 1;
+                   rl.GirderKey = girderKey;
+               }
+           }
+           else
+           {
+               // select the previous girder in this group
+               CGirderKey girderKey(m_GirderKey);
+               girderKey.girderIndex--;
+               rl.GirderKey = girderKey;
+           }
+           GET_IFACE2(pBroker, IBridge, pBridge);
+           rl.PierIdx = pBridge->GetGirderGroupStartPier(rl.GirderKey.groupIndex);
+           rl.Face = rftAhead;
+           m_pFrame->SelectBearing(rl);
+           return true;
+       }
+       else
+       {
+           SelectPrevGirder();
+           return true;
+       }
    }
    else if ( nChar == VK_DOWN )
    {
-      SelectNextGirder();
-      return true;
+       auto pBroker = EAFGetBroker();
+       GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+       const auto& bearingType = pBridgeDesc->GetBearingType();
+       if (bearingType == pgsTypes::brtGirder)
+       {
+           ReactionLocation rl;
+           if (m_GirderKey.girderIndex == m_nGirdersThisGroup - 1)
+           {
+               // if this is the last girder in this group
+               if (m_GirderKey.groupIndex == m_nGroups - 1) // and this is the last group
+               {
+                   // select the first segment
+                   rl.GirderKey = CSegmentKey(0, 0, 0);
+               }
+               else
+               {
+                   // select the first girder in the next group
+                   CGirderKey girderKey(m_GirderKey.groupIndex + 1, 0);
+                   rl.GirderKey = girderKey;
+               }
+           }
+           else
+           {
+               // select the next girder in this group
+               CGirderKey girderKey(m_GirderKey);
+               girderKey.girderIndex++;
+               rl.GirderKey = girderKey;
+           }
+
+           GET_IFACE2(pBroker, IBridge, pBridge);
+           rl.PierIdx = pBridge->GetGirderGroupStartPier(rl.GirderKey.groupIndex);
+           rl.Face = rftAhead;
+           m_pFrame->SelectBearing(rl);
+           return true;
+       }
+       else
+       {
+           SelectNextGirder();
+           return true;
+       }
    }
 
    return false;
@@ -374,35 +457,109 @@ void CBridgePlanViewSegmentDisplayObjectEvents::SelectAdjacentPrevSegment()
    else
    {
       // select the corresponding segment in the previous girder line
+      
+       auto pBroker = EAFGetBroker();
+       GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+       const auto& bearingType = pBridgeDesc->GetBearingType();
+
       CSegmentKey segmentKey(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex-1,m_SegmentKey.segmentIndex);
-      m_pFrame->SelectSegment(segmentKey);
+      if (bearingType == pgsTypes::brtGirder)
+      {
+          ReactionLocation rl;
+          rl.GirderKey = segmentKey;
+          auto pBroker = EAFGetBroker();
+          GET_IFACE2(pBroker, IBridge, pBridge);
+          rl.PierIdx = pBridge->GetGirderGroupStartPier(rl.GirderKey.groupIndex);
+          rl.Face = rftAhead;
+          m_pFrame->SelectBearing(rl);
+      }
+      else
+      {
+          if (m_nSegments > 1)
+          {
+              // select corresponding segment in next girder line to the right
+              m_pFrame->SelectSegment(segmentKey);
+          }
+          else
+          {
+              m_pFrame->SelectGirder(segmentKey);
+          }
+      }
    }
+   
 }
 
 void CBridgePlanViewSegmentDisplayObjectEvents::SelectAdjacentNextSegment()
 {
-   if ( m_SegmentKey.girderIndex == m_nGirders-1 )
-   {
-      // this segment is in the right-most girder line... 
-      if ( m_SegmentKey.segmentIndex == m_nSegments-1 )
-      {
-         // there are no more segments to select... select the left-most girder line
-         CGirderKey girderKey(m_SegmentKey.groupIndex,0);
-         m_pFrame->SelectGirder(girderKey);
-      }
-      else
-      {
-         // select the closure joint at the end of the this segment in the left-most girder line
-         CSegmentKey closureKey(m_SegmentKey.groupIndex,0,m_SegmentKey.segmentIndex);
-         m_pFrame->SelectClosureJoint(closureKey);
-      }
-   }
-   else
-   {
-      // select corresponding segment in next girder line to the right
-      CSegmentKey segmentKey(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex+1,m_SegmentKey.segmentIndex);
-      m_pFrame->SelectSegment(segmentKey);
-   }
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+    const auto& bearingType = pBridgeDesc->GetBearingType();
+    if (bearingType == pgsTypes::brtGirder)
+    {
+        ReactionLocation rl;
+        if (m_SegmentKey.girderIndex == m_nGirders - 1)
+        {
+            // this segment is in the right-most girder line... 
+            if (m_SegmentKey.segmentIndex == m_nSegments - 1)
+            {
+                // there are no more segments to select... select the left-most girder line
+                CGirderKey girderKey(m_SegmentKey.groupIndex, 0);
+                rl.GirderKey = girderKey;
+            }
+            else
+            {
+                // select the closure joint at the end of the this segment in the left-most girder line
+                CSegmentKey closureKey(m_SegmentKey.groupIndex, 0, m_SegmentKey.segmentIndex);
+                m_pFrame->SelectClosureJoint(closureKey);
+                return;
+            }
+        }
+        else
+        {
+            // select corresponding segment in next girder line to the right
+            CSegmentKey segmentKey(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex + 1, m_SegmentKey.segmentIndex);
+            rl.GirderKey = segmentKey;
+        }
+
+        auto pBroker = EAFGetBroker();
+        GET_IFACE2(pBroker, IBridge, pBridge);
+        rl.PierIdx = pBridge->GetGirderGroupStartPier(rl.GirderKey.groupIndex);
+        rl.Face = rftAhead;
+        m_pFrame->SelectBearing(rl);
+    }
+    else
+    {
+        if (m_SegmentKey.girderIndex == m_nGirders - 1)
+        {
+            // this segment is in the right-most girder line... 
+            if (m_SegmentKey.segmentIndex == m_nSegments - 1)
+            {
+                // there are no more segments to select... select the left-most girder line
+                CGirderKey girderKey(m_SegmentKey.groupIndex, 0);
+                m_pFrame->SelectGirder(girderKey);
+            }
+            else
+            {
+                // select the closure joint at the end of the this segment in the left-most girder line
+                CSegmentKey closureKey(m_SegmentKey.groupIndex, 0, m_SegmentKey.segmentIndex);
+                m_pFrame->SelectClosureJoint(closureKey);
+            }
+        }
+        else
+        {
+            CSegmentKey segmentKey(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex + 1, m_SegmentKey.segmentIndex);
+
+            if (m_nSegments > 1)
+            {
+                // select corresponding segment in next girder line to the right
+                m_pFrame->SelectSegment(segmentKey);
+            }
+            else
+            {
+                m_pFrame->SelectGirder(segmentKey);
+            }
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
