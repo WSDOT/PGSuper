@@ -73,11 +73,5 @@ protected:
    void EditBearing(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
    void SelectBearing(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
 
-   // select prev/next/above/below bearing
-   void SelectBearingAbove();
-   void SelectBearingBelow();
-   void SelectLeftBearing();
-   void SelectRightBearing();
-
 };
 
