@@ -281,37 +281,24 @@ bool CBridgePlanViewBearingDisplayObjectEvents::OnContextMenu(std::shared_ptr<iD
 
     if (pDO->IsSelected())
     {
-        auto pList = pDO->GetDisplayList();
-        auto pDispMgr = pList->GetDisplayMgr();
-        auto pView = pDispMgr->GetView();
-        CDocument* pDoc = pView->GetDocument();
+        auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
+        CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
-        CPGSDocBase* pPGSDoc = (CPGSDocBase*)pDoc;
 
-        auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pPGSDoc->GetPluginCommandManager());
-        pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT, nullptr);
+        auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
+        pMenu->LoadMenu(IDR_SELECTED_BEARING_CONTEXT, nullptr);
 
-        if (pPGSDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)))
-        {
-            // PGSplice doesn't do design
-            CString strDesignGirder;
-            pMenu->GetMenuString(ID_PROJECT_DESIGNGIRDERDIRECT, strDesignGirder, MF_BYCOMMAND);
-            UINT nPos = pMenu->FindMenuItem(strDesignGirder);
-            pMenu->RemoveMenu(nPos - 1, MF_BYPOSITION, nullptr); // remove the separater before "Design Girder"
-            pMenu->RemoveMenu(ID_PROJECT_DESIGNGIRDERDIRECT, MF_BYCOMMAND, nullptr);
-            pMenu->RemoveMenu(ID_PROJECT_DESIGNGIRDERDIRECT_PRESERVEHAUNCH, MF_BYCOMMAND, nullptr);
-        }
-
-        pPGSDoc->BuildReportMenu(pMenu, true);
-
-        const std::map<IDType, IBridgePlanViewEventCallback*>& callbacks = pPGSDoc->GetBridgePlanViewCallbacks();
-        std::map<IDType, IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
-        std::map<IDType, IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
-        for (; callbackIter != callbackIterEnd; callbackIter++)
-        {
-            IBridgePlanViewEventCallback* pCallback = callbackIter->second;
-            pCallback->OnGirderContextMenu(m_ReactionLocation.GirderKey, pMenu);
-        }
+        /// For future use if needed
+        //
+        //CPGSDocBase* pPGSDoc = (CPGSDocBase*)pDoc;
+        //const std::map<IDType, IBridgePlanViewEventCallback*>& callbacks = pPGSDoc->GetBridgePlanViewCallbacks();
+        //std::map<IDType, IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
+        //std::map<IDType, IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
+        //for (; callbackIter != callbackIterEnd; callbackIter++)
+        //{
+        //    IBridgePlanViewEventCallback* pCallback = callbackIter->second;
+        //    pCallback->OnGirderBearingMenu(m_ReactionLocation.GirderKey, pMenu);
+        //}
 
         pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, m_pFrame);
 
