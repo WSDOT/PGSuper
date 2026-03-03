@@ -695,6 +695,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Section C&ut...",             ID_USER_CUT
         MENUITEM SEPARATOR
+        MENUITEM "&View Settings...",           ID_VIEWSETTINGS
+        MENUITEM SEPARATOR
     END
 END
 
