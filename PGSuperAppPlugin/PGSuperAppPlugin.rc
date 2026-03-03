@@ -642,8 +642,6 @@ BEGIN
     BEGIN
         MENUITEM "Edit &Alignment...",          ID_PROJECT_ALIGNMENT
         MENUITEM "Edit &Bridge...",             ID_PROJECT_BRIDGEDESC
-        MENUITEM SEPARATOR
-        MENUITEM "&View Settings...",           ID_VIEWSETTINGS
     END
 END
 
@@ -653,8 +651,6 @@ BEGIN
     BEGIN
         MENUITEM "Edit &Profile...",            ID_PROJECT_PROFILE
         MENUITEM "Edit &Bridge...",             ID_PROJECT_BRIDGEDESC
-        MENUITEM SEPARATOR
-        MENUITEM "&View Settings...",           ID_VIEWSETTINGS
     END
 END
 
@@ -699,8 +695,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Section C&ut...",             ID_USER_CUT
         MENUITEM SEPARATOR
-        MENUITEM "&View Settings...",           ID_VIEWSETTINGS
-        MENUITEM SEPARATOR
     END
 END
 
@@ -726,8 +720,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Girder",                 ID_VIEW_GIRDER
         MENUITEM SEPARATOR
-        MENUITEM "View Settings...",            ID_VIEWSETTINGS
-        MENUITEM SEPARATOR
     END
 END
 
@@ -742,8 +734,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Girder",                 ID_VIEW_GIRDER
         MENUITEM SEPARATOR
-        MENUITEM "View Settings...",            ID_VIEWSETTINGS
-        MENUITEM SEPARATOR
     END
 END
 
@@ -757,8 +747,6 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "View Girder",                 ID_VIEW_GIRDER
         MENUITEM SEPARATOR
-        MENUITEM "View Settings...",            ID_VIEWSETTINGS
-        MENUITEM SEPARATOR
     END
 END
 
@@ -769,8 +757,6 @@ BEGIN
         MENUITEM "Edit &Bridge...",             ID_PROJECT_BRIDGEDESC
         MENUITEM "Edit &Deck...",               ID_EDIT_DECK
         MENUITEM "Edit &Haunch...",             ID_EDIT_HAUNCH
-        MENUITEM SEPARATOR
-        MENUITEM "View Settings...",            ID_VIEWSETTINGS
     END
 END
 
@@ -780,8 +766,6 @@ BEGIN
     BEGIN
 	MENUITEM "Edit &Bearings...",               ID_EDIT_BEARING
     MENUITEM "&Copy Bearing Properties...",     ID_EDIT_COPYBEARINGPROPERTIES
-        MENUITEM SEPARATOR
-        MENUITEM "View Settings...",            ID_VIEWSETTINGS
     END
 END
 
