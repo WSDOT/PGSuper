@@ -77,8 +77,8 @@
 
 #define TITLE_DISPLAY_LIST       0
 #define ALIGNMENT_DISPLAY_LIST   1
-#define PIER_DISPLAY_LIST        2
-#define ELASTOMERIC_DISPLAY_LIST  3
+#define ELASTOMERIC_DISPLAY_LIST 2
+#define PIER_DISPLAY_LIST        3
 #define SEGMENT_DISPLAY_LIST     4
 #define JOINT_DISPLAY_LIST       5
 #define GIRDER_DISPLAY_LIST      6
@@ -555,6 +555,7 @@ void CBridgePlanView::BuildDisplayLists()
    m_pDispMgr->CreateDisplayList(LABEL_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(TITLE_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(ALIGNMENT_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(BEARING_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(ELASTOMERIC_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(SEGMENT_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(JOINT_DISPLAY_LIST);
@@ -563,7 +564,6 @@ void CBridgePlanView::BuildDisplayLists()
    m_pDispMgr->CreateDisplayList(CLOSURE_JOINT_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(PIER_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(TEMPORARY_SUPPORT_DISPLAY_LIST);
-   m_pDispMgr->CreateDisplayList(BEARING_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(SLAB_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(SPAN_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(NORTH_ARROW_DISPLAY_LIST);
@@ -1241,12 +1241,14 @@ void CBridgePlanView::UpdateDisplayObjects()
    BuildTitleDisplayObjects();
    BuildAlignmentDisplayObjects();
 
-   BuildPierDisplayObjects();
    BuildBearingDisplayObjects();
+
+   BuildPierDisplayObjects();
 
    BuildSegmentDisplayObjects();
    BuildLongitudinalJointDisplayObject();
    BuildGirderDisplayObjects();
+
 
    BuildTemporarySupportDisplayObjects();
    BuildClosureJointDisplayObjects();
@@ -2437,6 +2439,29 @@ void CBridgePlanView::DrawBearings(std::shared_ptr<WBFL::EAF::Broker> pBroker, c
 
         auto display_list = m_pDispMgr->FindDisplayList(ELASTOMERIC_DISPLAY_LIST);
 
+
+        const auto& bearingType = pBridgeDesc->GetBearingType();
+
+        CString strMsg;
+        if (bearingType == pgsTypes::brtBridge)
+        {
+            strMsg = _T("Double click to edit bearings for entire bridge\nRight click for more options.");
+        }
+        else if (bearingType == pgsTypes::brtPier)
+        {
+            const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
+            strMsg.Format(_T("Double click to edit %s bearings\nRight click for more options."), LABEL_PIER_EX(pPier->IsAbutment(), reactionLocation.PierIdx));
+        }
+        else if (bearingType == pgsTypes::brtGirder)
+        {
+            const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
+            strMsg.Format(_T("Double click to edit %s bearings\nRight click for more options."), LABEL_GIRDER(girderKey));
+        }
+
+        doBearing->SetToolTipText(strMsg);
+        doBearing->SetMaxTipWidth(TOOLTIP_WIDTH);
+        doBearing->SetTipDisplayTime(TOOLTIP_DURATION);
+
         display_list->AddDisplayObject(doBearing);
 
         // Register an event sink with the bearing display object so that we can handle double clicks
@@ -2471,9 +2496,6 @@ void CBridgePlanView::BuildBearingDisplayObjects()
     GroupIndexType nGroups = pBridge->GetGirderGroupCount();
     GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
     GroupIndexType lastGroupIdx = (m_EndGroupIdx == ALL_GROUPS ? nGroups - 1 : m_EndGroupIdx);
-
-
-
 
     auto strategy = WBFL::DManip::CompoundDrawPointStrategy::Create();
 
@@ -2510,7 +2532,6 @@ void CBridgePlanView::BuildBearingDisplayObjects()
             for (iter.First(); !iter.IsDone(); iter.Next())
             {
 
-                
                 const ReactionLocation& reactionLocation(iter.CurrentItem());
 
                 if (bearingType == pgsTypes::brtPier && girderKey.girderIndex == 0)
@@ -2539,6 +2560,7 @@ void CBridgePlanView::BuildBearingDisplayObjects()
         } // girder loop
 
     } // group loop
+
 }
 
 void CBridgePlanView::BuildTemporarySupportDisplayObjects()
