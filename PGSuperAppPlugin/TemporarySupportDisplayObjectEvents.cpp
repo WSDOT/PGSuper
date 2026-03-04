@@ -27,9 +27,12 @@
 #include "resource.h"
 #include "PGSuperApp.h"
 #include "TemporarySupportDisplayObjectEvents.h"
+#include "AgentTools.h"
 #include "PGSpliceDoc.h"
 #include <IFace\Project.h>
+#include <IFace\Bridge.h>
 #include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <DManip/DisplayObject.h>
 #include <DManip/DisplayList.h>
@@ -92,11 +95,25 @@ void CTemporarySupportDisplayObjectEvents::SelectNext(std::shared_ptr<WBFL::DMan
 {
    if ( m_pNextTS )
    {
-      m_pFrame->SelectTemporarySupport(m_pNextTS->GetID());
+       m_pFrame->SelectTemporarySupport(m_pNextTS->GetID());
    }
    else
    {
-      m_pFrame->SelectPier(m_pNextPier->GetIndex());
+       ReactionLocation rl;
+       auto pBroker = EAFGetBroker();
+       GET_IFACE2(pBroker, IBridge, pBridge);
+       bool bInterior = pBridge->IsInteriorPier(m_pNextPier->GetIndex());
+       rl.PierIdx = m_pNextPier->GetIndex();
+       rl.GirderKey = CGirderKey(0, 0);
+       if (bInterior)
+       {
+           rl.Face = rftMid;
+       }
+       else
+       {
+           rl.Face = rftBack;
+       }
+	   m_pFrame->SelectBearing(rl);
    }
 }
 
@@ -167,6 +184,23 @@ bool CTemporarySupportDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DMani
       SelectNext(pDO);
       return true;
    }
+   else if ( nChar == VK_UP)
+   {
+       const CClosureJointData* pClosure = m_pTS->GetClosureJoint(0);
+       const CPrecastSegmentData* pLeftSegment = pClosure->GetLeftSegment();
+       CSegmentKey leftSegmentKey(pLeftSegment->GetSegmentKey());
+       m_pFrame->SelectSegment(leftSegmentKey);
+       return true;
+   }
+   else if ( nChar == VK_DOWN)
+   {
+       const CClosureJointData* pClosure = m_pTS->GetClosureJoint(0);
+       const CPrecastSegmentData* pRightSegment = pClosure->GetRightSegment();
+       CSegmentKey rightSegmentKey(pRightSegment->GetSegmentKey());
+       m_pFrame->SelectSegment(rightSegmentKey);
+       return true;
+   }
+
 #pragma Reminder("UPDATE")
    //else if ( nChar == VK_UP || nChar == VK_DOWN )
    //{

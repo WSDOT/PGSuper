@@ -38,7 +38,7 @@ public:
    BearingShape Shape;
    Float64      Length; // length along girder. used for support width when computing capacities. Before version 4, was SupportWidth in pier class
    Float64      Width;  // width normal to girder
-   Uint32       BearingCount; // number of bearings per girder
+   BearingIndexType       BearingCount; // number of bearings per girder
    Float64      Spacing; // spacing if more than one bearing
    Float64      Height;
    Float64      RecessHeight;  // depth of recess cut into girder bottom

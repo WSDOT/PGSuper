@@ -75,7 +75,23 @@ void CBridgePlanViewSpanDisplayObjectEvents::SelectPrev(std::shared_ptr<WBFL::DM
    if ( m_TempSupports.size() == 0 )
    {
       PierIndexType prevPierIdx = (PierIndexType)(m_SpanIdx);
-      m_pFrame->SelectPier(prevPierIdx);
+
+      auto pBroker = EAFGetBroker();
+      GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+      const auto& bearingType = pBridgeDesc->GetBearingType();
+
+      if (bearingType == pgsTypes::brtPier)
+      {
+          ReactionLocation rl;
+          rl.PierIdx = prevPierIdx;
+          rl.GirderKey = CGirderKey(CSegmentKey(m_SpanIdx, 0, INVALID_INDEX));
+          rl.Face = rftAhead;
+          m_pFrame->SelectBearing(rl);
+      }
+      else
+      {
+          m_pFrame->SelectPier(prevPierIdx);
+      }
    }
    else
    {
@@ -91,7 +107,23 @@ void CBridgePlanViewSpanDisplayObjectEvents::SelectNext(std::shared_ptr<WBFL::DM
    {
       // select pier at end of span
       PierIndexType nextPierIdx = (PierIndexType)(m_SpanIdx+1);
-      m_pFrame->SelectPier(nextPierIdx);
+
+      auto pBroker = EAFGetBroker();
+      GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+      const auto& bearingType = pBridgeDesc->GetBearingType();
+
+      if (bearingType == pgsTypes::brtPier)
+      {
+          ReactionLocation rl;
+          rl.PierIdx = nextPierIdx;
+          rl.GirderKey = CGirderKey(CSegmentKey(m_SpanIdx, 0, INVALID_INDEX));
+          rl.Face = rftBack;
+          m_pFrame->SelectBearing(rl);
+      }
+      else
+      {
+          m_pFrame->SelectPier(nextPierIdx);
+      }
    }
    else
    {

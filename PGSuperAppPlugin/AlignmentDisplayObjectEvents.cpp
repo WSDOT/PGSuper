@@ -141,9 +141,23 @@ bool CAlignmentDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDisplayObject> pD
       }
       else if ( nChar == VK_LEFT )
       {
-         GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
-         const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-         m_pFrame->SelectPier(pBridgeDesc->GetPierCount()-1);
+         ReactionLocation rl;
+         GET_IFACE(IBridge, pBridge);
+         const auto& nGroups = pBridge->GetGirderGroupCount();
+         const auto& nGirdersThisGroup = pBridge->GetGirderCount(nGroups - 1);
+         GET_IFACE(IBridgeDescription, pBridgeDesc);
+         const auto& bearingType = pBridgeDesc->GetBearingType();
+
+         rl.GirderKey = CGirderKey(nGroups - 1, nGirdersThisGroup - 1);
+         if (bearingType == pgsTypes::brtPier)
+         {
+             rl.GirderKey = CGirderKey(nGroups - 1, 0);
+         }
+         const auto& nPiers = pBridge->GetPierCount();
+         rl.PierIdx = nPiers - 1;
+         rl.Face = PierReactionFaceType::rftBack;
+         m_pFrame->SelectBearing(rl);
+
          return true;
       }
       else if ( nChar == VK_RIGHT )

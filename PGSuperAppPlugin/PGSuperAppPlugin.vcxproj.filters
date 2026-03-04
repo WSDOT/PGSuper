@@ -871,6 +871,9 @@
     <ClCompile Include="..\SharedCtrls\MultiBearingSelectGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BearingDisplayObjectEvents.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h">
@@ -1853,6 +1856,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\ReactionLocation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BearingDisplayObjectEvents.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

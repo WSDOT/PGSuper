@@ -60,16 +60,50 @@ CCopyBearingDlg::CCopyBearingDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, CWn
 	//{{AFX_DATA_INIT(CCopyGirderDlg)
 	//}}AFX_DATA_INIT
 
-   // keep selection around
-   //GET_IFACE(ISelection,pSelection);
-   //m_FromSelection = pSelection->GetSelection();
-   //if (m_FromSelection.Type != CSelection::Girder && m_FromSelection.Type != CSelection::Segment)
-   //{
-   //   // A girder is not selected so force the selection to be the first girder
-   //   m_FromSelection.Type = CSelection::Girder;
-   //   m_FromSelection.GroupIdx = (m_FromSelection.GroupIdx == INVALID_INDEX ? 0 : m_FromSelection.GroupIdx);
-   //   m_FromSelection.GirderIdx = (m_FromSelection.GirderIdx == INVALID_INDEX ? 0 : m_FromSelection.GirderIdx);
-   //}
+   GET_IFACE(ISelection,pSelection);
+   m_FromSelection = pSelection->GetSelection();
+   CGirderKey girderKey;
+   if (m_FromSelection.Type == CSelection::Bearing || m_FromSelection.Type == CSelection::Girder || m_FromSelection.Type == CSelection::Segment)
+   {
+       m_FromSelection.Type = CSelection::Bearing;
+       m_FromSelection.GroupIdx = (m_FromSelection.GroupIdx == INVALID_INDEX ? 0 : m_FromSelection.GroupIdx);
+       m_FromSelection.GirderIdx = (m_FromSelection.GirderIdx == INVALID_INDEX ? 0 : m_FromSelection.GirderIdx);
+       m_FromSelection.Face = (m_FromSelection.Face == INVALID_INDEX ? rftAhead : m_FromSelection.Face);
+       girderKey = CGirderKey(m_FromSelection.GroupIdx, m_FromSelection.GirderIdx);
+   }
+   else
+   {
+       girderKey = CGirderKey(0, 0);
+   }
+
+
+    GET_IFACE(IBearingDesign, pBearingDesign);
+    GET_IFACE(IIntervals, pIntervals);
+    GET_IFACE(IBridge, pBridge);
+    GET_IFACE(IPointOfInterest, pPoi);
+
+    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+
+    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
+        pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
+
+    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
+    iter.First();
+    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
+
+    m_RLmenuItems.clear();
+
+    // Use iterator to walk locations
+
+    int i = 0;
+    for (iter.First(); !iter.IsDone(); iter.Next())
+    {
+
+        const ReactionLocation& reactionLocation(iter.CurrentItem());
+
+        m_RLmenuItems.emplace_back(reactionLocation);
+
+    }
 
    CEAFDocument* pDoc = EAFGetDocument();
    m_bIsPGSplice = pDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) != FALSE;
@@ -107,12 +141,39 @@ void CCopyBearingDlg::DoDataExchange(CDataExchange* pDX)
       pBut->SetCheck(BST_CHECKED);
       GetDlgItem(IDC_SELECT_BEARINGS)->EnableWindow(false);
 
-      if ( m_FromSelection.Type == CSelection::Pier || m_FromSelection.Type == CSelection::Segment )
+      if ( m_FromSelection.Type == CSelection::Bearing )
       {
          m_FromGroup.SetCurSel((int)m_FromSelection.GroupIdx);
          m_FromGirder.SetCurSel((int)m_FromSelection.GirderIdx);
-
          m_ToGroup.SetCurSel((int)m_FromSelection.GroupIdx+ (m_bIsPGSplice? 0:1));
+
+
+
+         int reactionIndex = -1;
+
+         for (size_t i = 0; i < m_RLmenuItems.size(); ++i)
+         {
+             const auto& rl = m_RLmenuItems[i];
+
+             if (rl.GirderKey.girderIndex == m_FromSelection.GirderIdx &&
+                 rl.GirderKey.groupIndex == m_FromSelection.GroupIdx &&
+                 rl.Face == m_FromSelection.Face)
+             {
+                 reactionIndex = static_cast<int>(i);
+                 break;
+             }
+         }
+
+         if (reactionIndex >= 0)
+         {
+             m_FromBearing.SetCurSel(reactionIndex);
+         }
+         else
+         {
+             m_FromBearing.SetCurSel(0); // fallback
+         }
+
+
       }
    }
 }
@@ -271,7 +332,7 @@ void CCopyBearingDlg::FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, CCo
    cbGroup.SetCurSel(0);
 
    FillGirderComboBox(cbGirder, 0, bIncludeAllGirders);
-   //FillReactionLocationComboBox(cbReactionLocation,0,0,bIncludeAllReactionLocations);
+   FillReactionLocationComboBox(cbReactionLocation,0,0,bIncludeAllReactionLocations);
 }
 
 void CCopyBearingDlg::FillGirderComboBox(CComboBox& cbGirder, GroupIndexType grpIdx, bool bIncludeAllGirders)
@@ -319,35 +380,12 @@ void CCopyBearingDlg::FillReactionLocationComboBox(CComboBox& cbReactionLocation
 
    }
 
-   GET_IFACE(IBearingDesign, pBearingDesign);
-   GET_IFACE(IIntervals, pIntervals);
-   GET_IFACE(IBridge, pBridge);
-   GET_IFACE(IPointOfInterest, pPoi);
 
-
-   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
-
-   std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(
-       pBearingDesign, lastCompositeDeckIntervalIdx, CGirderKey(grpIdx, gdrIdx)));
-
-   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
-   iter.First();
-   PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
-
-
-   m_RLmenuItems.clear();
-
-   // Use iterator to walk locations
-
-   int i = 0;
-   for (iter.First(); !iter.IsDone(); iter.Next())
+   for (int i = 0; i < m_RLmenuItems.size() ; i++)
    {
 
-       const ReactionLocation& reactionLocation(iter.CurrentItem());
-
-       m_RLmenuItems.emplace_back(reactionLocation);
-
-       cbReactionLocation.AddString(reactionLocation.PierLabel.c_str());
+       int idx = cbReactionLocation.AddString(m_RLmenuItems[i].PierLabel.c_str());
+	   cbReactionLocation.SetItemData(idx, i);
 
    }
 

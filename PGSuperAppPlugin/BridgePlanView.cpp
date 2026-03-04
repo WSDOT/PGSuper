@@ -36,6 +36,7 @@
 #include "InplacePierStationEditEvents.h"
 #include "InplaceTemporarySupportStationEditEvents.h"
 #include "GirderDisplayObjectEvents.h"
+#include "BearingDisplayObjectEvents.h"
 #include "PierDisplayObjectEvents.h"
 #include "TemporarySupportDisplayObjectEvents.h"
 #include "ClosureJointDisplayObjectEvents.h"
@@ -46,6 +47,8 @@
 #include "SpanDisplayObjectEvents.h"
 #include "BridgeSectionView.h"
 
+#include <Reporting\ReactionInterfaceAdapters.h>
+
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -53,6 +56,7 @@
 #include <IFace\EditByUI.h>
 #include <IFace\DocumentType.h>
 #include <IFace/PointOfInterest.h>
+#include <IFace\BearingDesignParameters.h>
 
 #include <PsgLib\BridgeDescription2.h>
 #include <Units\Convert.h>
@@ -73,19 +77,20 @@
 
 #define TITLE_DISPLAY_LIST       0
 #define ALIGNMENT_DISPLAY_LIST   1
-#define PIER_DISPLAY_LIST        2
-#define SEGMENT_DISPLAY_LIST     3
-#define JOINT_DISPLAY_LIST       4
-#define GIRDER_DISPLAY_LIST      5
-#define BEARING_DISPLAY_LIST     6
-#define SPAN_DISPLAY_LIST        7
-#define SLAB_DISPLAY_LIST        8
-#define LABEL_DISPLAY_LIST       9
-#define SECTION_CUT_DISPLAY_LIST 10
-#define NORTH_ARROW_DISPLAY_LIST 11
-#define DIAPHRAGM_DISPLAY_LIST   12
-#define TEMPORARY_SUPPORT_DISPLAY_LIST 13
-#define CLOSURE_JOINT_DISPLAY_LIST 14
+#define ELASTOMERIC_DISPLAY_LIST 2
+#define PIER_DISPLAY_LIST        3
+#define SEGMENT_DISPLAY_LIST     4
+#define JOINT_DISPLAY_LIST       5
+#define GIRDER_DISPLAY_LIST      6
+#define BEARING_DISPLAY_LIST     7
+#define SPAN_DISPLAY_LIST        8
+#define SLAB_DISPLAY_LIST        9
+#define LABEL_DISPLAY_LIST       10
+#define SECTION_CUT_DISPLAY_LIST 11
+#define NORTH_ARROW_DISPLAY_LIST 12
+#define DIAPHRAGM_DISPLAY_LIST   13
+#define TEMPORARY_SUPPORT_DISPLAY_LIST 14
+#define CLOSURE_JOINT_DISPLAY_LIST 15
 
 #define SECTION_CUT_ID -200
 #define ALIGNMENT_ID   -300
@@ -232,6 +237,32 @@ bool CBridgePlanView::GetSelectedPier(PierIndexType* pPierIdx)
    return true;
 }
 
+bool CBridgePlanView::GetSelectedBearing(ReactionLocation* pReactionLocation)
+{
+   auto displayObjects = m_pDispMgr->GetSelectedObjects();
+
+   ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
+
+   if ( displayObjects.size() == 0 )
+   {
+      return false;
+   }
+
+   auto pDO = displayObjects.front();
+
+   BearingDisplayObjectInfo* pInfo;
+   pDO->GetItemData((void**)&pInfo);
+
+   if ( pInfo == nullptr || pInfo->DisplayListID != ELASTOMERIC_DISPLAY_LIST )
+   {
+      return false;
+   }
+
+   *pReactionLocation = pInfo->m_ReactionLocation;
+
+   return true;
+}
+
 void CBridgePlanView::SelectSpan(SpanIndexType spanIdx,bool bSelect)
 {
    auto pDO = m_pDispMgr->FindDisplayObject(spanIdx,SPAN_DISPLAY_LIST,WBFL::DManip::AccessType::ByID);
@@ -258,6 +289,29 @@ void CBridgePlanView::SelectPier(PierIndexType pierIdx,bool bSelect)
    {
       m_pDispMgr->ClearSelectedObjects();
    }
+}
+
+void CBridgePlanView::SelectBearing(const ReactionLocation& reactionLocation,bool bSelect)
+{
+    std::map<ReactionLocation, IDType>::iterator found = m_BearingIDs.find(reactionLocation);
+    if (found == m_BearingIDs.end())
+    {
+        m_pDispMgr->ClearSelectedObjects();
+        return;
+    }
+
+    IDType ID = (*found).second;
+
+    auto pDO = m_pDispMgr->FindDisplayObject(ID, ELASTOMERIC_DISPLAY_LIST, WBFL::DManip::AccessType::ByID);
+
+    if (pDO)
+    {
+        m_pDispMgr->SelectObject(pDO, bSelect);
+    }
+    else
+    {
+        m_pDispMgr->ClearSelectedObjects();
+    }
 }
 
 bool CBridgePlanView::GetSelectedGirder(CGirderKey* pGirderKey)
@@ -501,6 +555,8 @@ void CBridgePlanView::BuildDisplayLists()
    m_pDispMgr->CreateDisplayList(LABEL_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(TITLE_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(ALIGNMENT_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(BEARING_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(ELASTOMERIC_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(SEGMENT_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(JOINT_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(GIRDER_DISPLAY_LIST);
@@ -508,7 +564,6 @@ void CBridgePlanView::BuildDisplayLists()
    m_pDispMgr->CreateDisplayList(CLOSURE_JOINT_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(PIER_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(TEMPORARY_SUPPORT_DISPLAY_LIST);
-   m_pDispMgr->CreateDisplayList(BEARING_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(SLAB_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(SPAN_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(NORTH_ARROW_DISPLAY_LIST);
@@ -1186,11 +1241,14 @@ void CBridgePlanView::UpdateDisplayObjects()
    BuildTitleDisplayObjects();
    BuildAlignmentDisplayObjects();
 
+   BuildBearingDisplayObjects();
+
    BuildPierDisplayObjects();
 
    BuildSegmentDisplayObjects();
    BuildLongitudinalJointDisplayObject();
    BuildGirderDisplayObjects();
+
 
    BuildTemporarySupportDisplayObjects();
    BuildClosureJointDisplayObjects();
@@ -1946,10 +2004,16 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
          if (pPier->GetPierModelType() == pgsTypes::pmtIdealized)
          {
+             Float64 bearing_length_back = 0;
+             Float64 bearing_length_ahead = 0;
+
             if (CPierData2::pcfBothFaces==conFlag || CPierData2::pcfBackOnly == conFlag)
             {
                ConnectionLibraryEntry::BearingOffsetMeasurementType left_brg_offset_measure_type;
                std::tie(left_offset,left_brg_offset_measure_type) = pPier->GetBearingOffset(pgsTypes::Back);
+               const auto& pBD_Back = pPier->GetBearingData(0, pgsTypes::PierFaceType::Back);
+               bearing_length_back = pBD_Back->Length / 2;
+               left_offset += bearing_length_back + WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Inch);
                if (left_brg_offset_measure_type == ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier)
                {
                   left_offset /= cos(skew);
@@ -1960,6 +2024,9 @@ void CBridgePlanView::BuildPierDisplayObjects()
             {
                ConnectionLibraryEntry::BearingOffsetMeasurementType right_brg_offset_measure_type;
                std::tie(right_offset,right_brg_offset_measure_type) = pPier->GetBearingOffset(pgsTypes::Ahead);
+               const auto& pBD_Ahead = pPier->GetBearingData(0, pgsTypes::PierFaceType::Ahead);
+               bearing_length_ahead = pBD_Ahead->Length / 2;
+               right_offset += bearing_length_ahead + WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Inch);
                if (right_brg_offset_measure_type == ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier)
                {
                   right_offset /= cos(skew);
@@ -2245,6 +2312,255 @@ void CBridgePlanView::BuildPierDisplayObjects()
          last_station = station;
       } // next pier
    } // next group
+}
+
+void CBridgePlanView::DrawBearings(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, const ReactionLocation& reactionLocation, PierIndexType startPierIdx, GirderIndexType nGirders,
+    std::shared_ptr<WBFL::DManip::CompoundDrawPointStrategy>& pStrategy)
+    {
+        SHEARDEFORMATIONDETAILS details;
+        GET_IFACE2(pBroker, IBearingDesignParameters, pBearingParams);
+        BEARINGPARAMETERS params;
+        pBearingParams->GetBearingParameters(girderKey, &params);
+
+        PoiList vPoi = pBearingParams->GetBearingPoiList(girderKey, &details);
+
+        const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
+
+
+        pgsTypes::PierFaceType faceType;
+        if (reactionLocation.Face == rftBack)
+        {
+            faceType = pgsTypes::PierFaceType::Back;
+
+        }
+        else
+        {
+            faceType = pgsTypes::PierFaceType::Ahead;
+        }
+
+        GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+        GET_IFACE2(pBroker, IBridge, pBridge);
+        GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
+
+        const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+        const auto& pBD = pIBridgeDesc->GetBearingData(
+            reactionLocation.PierIdx, faceType,
+            reactionLocation.GirderKey.girderIndex);
+
+        CComPtr<IPoint2d> point;
+        pBridge->GetPoint(poi, pgsTypes::PlanCoordinateType::pcGlobal, &point);
+
+        auto doBearing = WBFL::DManip::PointDisplayObject::Create();
+        doBearing->SetPosition(geomUtil::GetPoint(point), false, false);
+
+        auto bearingCnt = pBD->BearingCount;
+
+        auto shapeDrawStrategy = WBFL::DManip::ShapeDrawStrategy::Create();
+
+        for (BearingIndexType brgIdx = 0; brgIdx < bearingCnt; brgIdx++)
+        {
+
+
+            Float64 bearing_width = pBD->Width;
+            Float64 bearing_length = pBD->Length;
+            Float64 x, y;
+            point->get_X(&x);
+            point->get_Y(&y);
+
+            CComPtr<IAngle> pSkew;
+            pBridge->GetPierSkew(reactionLocation.PierIdx, &pSkew);
+            Float64 skew;
+            pSkew->get_Value(&skew);
+
+            Float64 mid = ((int)bearingCnt - 1) / 2.0;
+            Float64 d = ((int)brgIdx - mid) * pBD->Spacing;
+
+            Float64 ux = std::sin(-skew);
+            Float64 uy = std::cos(-skew);
+
+            x += d * ux;
+            y += d * uy;
+
+            CComPtr<IDirection> direction;
+            pGirder->GetSegmentDirection(poi.GetSegmentKey(), &direction);
+
+            Float64 dir;
+            direction->get_Value(&dir);
+
+            CComQIPtr<IShape> shape;
+            CComPtr<IPolyShape> rect;
+            CComPtr<ICircle> circle;
+
+            if (pBD->Shape == BearingShape::bsRound)
+            {
+                circle.CoCreateInstance(CLSID_Circle);
+                CComPtr<IPoint2d>  circle_pnt;
+                circle_pnt.CoCreateInstance(CLSID_Point2d);
+                circle_pnt->put_X(x);
+                circle_pnt->put_Y(y);
+                circle->putref_Center(circle_pnt);
+                circle->put_Radius(pBD->Length*0.5);
+                shape = circle;
+            }
+            else
+            {
+                rect.CoCreateInstance(CLSID_PolyShape);
+                rect->AddPoint(x - bearing_length * 0.5, y - bearing_width * 0.5);
+                rect->AddPoint(x - bearing_length * 0.5, y + bearing_width * 0.5);
+                rect->AddPoint(x + bearing_length * 0.5, y + bearing_width * 0.5);
+                rect->AddPoint(x + bearing_length * 0.5, y - bearing_width * 0.5);
+                shape = rect;
+            }
+
+
+            CComQIPtr<IXYPosition> position(shape);
+            position->RotateEx(point, dir);
+
+            shapeDrawStrategy->SetShape(geomUtil::ConvertShape(shape));
+            shapeDrawStrategy->SetSolidFillColor(BEARING_FILL_COLOR);
+            shapeDrawStrategy->SetSolidLineColor(BEARING_BORDER_COLOR);
+            shapeDrawStrategy->Fill(true);
+
+            pStrategy->AddStrategy(shapeDrawStrategy);
+        }
+
+        doBearing->SetDrawingStrategy(pStrategy);
+        doBearing->SetSelectionType(WBFL::DManip::SelectionType::All);
+
+        auto gravity_well = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(shapeDrawStrategy);
+        doBearing->SetGravityWellStrategy(gravity_well);
+
+        IDType ID = m_NextBearingID++;
+        m_BearingIDs.insert(std::make_pair(reactionLocation, ID));
+        doBearing->SetID(ID);
+
+        BearingDisplayObjectInfo* pInfo = new BearingDisplayObjectInfo(reactionLocation, ELASTOMERIC_DISPLAY_LIST);
+        doBearing->SetItemData((void*)pInfo, true);
+
+        auto display_list = m_pDispMgr->FindDisplayList(ELASTOMERIC_DISPLAY_LIST);
+
+
+        const auto& bearingType = pBridgeDesc->GetBearingType();
+
+        CString strMsg;
+        if (bearingType == pgsTypes::brtBridge)
+        {
+            strMsg = _T("Double click to edit bearings for entire bridge\nRight click for more options.");
+        }
+        else if (bearingType == pgsTypes::brtPier)
+        {
+            const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
+            strMsg.Format(_T("Double click to edit %s bearings\nRight click for more options."), LABEL_PIER_EX(pPier->IsAbutment(), reactionLocation.PierIdx));
+        }
+        else if (bearingType == pgsTypes::brtGirder)
+        {
+            const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
+            strMsg.Format(_T("Double click to edit %s bearings\nRight click for more options."), LABEL_GIRDER(girderKey));
+        }
+
+        doBearing->SetToolTipText(strMsg);
+        doBearing->SetMaxTipWidth(TOOLTIP_WIDTH);
+        doBearing->SetTipDisplayTime(TOOLTIP_DURATION);
+
+        display_list->AddDisplayObject(doBearing);
+
+        // Register an event sink with the bearing display object so that we can handle double clicks
+        // on the segment differently then a general double click
+
+
+        PierIndexType nPiers = pBridgeDesc->GetPierCount();
+        CBridgeModelViewChildFrame* pFrame = GetFrame();
+        GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+        auto events = std::make_shared<CBridgePlanViewBearingDisplayObjectEvents>(reactionLocation, nPiers, nGroups, nGirders, pFrame);
+        doBearing->RegisterEventSink(events);
+
+    };
+
+void CBridgePlanView::BuildBearingDisplayObjects()
+{
+    auto pBroker = EAFGetBroker();
+
+    auto display_list = m_pDispMgr->FindDisplayList(ELASTOMERIC_DISPLAY_LIST);
+    display_list->Clear();
+
+    m_BearingIDs.clear();
+    m_NextBearingID = 0;
+
+    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+    GET_IFACE2(pBroker, IBridge, pBridge);
+
+    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+    const auto& bearingType = pBridgeDesc->GetBearingType();
+
+    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+    GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
+    GroupIndexType lastGroupIdx = (m_EndGroupIdx == ALL_GROUPS ? nGroups - 1 : m_EndGroupIdx);
+
+    auto strategy = WBFL::DManip::CompoundDrawPointStrategy::Create();
+
+    for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
+    {
+        const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
+        GirderIndexType nGirders = pGroup->GetGirderCount();
+
+        for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+        {
+
+            CGirderKey girderKey(grpIdx, gdrIdx);
+
+            const CSplicedGirderData* pGirder2 = pGroup->GetGirder(gdrIdx);
+            SegmentIndexType nSegments = pGirder2->GetSegmentCount();
+
+            GET_IFACE2(pBroker, IIntervals, pIntervals);
+            GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+            GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+
+
+            IntervalIndexType erectIntervalIdx = pIntervals->GetErectSegmentInterval(CSegmentKey(grpIdx, gdrIdx, 0));
+            std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, erectIntervalIdx, girderKey));
+
+            const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+            PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+
+            ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
+
+            if (bearingType == pgsTypes::brtGirder)
+                strategy = WBFL::DManip::CompoundDrawPointStrategy::Create();
+
+            // Use iterator to walk locations
+            for (iter.First(); !iter.IsDone(); iter.Next())
+            {
+
+                const ReactionLocation& reactionLocation(iter.CurrentItem());
+
+                if (bearingType == pgsTypes::brtPier && girderKey.girderIndex == 0)
+                {
+                    strategy = WBFL::DManip::CompoundDrawPointStrategy::Create();
+
+                    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+                    {
+
+                        CGirderKey girderKey(grpIdx, gdrIdx);
+
+						DrawBearings(pBroker, girderKey, reactionLocation, startPierIdx, nGirders, strategy);
+
+                    }
+
+                }
+				else if (bearingType != pgsTypes::brtPier)
+                {
+                    const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
+
+                    DrawBearings(pBroker, thisGirderKey, reactionLocation, startPierIdx, nGirders, strategy);
+                }
+
+            } // reaction loop
+
+        } // girder loop
+
+    } // group loop
+
 }
 
 void CBridgePlanView::BuildTemporarySupportDisplayObjects()
@@ -3367,6 +3683,11 @@ void CBridgePlanView::Select(const CSelection* pSelection)
 
    case CSelection::Segment:
       SelectSegment(CSegmentKey(pSelection->GroupIdx, pSelection->GirderIdx, pSelection->SegmentIdx), true);
+      break;
+
+   case CSelection::Bearing:
+      SelectBearing(ReactionLocation(pSelection->PierIdx, pSelection->Face, 
+          CGirderKey(pSelection->GroupIdx, pSelection->GirderIdx)), true);
       break;
 
    case CSelection::ClosureJoint:

@@ -203,6 +203,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="AlignmentPlanView.cpp" />
     <ClCompile Include="AlignmentProfileView.cpp" />
     <ClCompile Include="BearingDetailsDlg.cpp" />
+    <ClCompile Include="BearingDisplayObjectEvents.cpp" />
     <ClCompile Include="BridgeDescDeckDetailsPage.cpp" />
     <ClCompile Include="BridgeDescDeckPointGrid.cpp" />
     <ClCompile Include="BridgeDescDeckRebarGrid.cpp" />
@@ -597,6 +598,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="AlignmentPlanView.h" />
     <ClInclude Include="AlignmentProfileView.h" />
     <ClInclude Include="BearingDetailsDlg.h" />
+    <ClInclude Include="BearingDisplayObjectEvents.h" />
     <ClInclude Include="BridgeDescDeckDetailsPage.h" />
     <ClInclude Include="BridgeDescDeckPointGrid.h" />
     <ClInclude Include="BridgeDescDeckRebarGrid.h" />
