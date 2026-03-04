@@ -2399,7 +2399,7 @@ void CBridgePlanView::DrawBearings(std::shared_ptr<WBFL::EAF::Broker> pBroker, c
                 circle_pnt->put_X(x);
                 circle_pnt->put_Y(y);
                 circle->putref_Center(circle_pnt);
-                circle->put_Radius(pBD->Width / 2);
+                circle->put_Radius(pBD->Length*0.5);
                 shape = circle;
             }
             else
