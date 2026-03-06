@@ -2490,6 +2490,8 @@ void CPGSDocBase::Dump(CDumpContext& dc) const
 
 BOOL CPGSDocBase::Init()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    auto pluginApp = pTemplate->GetPluginApp();
    auto pPGSuper = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
