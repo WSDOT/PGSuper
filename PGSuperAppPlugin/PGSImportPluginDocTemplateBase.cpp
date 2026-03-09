@@ -74,9 +74,7 @@ BOOL CPGSImportPluginDocTemplateBase::DoOpenDocumentFile(LPCTSTR lpszPathName,BO
    ASSERT_KINDOF(CEAFBrokerDocument, pDocument);
    auto broker = ((CEAFBrokerDocument*)pDocument)->GetBroker();
    GET_IFACE2(broker,IEvents,pEvents);
-   GET_IFACE2(broker,IUIEvents,pUIEvents);
-   pEvents->HoldEvents();
-   pUIEvents->HoldEvents();
+   pEvents->HoldEvents(); // also causes UI events to be held
 
    // do the importing
    // this is where the importer does its thing and build a new bridge model
