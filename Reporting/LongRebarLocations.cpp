@@ -23,6 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\LongRebarLocations.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
@@ -31,13 +32,8 @@
 
 #include <WBFLGenericBridgeTools.h>
 
-#include <PgsExt\LongitudinalRebarData.h>
+#include <PsgLib\LongitudinalRebarData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -72,8 +68,8 @@ CLongRebarLocations& CLongRebarLocations::operator= (const CLongRebarLocations& 
 }
 
 //======================== OPERATIONS =======================================
-void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                IEAFDisplayUnits* pDisplayUnits) const
+void CLongRebarLocations::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    USES_CONVERSION;
 

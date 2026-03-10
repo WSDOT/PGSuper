@@ -32,14 +32,10 @@
 
 #include <system\tokenizer.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 #define TYPE_COL         1
@@ -132,8 +128,8 @@ void CStrandFillGrid::CustomInit(CGirderSelectStrandsPage* pParent, const Girder
    SetMergeCellsMode(gxnMergeDelayEval);
    SetFrozenCols(2,2); // column 2 is frozen and is a row header column (keeps Select column from scrolling)
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Make string for max debond length
@@ -467,8 +463,8 @@ void CStrandFillGrid::FillGrid()
 
          if ( bIsDebonded )
          {
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
+            
+            auto pBroker = EAFGetBroker();
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             // strand is debonded
@@ -675,8 +671,8 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
 {
    // Strand fill information is kept up to date in OnClickedButtonRowCol
    // However, debonding and extended strand information must be taken care of here
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // may or may not be used, depends on input parameters
 
    // clear out old debond data
@@ -975,8 +971,8 @@ void CStrandFillGrid::UpdateParent()
 
 void CStrandFillGrid::SymmetricDebond(BOOL bSymmetricDebond)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    m_pParent->m_bSymmetricDebond = bSymmetricDebond;

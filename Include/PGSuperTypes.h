@@ -20,8 +20,6 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSUPERTYPES_H_
-#define INCLUDED_PGSUPERTYPES_H_
 #pragma once
 
 #include <WBFLTypes.h>
@@ -37,7 +35,7 @@
 #include <numeric>
 #endif
 
-#include <PgsExt\Keys.h> // goes with GDRCONFIG
+#include <PsgLib\Keys.h> // goes with GDRCONFIG
 static long g_Ncopies = 0; // keeps track of the number of times GDRCONFIG is copied
 
 #include <Materials/Rebar.h>
@@ -109,6 +107,18 @@ typedef struct pgsTypes
    {
       Normal,
       Severe
+   };
+
+   enum class ClimateCondition
+   {
+       Cold,
+       Moderate
+   };
+
+   enum class BearingDesignMethod
+   {
+       MethodA,
+       MethodB
    };
 
 
@@ -780,10 +790,11 @@ typedef struct pgsTypes
 
    typedef enum DuctType
    {
-      // See LRFD 5.4.6.1
+      // See LRFD 5.9.3.2.2 and 5.4.6.1
       dtMetal,   // galvanized ferrous metal
-      dtPlastic, // polyethylene
-      dtFormed   // formed in concrete with removable cores
+      dtPolyethylene, // polyethylene (removed in LRFD 10th Edition)
+      dtFormed,   // formed in concrete with removable cores
+      dtCorrugatedPolymer // added in LRFD 10th Edition
    } DuctType;
 
    typedef enum StrandInstallationType
@@ -923,6 +934,8 @@ typedef struct pgsTypes
    } GeometryControlActivityType;
 
 } pgsTypes;
+
+
 
 //-----------------------------------------------------------------------------
 // Struct for stirrup information.
@@ -1187,31 +1200,13 @@ struct PRESTRESSCONFIG
       return !operator==(other);
    }
 
-   PRESTRESSCONFIG(const PRESTRESSCONFIG& rOther)
-   {
-      MakeCopy( rOther );
-   }
-
-   PRESTRESSCONFIG& operator=(const PRESTRESSCONFIG& rOther)
-   {
-      if ( this != &rOther )
-         MakeAssignment( rOther );
-
-      return *this;
-   }
+   PRESTRESSCONFIG(const PRESTRESSCONFIG& rOther) = default;
+   PRESTRESSCONFIG& operator=(const PRESTRESSCONFIG& rOther) = default;
 
 private:
    std::array<StrandIndexType,3> NstrandsCached;  // Number of strands
    std::array<ConfigStrandFillVector,3> StrandFill;
    std::vector<StrandIndexType> NextendedStrands[3][2]; // Holds index of extended strands (array index [pgsTypes::StrandType][pgsTypes::MemberEndType])
-
-   void MakeAssignment( const PRESTRESSCONFIG& rOther )
-   {
-      MakeCopy( rOther );
-   }
-
-   void MakeCopy( const PRESTRESSCONFIG& rOther );
-
 };
 
 inline void PRESTRESSCONFIG::SetStrandFill(pgsTypes::StrandType type, const ConfigStrandFillVector& fillArray)
@@ -1314,33 +1309,6 @@ inline bool PRESTRESSCONFIG::operator==(const PRESTRESSCONFIG& other) const
       return false;
 
    return true;
-}
-
-inline void PRESTRESSCONFIG::MakeCopy( const PRESTRESSCONFIG& other )
-{
-   for (int i=0; i<3; i++)
-   {
-      Debond[i] = other.Debond[i];
-
-      Pjack[i] = other.Pjack[i];
-
-      StrandFill[i] = other.StrandFill[i];
-
-      NstrandsCached[i] = other.NstrandsCached[i];
-   
-      NextendedStrands[i][pgsTypes::metStart] = other.NextendedStrands[i][pgsTypes::metStart];
-      NextendedStrands[i][pgsTypes::metEnd]   = other.NextendedStrands[i][pgsTypes::metEnd];
-   }
-
-   for ( int i = 0; i < 2; i++ )
-   {
-      EndOffset[i] = other.EndOffset[i];
-      HpOffset[i]  = other.HpOffset[i];
-   }
-
-   TempStrandUsage = other.TempStrandUsage;
-
-   AdjustableStrandType = other.AdjustableStrandType;
 }
 
 //-----------------------------------------------------------------------------
@@ -2278,7 +2246,7 @@ inline bool IsDirectStrandModel(pgsTypes::StrandDefinitionType strandModelType)
    return (strandModelType == pgsTypes::sdtDirectRowInput || strandModelType == pgsTypes::sdtDirectStrandInput) ? true : false;
 }
 
-inline bool IsLNWC(pgsTypes::ConcreteType type)
+inline bool IsNWC(pgsTypes::ConcreteType type)
 {
    return type == pgsTypes::Normal;
 }
@@ -2294,5 +2262,3 @@ inline bool IsUHPC(pgsTypes::ConcreteType type)
 }
 
 inline constexpr auto operator+(pgsTypes::CreepTime a) noexcept { return std::underlying_type<pgsTypes::CreepTime>::type(a); }
-
-#endif // INCLUDED_PGSUPERTYPES_H_

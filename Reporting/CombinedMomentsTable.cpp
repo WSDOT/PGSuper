@@ -37,50 +37,13 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CCombinedMomentsTable
-****************************************************************************/
+#include <IFace/PointOfInterest.h>
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
 
-//======================== LIFECYCLE  =======================================
-CCombinedMomentsTable::CCombinedMomentsTable()
-{
-}
-
-CCombinedMomentsTable::CCombinedMomentsTable(const CCombinedMomentsTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CCombinedMomentsTable::~CCombinedMomentsTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CCombinedMomentsTable& CCombinedMomentsTable::operator= (const CCombinedMomentsTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedMomentsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating) const
 {
@@ -114,9 +77,9 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
 }
 
 
-void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedMomentsTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating) const
 {
@@ -348,9 +311,9 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    }
 }
 
-void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedMomentsTable::BuildCombinedLiveTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                                   const CGirderKey& girderKey,
-                                                  IEAFDisplayUnits* pDisplayUnits,
+                                                  std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                   pgsTypes::AnalysisType analysisType,
                                                   bool bDesign,bool bRating) const
 {
@@ -659,9 +622,9 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    }
 }
 
-void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedMomentsTable::BuildLimitStateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                                const CGirderKey& girderKey,
-                                               IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
+                                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IntervalIndexType intervalIdx,
                                                pgsTypes::AnalysisType analysisType,
                                                bool bDesign,bool bRating) const
 {
@@ -1125,36 +1088,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
 }
 
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CCombinedMomentsTable::MakeCopy(const CCombinedMomentsTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CCombinedMomentsTable::MakeAssignment(const CCombinedMomentsTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx, bool bMoment,PoiList* pPoi,PoiAttributeType* pRefAttribute)
+void GetCombinedResultsPoi(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx, bool bMoment,PoiList* pPoi,PoiAttributeType* pRefAttribute)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);

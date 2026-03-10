@@ -34,9 +34,10 @@
 #include "PGSuperDocBase.h"
 #include "PGSuperPluginMgr.h"
 #include "PGSuperCatCom.h"
-
 #include "PGSComponentInfo.h"
-typedef CEAFPluginManagerBase<IPGSuperComponentInfo,CPGSuperDoc> CPGSuperComponentInfoManager;
+
+#include <EAF\PluginManagerBase.h>
+typedef WBFL::EAF::PluginManagerBase<IPGSuperComponentInfo,CPGSuperDoc> CPGSuperComponentInfoManager;
 
 /*--------------------------------------------------------------------*/
 class CPGSuperDoc : public CPGSDocBase
@@ -90,16 +91,16 @@ protected:
 
    void DoDesignGirder(const std::vector<CGirderKey>& girderKeys,bool bDesignFlexure,arSlabOffsetDesignType haunchDesignType,arConcreteDesignType concreteDesignType,arShearDesignType shearDesignType);
 
-   virtual CPGSuperPluginMgrBase* CreatePluginManager() override { return new CPGSuperPluginMgr(); }
+   CPGSuperPluginMgrBase* CreatePluginManager() override { return new CPGSuperPluginMgr(); }
 
-   virtual CATID GetAgentCategoryID() override { return CATID_PGSuperAgent; }
-   virtual CATID GetExtensionAgentCategoryID() override { return CATID_PGSuperExtensionAgent; }
-   virtual CATID GetBeamFamilyCategoryID() override { return CATID_PGSuperBeamFamily; }
-   virtual CATID GetComponentInfoCategoryID() override { return CATID_PGSuperComponentInfo; }
+   CATID GetAgentCategoryID() override { return CATID_PGSuperAgent; }
+   CATID GetExtensionAgentCategoryID() override { return CATID_PGSuperExtensionAgent; }
+   CATID GetBeamFamilyCategoryID() override { return CATID_PGSuperBeamFamily; }
+   CATID GetComponentInfoCategoryID() override { return CATID_PGSuperComponentInfo; }
 
-   virtual LPCTSTR GetTemplateExtension() override;
+   LPCTSTR GetTemplateExtension() override;
 
-   virtual void ModifyTemplate(LPCTSTR strTemplate) override;
+   void ModifyTemplate(LPCTSTR strTemplate) override;
 
 	DECLARE_MESSAGE_MAP()
 };

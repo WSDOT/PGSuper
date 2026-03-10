@@ -26,6 +26,7 @@
 
 #include <Reporting\PGSuperTitlePageBuilder.h>
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
+#include <Reporting\SpanGirderBearingReportSpecificationBuilder.h>
 
 #include <Reporting\OptimizedFabricationChapterBuilder.h>
 #include <Reporting\DesignOutcomeChapterBuilder.h>
@@ -38,20 +39,17 @@
 
 
 // Interfaces
+#include <IFace\Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 
+#include <psgLib/SpecLibraryEntry.h>
 #include <psgLib/PrincipalTensionStressCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 //CPGSuperReporterImp::InitReportBuilders
 //
@@ -66,13 +64,13 @@ static char THIS_FILE[] = __FILE__;
 
 HRESULT CPGSuperReporterImp::InitReportBuilders()
 {
-   HRESULT hr = CReporterBase::InitCommonReportBuilders();
+   HRESULT hr = CReporterBase::InitCommonReportBuilders(m_pBroker);
    if ( FAILED(hr) )
    {
       return hr;
    }
 
-   GET_IFACE(IReportManager,pRptMgr);
+   GET_IFACE(IEAFReportManager,pRptMgr);
 
    //
    // Create report spec builders
@@ -83,14 +81,14 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    // that is passed to all the chapter builders
 
    // this report spec builder prompts for span #, girder # and chapter list
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pSpanRptSpecBuilder(             std::make_shared<CSpanReportSpecificationBuilder>(m_pBroker) );
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiGirderRptSpecBuilder(    std::make_shared<CMultiGirderReportSpecificationBuilder>(m_pBroker) );
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiViewRptSpecBuilder(      std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder(         std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,CGirderKey(0,0)) );
 
-   CreateMultiGirderSpecCheckReport();
+   CreateMultiGirderSpecCheckReport(pRptMgr);
 
-   CreateMultiHaunchGeometryReport();
+   CreateMultiBearingSpecCheckReport(pRptMgr);
+
+   CreateMultiHaunchGeometryReport(pRptMgr);
 
    // Design Outcome
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Design Outcome Report"),true)); // hidden report
@@ -115,88 +113,53 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    return S_OK;
 }
 
-STDMETHODIMP CPGSuperReporterImp::SetBroker(IBroker* pBroker)
+bool CPGSuperReporterImp::RegisterInterfaces()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
-   CReporterBase::SetBroker(pBroker);
-   return S_OK;
+   EAF_AGENT_REGISTER_INTERFACES;
+   REGISTER_INTERFACE(IReportOptions);
+
+   return true;
 }
 
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSuperReporterImp::RegInterfaces()
+bool CPGSuperReporterImp::Init()
 {
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-
-   pBrokerInit->RegInterface(IID_IReportOptions,this);
-
-   return S_OK;
-}
-
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSuperReporterImp::Init()
-{
-   /* Gets done at project load time */
    EAF_AGENT_INIT;
 
    HRESULT hr = InitReportBuilders();
    ATLASSERT(SUCCEEDED(hr));
    if ( FAILED(hr) )
    {
-      return hr;
+      return false;
    }
 
-   return AGENT_S_SECONDPASSINIT;
-}
-
-STDMETHODIMP CPGSuperReporterImp::Init2()
-{
    //
    // Attach to connection points
    //
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
+   m_dwSpecCookie = REGISTER_EVENT_SINK(ISpecificationEventSink);
 
-   // Connection point for the specification
-   hr = pBrokerInit->FindConnectionPoint( IID_ISpecificationEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Advise( GetUnknown(), &m_dwSpecCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CPGSuperReporterImp::GetClassID(CLSID* pCLSID)
+CLSID CPGSuperReporterImp::GetCLSID() const
 {
-   *pCLSID = CLSID_PGSuperReportAgent;
-   return S_OK;
+   return CLSID_PGSuperReportAgent;
 }
 
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSuperReporterImp::Reset()
+bool CPGSuperReporterImp::Reset()
 {
-   return S_OK;
+   EAF_AGENT_RESET;
+   return true;
 }
 
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSuperReporterImp::ShutDown()
+bool CPGSuperReporterImp::ShutDown()
 {
+   EAF_AGENT_SHUTDOWN;
    //
    // Detach to connection points
    //
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
+   UNREGISTER_EVENT_SINK(ISpecificationEventSink, m_dwSpecCookie);
 
-   hr = pBrokerInit->FindConnectionPoint(IID_ISpecificationEventSink, &pCP );
-   ATLASSERT( SUCCEEDED(hr) );
-   hr = pCP->Unadvise( m_dwSpecCookie );
-   ATLASSERT( SUCCEEDED(hr) );
-   pCP.Release(); // Recycle the connection point
-
-   EAF_AGENT_CLEAR_INTERFACE_CACHE;
-   return S_OK;
+   return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -204,20 +167,21 @@ STDMETHODIMP CPGSuperReporterImp::ShutDown()
 //
 HRESULT CPGSuperReporterImp::OnSpecificationChanged()
 {
-   HRESULT hr = CReporterBase::OnSpecificationChanged();
+   HRESULT hr = CReporterBase::OnSpecificationChanged(m_pBroker);
    if ( FAILED(hr) )
       return hr;
 
    // Show/Hide time-step analysis reports based on the loss method
    std::vector<std::_tstring> strReportNames;
    strReportNames.push_back(_T("Time Step Details Report"));
+   strReportNames.push_back(_T("Bearing Shear Deformation Details Report"));
 
 #if defined _DEBUG || defined _BETA_VERSION
    strReportNames.push_back(_T("(DEBUG) Interval by Interval Details Report"));
 #endif // _DEBUG || _BETA_VERSION
 
-   GET_IFACE(IReportManager,pRptMgr);
-   GET_IFACE( ILossParameters, pLossParams);
+   GET_IFACE(IEAFReportManager,pRptMgr);
+   GET_IFACE(ILossParameters, pLossParams);
 
    bool bTimeStep = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP;
    bool bHidden = true;

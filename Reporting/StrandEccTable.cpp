@@ -26,12 +26,15 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
 
-rptRcTable* CStrandEccTable::Build(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CStrandEccTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
    bool bAsymmetric = (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing());

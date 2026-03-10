@@ -24,6 +24,7 @@
 
 #include <Reporting\DesignOutcomeChapterBuilder.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
@@ -32,35 +33,26 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
+#include <IFace/PointOfInterest.h>
 
 #include <LRFD\RebarPool.h>
 
 #include <PgsExt\GirderDesignArtifact.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\Helpers.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CDesignOutcomeChapterBuilder
-****************************************************************************/
-
-void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
-void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
-void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
-void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,IArtifact* pIArtifact);
-void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
+void write_artifact_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
+void failed_design(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
+void successful_design(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
+void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,std::shared_ptr<IArtifact> pIArtifact);
+void process_artifacts(std::shared_ptr<WBFL::EAF::Broker> pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, std::shared_ptr<IArtifact> pIArtifact,
                        const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& didAssumedExcessCamber, bool& isHarped, bool& isTemporary);
-void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits,Float64 girderLength, ZoneIndexType nz,const CShearData2* pShearData);
-void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
-void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
+void write_primary_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Float64 girderLength, ZoneIndexType nz,const CShearData2* pShearData);
+void write_horiz_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
+void write_additional_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
 void write_design_notes(rptParagraph* pParagraph, const std::vector<pgsSegmentDesignArtifact::DesignNote>& notes);
 void write_design_failures(rptParagraph* pParagraph, const pgsSegmentDesignArtifact* pArtifact);
 
@@ -68,7 +60,7 @@ void write_design_failures(rptParagraph* pParagraph, const pgsSegmentDesignArtif
 static const int MIN_TBL_COLS=3; // Minimum columns in multi-girder table
 static const int MAX_TBL_COLS=8; // Maximum columns in multi-girder table
 
-// Some fails can be successses (with caveats)
+// Some fails can be successes (with caveats)
 bool WasDesignSuccessful( pgsSegmentDesignArtifact::Outcome outcome)
 {
       return outcome == pgsSegmentDesignArtifact::Success ||
@@ -191,8 +183,7 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(const std::shared_ptr<const WBFL
 
    std::vector<CGirderKey> girderKeys = pReportSpec->GetGirderKeys();
 
-   CComPtr<IBroker> pBroker;
-   pReportSpec->GetBroker(&pBroker);
+   auto pBroker = pReportSpec->GetBroker();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -270,12 +261,7 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(const std::shared_ptr<const WBFL
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDesignOutcomeChapterBuilder::Clone() const
-{
-   return std::make_unique<CDesignOutcomeChapterBuilder>();
-}
-
-void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
+void write_artifact_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
 {
    const CSegmentKey& segmentKey = pArtifact->GetSegmentKey();
 
@@ -697,7 +683,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
       rptParagraph* pParagraph = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pParagraph;
-      *pParagraph << _T("Shear Design:");
+      *pParagraph << rptNewLine << _T("Shear Design:");
 
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
@@ -714,61 +700,83 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       GET_IFACE2(pBroker, IBridge, pBridge);
       Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
 
-      *pParagraph << Bold(_T("Primary Bars")) << rptNewLine;
-
+      // Design shear data values
       const CShearData2* pShearData = pArtifact->GetShearData();
+
+      // Current values
+      GET_IFACE2(pBroker, IShear, pShear);
+      const CShearData2* p_curr_shear_data = pShear->GetSegmentShearData(segmentKey);
+
+      bool doWarnCompareLibrary;
+      const CShearData2* p__library_shear_data = pShear->GetSegmentShearLibraryData(segmentKey, doWarnCompareLibrary);
 
       if (!did_existing_pass)
       {
-         *pParagraph << _T("Proposed Design:") << rptNewLine;
+         // Write note if design is different than current
+         if (doWarnCompareLibrary)
+         {
+            if (*pShearData != *p__library_shear_data)
+            {
+               *pParagraph << Italic(_T("- Transverse reinforcement layout in proposed design is different than the layout defined in the girder library. Accepting the design will cause a warning in reports. Compare proposed design with the library to see differences.")) << rptNewLine << rptNewLine;
+            }
+         }
+         else
+         {
+            if (*pShearData != *p_curr_shear_data)
+            {
+               *pParagraph << Italic(_T("- Transverse reinforcement layout in proposed design is different than current. Review below to see differences.")) << rptNewLine << rptNewLine;
+            }
+         }
+      }
 
-        // stirrup design results
+      *pParagraph << Bold(_T("Primary Bars")) << rptNewLine;
+
+      // Write stirrup design results
+      if (!did_existing_pass)
+      {
          ZoneIndexType nZones = pArtifact->GetNumberOfStirrupZonesDesigned();
-
          if (0 < nZones)
          {
             write_primary_shear_data(pParagraph, pDisplayUnits, girder_length, nZones, pShearData);
          }
          else
          {
-            *pParagraph << _T("No Zones Designed")<<rptNewLine;
+            *pParagraph << _T("No Zones Designed") << rptNewLine;
          }
+
 
          // Current configuration
          *pParagraph << rptNewLine;
          *pParagraph << _T("Current Values:") << rptNewLine;
       }
 
-      GET_IFACE2(pBroker,IShear,pShear);
-      const CShearData2* p_shear_data = pShear->GetSegmentShearData(segmentKey);
-      ZoneIndexType nZones = p_shear_data->ShearZones.size();
-
-      write_primary_shear_data(pParagraph, pDisplayUnits, girder_length, nZones, p_shear_data);
+      ZoneIndexType nCurrZones = p_curr_shear_data->ShearZones.size();
+      write_primary_shear_data(pParagraph, pDisplayUnits, girder_length, nCurrZones, p_curr_shear_data);
 
       // Horiz interface bars
       *pParagraph <<rptNewLine<< Bold(_T("Additional Bars For Horizontal Interface Shear"))<<rptNewLine;
       if (!did_existing_pass)
       {
-         *pParagraph << _T("Proposed Design:") << rptNewLine;
+         *pParagraph << _T("Proposed Design Values:") << rptNewLine;
          write_horiz_shear_data(pParagraph, pDisplayUnits, girder_length, pShearData);
 
          *pParagraph << rptNewLine;
          *pParagraph << _T("Current Values:") << rptNewLine;
       }
-      write_horiz_shear_data(pParagraph, pDisplayUnits, girder_length, p_shear_data);
+      write_horiz_shear_data(pParagraph, pDisplayUnits, girder_length, p_curr_shear_data);
 
       // Additional Shear Reinforcement at Girder Ends
       *pParagraph <<rptNewLine<< Bold(_T("Additional Shear Reinforcement at Girder Ends"))<<rptNewLine;
       if (!did_existing_pass)
       {
-         *pParagraph << _T("Proposed Design:") << rptNewLine;
+         *pParagraph << _T("Proposed Design Values:") << rptNewLine;
          write_additional_shear_data(pParagraph, pDisplayUnits, girder_length, pShearData);
 
          *pParagraph << rptNewLine;
          *pParagraph << _T("Current Values:") << rptNewLine;
       }
 
-      write_additional_shear_data(pParagraph, pDisplayUnits, girder_length, p_shear_data);
+      write_additional_shear_data(pParagraph, pDisplayUnits, girder_length, p_curr_shear_data);
 
       if (!did_existing_pass && pArtifact->GetWasLongitudinalRebarForShearDesigned())
       {
@@ -819,8 +827,8 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          GDRCONFIG config = pArtifact->GetSegmentConfiguration();
 
          // Create progress window hear to avoid flashing screen at design conclusion (Mantis 1516) 
-         GET_IFACE2(pBroker, IProgress, pProgress);
-         CEAFAutoProgress ap(pProgress);
+         GET_IFACE2(pBroker, IEAFProgress, pProgress);
+         WBFL::EAF::AutoProgress ap(pProgress);
          pProgress->UpdateMessage(_T("Excess Camber"));
 
          GET_IFACE2(pBroker,ICamber,pCamber);
@@ -838,7 +846,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
    }
 }
 
-void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
+void successful_design(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
 {
    const CSegmentKey& segmentKey = pArtifact->GetSegmentKey();
    ATLASSERT(segmentKey.segmentIndex == 0); // design is only for precast girders which only have one segment
@@ -896,7 +904,7 @@ void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* p
    write_artifact_data(pBroker,pChapter,pDisplayUnits,pArtifact);
 }
 
-void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
+void failed_design(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
 {
    const CSegmentKey& segmentKey = pArtifact->GetSegmentKey();
 
@@ -1135,8 +1143,8 @@ void write_design_failures(rptParagraph* pParagraph, const pgsSegmentDesignArtif
 }
 
 void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
-                     IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,
-                     IEAFDisplayUnits* pDisplayUnits,IArtifact* pIArtifact)
+                     std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,std::shared_ptr<IArtifact> pIArtifact)
 {
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
@@ -1385,7 +1393,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    }
 }
 
-void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
+void process_artifacts(std::shared_ptr<WBFL::EAF::Broker> pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, std::shared_ptr<IArtifact> pIArtifact,
                        const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, 
                        bool& didSlabOffset, bool& didAssumedExcessCamber, bool& isHarped, bool& isTemporary)
 {
@@ -1459,7 +1467,7 @@ void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexTyp
    }
 }
 
-void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, ZoneIndexType nz, const CShearData2* pShearData)
+void write_primary_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Float64 girderLength, ZoneIndexType nz, const CShearData2* pShearData)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -1567,7 +1575,7 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
    }
 }
 
-void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength,const CShearData2* pShearData)
+void write_horiz_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Float64 girderLength,const CShearData2* pShearData)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );
@@ -1667,7 +1675,7 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
    }
 }
 
-void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData)
+void write_additional_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Float64 girderLength, const CShearData2* pShearData)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );

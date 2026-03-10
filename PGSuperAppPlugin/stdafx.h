@@ -32,12 +32,6 @@
 
 #include <PGSuperAll.h>
 
-#include <atlbase.h>
-#include <atlcom.h>
-#include <atlctl.h>
-
-#include <IFace\Tools.h>
-
 #if defined _NOGRID
 #include <NoGrid.h>
 #else
@@ -46,21 +40,21 @@
 
 #include <WBFLAtlExt.h>
 
-#include <WBFLCore.h>
+
 #include <WBFLTools.h>
 #include <WBFLGeometry.h>
 #include <WBFLCogo.h>
 #include <WBFLGenericBridge.h>
 #include <WBFLSTL.h>
 
-#include <PgsExt\PointOfInterest.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\PointOfInterest.h>
+#include <PsgLib\GirderLabel.h>
 #include <afxwin.h>
 
 #include <EAF\EAFUtilities.h> // so all files have EAFGetBroker
 #include <EAF\EAFResources.h> // so all files have EAF resource identifiers
 #include <EAF\EAFHints.h>     // so all files have EAF Doc/View hints
-#include <EAF\EAFHelp.h>
+#include <EAF\Help.h>
 
 #include <afxdlgs.h>
 
@@ -70,5 +64,3 @@
 #include "..\Documentation\PGSuper.hh"
 
 #include <MFCTools\MFCTools.h>
-
-using namespace ATL;

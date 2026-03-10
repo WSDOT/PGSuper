@@ -23,6 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\TimeStepParametersChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
@@ -34,14 +36,9 @@
 
 #include <WBFLGenericBridgeTools.h>
 
-#include <PgsExt\TimelineEvent.h>
-#include <PgsExt\CastDeckActivity.h>
+#include <PsgLib\TimelineEvent.h>
+#include <PsgLib\CastDeckActivity.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // When defined, the computation details for initial strains are reported
 // This is the summation part of Tadros 1977 Eqns 3 and 4.
@@ -49,22 +46,12 @@ static char THIS_FILE[] = __FILE__;
 
 //#define REPORT_PRODUCT_LOAD_DETAILS
 
-/****************************************************************************
-CLASS
-   CTimeStepParametersChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTimeStepParametersChapterBuilder::CTimeStepParametersChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTimeStepParametersChapterBuilder::GetName() const
 {
    return TEXT("Time Step Parameters");
@@ -78,8 +65,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
 
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
@@ -799,12 +785,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
          (*pTable2)(row2, col2++) << area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].As);
          (*pTable2)(row2, col2++) << ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].Ys);
 
-         std::vector<TIME_STEP_REBAR>::const_iterator iter(tsDetails.GirderRebar.begin());
-         std::vector<TIME_STEP_REBAR>::const_iterator end(tsDetails.GirderRebar.end());
-         for ( ; iter != end; iter++ )
+         for(const auto& tsRebar : tsDetails.GirderRebar)
          {
-            const TIME_STEP_REBAR& tsRebar(*iter);
-
             (*pTable2)(row2,col2++) << area.SetValue(tsRebar.As);
             (*pTable2)(row2,col2++) << ecc.SetValue(tsRebar.Ys);
          }
@@ -833,9 +815,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
 #endif
          } // next strand type
 
-         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+         for(const auto& tendon : tsDetails.SegmentTendons)
          {
-            const TIME_STEP_STRAND& tendon(tsDetails.SegmentTendons[ductIdx]);
             (*pTable2)(row2, col2 + 0) << area.SetValue(tendon.As) << rptNewLine;
             (*pTable2)(row2, col2 + 1) << ecc.SetValue(tendon.Ys) << rptNewLine;
             (*pTable2)(row2, col2 + 2) << stress.SetValue(tendon.Relaxation.fr) << rptNewLine;
@@ -844,9 +825,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
          }
          col2 += 5;
 
-         for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
+         for (const auto& tendon : tsDetails.GirderTendons)
          {
-            const TIME_STEP_STRAND& tendon(tsDetails.GirderTendons[ductIdx]);
             (*pTable2)(row2, col2 + 0) << area.SetValue(tendon.As) << rptNewLine;
             (*pTable2)(row2, col2 + 1) << ecc.SetValue(tendon.Ys) << rptNewLine;
             (*pTable2)(row2, col2 + 2) << stress.SetValue(tendon.Relaxation.fr) << rptNewLine;
@@ -919,10 +899,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
          (*pTable2)(row2, col2++) << force.SetValue(dPbotMat[pgsTypes::drbIndividual]);
          (*pTable2)(row2, col2++) << force.SetValue(dPbotMat[pgsTypes::drbLumpSum]);
 
-         iter = tsDetails.GirderRebar.begin();
-         for ( ; iter != end; iter++ )
+         for(const auto& tsRebar : tsDetails.GirderRebar)
          {
-            const TIME_STEP_REBAR& tsRebar(*iter);
             Float64 dPgirderRebar = 0;
             for ( int i = 0; i < N; i++ )
             {
@@ -957,9 +935,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
 #endif
          } // next strand type
 
-         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+         for(const auto& tendon : tsDetails.SegmentTendons)
          {
-            const TIME_STEP_STRAND& tendon(tsDetails.SegmentTendons[ductIdx]);
             Float64 dPtendon = 0;
             for (int i = 0; i < N; i++)
             {
@@ -969,9 +946,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
          }
          col2 += 1;
 
-         for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+         for (const auto& tendon : tsDetails.GirderTendons)
          {
-            const TIME_STEP_STRAND& tendon(tsDetails.GirderTendons[ductIdx]);
             Float64 dPtendon = 0;
             for ( int i = 0; i < N; i++ )
             {
@@ -990,10 +966,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
          (*pTable2)(row2, col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].P);
          (*pTable2)(row2, col2++) << force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].P);
 
-         iter = tsDetails.GirderRebar.begin();
-         for ( ; iter != end; iter++ )
+         for(const auto& tsRebar : tsDetails.GirderRebar)
          {
-            const TIME_STEP_REBAR& tsRebar(*iter);
             Float64 PgirderRebar = 0;
             for ( int i = 0; i < N; i++ )
             {
@@ -1018,16 +992,14 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
 #endif
          } // next strand type
 
-         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+         for(const auto& tendon : tsDetails.SegmentTendons)
          {
-            const TIME_STEP_STRAND& tendon(tsDetails.SegmentTendons[ductIdx]);
             (*pTable2)(row2, col2) << force.SetValue(tendon.P) << rptNewLine;
          }
          col2 += 1;
 
-         for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+         for(const auto& tendon : tsDetails.GirderTendons)
          {
-            const TIME_STEP_STRAND& tendon(tsDetails.GirderTendons[ductIdx]);
             (*pTable2)(row2,col2) << force.SetValue(tendon.P) << rptNewLine;
          }
          col2 += 1;
@@ -1051,31 +1023,23 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
 #endif
          } // next strand type
 
-         for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+         for(const auto& tendon : tsDetails.SegmentTendons)
          {
-            const TIME_STEP_STRAND& tendon(tsDetails.SegmentTendons[ductIdx]);
             (*pTable2)(row2, col2 + 0) << stress.SetValue(tendon.dfpe) << rptNewLine;
             (*pTable2)(row2, col2 + 1) << stress.SetValue(tendon.fpe) << rptNewLine;
          }
          col2 += 2;
 
-         for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+         for(const auto& tendon : tsDetails.GirderTendons)
          {
-            const TIME_STEP_STRAND& tendon(tsDetails.GirderTendons[ductIdx]);
             (*pTable2)(row2,col2+0) << stress.SetValue(tendon.dfpe) << rptNewLine;
             (*pTable2)(row2,col2+1) << stress.SetValue(tendon.fpe)  << rptNewLine;
          }
          col2 += 2;
 
-         Float64 fBotGirder = 0;
-         Float64 fTopGirder = 0;
-         Float64 fTopDeck   = 0;
-         for ( int i = 0; i < N; i++ )
-         {
-            fBotGirder += tsDetails.Girder.f[pgsTypes::BottomFace][i][rtCumulative];
-            fTopGirder += tsDetails.Girder.f[pgsTypes::TopFace][i][rtCumulative];
-            fTopDeck   += tsDetails.Deck.f[pgsTypes::TopFace][i][rtCumulative];
-         }
+         Float64 fBotGirder = tsDetails.Girder.stress[pgsTypes::BottomFace][rtCumulative];
+         Float64 fTopGirder = tsDetails.Girder.stress[pgsTypes::TopFace][rtCumulative];
+         Float64 fTopDeck   = tsDetails.Deck.stress[pgsTypes::TopFace][rtCumulative];
 
          (*pTable2)(row2,col2++) << stress.SetValue(fBotGirder);
          (*pTable2)(row2,col2++) << stress.SetValue(fTopGirder);
@@ -1136,12 +1100,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
       (*pTable2)(row2, col2++) << _T(""); //area.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].As);
       (*pTable2)(row2, col2++) << _T(""); //ecc.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].Ys);
 
-      std::vector<TIME_STEP_REBAR>::const_iterator iter(tsDetails.GirderRebar.begin());
-      std::vector<TIME_STEP_REBAR>::const_iterator end(tsDetails.GirderRebar.end());
-      for ( ; iter != end; iter++ )
+      for(const auto& tsRebar : tsDetails.GirderRebar)
       {
-         const TIME_STEP_REBAR& tsRebar(*iter);
-
          (*pTable2)(row2,col2++) << _T(""); //area.SetValue(tsRebar.As);
          (*pTable2)(row2,col2++) << _T(""); //ecc.SetValue(tsRebar.Ys);
       }
@@ -1156,7 +1116,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
          (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.Strands[strandType].Pr);
       }
 
-      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+      for(const auto& tendon : tsDetails.SegmentTendons)
       {
          (*pTable2)(row2, col2 + 0) << _T(""); //area.SetValue(tsDetails.SegmentTendons[ductIdx].As) << rptNewLine;
          (*pTable2)(row2, col2 + 1) << _T(""); //ecc.SetValue(tsDetails.SegmentTendons[ductIdx].Ys) << rptNewLine;
@@ -1166,7 +1126,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
       }
       col2 += 5;
 
-      for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
+      for (const auto& tendon : tsDetails.GirderTendons)
       {
          (*pTable2)(row2, col2 + 0) << _T(""); //area.SetValue(tsDetails.GirderTendons[ductIdx].As) << rptNewLine;
          (*pTable2)(row2, col2 + 1) << _T(""); //ecc.SetValue(tsDetails.GirderTendons[ductIdx].Ys) << rptNewLine;
@@ -1209,10 +1169,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
       (*pTable2)(row2, col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].dP);
       (*pTable2)(row2, col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].dP);
 
-      iter = tsDetails.GirderRebar.begin();
-      for ( ; iter != end; iter++ )
+      for(const auto& tsRebar : tsDetails.GirderRebar)
       {
-         const TIME_STEP_REBAR& tsRebar(*iter);
          (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsRebar.dP);
       }
 
@@ -1221,13 +1179,13 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
          (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.Strands[i].dP);
       }
 
-      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+      for(const auto& tendon : tsDetails.SegmentTendons)
       {
          (*pTable2)(row2, col2) << _T(""); //force.SetValue(tsDetails.SegmentTendons[ductIdx].dP) << rptNewLine;
       }
       col2 += 1;
 
-      for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
+      for (const auto& tendon : tsDetails.GirderTendons)
       {
          (*pTable2)(row2, col2) << _T(""); //force.SetValue(tsDetails.GirderTendons[ductIdx].dP) << rptNewLine;
       }
@@ -1242,10 +1200,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
       (*pTable2)(row2, col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbIndividual].P);
       (*pTable2)(row2, col2++) << _T(""); //force.SetValue(tsDetails.DeckRebar[pgsTypes::drmBottom][pgsTypes::drbLumpSum].P);
 
-      iter = tsDetails.GirderRebar.begin();
-      for ( ; iter != end; iter++ )
+      for(const auto& tsRebar : tsDetails.GirderRebar)
       {
-         const TIME_STEP_REBAR& tsRebar(*iter);
          (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsRebar.P);
       }
 
@@ -1254,13 +1210,13 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
          (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.Strands[i].P);
       }
 
-      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+      for(const auto& tendon : tsDetails.SegmentTendons)
       {
          (*pTable2)(row2, col2) << _T(""); //force.SetValue(tsDetails.SegmentTendons[ductIdx].P) << rptNewLine;
       }
       col2 += 1;
 
-      for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
+      for (const auto& tendon : tsDetails.GirderTendons)
       {
          (*pTable2)(row2, col2) << _T(""); //force.SetValue(tsDetails.GirderTendons[ductIdx].P) << rptNewLine;
       }
@@ -1284,17 +1240,15 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
 #endif
       }
 
-      for (DuctIndexType ductIdx = 0; ductIdx < nSegmentDucts; ductIdx++)
+      for (const auto& tendon : tsDetails.SegmentTendons)
       {
-         const TIME_STEP_STRAND& tendon(tsDetails.SegmentTendons[ductIdx]);
          (*pTable2)(row2, col2 + 0) << stress.SetValue(tendon.loss) << rptNewLine;
          (*pTable2)(row2, col2 + 1) << _T(""); //stress.SetValue(tsDetails.SegmentTendons[ductIdx].fpe)  << rptNewLine;
       }
       col2 += 2;
 
-      for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
+      for (const auto& tendon : tsDetails.GirderTendons)
       {
-         const TIME_STEP_STRAND& tendon(tsDetails.GirderTendons[ductIdx]);
          (*pTable2)(row2,col2+0) << stress.SetValue(tendon.loss) << rptNewLine;
          (*pTable2)(row2,col2+1) << _T(""); //stress.SetValue(tsDetails.GirderTendons[ductIdx].fpe)  << rptNewLine;
       }
@@ -1358,9 +1312,4 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimeStepParametersChapterBuilder::Clone() const
-{
-   return std::make_unique<CTimeStepParametersChapterBuilder>();
 }

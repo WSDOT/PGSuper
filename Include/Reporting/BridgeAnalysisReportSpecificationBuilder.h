@@ -25,13 +25,13 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <ReportManager\ReportManager.h>
-#include <WBFLCore.h>
+
 
 class REPORTINGCLASS CBridgeAnalysisReportSpecificationBuilder :
    public CGirderLineReportSpecificationBuilder
 {
 public:
-   CBridgeAnalysisReportSpecificationBuilder(IBroker* pBroker);
+   CBridgeAnalysisReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CBridgeAnalysisReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;

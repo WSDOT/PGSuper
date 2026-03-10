@@ -21,7 +21,10 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include <PgsExt\Keys.h>
+
+#include <PsgLib\Keys.h>
+
+class pgsPointOfInterest;
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // View event callback interfaces are defined in this header file. Extension agents
@@ -29,134 +32,177 @@
 // to receive event notifications.
 //
 // These are prototype interfaces. That means they are subject to change. It is unclear
-// as to exactly which events extenions need to receive and how they are to be broadcast.
+// as to exactly which events extensions need to receive and how they are to be broadcast.
 //
 // Be warned that these interfaces may change in the future and your extension agents
 // are likely to break.
 //
 
-/////////////////////////////////////////////////////////
-// Callbacks for the Bridge Plan View
-interface IBridgePlanViewEventCallback
+/// @brief Callback interface for Bridge Plan View
+class IBridgePlanViewEventCallback
 {
-   // called when a context menu is created in the background of the view
-   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+public:
+   /// @brief called when a context menu is created in the background of the view
+   virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for a pier
-   virtual void OnPierContextMenu(PierIndexType pierIdx,CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for a pier
+   virtual void OnPierContextMenu(PierIndexType pierIdx, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for a span
-   virtual void OnSpanContextMenu(SpanIndexType spanIdx,CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for a span
+   virtual void OnSpanContextMenu(SpanIndexType spanIdx, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for a girder
-   virtual void OnGirderContextMenu(const CGirderKey& girderKey,CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for a girder
+   virtual void OnGirderContextMenu(const CGirderKey& girderKey, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for the deck
-   virtual void OnDeckContextMenu(CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for the deck
+   virtual void OnDeckContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for the alignment
-   virtual void OnAlignmentContextMenu(CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for the alignment
+   virtual void OnAlignmentContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for the section cut object
-   virtual void OnSectionCutContextMenu(CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for the section cut object
+   virtual void OnSectionCutContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for a temporary support
-   virtual void OnTemporarySupportContextMenu(SupportIDType tsID,CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for a temporary support
+   virtual void OnTemporarySupportContextMenu(SupportIDType tsID, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for a girder segment
-   virtual void OnGirderSegmentContextMenu(const CSegmentKey& segmentKey,CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for a girder segment
+   virtual void OnGirderSegmentContextMenu(const CSegmentKey& segmentKey, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for a closure joint
-   virtual void OnClosureJointContextMenu(const CSegmentKey& closureKey,CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for a closure joint
+   virtual void OnClosureJointContextMenu(const CSegmentKey& closureKey, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 };
 
 
-/////////////////////////////////////////////////////////
-// Callbacks for the Bridge Section View
-interface IBridgeSectionViewEventCallback
+/// @brief Callback interface for the Bridge Section View
+class IBridgeSectionViewEventCallback
 {
-   // called when a context menu is created in the view background
-   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+public:
+   /// @brief called when a context menu is created in the view background
+   virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a conext menu is created for a girder
-   virtual void OnGirderContextMenu(const CGirderKey& girderKey,CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for a girder
+   virtual void OnGirderContextMenu(const CGirderKey& girderKey, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for the bridge deck
-   virtual void OnDeckContextMenu(CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for the bridge deck
+   virtual void OnDeckContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 };
 
-/////////////////////////////////////////////////////////
-// Callbacks for the Alignment Plan View
-interface IAlignmentPlanViewEventCallback
+/// @brief callback interface for the Alignment Plan View
+class IAlignmentPlanViewEventCallback
 {
-   // called when a context menu is created in the view background
-   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+public:
+   /// @brief called when a context menu is created in the view background
+   virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for the alignment
-   virtual void OnAlignmentContextMenu(CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for the alignment
+   virtual void OnAlignmentContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for the bridge
-   virtual void OnBridgeContextMenu(CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for the bridge
+   virtual void OnBridgeContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 };
 
-/////////////////////////////////////////////////////////
-// Callbacks for the Alignment Profile View
-interface IAlignmentProfileViewEventCallback
+/// @brief callback interface for the Alignment Profile View
+class IAlignmentProfileViewEventCallback
 {
-   // called when a context menu is created in the view background
-   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+public:
+   /// @brief called when a context menu is created in the view background
+   virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for the profile
-   virtual void OnProfileContextMenu(CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for the profile
+   virtual void OnProfileContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for the bridge
-   virtual void OnBridgeContextMenu(CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for the bridge
+   virtual void OnBridgeContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 };
 
 
-/////////////////////////////////////////////////////////
-// Callbacks for the Girder Elevation View
-interface IGirderElevationViewEventCallback
+/// @brief callback interface for the Girder Elevation View
+class IGirderElevationViewEventCallback
 {
-   // called when a context menu is created in the view background
-   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+public:
+   /// @brief called when a context menu is created in the view background
+   virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created for a girder segment
-   virtual void OnGirderSegmentContextMenu(const CSegmentKey& segmentKey, CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created for a girder segment
+   virtual void OnGirderSegmentContextMenu(const CSegmentKey& segmentKey, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 };
 
-/////////////////////////////////////////////////////////
-// Callbacks for the Girder Section View
-interface IGirderSectionViewEventCallback
+/// @brief callback interface for the Girder Section View
+class IGirderSectionViewEventCallback
 {
-   // called when a context menu is created in the view background
-   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+public:
+   /// @brief called when a context menu is created in the view background
+   virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
-   // called when a context menu is created in the girder section
-   virtual void OnGirderSectionContextMenu(const pgsPointOfInterest& poi, CEAFMenu* pMenu) = 0;
+   /// @brief called when a context menu is created in the girder section
+   virtual void OnGirderSectionContextMenu(const pgsPointOfInterest& poi, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 };
-
-/////////////////////////////////////////////////////////
-// IRegisterViewEvents
-// Use this interface to register callbacks for view events
 
 // {EB057BFE-3A37-48af-8F19-80465DBA2A14}
 DEFINE_GUID(IID_IRegisterViewEvents, 
 0xeb057bfe, 0x3a37, 0x48af, 0x8f, 0x19, 0x80, 0x46, 0x5d, 0xba, 0x2a, 0x14);
-struct __declspec(uuid("{EB057BFE-3A37-48af-8F19-80465DBA2A14}")) IRegisterViewEvents;
-interface IRegisterViewEvents : IUnknown
+/// @brief Interface used to register view event callbacks
+class __declspec(uuid("{EB057BFE-3A37-48af-8F19-80465DBA2A14}")) IRegisterViewEvents
 {
+public:
+   /// @brief Registers a Bridge Plan View callback
+   /// @param pCallback The callback object
+   /// @return ID of the callback
    virtual IDType RegisterBridgePlanViewCallback(IBridgePlanViewEventCallback* pCallback) = 0;
+
+   /// @brief Registers a Bridge Section View callback
+   /// @param pCallback The callback object
+   /// @return ID of the callback
    virtual IDType RegisterBridgeSectionViewCallback(IBridgeSectionViewEventCallback* pCallback) = 0;
+
+   /// @brief Registers a Alignment Plan View callback
+   /// @param pCallback The callback object
+   /// @return ID of the callback
    virtual IDType RegisterAlignmentPlanViewCallback(IAlignmentPlanViewEventCallback* pCallback) = 0;
+
+   /// @brief Registers a Alignment Profile View callback
+   /// @param pCallback The callback object
+   /// @return ID of the callback
    virtual IDType RegisterAlignmentProfileViewCallback(IAlignmentProfileViewEventCallback* pCallback) = 0;
+
+   /// @brief Registers a Girder Elevation View callback
+   /// @param pCallback The callback object
+   /// @return ID of the callback
    virtual IDType RegisterGirderElevationViewCallback(IGirderElevationViewEventCallback* pCallback) = 0;
+
+   /// @brief Registers a Girder Section View callback
+   /// @param pCallback The callback object
+   /// @return ID of the callback
    virtual IDType RegisterGirderSectionViewCallback(IGirderSectionViewEventCallback* pCallback) = 0;
 
+   /// @brief Unregisters a callback from the Bridge Plan View
+   /// @param ID The callback ID
+   /// @return true if successful
    virtual bool UnregisterBridgePlanViewCallback(IDType ID) = 0;
+
+   /// @brief Unregisters a callback from the Bridge Section View
+   /// @param ID The callback ID
+   /// @return true if successful
    virtual bool UnregisterBridgeSectionViewCallback(IDType ID) = 0;
+
+   /// @brief Unregisters a callback from the Alignment Plan View
+   /// @param ID The callback ID
+   /// @return true if successful
    virtual bool UnregisterAlignmentPlanViewCallback(IDType ID) = 0;
+
+   /// @brief Unregisters a callback from the Alignment Element View
+   /// @param ID The callback ID
+   /// @return true if successful
    virtual bool UnregisterAlignmentProfileViewCallback(IDType ID) = 0;
+
+   /// @brief Unregisters a callback from the Girder Elevation View
+   /// @param ID The callback ID
+   /// @return true if successful
    virtual bool UnregisterGirderElevationViewCallback(IDType ID) = 0;
+
+   /// @brief Unregisters a callback from the Girder Section View
+   /// @param ID The callback ID
+   /// @return true if successful
    virtual bool UnregisterGirderSectionViewCallback(IDType ID) = 0;
 };

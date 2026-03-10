@@ -25,31 +25,16 @@
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\PrestressLossTable.h>
 #include "TexasPrestressSummaryChapterBuilder.h"
+
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CTexasPrestressSummaryChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTexasPrestressSummaryChapterBuilder::CTexasPrestressSummaryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTexasPrestressSummaryChapterBuilder::GetName() const
 {
    return TEXT("Prestress Force and Strand Stresses");
@@ -58,8 +43,7 @@ LPCTSTR CTexasPrestressSummaryChapterBuilder::GetName() const
 rptChapter* CTexasPrestressSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    // This is a single segment report
@@ -78,27 +62,3 @@ rptChapter* CTexasPrestressSummaryChapterBuilder::Build(const std::shared_ptr<co
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasPrestressSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CTexasPrestressSummaryChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

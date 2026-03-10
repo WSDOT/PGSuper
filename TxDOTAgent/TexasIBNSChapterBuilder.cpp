@@ -27,9 +27,9 @@
 #include "TexasIBNSChapterBuilder.h"
 #include "TexasIBNSParagraphBuilder.h"
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
-
+#include <EAF/AutoProgress.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
@@ -43,41 +43,23 @@
 #include <psgLib\SpecLibraryEntry.h>
 #include <psgLib\GirderLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS	CTexasIBNSChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTexasIBNSChapterBuilder::CTexasIBNSChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-/*--------------------------------------------------------------------*/
 LPCTSTR CTexasIBNSChapterBuilder::GetName() const
 {
    return TEXT("Girder Schedule");
 }
 
-/*--------------------------------------------------------------------*/
 rptChapter* CTexasIBNSChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
    if (pMultiGirderRptSpec != nullptr)
    {
-      CComPtr<IBroker> pBroker;
-      pMultiGirderRptSpec->GetBroker(&pBroker);
+      auto pBroker = pMultiGirderRptSpec->GetBroker();
 
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
@@ -90,10 +72,10 @@ rptChapter* CTexasIBNSChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
       // Give progress window a progress meter if needed
       bool bMultiGirderReport = (1 < girderKeys.size() ? true : false);
 
-      GET_IFACE2(pBroker,IProgress,pProgress);
+      GET_IFACE2(pBroker,IEAFProgress,pProgress);
       DWORD mask = bMultiGirderReport ? PW_ALL|PW_NOCANCEL : PW_ALL|PW_NOGAUGE|PW_NOCANCEL;
 
-      CEAFAutoProgress ap(pProgress,0,mask); 
+      WBFL::EAF::AutoProgress ap(pProgress,0,mask); 
 
       if (bMultiGirderReport)
       {
@@ -152,10 +134,3 @@ rptChapter* CTexasIBNSChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    return nullptr;
 
 }
-
-/*--------------------------------------------------------------------*/
-std::unique_ptr<WBFL::Reporting::ChapterBuilder>CTexasIBNSChapterBuilder::Clone() const
-{
-   return std::make_unique<CTexasIBNSChapterBuilder>();
-}
-

@@ -191,12 +191,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AlternativeTensileStressCalculator.cpp" />
+    <ClCompile Include="BearingDesignEngineer.cpp" />
     <ClCompile Include="Designer2.cpp" />
     <ClCompile Include="DevelopmentLengthEngineer.cpp" />
-    <ClCompile Include="EngAgent.cpp" />
+    <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="EngAgentImp.cpp" />
     <ClCompile Include="GirderHandlingChecker.cpp" />
     <ClCompile Include="GirderLiftingChecker.cpp" />
+    <ClCompile Include="HorizTieForceEng.cpp" />
     <ClCompile Include="KdotGirderHaulingChecker.cpp" />
     <ClCompile Include="LoadRater.cpp" />
     <ClCompile Include="MomentCapacityEngineer.cpp" />
@@ -217,21 +219,23 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="EngAgent.def" />
-    <None Include="EngAgent.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngAgent.rc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\IFace\Artifact.h" />
+    <ClInclude Include="..\Include\IFace\BearingDesignParameters.h" />
     <ClInclude Include="..\Include\IFace\Constructability.h" />
     <ClInclude Include="..\Include\IFace\CrackedSection.h" />
     <ClInclude Include="..\Include\IFace\DistributionFactors.h" />
+    <ClInclude Include="..\Include\IFace\HorizontalTensionTieChecks.h" />
     <ClInclude Include="..\Include\IFace\MomentCapacity.h" />
     <ClInclude Include="..\Include\IFace\PrestressForce.h" />
     <ClInclude Include="..\Include\IFace\PrincipalWebStress.h" />
     <ClInclude Include="..\Include\IFace\ShearCapacity.h" />
     <ClInclude Include="AlternativeTensileStressCalculator.h" />
+    <ClInclude Include="BearingDesignEngineer.h" />
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="DesignCodes.h" />
     <ClInclude Include="Designer2.h" />
@@ -240,6 +244,7 @@
     <ClInclude Include="EngAgentImp.h" />
     <ClInclude Include="GirderHandlingChecker.h" />
     <ClInclude Include="GirderLiftingChecker.h" />
+    <ClInclude Include="HorizTieForceEng.h" />
     <ClInclude Include="KdotGirderHaulingChecker.h" />
     <ClInclude Include="LoadRater.h" />
     <ClInclude Include="MomentCapacityEngineer.h" />
@@ -256,9 +261,14 @@
     <ClInclude Include="WsDOTGirderHaulingChecker.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Beams\Beams.vcxproj">
+      <Project>{3dbe87d2-ceed-457b-b345-7748084d947d}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\Reporting\Reporting.vcxproj">
+      <Project>{4a38b3b0-7c87-40e8-bf6a-9d1b4051ff71}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -35,7 +35,7 @@
 #include "GirderSegmentStrandsPage.h" // replace with real dialog header when we have it
 
 #include <PgsExt\DesignConfigUtil.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
 #include <GenericBridge\Helpers.h>
 
@@ -43,19 +43,17 @@
 #include <LRFD\StrandPool.h>
 
 #include <MfcTools\CustomDDX.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PsgLib\GirderLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescPrestressPage property page
@@ -76,8 +74,8 @@ CGirderDescPrestressPage::~CGirderDescPrestressPage()
 
 void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -224,7 +222,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Harped);
       DDV_UnitValueLimitOrLess( pDX, IDC_HS_JACK_FORCE, Pjack, 
                                 GetUltPjack(nh, pgsTypes::Harped), pDisplayUnits->GetGeneralForceUnit(), 
-                                _T("PJack must be less than the ultimate value of %f %s"));
+                                _T("Pjack must be less than the ultimate value of %f %s"));
 
       // Straight
       bPjackUserInput = !pParent->m_pSegment->Strands.IsPjackCalculated(pgsTypes::Straight);
@@ -249,7 +247,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
       }
 
       Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Straight);
-      DDV_UnitValueLimitOrLess( pDX, IDC_SS_JACK_FORCE, Pjack, GetUltPjack(ns, pgsTypes::Straight ), pDisplayUnits->GetGeneralForceUnit(), _T("PJack must be less than the ultimate value of %f %s") );
+      DDV_UnitValueLimitOrLess( pDX, IDC_SS_JACK_FORCE, Pjack, GetUltPjack(ns, pgsTypes::Straight ), pDisplayUnits->GetGeneralForceUnit(), _T("Pjack must be less than the ultimate value of %f %s") );
    }
 
    // Temporary
@@ -309,7 +307,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
    }
 
    Float64 Pjack = pParent->m_pSegment->Strands.GetPjack(pgsTypes::Temporary);
-   DDV_UnitValueLimitOrLess( pDX, IDC_TEMP_JACK_FORCE, Pjack, GetUltPjack(nt, pgsTypes::Temporary ), pDisplayUnits->GetGeneralForceUnit(), _T("PJack must be less than the ultimate value of %f %s") );
+   DDV_UnitValueLimitOrLess( pDX, IDC_TEMP_JACK_FORCE, Pjack, GetUltPjack(nt, pgsTypes::Temporary ), pDisplayUnits->GetGeneralForceUnit(), _T("Pjack must be less than the ultimate value of %f %s") );
 
    // Set up pjack controls - values that are auto-computed will be refreshed
    UpdateStrandControls();
@@ -572,7 +570,12 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
       // Get rid of any debonded strands that aren't filled
       ConfigStrandFillVector strtvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
-      ReconcileDebonding(strtvec, pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight)); 
+      auto debonding = pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight);
+      ASSERT(IsGridBasedStrandModel(pParent->m_pSegment->Strands.GetStrandDefinitionType()));
+      if (ReconcileDebonding(strtvec, debonding))
+      {
+         pParent->m_pSegment->Strands.SetDebonding(pgsTypes::Straight, debonding);
+      }
 
       for ( int i = 0; i < 2; i++ )
       {
@@ -668,8 +671,8 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
@@ -743,10 +746,10 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
    idx = pCB->AddString(_T("Temporary strands post-tensioned before lifting"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::ttsPTBeforeLifting);
 
-   idx = pCB->AddString(_T("Temporary strands post-tensioned immedately after lifting"));
+   idx = pCB->AddString(_T("Temporary strands post-tensioned immediately after lifting"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::ttsPTAfterLifting);
 
-   idx = pCB->AddString(_T("Temporary strands post-tensioned immedately before shipping"));
+   idx = pCB->AddString(_T("Temporary strands post-tensioned immediately before shipping"));
    pCB->SetItemData(idx,(DWORD)pgsTypes::ttsPTBeforeShipping);
 
    pCB = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
@@ -845,7 +848,7 @@ void CGirderDescPrestressPage::InitHarpStrandOffsetMeasureComboBox(CComboBox* pC
    pCB->SetItemData(idx,hsoECCENTRICITY);
 }
 
-StrandIndexType CGirderDescPrestressPage::PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd )
+StrandIndexType CGirderDescPrestressPage::PermStrandSpinnerInc(std::shared_ptr<IStrandGeometry> pStrands, StrandIndexType currNum, bool bAdd)
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -874,7 +877,7 @@ StrandIndexType CGirderDescPrestressPage::PermStrandSpinnerInc(IStrandGeometry* 
    return increment;
 }
 
-StrandIndexType CGirderDescPrestressPage::StrandSpinnerInc(IStrandGeometry* pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd )
+StrandIndexType CGirderDescPrestressPage::StrandSpinnerInc(std::shared_ptr<IStrandGeometry> pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd )
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -907,8 +910,8 @@ void CGirderDescPrestressPage::OnNumStraightStrandsChanged(NMHDR* pNMHDR, LRESUL
 {
 	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -928,8 +931,8 @@ void CGirderDescPrestressPage::OnNumHarpedStrandsChanged(NMHDR* pNMHDR, LRESULT*
 {
 	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -1002,8 +1005,8 @@ void CGirderDescPrestressPage::OnNumTempStrandsChanged(NMHDR* pNMHDR, LRESULT* p
 {
 	NM_UPDOWN* pNMUpDown = (NM_UPDOWN*)pNMHDR;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -1098,8 +1101,8 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
    if ( !bEnableUserInput && nStrands != 0 )
    {
       // Compute pjack and fill in value
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // Get the edit control value and save it as the last user input force
@@ -1116,8 +1119,8 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
             strandType = pgsTypes::Harped;
             if (m_CurrStrandDefinitionType == pgsTypes::sdtTotal)
             {
-               CComPtr<IBroker> pBroker;
-               EAFGetBroker(&pBroker);
+               
+               auto pBroker = EAFGetBroker();
                GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
 
                StrandIndexType nStraight, nHarped;
@@ -1153,8 +1156,8 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
    else if (nStrands == 0)
    {
       // zero out pjack
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 jack=0.0;
@@ -1178,8 +1181,8 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
 
 Float64 CGirderDescPrestressPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2( pBroker, IPretensionForce, pPSForce );
 
    // TRICK CODE
@@ -1252,8 +1255,8 @@ void CGirderDescPrestressPage::UpdateStrandControls()
    //
    // If the current number of strands exceeds the max number of strands,  set the current
    // number of strands to the max number of strands and recompute the jacking forces.
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -1348,8 +1351,8 @@ void CGirderDescPrestressPage::HideControls(int key, pgsTypes::StrandDefinitionT
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    int nTitle;
@@ -1451,8 +1454,8 @@ void CGirderDescPrestressPage::DisableEndOffsetControls(BOOL hide)
 
    BOOL show = hide==TRUE ? FALSE : TRUE;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IGirder,pGirder);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -1497,8 +1500,8 @@ void CGirderDescPrestressPage::ShowEndOffsetControls(BOOL shw)
 
    int show = shw ? SW_SHOW : SW_HIDE;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IGirder,pGirder);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -1542,8 +1545,8 @@ void CGirderDescPrestressPage::DisableHpOffsetControls(BOOL hide)
    CWnd* pWnd = 0;
    BOOL show = hide==TRUE ? FALSE : TRUE;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IGirder,pGirder);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -1588,8 +1591,8 @@ void CGirderDescPrestressPage::ShowHpOffsetControls(BOOL show)
 
    int sShow = show ? SW_SHOW : SW_HIDE;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IGirder,pGirder);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -1648,8 +1651,8 @@ StrandIndexType CGirderDescPrestressPage::GetStraightStrandCount()
          CDataExchange DX(this,FALSE);
 	      DDX_Text(&DX, IDC_NUM_HS, total_strands);
          
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         
+         auto pBroker = EAFGetBroker();
          GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
          StrandIndexType numStraight, numHarped;
@@ -1694,8 +1697,8 @@ StrandIndexType CGirderDescPrestressPage::GetHarpedStrandCount()
          CDataExchange DX(this,TRUE);
 	      DDX_Text(&DX, IDC_NUM_HS, total_strands);
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         
+         auto pBroker = EAFGetBroker();
          GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
          StrandIndexType numStraight, numHarped;
@@ -1733,8 +1736,8 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
    CString str;
    if (0 < Nh)
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -1801,8 +1804,8 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
    CString str;
    if (0 < Nh)
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -1890,8 +1893,8 @@ void CGirderDescPrestressPage::OnSelchangeHpComboHp()
    SHORT keyState = GetKeyState(VK_CONTROL);
    if ( keyState < 0 )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -1939,8 +1942,8 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
       SHORT keyState = GetKeyState(VK_CONTROL);
       if ( keyState < 0 )
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         
+         auto pBroker = EAFGetBroker();
          GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
          GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -1983,8 +1986,8 @@ void CGirderDescPrestressPage::ShowHideNumStrandControls(pgsTypes::StrandDefinit
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // Temporary strands
@@ -2116,8 +2119,8 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2( pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
 
@@ -2474,8 +2477,6 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
 
             GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
-            LPCTSTR lpszGirderName = pParent->m_Girder.GetGirderName();
-
             // convert strands
             // Create a prestressing config based on the current input
             PRESTRESSCONFIG config;
@@ -2644,7 +2645,12 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
    // Strands have changed - take care of any invalid debonding
    ConfigStrandFillVector fillvec = ComputeStraightStrandFillVector(num_straight);
     
-   ReconcileDebonding(fillvec, pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight));
+   auto debonding = pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight);
+   ASSERT(IsGridBasedStrandModel(pParent->m_pSegment->Strands.GetStrandDefinitionType()));
+   if (ReconcileDebonding(fillvec, debonding))
+   {
+      pParent->m_pSegment->Strands.SetDebonding(pgsTypes::Straight, debonding);
+   }
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -2698,7 +2704,7 @@ void CGirderDescPrestressPage::UpdateStrandTypes()
    }
 }
 
-void CGirderDescPrestressPage::ConvertPJackFromNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits) 
+void CGirderDescPrestressPage::ConvertPJackFromNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) 
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -2743,7 +2749,7 @@ void CGirderDescPrestressPage::ConvertPJackFromNumPerm(StrandIndexType numStraig
    }
 }
 
-void CGirderDescPrestressPage::ConvertPJackToNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits) 
+void CGirderDescPrestressPage::ConvertPJackToNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) 
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -2989,8 +2995,8 @@ void CGirderDescPrestressPage::EditDirectSelect()
       return;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2( pBroker, ILibrary, pLib );
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
@@ -3132,8 +3138,8 @@ void CGirderDescPrestressPage::EditDirectStrandInput()
 
 ConfigStrandFillVector CGirderDescPrestressPage::ComputeStraightStrandFillVector(StrandIndexType Ns)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -3157,8 +3163,8 @@ ConfigStrandFillVector CGirderDescPrestressPage::ComputeStraightStrandFillVector
 
 ConfigStrandFillVector CGirderDescPrestressPage::ComputeHarpedStrandFillVector()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -3192,8 +3198,8 @@ void CGirderDescPrestressPage::OnCbnSelchangeAdjustableCombo()
 
 void CGirderDescPrestressPage::UpdateAdjustableStrandControls()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -3253,8 +3259,8 @@ void CGirderDescPrestressPage::ShowOffsetControlGroup(BOOL show)
 
 BOOL CGirderDescPrestressPage::OnSetActive()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IGirder,pGirder);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -3287,8 +3293,8 @@ void CGirderDescPrestressPage::GetStrandCount(StrandIndexType* pNs, StrandIndexT
    else if (m_CurrStrandDefinitionType == pgsTypes::sdtTotal)
    {
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
       *pNp = GetDlgItemInt(IDC_NUM_HS);
       pStrandGeometry->ComputeNumPermanentStrands(*pNp, pParent->m_strGirderName.c_str(), pNs, pNh);

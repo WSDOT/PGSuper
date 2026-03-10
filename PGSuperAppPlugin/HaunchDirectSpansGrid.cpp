@@ -31,16 +31,13 @@
 #include "PGSuperUnits.h"
 #include "PGSuperDoc.h"
 #include <Units\Measure.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\HaunchDepthInputConversionTool.h>
+#include <PsgLib\GirderLabel.h>
+#include <IFace/Project.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CHaunchDirectSpansGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -235,8 +232,7 @@ void CHaunchDirectSpansGrid::BuildGridAndHeader()
 
 void CHaunchDirectSpansGrid::FillGrid()
 {
-   CComPtr<IBroker> pBroker;
-   ::EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    CEAFDocument* pDoc = EAFGetDocument();
    BOOL bIsPGSuper = pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
 
@@ -269,9 +265,8 @@ void CHaunchDirectSpansGrid::FillGrid()
    CEditHaunchByHaunchDlg* pParent = (CEditHaunchByHaunchDlg*)GetParent();
 
    // Convert current data if needed
-   HaunchDepthInputConversionTool conversionTool(pBridgeOrig,pBroker,false);
-   auto convPair = conversionTool.ConvertToDirectHaunchInput(pgsTypes::hilPerEach,pgsTypes::hltAlongSpans,disttype);
-   const CBridgeDescription2* pBridge = &convPair.second;
+   GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+   auto bridge = pBridgeDesc->ConvertHaunchToDirectHaunchInput(*pBridgeOrig, pgsTypes::hilPerEach, pgsTypes::hltAlongSpans, disttype).second;
 
    // Fill haunch values
    if (disttype == pgsTypes::hidUniform)
@@ -280,7 +275,7 @@ void CHaunchDirectSpansGrid::FillGrid()
       ROWCOL col = 1;
       for (SpanIndexType ispan = 0; ispan < nSpans; ispan++)
       {
-         const CSpanData2* pSpan = pBridge->GetSpan(ispan);
+         const CSpanData2* pSpan = bridge.GetSpan(ispan);
 
          for (auto gdrIdx = 0; gdrIdx < maxGdrs; gdrIdx++)
          {
@@ -306,7 +301,7 @@ void CHaunchDirectSpansGrid::FillGrid()
       ROWCOL spanCol = 1;
       for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
       {
-         auto* pSpan = pBridge->GetSpan(spanIdx);
+         auto* pSpan = bridge.GetSpan(spanIdx);
          GirderIndexType nGdrs = pSpan->GetGirderCount();
 
          for (auto gdrIdx = 0; gdrIdx < nGdrs; gdrIdx++)

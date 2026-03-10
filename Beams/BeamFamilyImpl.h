@@ -28,267 +28,162 @@
 #include <Plugins\BeamFactoryCATID.h>
 #include "resource.h"
 
-// forward declaration
-interface IBeamFactory;
-
-/////////////////////////////////////////////////////////////////////////////
-// CIBeamFamily - beam family for I-beams
-class ATL_NO_VTABLE CIBeamFamily : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CIBeamFamily, &CLSID_WFBeamFamily>,
-   public IBeamFamilyImpl
+namespace PGS
 {
-public:
-	CIBeamFamily()
-	{
-	}
+   namespace Beams
+   {
+	  class BeamFactory;
 
-   HRESULT FinalConstruct() { return Init(); }
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CIBeamFamily - beam family for I-beams
+	  class CIBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CIBeamFamily()
+		  {
+			 Init();
+		  }
 
-DECLARE_REGISTRY_RESOURCEID(IDR_IBEAMFAMILY)
-DECLARE_CLASSFACTORY_SINGLETON(CIBeamFamily)
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_WFBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_WFBeamFactory; }
+	  };
 
-BEGIN_COM_MAP(CIBeamFamily)
-   COM_INTERFACE_ENTRY(IBeamFamily)
-END_COM_MAP()
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CUBeamFamily - beam family for U-beams
+	  class CUBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CUBeamFamily()
+		  {
+			 Init();
+		  }
 
-protected:
-   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() override { return CATID_WFBeamFactory; }
-};
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_UBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_UBeamFactory; }
+	  };
 
-/////////////////////////////////////////////////////////////////////////////
-// CUBeamFamily - beam family for U-beams
-class ATL_NO_VTABLE CUBeamFamily : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CUBeamFamily, &CLSID_UBeamFamily>,
-   public IBeamFamilyImpl
-{
-public:
-	CUBeamFamily()
-	{
-	}
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CBoxBeamFamily - beam family for Box beams
+	  class CBoxBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CBoxBeamFamily()
+		  {
+			 Init();
+		  }
 
-   HRESULT FinalConstruct() { return Init(); }
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_BoxBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_BoxBeamFactory; }
+	  };
 
-DECLARE_REGISTRY_RESOURCEID(IDR_UBEAMFAMILY)
-DECLARE_CLASSFACTORY_SINGLETON(CUBeamFamily)
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CDeckBulbTeeBeamFamily - beam family for deck bulb tee beams
+	  class CDeckBulbTeeBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CDeckBulbTeeBeamFamily()
+		  {
+			 Init();
+		  }
 
-BEGIN_COM_MAP(CUBeamFamily)
-   COM_INTERFACE_ENTRY(IBeamFamily)
-END_COM_MAP()
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_DeckBulbTeeBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_DeckBulbTeeBeamFactory; }
+	  };
 
-protected:
-   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() override { return CATID_UBeamFactory; }
-};
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CDoubleTeeBeamFamily - beam family for Float64 tee beams
+	  class CDoubleTeeBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CDoubleTeeBeamFamily()
+		  {
+			 Init();
+		  }
 
-/////////////////////////////////////////////////////////////////////////////
-// CBoxBeamFamily - beam family for Box beams
-class ATL_NO_VTABLE CBoxBeamFamily : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CBoxBeamFamily, &CLSID_BoxBeamFamily>,
-   public IBeamFamilyImpl
-{
-public:
-	CBoxBeamFamily()
-	{
-	}
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_DoubleTeeBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_DoubleTeeBeamFactory; }
+	  };
 
-   HRESULT FinalConstruct() { return Init(); }
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CRibbedBeamFamily - beam family for ribbed beams
+	  class CRibbedBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CRibbedBeamFamily()
+		  {
+			 Init();
+		  }
 
-DECLARE_REGISTRY_RESOURCEID(IDR_BOXBEAMFAMILY)
-DECLARE_CLASSFACTORY_SINGLETON(CBoxBeamFamily)
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_RibbedBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_RibbedBeamFactory; }
+	  };
 
-BEGIN_COM_MAP(CBoxBeamFamily)
-   COM_INTERFACE_ENTRY(IBeamFamily)
-END_COM_MAP()
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CSlabBeamFamily - beam family for slab beams
+	  class CSlabBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CSlabBeamFamily()
+		  {
+			 Init();
+		  }
 
-protected:
-   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() override { return CATID_BoxBeamFactory; }
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CDeckBulbTeeBeamFamily - beam family for deck bulb tee beams
-class ATL_NO_VTABLE CDeckBulbTeeBeamFamily : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CDeckBulbTeeBeamFamily, &CLSID_DeckBulbTeeBeamFamily>,
-   public IBeamFamilyImpl
-{
-public:
-	CDeckBulbTeeBeamFamily()
-	{
-	}
-
-   HRESULT FinalConstruct() { return Init(); }
-
-DECLARE_REGISTRY_RESOURCEID(IDR_DECKBULBTEEBEAMFAMILY)
-DECLARE_CLASSFACTORY_SINGLETON(CDeckBulbTeeBeamFamily)
-
-BEGIN_COM_MAP(CDeckBulbTeeBeamFamily)
-   COM_INTERFACE_ENTRY(IBeamFamily)
-END_COM_MAP()
-
-protected:
-   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() override { return CATID_DeckBulbTeeBeamFactory; }
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CDoubleTeeBeamFamily - beam family for Float64 tee beams
-class ATL_NO_VTABLE CDoubleTeeBeamFamily : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CDoubleTeeBeamFamily, &CLSID_DoubleTeeBeamFamily>,
-   public IBeamFamilyImpl
-{
-public:
-	CDoubleTeeBeamFamily()
-	{
-	}
-
-   HRESULT FinalConstruct() { return Init(); }
-
-DECLARE_REGISTRY_RESOURCEID(IDR_DOUBLETEEBEAMFAMILY)
-DECLARE_CLASSFACTORY_SINGLETON(CDoubleTeeBeamFamily)
-
-BEGIN_COM_MAP(CDoubleTeeBeamFamily)
-   COM_INTERFACE_ENTRY(IBeamFamily)
-END_COM_MAP()
-
-protected:
-   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() override { return CATID_DoubleTeeBeamFactory; }
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CRibbedBeamFamily - beam family for ribbed beams
-class ATL_NO_VTABLE CRibbedBeamFamily : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CRibbedBeamFamily, &CLSID_RibbedBeamFamily>,
-   public IBeamFamilyImpl
-{
-public:
-	CRibbedBeamFamily()
-	{
-	}
-
-   HRESULT FinalConstruct() { return Init(); }
-
-DECLARE_REGISTRY_RESOURCEID(IDR_RIBBEDBEAMFAMILY)
-DECLARE_CLASSFACTORY_SINGLETON(CRibbedBeamFamily)
-
-BEGIN_COM_MAP(CRibbedBeamFamily)
-   COM_INTERFACE_ENTRY(IBeamFamily)
-END_COM_MAP()
-
-protected:
-   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() override { return CATID_RibbedBeamFactory; }
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CSlabBeamFamily - beam family for slab beams
-class ATL_NO_VTABLE CSlabBeamFamily : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CSlabBeamFamily, &CLSID_SlabBeamFamily>,
-   public IBeamFamilyImpl
-{
-public:
-	CSlabBeamFamily()
-	{
-	}
-
-   HRESULT FinalConstruct() { return Init(); }
-
-DECLARE_REGISTRY_RESOURCEID(IDR_SLABBEAMFAMILY)
-DECLARE_CLASSFACTORY_SINGLETON(CSlabBeamFamily)
-
-BEGIN_COM_MAP(CSlabBeamFamily)
-   COM_INTERFACE_ENTRY(IBeamFamily)
-END_COM_MAP()
-
-protected:
-   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() override { return CATID_SlabBeamFactory; }
-};
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_SlabBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_SlabBeamFactory; }
+	  };
 
 
-/////////////////////////////////////////////////////////////////////////////
-// CDeckedSlabBeamFamily - beam family for slab beams
-class ATL_NO_VTABLE CDeckedSlabBeamFamily : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CDeckedSlabBeamFamily, &CLSID_DeckedSlabBeamFamily>,
-   public IBeamFamilyImpl
-{
-public:
-	CDeckedSlabBeamFamily()
-	{
-	}
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CDeckedSlabBeamFamily - beam family for slab beams
+	  class CDeckedSlabBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CDeckedSlabBeamFamily()
+		  {
+			 Init();
+		  }
 
-   HRESULT FinalConstruct() { return Init(); }
-
-DECLARE_REGISTRY_RESOURCEID(IDR_DECKEDSLABBEAMFAMILY)
-DECLARE_CLASSFACTORY_SINGLETON(CDeckedSlabBeamFamily)
-
-BEGIN_COM_MAP(CDeckedSlabBeamFamily)
-   COM_INTERFACE_ENTRY(IBeamFamily)
-END_COM_MAP()
-
-protected:
-   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() override { return CATID_DeckedSlabBeamFactory; }
-};
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_DeckedSlabBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_DeckedSlabBeamFactory; }
+	  };
 
 
-/////////////////////////////////////////////////////////////////////////////
-// CSplicedIBeamFamily - beam family for Spliced I-beams
-class ATL_NO_VTABLE CSplicedIBeamFamily : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CSplicedIBeamFamily, &CLSID_SplicedIBeamFamily>,
-   public IBeamFamilyImpl
-{
-public:
-	CSplicedIBeamFamily()
-	{
-	}
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CSplicedIBeamFamily - beam family for Spliced I-beams
+	  class CSplicedIBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CSplicedIBeamFamily()
+		  {
+			 Init();
+		  }
 
-   HRESULT FinalConstruct() { return Init(); }
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_SplicedIBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_SplicedIBeamFactory; }
+	  };
 
-DECLARE_REGISTRY_RESOURCEID(IDR_SPLICEDIBEAMFAMILY)
-DECLARE_CLASSFACTORY_SINGLETON(CSplicedIBeamFamily)
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CSplicedUBeamFamily - beam family for Spliced U-beams
+	  class CSplicedUBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CSplicedUBeamFamily()
+		  {
+			 Init();
+		  }
 
-BEGIN_COM_MAP(CSplicedIBeamFamily)
-   COM_INTERFACE_ENTRY(IBeamFamily)
-END_COM_MAP()
-
-protected:
-   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() override { return CATID_SplicedIBeamFactory; }
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CSplicedUBeamFamily - beam family for Spliced U-beams
-class ATL_NO_VTABLE CSplicedUBeamFamily : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CSplicedUBeamFamily, &CLSID_SplicedUBeamFamily>,
-   public IBeamFamilyImpl
-{
-public:
-	CSplicedUBeamFamily()
-	{
-	}
-
-   HRESULT FinalConstruct() { return Init(); }
-
-DECLARE_REGISTRY_RESOURCEID(IDR_SPLICEDUBEAMFAMILY)
-DECLARE_CLASSFACTORY_SINGLETON(CSplicedUBeamFamily)
-
-BEGIN_COM_MAP(CSplicedUBeamFamily)
-   COM_INTERFACE_ENTRY(IBeamFamily)
-END_COM_MAP()
-
-protected:
-   virtual const CLSID& GetCLSID() override { return GetObjectCLSID(); }
-   virtual const CATID& GetCATID() override { return CATID_SplicedUBeamFactory; }
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_SplicedUBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_SplicedUBeamFactory; }
+	  };
+   };
 };

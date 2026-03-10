@@ -30,6 +30,7 @@
 #include <Reporting\FlexuralStressCheckTable.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
@@ -41,29 +42,11 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CTogaStressChecksChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTogaStressChecksChapterBuilder::CTogaStressChecksChapterBuilder():
 CPGSuperChapterBuilder(true)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTogaStressChecksChapterBuilder::GetName() const
 {
    return TEXT("Stress Checks");
@@ -72,8 +55,7 @@ LPCTSTR CTogaStressChecksChapterBuilder::GetName() const
 rptChapter* CTogaStressChecksChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    // This is a single segment report
@@ -107,8 +89,8 @@ rptChapter* CTogaStressChecksChapterBuilder::Build(const std::shared_ptr<const W
    return pChapter;
 }
 
-void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, IBroker* pBroker,
-                      IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const
+void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task) const
 {
    // We need the artifact that we've doctored for txdot reasons
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
@@ -138,9 +120,4 @@ void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, I
    }
 
    CFlexuralStressCheckTable().BuildTable(pChapter, pBroker, pFactoredGdrArtifact, fabrSegmentKey.segmentIndex, pDisplayUnits, task, true/*girder stresses*/);
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaStressChecksChapterBuilder::Clone() const
-{
-   return std::make_unique<CTogaStressChecksChapterBuilder>();
 }

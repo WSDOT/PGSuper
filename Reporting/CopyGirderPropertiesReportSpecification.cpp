@@ -23,13 +23,8 @@
 #include "stdafx.h"
 #include <Reporting\CopyGirderPropertiesReportSpecification.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CCopyGirderPropertiesReportSpecification::CCopyGirderPropertiesReportSpecification(const std::_tstring& strReportName, IBroker* pBroker) :
+CCopyGirderPropertiesReportSpecification::CCopyGirderPropertiesReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker) :
    CBrokerReportSpecification(strReportName, pBroker)
 {
 }

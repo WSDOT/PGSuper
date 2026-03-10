@@ -43,7 +43,7 @@
 //
 
 // Function to perform rounding of required slab offset depending on spec method. Returns rounded value
-inline Float64 RoundSlabOffsetValue(ISpecification* pSpec, Float64 rawValue)
+inline Float64 RoundSlabOffsetValue(std::shared_ptr<ISpecification> pSpec, Float64 rawValue)
 {
    const auto& slab_offset_criteria = pSpec->GetSlabOffsetCriteria();
    return slab_offset_criteria.RoundSlabOffset(rawValue);

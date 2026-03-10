@@ -1,14 +1,11 @@
 #include "StdAfx.h"
 #include "PoiReportSpecification.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CPoiReportSpecification::CPoiReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, const pgsPointOfInterest& poi) :
+CPoiReportSpecification::CPoiReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi) :
    CBrokerReportSpecification(strReportName, pBroker)
 {
    m_Poi = poi;
@@ -20,7 +17,7 @@ CPoiReportSpecification::~CPoiReportSpecification(void)
 
 bool CPoiReportSpecification::IsValid() const
 {
-   GET_IFACE(IBridge, pBridge);
+   GET_IFACE2(GetBroker(),IBridge, pBridge);
 
    const CSegmentKey& segmentKey = m_Poi.GetSegmentKey();
 

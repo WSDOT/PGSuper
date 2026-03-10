@@ -29,14 +29,10 @@
 #include "PierDetailsDlg.h"
 #include <PgsExt\ConcreteDetailsDlg.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 void DDX_ColumnGrid(CDataExchange* pDX,CColumnLayoutGrid& grid,CPierData2* pPier)
@@ -102,8 +98,8 @@ void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_FC,           m_ctrlFc);
    DDX_Control(pDX, IDC_FIXITY,       m_cbColumnFixity);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_MetaFileStatic(pDX, IDC_PIER_LAYOUT, m_LayoutPicture,_T("PIERLAYOUT"), _T("Metafile") );
@@ -540,8 +536,8 @@ void CPierLayoutPage::UpdateEc()
       CString strFc, strDensity, strK1, strK2;
       m_ctrlFc.GetWindowText(strFc);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       strDensity.Format(_T("%s"),FormatDimension(m_pPier->GetConcrete().StrengthDensity,pDisplayUnits->GetDensityUnit(),false));

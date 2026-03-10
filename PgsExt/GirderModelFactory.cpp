@@ -22,16 +22,12 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderModelFactory.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\AnalysisResults.h>
 #include <iterator>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 PoiIDType pgsGirderModelFactory::ms_FemModelPoiID = 0;
 
@@ -43,7 +39,7 @@ pgsGirderModelFactory::~pgsGirderModelFactory(void)
 {
 }
 
-void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker, // broker to access PGSuper data
+void pgsGirderModelFactory::CreateGirderModel(std::weak_ptr<WBFL::EAF::Broker> pBroker, // broker to access PGSuper data
                                  IntervalIndexType intervalIdx, // used for looking up section properties and section transition POIs
                                  const CSegmentKey& segmentKey, // this is the segment that the modeling is build for
                                  Float64 leftSupportLoc,        // distance from the left end of the model to the left support location
@@ -59,7 +55,7 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker, // broker to acc
                                  )
 {
 #if defined _DEBUG
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker.lock(), IBridge, pBridge);
    Float64 _SegmentLength = pBridge->GetSegmentLength(segmentKey);
    ATLASSERT(IsEqual(segmentLength, _SegmentLength));
 #endif
@@ -72,7 +68,7 @@ void pgsGirderModelFactory::CreateGirderModel(IBroker* pBroker, // broker to acc
    ApplyPointsOfInterest(pBroker, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPoi, ppModel, pPoiMap);
 }
 
-void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType intervalIdx, const CSegmentKey& segmentKey,
+void pgsGirderModelFactory::BuildModel(std::weak_ptr<WBFL::EAF::Broker> pBroker, IntervalIndexType intervalIdx, const CSegmentKey& segmentKey,
    Float64 segmentLength, Float64 leftSupportLoc, Float64 rightSupportLoc, Float64 E,
    LoadCaseIDType lcidGirder, const PoiList& vPOI, IFem2dModel** ppModel)
 {
@@ -89,7 +85,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
    }
 
    // get all the cross section changes
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker.lock(), IPointOfInterest, pPoi);
    PoiList xsPOI;
    pPoi->GetPointsOfInterest(segmentKey, POI_SECTCHANGE,&xsPOI);
    pPoi->RemovePointsOfInterest(xsPOI,POI_ERECTED_SEGMENT,POI_CANTILEVER);
@@ -255,7 +251,7 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
    ATLASSERT(bFoundLeftSupport && bFoundRightSupport); // model will be unstable
 
    // create members
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker.lock(), ISectionProperties, pSectProp);
 
    // for consistancy with all structural analysis models, sections properties are based on the mid-span location of segments
    PoiList vMyPoi;
@@ -303,13 +299,13 @@ void pgsGirderModelFactory::BuildModel(IBroker* pBroker, IntervalIndexType inter
    }
 }
 
-void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
+void pgsGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                        Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
                                        bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPOI,
                                        IFem2dModel** ppModel)
 {
    // apply loads
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker.lock(), IProductLoads, pProductLoads);
    CComPtr<IFem2dLoadingCollection> loadings;
    CComPtr<IFem2dLoading> loading;
    (*ppModel)->get_Loadings(&loadings);
@@ -488,7 +484,7 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
    }
 }
 
-void pgsGirderModelFactory::ApplyPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,
+void pgsGirderModelFactory::ApplyPointsOfInterest(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
                                                   bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPOI,
                                                   IFem2dModel** ppModel,pgsPoiPairMap* pPoiMap)
@@ -699,7 +695,7 @@ pgsKdotHaulingGirderModelFactory::~pgsKdotHaulingGirderModelFactory(void)
 {
 }
 
-void pgsKdotHaulingGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
+void pgsKdotHaulingGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
                                                   LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
                                                   const PoiList& vPOI,IFem2dModel** ppModel)
@@ -707,7 +703,7 @@ void pgsKdotHaulingGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmen
    ATLASSERT(bModelLeftCantilever && bModelRightCantilever); // kdot method should always include cantilevers
 
    // apply  loads
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker.lock(), IProductLoads, pProductLoads);
    CComPtr<IFem2dLoadingCollection> loadings;
    CComPtr<IFem2dLoading> loading;
    (*ppModel)->get_Loadings(&loadings);
@@ -838,7 +834,7 @@ pgsDesignHaunchLoadGirderModelFactory::~pgsDesignHaunchLoadGirderModelFactory(vo
 {
 }
 
-void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
+void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
                                                   LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
                                                   const PoiList& vPOI,IFem2dModel** ppModel)

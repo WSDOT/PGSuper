@@ -32,6 +32,7 @@
 #include "GirderDescGeneralPage.h"
 #include "Utilities.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
@@ -43,7 +44,7 @@
 #include "TimelineEventDlg.h"
 
 #include <PgsExt\ConcreteDetailsDlg.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
 #include <Atlddx.h>
 #include <system\tokenizer.h>
@@ -51,11 +52,6 @@
 #include "PGSuperUnits.h"
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define LEFT 0
 #define RIGHT 1
@@ -90,8 +86,8 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_TOP_FLANGE_THICKENING, m_ctrlTopFlangeThickening);
    //}}AFX_DATA_MAP
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -122,8 +118,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_LEFT_TOP_WIDTH_END, IDC_LEFT_TOP_WIDTH_END_UNIT, leftEnd, pDisplayUnits->GetXSectionDimUnit());
    DDX_UnitValueAndTag(pDX, IDC_RIGHT_TOP_WIDTH_END, IDC_RIGHT_TOP_WIDTH_END_UNIT, rightEnd, pDisplayUnits->GetXSectionDimUnit());
 
-   CComPtr<IBeamFactory> factory;
-   pParent->m_Girder.GetGirderLibraryEntry()->GetBeamFactory(&factory);
+   auto factory = pParent->m_Girder.GetGirderLibraryEntry()->GetBeamFactory();
 
    if (pDX->m_bSaveAndValidate && IsTopWidthSpacing(pParent->m_GirderSpacingType))
    {
@@ -215,8 +210,8 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 
 void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 
@@ -292,8 +287,8 @@ END_MESSAGE_MAP()
 
 BOOL CGirderDescGeneralPage::OnInitDialog() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument()); // Things will not go well if this fires
 
@@ -331,8 +326,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    pcbTopFlangeThickening->SetItemData(idx, (DWORD_PTR)pgsTypes::tftMiddle);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   CComPtr<IBeamFactory> factory;
-   pParent->m_Girder.GetGirderLibraryEntry()->GetBeamFactory(&factory);
+   auto factory = pParent->m_Girder.GetGirderLibraryEntry()->GetBeamFactory();
 
    // fill top width combo box
    CComboBox* pcbTopWidthTypes = (CComboBox*)GetDlgItem(IDC_TOP_WIDTH_TYPE);
@@ -648,8 +642,8 @@ void CGirderDescGeneralPage::UpdateEci()
    if ( method == 0 )
    {
       // Eci is based on the user input value of Ec and not f'ci
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strEc;
@@ -709,8 +703,8 @@ void CGirderDescGeneralPage::UpdateEci()
       CString strFci, strDensity, strK1, strK2;
       m_ctrlFci.GetWindowText(strFci);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -774,8 +768,8 @@ void CGirderDescGeneralPage::UpdateEc()
    if ( method == 0 )
    {
       // Ec is based on the user input value of Eci and not f'c
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strEci;
@@ -811,8 +805,8 @@ void CGirderDescGeneralPage::UpdateEc()
       CString strFc, strDensity, strK1, strK2;
       m_ctrlFc.GetWindowText(strFc);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -839,8 +833,8 @@ void CGirderDescGeneralPage::UpdateFc()
          CString strFci;
          m_ctrlFci.GetWindowText(strFci);
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         
+         auto pBroker = EAFGetBroker();
          GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
          Float64 fci;
@@ -884,8 +878,8 @@ void CGirderDescGeneralPage::UpdateFci()
          CString strFc;
          m_ctrlFc.GetWindowText(strFc);
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         
+         auto pBroker = EAFGetBroker();
          GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
          Float64 fc;
@@ -1138,8 +1132,8 @@ BOOL CGirderDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
 
 void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -1178,8 +1172,8 @@ void CGirderDescGeneralPage::FillGirderComboBox()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -1234,8 +1228,8 @@ void CGirderDescGeneralPage::OnChangeGirderName()
    // An alterative would be to not put girders in the drop down if they don't have compatible spacing. However
    // users will not like it if they can't see their girders. This approach shows the girders to the users and
    // provides and explaination as to why a particular girder can't be used.
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, ILibrary, pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(newName);
 
@@ -1244,8 +1238,7 @@ void CGirderDescGeneralPage::OnChangeGirderName()
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   auto factory = pGdrEntry->GetBeamFactory();
 
    if (!factory->IsSupportedBeamSpacing(pParent->m_GirderSpacingType))
    {
@@ -1483,12 +1476,11 @@ void CGirderDescGeneralPage::OnTopWidthTypeChanged()
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    const auto* pGirderLibraryEntry = pParent->m_Girder.GetGirderLibraryEntry();
    const GirderLibraryEntry::Dimensions& dimensions = pGirderLibraryEntry->GetDimensions();
-   CComPtr<IBeamFactory> factory;
-   pGirderLibraryEntry->GetBeamFactory(&factory);
+   auto factory = pGirderLibraryEntry->GetBeamFactory();
    factory->GetAllowableTopWidthRange(topWidthType, dimensions, &m_MinTopWidth[LEFT], &m_MaxTopWidth[LEFT], &m_MinTopWidth[RIGHT], &m_MaxTopWidth[RIGHT]);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    CString strLabel;
@@ -1530,8 +1522,8 @@ void CGirderDescGeneralPage::UpdateHaunchAndCamberControls()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -1635,8 +1627,8 @@ void CGirderDescGeneralPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 

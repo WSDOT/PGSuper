@@ -23,34 +23,33 @@
 #include "stdafx.h"
 #include "PGSuperApp.h"
 #include "InplacePierStationEditEvents.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFTxnManager.h>
-#include <PgsExt\BridgeDescription2.h>
+
+#include <EAF\TxnManager.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "MovePierDlg.h"
 #include "EditPierStation.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/EditableStationTextBlock.h>
 
-CInplacePierStationEditEvents::CInplacePierStationEditEvents(IBroker* pBroker,PierIndexType pierIdx) :
+CInplacePierStationEditEvents::CInplacePierStationEditEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker,PierIndexType pierIdx) :
 CInplaceEditDisplayObjectEvents(pBroker), m_PierIdx(pierIdx)
 {
 }
 
-void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
+void CInplacePierStationEditEvents::Handle_OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CComQIPtr<iEditableUnitValueTextBlock> pTextBlock(pDO);
+   auto pTextBlock = std::dynamic_pointer_cast<WBFL::DManip::EditableStationTextBlock>(pDO);
    ATLASSERT(pTextBlock);
 
-   Float64 old_station = pTextBlock->GetValue();
-   Float64 new_station = pTextBlock->GetEditedValue();
+   Float64 old_station = pTextBlock->GetStation().GetValue();
+   Float64 new_station = pTextBlock->GetEditedStation().GetValue();
 
    if ( IsEqual(old_station,new_station) )
       return;
@@ -84,7 +83,7 @@ void CInplacePierStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
       if ( !IsEqual(old_station,new_station) )
       {
          std::unique_ptr<txnEditPierStation> pTxn(std::make_unique<txnEditPierStation>(m_PierIdx,old_station,new_station,dlg.m_Option));
-         CEAFTxnManager::GetInstance().Execute(std::move(pTxn));
+         WBFL::EAF::TxnManager::GetInstance().Execute(std::move(pTxn));
       }
    }
 }

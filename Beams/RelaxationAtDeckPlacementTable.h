@@ -38,11 +38,11 @@ class CGirderData;
 class CRelaxationAtDeckPlacementTable : public rptRcTable
 {
 public:
-	static CRelaxationAtDeckPlacementTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-	void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CRelaxationAtDeckPlacementTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+	void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CRelaxationAtDeckPlacementTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CRelaxationAtDeckPlacementTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
    DECLARE_UV_PROTOTYPE( rptTimeUnitValue,    time);

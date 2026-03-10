@@ -34,9 +34,9 @@ public:
    bool LoadImporters();
    void UnloadImporters();
    IndexType GetImporterCount() const;
-   void GetImporter(IndexType idx,IPGSProjectImporter** ppImporter);
-   void GetImporter(const CLSID& clsid,IPGSProjectImporter** ppImporter);
-   void AddImporter(const CLSID& clsid,IPGSProjectImporter* pImporter);
+   std::shared_ptr<PGS::IProjectImporter> GetImporter(IndexType idx) const;
+   std::shared_ptr<PGS::IProjectImporter> GetImporter(const CLSID& clsid) const;
+   void AddImporter(const CLSID& clsid,std::shared_ptr<PGS::IProjectImporter>& pImporter);
    void RemoveImporter(const CLSID& clsid);
 
    virtual LPCTSTR GetAppName() = 0;
@@ -47,19 +47,11 @@ protected:
 private:
    struct Record
    { 
-      CLSID clsid; CComPtr<IPGSProjectImporter> Importer;
-      Record() {}
-      Record(const Record& other) 
-      {
-         clsid    = other.clsid;
-         Importer = other.Importer;
-      }
-      Record& operator=(const Record& other)
-      {
-         clsid    = other.clsid;
-         Importer = other.Importer;
-         return *this;
-      }
+      CLSID clsid = CLSID_NULL;
+      std::shared_ptr<PGS::IProjectImporter> importer;
+      Record() = default;
+      Record(const Record&) = default;
+      Record& operator=(const Record& other) = default;
       bool operator<(const Record& other) const
       {
          return clsid < other.clsid;

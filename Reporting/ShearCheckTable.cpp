@@ -27,6 +27,8 @@
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -35,11 +37,6 @@
 
 #include <PgsExt\CapacityToDemand.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -62,8 +59,8 @@ CShearCheckTable::~CShearCheckTable()
 //======================== OPERATORS  =======================================
 
 //======================== OPERATIONS =======================================
-rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                                               IEAFDisplayUnits* pDisplayUnits,
+rptRcTable* CShearCheckTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                IntervalIndexType intervalIdx,
                                                pgsTypes::LimitState ls,bool& bStrutAndTieRequired) const
 {
@@ -178,8 +175,8 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
 }
 
 void CShearCheckTable::BuildNotes(rptChapter* pChapter, 
-                           IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            IntervalIndexType intervalIdx, pgsTypes::LimitState ls, bool bStrutAndTieRequired) const
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());

@@ -20,26 +20,18 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined INCLUDED_INPLACEPIERSTATIONEDITEVENTS_H_
-#define INCLUDED_INPLACEPIERSTATIONEDITEVENTS_H_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "InplaceEditDisplayObjectEvents.h"
 
 class CInplacePierStationEditEvents : public CInplaceEditDisplayObjectEvents
 {
 public:
-   CInplacePierStationEditEvents(IBroker* pBroker,PierIndexType pierIdx);
+   CInplacePierStationEditEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker,PierIndexType pierIdx);
 
 protected:
-   virtual void Handle_OnChanged(iDisplayObject* pDO);
+   virtual void Handle_OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
 
 private:
    PierIndexType m_PierIdx;
 };
-
-
-#endif //INCLUDED_INPLACEPIERSTATIONEDITEVENTS_H_

@@ -35,7 +35,7 @@
 class CSegmentModelManager
 {
 public:
-   CSegmentModelManager(SHARED_LOGFILE lf,IBroker* pBroker);
+   CSegmentModelManager(SHARED_LOGFILE lf,std::weak_ptr<WBFL::EAF::Broker> pBroker);
 
    void Clear();
 
@@ -116,7 +116,9 @@ public:
 
 private:
 	DECLARE_SHARED_LOGFILE;
-   IBroker* m_pBroker; // must be a weak reference (this is the agent's pointer and it is a weak refernece)
+
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker; // must be a weak reference to break circular reference with agent
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); } // for use within function scope
 
    CProductLoadMap m_ProductLoadMap;
 

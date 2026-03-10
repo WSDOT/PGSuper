@@ -29,7 +29,7 @@ class REPORTINGCLASS CCrackedSectionReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CCrackedSectionReportSpecificationBuilder(IBroker* pBroker);
+   CCrackedSectionReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CCrackedSectionReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;

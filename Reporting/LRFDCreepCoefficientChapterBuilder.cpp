@@ -24,38 +24,26 @@
 #include <Reporting\LRFDCreepCoefficientChapterBuilder.h>
 #include <Reporting\CreepCoefficientChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
-#include <PgsExt\StrandData.h>
-#include <PgsExt\GirderMaterial.h>
+#include <PgsExt\ReportCreepCoefficient.h>
 
+#include <PsgLib\StrandData.h>
+#include <PsgLib\GirderMaterial.h>
 #include <psgLib/CreepCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CLRFDCreepCoefficientChapterBuilder
-****************************************************************************/
+#include <PsgLib/SpecLibraryEntry.h>
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CLRFDCreepCoefficientChapterBuilder::CLRFDCreepCoefficientChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CLRFDCreepCoefficientChapterBuilder::GetName() const
 {
    return TEXT("Creep Coefficient Details");
@@ -64,8 +52,7 @@ LPCTSTR CLRFDCreepCoefficientChapterBuilder::GetName() const
 rptChapter* CLRFDCreepCoefficientChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -110,32 +97,10 @@ rptChapter* CLRFDCreepCoefficientChapterBuilder::Build(const std::shared_ptr<con
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLRFDCreepCoefficientChapterBuilder::Clone() const
-{
-   return std::make_unique<CLRFDCreepCoefficientChapterBuilder>();
-}
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
 
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                   IEAFDisplayUnits* pDisplayUnits,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                    Uint16 level) const
 {
    rptParagraph* pPara = new rptParagraph;
@@ -334,8 +299,8 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
    return pPara;
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                       IEAFDisplayUnits* pDisplayUnits,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                        Uint16 level) const
 {
    rptParagraph* pPara = new rptParagraph;
@@ -532,22 +497,22 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
    return pPara;
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_SIP_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                                   IEAFDisplayUnits* pDisplayUnits,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_SIP_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                                   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                                    Uint16 level) const
 {
    return Build_CIP_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits, level);
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_SIP(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                       IEAFDisplayUnits* pDisplayUnits,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_SIP(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                        Uint16 level) const
 {
    return Build_SIP_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits, level);
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                                      IEAFDisplayUnits* pDisplayUnits,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                                       Uint16 level) const
 {
    rptParagraph* pPara = new rptParagraph;
@@ -930,8 +895,8 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
    return pPara;
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                          IEAFDisplayUnits* pDisplayUnits,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                          std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                           Uint16 level) const
 {
    return Build_NoDeck_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits, level);

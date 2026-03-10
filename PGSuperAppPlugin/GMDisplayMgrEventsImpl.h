@@ -20,43 +20,32 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_GMDisplayMgrEventsImpl_H_
-#define INCLUDED_GMDisplayMgrEventsImpl_H_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// GMDisplayMgrEventsImpl.h : header file
-//
-#include <DManip\DManip.h>
+
+#include <DManip/DisplayMgrEvents.h>
 #include "PGSuperDocBase.h"
 #include "GirderModelChildFrame.h"
 
 class CPGSuperDoc;
 
-/////////////////////////////////////////////////////////////////////////////
-// CGMDisplayMgrEventsImpl command target
-
-class CGMDisplayMgrEventsImpl : public CCmdTarget
+class CGMDisplayMgrEventsImpl : public WBFL::DManip::iDisplayMgrEvents
 {
+private:
+   CGMDisplayMgrEventsImpl(CPGSDocBase* pDoc, CGirderModelChildFrame* pFrame, CWnd* pParent, bool bGirderElevation);
 public:
-   CGMDisplayMgrEventsImpl(CPGSDocBase* pDoc, CGirderModelChildFrame* pFrame, CWnd* pParent,bool bGirderElevation);
-   ~CGMDisplayMgrEventsImpl();
+   static std::shared_ptr<CGMDisplayMgrEventsImpl> Create(CPGSDocBase* pDoc, CGirderModelChildFrame* pFrame, CWnd* pParent, bool bGirderElevation);
+   ~CGMDisplayMgrEventsImpl() = default;
 
-   DECLARE_INTERFACE_MAP()
-
-   BEGIN_INTERFACE_PART(Events,iDisplayMgrEvents)
-      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnLButtonDown)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonDown)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnLButtonUp)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonUp)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnMouseMove)(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnMouseWheel)(iDisplayMgr* pDisplayMgr,UINT nFlags,short zDelta,CPoint point) override;
-      STDMETHOD_(bool,OnKeyDown)(iDisplayMgr* pDisplayMgr,UINT nChar, UINT nRepCnt, UINT nFlags) override;
-      STDMETHOD_(bool,OnContextMenu)(iDisplayMgr* pDisplayMgr,CWnd* pWnd,CPoint point) override;
-   END_INTERFACE_PART(Events)
+   virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, short zDelta, const POINT& point) override;
+   virtual bool OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nChar, UINT nRepCnt, UINT nFlags) override;
+   virtual bool OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, CWnd* pWnd, const POINT& point) override;
 
 public:
    CPGSDocBase*        m_pDoc;
@@ -64,10 +53,3 @@ public:
    CWnd*                   m_pParent;
    bool                    m_bGirderElevation;
 };
-
-/////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // INCLUDED_GMDisplayMgrEventsImpl_H_

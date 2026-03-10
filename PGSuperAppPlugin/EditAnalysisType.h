@@ -23,10 +23,10 @@
 #ifndef INCLUDED_EDITANALYSISTYPETXN_H_
 #define INCLUDED_EDITANALYSISTYPETXN_H_
 
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 #include "PGSuperTypes.h"
 
-class txnEditAnalysisType : public CEAFTransaction
+class txnEditAnalysisType : public WBFL::EAF::Transaction
 {
 public:
    txnEditAnalysisType(pgsTypes::AnalysisType oldAnalysisType,pgsTypes::AnalysisType newAnalysisType);
@@ -35,7 +35,7 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const;
    virtual bool IsRepeatable() const;

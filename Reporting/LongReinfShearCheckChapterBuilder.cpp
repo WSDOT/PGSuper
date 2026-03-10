@@ -32,77 +32,66 @@
 #include <PsgLib\SpecLibraryEntry.h>
 #include <psgLib/SpecificationCriteria.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace\ShearCapacity.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
+void  create_table1_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                           IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState ls,
+                           bool bUHPC,
+                           const pgsGirderArtifact* pGirderArtifact,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+                           Uint16 level);
 
-/****************************************************************************
-CLASS
-   CLongReinfShearCheckChapterBuilder
-****************************************************************************/
+void create_table2_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                           IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState ls,
+                           bool bUHPC,
+                           const pgsGirderArtifact* pGirderArtifact,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+                           Uint16 level);
 
-   void  create_table1_design(rptChapter* pChapter,IBroker* pBroker,
-                              IntervalIndexType intervalIdx,
-                              pgsTypes::LimitState ls,
-                              bool bUHPC,
-                              const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits,
-                              Uint16 level);
+void create_table3_design(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                           IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState ls,
+                           bool bUHPC,
+                           const pgsGirderArtifact* pGirderArtifact,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+                           Uint16 level);
 
-   void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
-                              IntervalIndexType intervalIdx,
-                              pgsTypes::LimitState ls,
-                              bool bUHPC,
-                              const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits,
-                              Uint16 level);
+void create_table1_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                           IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState ls,
+                           bool bUHPC,
+                           const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+                           Uint16 level);
 
-   void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
-                              IntervalIndexType intervalIdx,
-                              pgsTypes::LimitState ls,
-                              bool bUHPC,
-                              const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits,
-                              Uint16 level);
+void create_table2_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                           IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState ls,
+                           bool bUHPC,
+                           const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+                           Uint16 level);
 
-   void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
-                              IntervalIndexType intervalIdx,
-                              pgsTypes::LimitState ls,
-                              bool bUHPC,
-                              const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                              IEAFDisplayUnits* pDisplayUnits,
-                              Uint16 level);
+void create_table3_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                           IntervalIndexType intervalIdx,
+                           pgsTypes::LimitState ls,
+                           bool bUHPC,
+                           const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+                           Uint16 level);
 
-   void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
-                              IntervalIndexType intervalIdx,
-                              pgsTypes::LimitState ls,
-                              bool bUHPC,
-                              const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                              IEAFDisplayUnits* pDisplayUnits,
-                              Uint16 level);
-
-   void create_table3_rating(rptChapter* pChapter,IBroker* pBroker,
-                              IntervalIndexType intervalIdx,
-                              pgsTypes::LimitState ls,
-                              bool bUHPC,
-                              const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                              IEAFDisplayUnits* pDisplayUnits,
-                              Uint16 level);
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CLongReinfShearCheckChapterBuilder::CLongReinfShearCheckChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -110,8 +99,6 @@ CPGSuperChapterBuilder(bSelect)
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CLongReinfShearCheckChapterBuilder::GetName() const
 {
    return TEXT("Longitudinal Reinforcement for Shear Details");
@@ -120,8 +107,7 @@ LPCTSTR CLongReinfShearCheckChapterBuilder::GetName() const
 rptChapter* CLongReinfShearCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    bool bDesign = m_bDesign;
    bool bRating = m_bRating;
@@ -181,8 +167,7 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(const std::shared_ptr<cons
 void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,bool bUHPC, Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -206,37 +191,43 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,con
    }
    else
    {
-      if (0 < nDucts)
-      {
-         if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= WBFL::LRFD::BDSManager::GetEdition())
-         {
-            *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017_with_PT.png")) << rptNewLine;
-         }
-         else if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
-         {
-            *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png")) << rptNewLine;
-         }
-         else
-         {
-            *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear_with_PT.png")) << rptNewLine;
-         }
-      }
-      else
-      {
-         if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= WBFL::LRFD::BDSManager::GetEdition())
-         {
-            *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017.png")) << rptNewLine;
-         }
-         else if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
-         {
-            *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png")) << rptNewLine;
-         }
-         else
-         {
-            *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear.png")) << rptNewLine;
-         }
-      }
+       if (0 < nDucts)
+       {
+           if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= WBFL::LRFD::BDSManager::GetEdition())
+           {
+               *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017_with_PT.png")) << rptNewLine;
+           }
+           else if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
+           {
+               *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005_with_PT.png")) << rptNewLine;
+           }
+           else
+           {
+               *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear_with_PT.png")) << rptNewLine;
+           }
+       }
+       else
+       {
+           if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= WBFL::LRFD::BDSManager::GetEdition())
+           {
+               *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2017.png")) << rptNewLine;
+           }
+           else if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
+           {
+               *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear2005.png")) << rptNewLine;
+           }
+           else
+           {
+               *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalReinforcementForShear.png")) << rptNewLine;
+           }
+       }
    }
+
+   *pParagraph << rptNewLine;
+   *pParagraph << _T("where:") << rptNewLine;
+   *pParagraph << _T("All areas and corresponding adjustment factors used in this equation are based on the tension side of the girder section") << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("db")) << _T(" = factor that accounts for lack of full bar development ") << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("ds")) << _T(" = factor that accounts for lack of full strand development ") << rptNewLine;
 
    pParagraph = new rptParagraph();
    *pChapter << pParagraph;
@@ -274,17 +265,17 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter, co
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -387,6 +378,12 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter, co
             }
          }
 
+         *pParagraph << rptNewLine;
+         *pParagraph << _T("where:") << rptNewLine;
+         *pParagraph << _T("All areas and corresponding adjustment factors used in this equation are based on the tension side of the girder section") << rptNewLine;
+         *pParagraph << Sub2(_T("K"), _T("db")) << _T(" = factor that accounts for lack of full bar development ") << rptNewLine;
+         *pParagraph << Sub2(_T("K"), _T("ds")) << _T(" = factor that accounts for lack of full strand development ") << rptNewLine;
+
          pParagraph = new rptParagraph();
          *pChapter << pParagraph;
 
@@ -414,36 +411,12 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter, co
    } // next group
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLongReinfShearCheckChapterBuilder::Clone() const
-{
-   return std::make_unique<CLongReinfShearCheckChapterBuilder>(m_bDesign,m_bRating);
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
+void create_table1_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
                            bool bUHPC,
                            const pgsGirderArtifact* pGirderArtifact,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level)
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -470,7 +443,7 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
    GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
-   ColumnIndexType nColumns = 5;
+   ColumnIndexType nColumns = 7;
    if (0 < nMaxSegmentDucts)
    {
       nColumns += 2;
@@ -494,7 +467,12 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
 
    pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
-   *pParagraph << Super(_T("*")) << _T(" ") << _T("Adjusted for development length. ") << RPT_FPS << _T(" = ") << RPT_STRESS(_T("ps,avg")) << _T(" from moment capacity analysis") << rptNewLine;
+
+   if (0 < nMaxSegmentDucts + nGirderDucts)
+   {
+       *pParagraph << Super(_T("*")) << _T(" ") << _T("Tendons are assumed to be fully developed within the anchorage assembly.") << rptNewLine;
+   }
+
    if (0 < nMaxSegmentDucts)
    {
       *pParagraph << Sub2(_T("A"), _T("pts")) << _T(" = Area of segment tendons") << rptNewLine;
@@ -513,16 +491,18 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
    ColumnIndexType col = 0;
 
    (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+   (*table)(0, col++) << Sub2(_T("K"), _T("db"));
    (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("s")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,col++) << COLHDR(RPT_FY << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_FY ,rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if (bUHPC)
    {
       (*table)(0, col++) << COLHDR(RPT_ES, rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*table)(0, col++) << Sub2(symbol(gamma), _T("u")) << symbol(epsilon) << Sub(_T("t,loc")) << _T(" x 1000");
    }
-
+   (*table)(0,col++) << Sub2(_T("K"), _T("ds"));
    (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("ps")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,col++) << COLHDR(RPT_FPS << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_FPS, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    if (0 < nMaxSegmentDucts)
    {
@@ -533,7 +513,7 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
    if ( 0 < nGirderDucts )
    {
       (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("ptg")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*table)(0,col++) << COLHDR(RPT_STRESS(_T("ptg")) << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0, col++) << COLHDR(RPT_STRESS(_T("ptg")) << Super(_T("*")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
 
    if (bUHPC)
@@ -545,6 +525,7 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
    RowIndexType row = table->GetNumberOfHeaderRows();
 
    GET_IFACE2(pBroker, IReportOptions, pReportOptions);
+   GET_IFACE2(pBroker, IShearCapacity, pShearCap);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -562,6 +543,9 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
 
          const pgsPointOfInterest& poi = psArtifact->GetPointOfInterest();
 
+         SHEARCAPACITYDETAILS scd;
+         pShearCap->GetShearCapacityDetails(ls, intervalIdx, poi, nullptr, &scd);
+
          const CSegmentKey& segmentKey(poi.GetSegmentKey());
          ATLASSERT(CSegmentKey(girderKey, segIdx).IsEqual(segmentKey));
 
@@ -571,8 +555,9 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
          {
             col = 0;
             (*table)(row,col++) << location.SetValue( POI_SPAN, poi );
+            (*table)(row,col++) << scalar.SetValue(scd.Kdb);
             (*table)(row,col++) << area.SetValue( pArtifact->GetAs());
-            (*table)(row,col++) << stress.SetValue( pArtifact->GetFy());
+            (*table)(row,col++) << stress.SetValue( pArtifact->GetFy() / (scd.Kdb == 0 ? 1 : scd.Kdb));
             if (bUHPC)
             {
                if(pArtifact->IsUHPC())
@@ -588,9 +573,9 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
                   (*table)(row, col++) << _T("");
                }
             }
-
+            (*table)(row,col++) << scalar.SetValue(scd.Kds);
             (*table)(row,col++) << area.SetValue( pArtifact->GetAps());
-            (*table)(row,col++) << stress.SetValue( pArtifact->GetFps());
+            (*table)(row,col++) << stress.SetValue( pArtifact->GetFps() / (scd.Kds == 0 ? 1 : scd.Kds));
 
             if (0 < nMaxSegmentDucts)
             {
@@ -626,12 +611,12 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
    } // next segment
 }
 
-void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
+void create_table2_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
                            bool bUHPC,
                            const pgsGirderArtifact* pGirderArtifact,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level)
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -732,12 +717,12 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
 }
 
 
-void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
+void create_table3_design(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
                            bool bUHPC,
                            const pgsGirderArtifact* pGirderArtifact,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level)
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -804,12 +789,12 @@ void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
 }
 
 //////////////////////////////////////////////////////////////////////////
-void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
+void create_table1_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
                            bool bUHPC,
                            const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level)
 {
    const CSegmentKey& segmentKey = longReinfShear.front().first.GetSegmentKey();
@@ -841,7 +826,7 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
    GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
-   ColumnIndexType nColumns = 5;
+   ColumnIndexType nColumns = 7;
    if (0 < nMaxSegmentDucts)
    {
       nColumns += 2;
@@ -865,7 +850,12 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
 
    pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
-   *pParagraph << Super(_T("*")) << _T(" ") << _T("Adjusted for development length. ") << RPT_FPS << _T(" = ") << RPT_STRESS(_T("ps,avg")) << _T(" from moment capacity analysis") << rptNewLine;
+
+   if (0 < nMaxSegmentDucts + nGirderDucts)
+   {
+       *pParagraph << Super(_T("*")) << _T(" ") << _T("Adjusted for development length. ") << rptNewLine;
+   }
+
    if (0 < nMaxSegmentDucts)
    {
       *pParagraph << Sub2(_T("A"), _T("pts")) << _T(" = Area of segment tendons") << rptNewLine;
@@ -891,17 +881,17 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
    {
       (*table)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
    }
-
+   (*table)(0,col++) << Sub2(_T("K"), _T("db"));
    (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("s")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,col++) << COLHDR(RPT_FY << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_FY,rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    if (bUHPC)
    {
       (*table)(0, col++) << COLHDR(RPT_ES, rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*table)(0, col++) << symbol(epsilon) << Sub(_T("t,loc")) << _T(" x 1000");
    }
-
+   (*table)(0, col++) << Sub2(_T("K"), _T("ds"));
    (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("ps")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-   (*table)(0,col++) << COLHDR(RPT_FPS << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+   (*table)(0,col++) << COLHDR(RPT_FPS, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    if (0 < nMaxSegmentDucts)
    {
@@ -912,7 +902,7 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
    if ( 0 < nGirderDucts )
    {
       (*table)(0,col++) << COLHDR(Sub2(_T("A"),_T("ptg")),rptAreaUnitTag, pDisplayUnits->GetAreaUnit() );
-      (*table)(0,col++) << COLHDR(RPT_FPT << Super(_T("*")),rptStressUnitTag, pDisplayUnits->GetStressUnit() );
+      (*table)(0, col++) << COLHDR(RPT_FPT << Super(_T("*")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
 
    if (bUHPC)
@@ -923,12 +913,17 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
+   GET_IFACE2(pBroker, IShearCapacity, pShearCap);
+
    pgsRatingArtifact::LongitudinalReinforcementForShear::const_iterator i(longReinfShear.begin());
    pgsRatingArtifact::LongitudinalReinforcementForShear::const_iterator end(longReinfShear.end());
    for (; i != end; i++)
    {
       col = 0;
       const pgsPointOfInterest& poi = i->first;
+      SHEARCAPACITYDETAILS scd;
+      pShearCap->GetShearCapacityDetails(ls, intervalIdx, poi, nullptr, &scd);
+
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
       const pgsLongReinfShearArtifact& artifact = i->second;
@@ -937,8 +932,9 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
          Float64 endSize = pBridge->GetSegmentStartEndDistance(segmentKey);
 
          (*table)(row, col++) << location.SetValue(POI_SPAN, poi);
+         (*table)(row, col++) << scalar.SetValue(scd.Kdb);
          (*table)(row, col++) << area.SetValue(artifact.GetAs());
-         (*table)(row, col++) << stress.SetValue(artifact.GetFy());
+         (*table)(row, col++) << stress.SetValue(artifact.GetFy() / (scd.Kdb == 0 ? 1 : scd.Kdb));
          if (bUHPC)
          {
             if (artifact.IsUHPC())
@@ -952,9 +948,9 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
                (*table)(row, col++) << _T("");
             }
          }
-
+         (*table)(row, col++) << scalar.SetValue(scd.Kds);
          (*table)(row, col++) << area.SetValue(artifact.GetAps());
-         (*table)(row, col++) << stress.SetValue(artifact.GetFps());
+         (*table)(row, col++) << stress.SetValue(artifact.GetFps() / (scd.Kds == 0 ? 1 : scd.Kds));
 
          if (0 < nMaxSegmentDucts)
          {
@@ -988,12 +984,12 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
    }
 }
 
-void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
+void create_table2_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
                            bool bUHPC,
                            const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -1098,12 +1094,12 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
 }
 
 
-void create_table3_rating(rptChapter* pChapter,IBroker* pBroker,
+void create_table3_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
                            bool bUHPC,
                            const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);

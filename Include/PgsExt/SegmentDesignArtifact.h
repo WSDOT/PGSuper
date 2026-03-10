@@ -24,14 +24,14 @@
 
 #include <PgsExt\PgsExtExp.h>
 #include <map>
-#include <PsgLib\ShearZoneData.h>
-#include <PgsExt\Keys.h>
-#include <PgsExt\PrecastSegmentData.h>
+#include <PsgLib/ShearZoneData2.h>
+#include <PsgLib/Keys.h>
+#include <PsgLib/PrecastSegmentData.h>
 
 #include <Materials/SimpleConcrete.h>
 #include <PGSuperTypes.h>
 
-interface IBroker;
+namespace WBFL { namespace EAF { class Broker; }; };
 
 /*****************************************************************************
 CLASS 
@@ -368,6 +368,6 @@ private:
 
    void Init();
 
-   void ModSegmentDataForFlexureDesign(IBroker* pBroker, CPrecastSegmentData* pSegmentData) const;
-   void ModSegmentDataForShearDesign(IBroker* pBroker, CPrecastSegmentData* pSegmentData) const;
+   void ModSegmentDataForFlexureDesign(std::shared_ptr<WBFL::EAF::Broker> pBroker, CPrecastSegmentData* pSegmentData) const;
+   void ModSegmentDataForShearDesign(std::shared_ptr<WBFL::EAF::Broker> pBroker, CPrecastSegmentData* pSegmentData) const;
 };

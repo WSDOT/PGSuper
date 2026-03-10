@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class pgsGirderArtifact;
 
 /*****************************************************************************
@@ -68,25 +68,25 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the constructability check table.
-   void BuildSlabOffsetTable(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildMinimumHaunchCLCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildMinimumFilletCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildHaunchGeometryComplianceCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildCamberCheck(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildGlobalGirderStabilityCheck(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildPrecamberCheck(rptChapter* pChapter, IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildBottomFlangeClearanceCheck(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildFinishedElevationCheck(rptChapter* pChapter,IBroker* pBroker,const std::vector<CGirderKey>& girderList,IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildMinimumHaunchCheck(rptChapter* pChapter, IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildSlabOffsetTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildMinimumHaunchCLCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildMinimumFilletCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildHaunchGeometryComplianceCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildCamberCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildGlobalGirderStabilityCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildPrecamberCheck(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildBottomFlangeClearanceCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildFinishedElevationCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderList,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildMinimumHaunchCheck(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
 protected:
-   void BuildMonoSlabOffsetTable(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildMultiSlabOffsetTable(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildRegularCamberCheck(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildTimeStepCamberCheck(rptChapter* pChapter,IBroker* pBroker,const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildMonoSlabOffsetTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildMultiSlabOffsetTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildRegularCamberCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildTimeStepCamberCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    // GROUP: DATA MEMBERS
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS

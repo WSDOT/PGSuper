@@ -22,68 +22,62 @@
 
 #pragma once
 
-// {EEA46351-7884-47e2-ADD8-5FD35BF51ABE}
-DEFINE_GUID(IID_IPGSuperComponentInfo, 
-0xeea46351, 0x7884, 0x47e2, 0xad, 0xd8, 0x5f, 0xd3, 0x5b, 0xf5, 0x1a, 0xbe);
-struct __declspec(uuid("{EEA46351-7884-47e2-ADD8-5FD35BF51ABE}")) IPGSuperComponentInfo;// for __uuidof
-
 class CPGSuperDoc;
 
-interface IPGSuperComponentInfo : IUnknown
+/// @brief Interface that returns information about PGSuper components
+class IPGSuperComponentInfo
 {
-   /// Called by the application framework to initialize this object
+public:
+   /// @brief Called by the application framework to initialize this object.
    /// This is a good place to validate license keys for 3rd party components
+   /// @return Returns TRUE if the component is successfully initialized
    virtual BOOL Init(CPGSuperDoc* pDoc) = 0;
 
-   /// Called by the application framework to do any clean up while terminating
+   /// @brief Called by the application framework to do any clean up while terminating
    virtual void Terminate() = 0;
 
-   /// Return the name of your component
+   /// @brief Returns the name of your component
    virtual CString GetName() const = 0;
 
-   /// Return a description of the component
+   /// @brief Returns a description of the component
    virtual CString GetDescription() const = 0;
 
-   /// The icon returned goes in the About dialog
+   /// @brief The icon returned goes in the About dialog
    virtual HICON GetIcon() const = 0;
 
-   /// Return true if there is additional information to be displayed about the componenet
+   /// @brief Return true if there is additional information to be displayed about the component
    virtual bool HasMoreInfo() const = 0;
 
-   /// When this function is called, display more detailed information
-   /// about your component
+   /// @brief When this function is called, display more detailed information about your component
    virtual void OnMoreInfo() const = 0;
 };
 
-// {4D566A4F-289C-4e73-B47C-6A4CC7905BA9}
-DEFINE_GUID(IID_IPGSpliceComponentInfo, 
-0x4d566a4f, 0x289c, 0x4e73, 0xb4, 0x7c, 0x6a, 0x4c, 0xc7, 0x90, 0x5b, 0xa9);
-struct __declspec(uuid("{4D566A4F-289C-4e73-B47C-6A4CC7905BA9}")) IPGSpliceComponentInfo;// for __uuidof
-
 class CPGSpliceDoc;
 
-interface IPGSpliceComponentInfo : IUnknown
+/// @brief Interface that returns information about PGSplice components
+class IPGSpliceComponentInfo
 {
-   /// Called by the application framework to initialize this object
+public:
+   /// @brief Called by the application framework to initialize this object.
    /// This is a good place to validate license keys for 3rd party components
+   /// @return Returns TRUE if the component is successfully initialized
    virtual BOOL Init(CPGSpliceDoc* pDoc) = 0;
 
-   /// Called by the application framework to do any clean up while terminating
+   /// @brief Called by the application framework to do any clean up while terminating
    virtual void Terminate() = 0;
 
-   /// Return the name of your component
+   /// @brief Returns the name of your component
    virtual CString GetName() const = 0;
 
-   /// Return a description of the component
+   /// @brief Returns a description of the component
    virtual CString GetDescription() const = 0;
 
-   /// The icon returned goes in the About dialog
+   /// @brief The icon returned goes in the About dialog
    virtual HICON GetIcon() const = 0;
 
-   /// Return true if there is additional information to be displayed about the componenet
+   /// @brief Return true if there is additional information to be displayed about the component
    virtual bool HasMoreInfo() const = 0;
 
-   /// When this function is called, display more detailed information
-   /// about your component
+   ///@ brief When this function is called, display more detailed information about your component
    virtual void OnMoreInfo() const = 0;
 };

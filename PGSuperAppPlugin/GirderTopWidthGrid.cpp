@@ -28,18 +28,14 @@
 #include "GirderTopWidthGrid.h"
 #include "GirderLayoutPage.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\BeamFactory.h>
 //
-#include <PgsExt\GirderGroupData.h>
+#include <PsgLib\GirderGroupData.h>
 #include <PsgLib\GirderLibraryEntry.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define LEFT 0
 #define RIGHT 1
@@ -149,8 +145,8 @@ void CGirderTopWidthGrid::UpdateGrid()
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GroupIndexType nTopWidthGroups = m_pGirderGroup->GetGirderTopWidthGroupCount();
@@ -193,8 +189,8 @@ void CGirderTopWidthGrid::UpdateGrid()
 
       const CSplicedGirderData* pGirder = m_pGirderGroup->GetGirder(firstGdrIdx);
       const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
-      CComPtr<IBeamFactory> factory;
-      pGdrEntry->GetBeamFactory(&factory);
+      auto factory = pGdrEntry->GetBeamFactory();
+
 
       CString strTopWidthTypes;
       auto supportedTypes = factory->GetSupportedTopWidthTypes();
@@ -411,8 +407,7 @@ void CGirderTopWidthGrid::UpdateGrid()
       );
 
    CSpanGirderLayoutPage* pParent = (CSpanGirderLayoutPage*)GetParent();
-   CComPtr<IBeamFactory> factory;
-   pParent->GetBeamFactory(&factory);
+   auto factory = pParent->GetBeamFactory();
    if (!factory->CanTopWidthVary())
    {
       HideRows(4, 5);
@@ -687,8 +682,8 @@ pgsTypes::TopWidthType CGirderTopWidthGrid::GetTopWidthTypeFromCell(ROWCOL col)
 
 BOOL CGirderTopWidthGrid::ValidateGirderTopWidth()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    ROWCOL nCols = GetColCount();
@@ -783,8 +778,8 @@ BOOL CGirderTopWidthGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
 {
    if ( (nRow == 2 || nRow == 4) && 2 <= nCol)
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
       GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
@@ -811,8 +806,8 @@ BOOL CGirderTopWidthGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
    }
    else if ( (nRow == 3 || nRow == 5) && 2 <= nCol)
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
       GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 

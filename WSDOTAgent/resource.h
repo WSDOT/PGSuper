@@ -5,8 +5,6 @@
 #define IDS_PROJNAME                    100
 #define IDR_WSDOTAGENT                  101
 #define IDR_WSDOTAGENTIMP               103
-#define IDR_PGSUPERCOMPONENTINFO        104
-#define IDR_PGSPLICECOMPONENTINFO       105
 #define IDI_ICON1                       201
 #define IDI_WSDOT                       201
 #define IDC_SPAN                        203

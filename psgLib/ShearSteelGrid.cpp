@@ -24,8 +24,8 @@
 //
 #include "stdafx.h"
 
-#include <psgLib\ShearSteelGrid.h>
-#include <psgLib\ShearSteelPage.h>
+#include <PsgLib\ShearSteelGrid.h>
+#include <PsgLib\ShearSteelPage.h>
 #include <Units\Measure.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -33,11 +33,6 @@
 #include <LRFD\RebarPool.h>
 #include <IFace\Tools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // GRID_IMPLEMENT_REGISTER(CShearSteelGrid, CS_DBLCLKS, 0, 0, 0);
 

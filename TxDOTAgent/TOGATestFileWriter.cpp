@@ -26,6 +26,7 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
+#include <IFace\Tools.h>
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
@@ -42,19 +43,14 @@
 #endif
 
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\GirderArtifactTool.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 //////// TOGA Report
-int TxDOT_WriteTOGAReportToFile (FILE *fp, IBroker* pBroker)
+int TxDOT_WriteTOGAReportToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    // Use our worker bee to write results
    CadWriterWorkerBee workerB(true);

@@ -23,15 +23,12 @@
 #include "StdAfx.h"
 #include <Reporting\ContinuityCheck.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -68,8 +65,8 @@ CContinuityCheck& CContinuityCheck::operator= (const CContinuityCheck& rOther)
 
 //======================== OPERATIONS =======================================
 void CContinuityCheck::Build(rptChapter* pChapter,
-                              IBroker* pBroker,const CGirderKey& girderKey,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ISpecification,pSpec);

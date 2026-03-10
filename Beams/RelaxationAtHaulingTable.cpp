@@ -22,19 +22,15 @@
 
 // RelaxationAtHaulingTable.cpp : Implementation of CRelaxationAtHaulingTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "RelaxationAtHaulingTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <Reporting\ReportNotes.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CRelaxationAtHaulingTable::CRelaxationAtHaulingTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CRelaxationAtHaulingTable::CRelaxationAtHaulingTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
@@ -45,7 +41,7 @@ rptRcTable(NumColumns,0)
    scalar.SetPrecision(3);
 }
 
-CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -301,7 +297,7 @@ CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* p
    return table;
 }
 
-void CRelaxationAtHaulingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CRelaxationAtHaulingTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
 

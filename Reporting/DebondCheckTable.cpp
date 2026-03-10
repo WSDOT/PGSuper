@@ -27,16 +27,13 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 #include <IFace/Limits.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CDebondCheckTable::CDebondCheckTable()
 {
@@ -46,7 +43,7 @@ CDebondCheckTable::~CDebondCheckTable()
 {
 }
 
-void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const
+void CDebondCheckTable::Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
@@ -179,11 +176,11 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
       {
          *p << Bold(_T("Restriction B")) << rptNewLine;
       }
-      StrandIndexType nDebonded10orLess, nDebonded;
+      StrandIndexType nDebonded10orLess, nDebonded, nDebonded07;
       bool bCheckMax;
       Float64 fraMax;
-      pDebondLimits->GetMaxDebondedStrandsPerSection(segmentKey, &nDebonded10orLess, &nDebonded, &bCheckMax, &fraMax);
-      *p << _T("Debonding shall not be terminated for more than ") << nDebonded << _T(" strands in any given section. When a total of ten or fewer strands are debonded, debonding shall not be terminated for more than ") << nDebonded10orLess << _T(" strands in any given section");
+      pDebondLimits->GetMaxDebondedStrandsPerSection(segmentKey, &nDebonded10orLess, &nDebonded, &nDebonded07, &bCheckMax, &fraMax);
+      *p << _T("Debonding shall not be terminated for more than ") << nDebonded << _T(" strands in any given section or ") << nDebonded07 << _T(" strands for girders using 0.7-in. diameter strand. ") << _T("When a total of ten or fewer strands are debonded, debonding shall not be terminated for more than ") << nDebonded10orLess << _T(" strands in any given section.");
       if (bCheckMax)
       {
          *p << _T(", but not more than ") << percentage.SetValue(fraMax) << _T(" of all strands may be debonded");
@@ -476,7 +473,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
    } // next Segment
 }
 
-rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact, bool bAfter8thEdition, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact, bool bAfter8thEdition, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
@@ -583,7 +580,7 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact, 
    return table;
 }
 
-rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptRcTable* table = rptStyleManager::CreateDefaultTable(5, _T("Number of strands terminating debonding at each section"));
 

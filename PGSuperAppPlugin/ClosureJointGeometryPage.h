@@ -24,7 +24,7 @@
 
 #include <PsgLib\ConnectionLibraryEntry.h>
 #include <PgsExt\BoundaryConditionComboBox.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\TimelineManager.h>
 
 class CSegmentConnectionComboBox : public CComboBox
 {
@@ -80,8 +80,8 @@ protected:
    void FillBearingOffsetComboBox();
    void FillEndDistanceComboBox();
    void FillEventList();
-   CString GetImageName(pgsTypes::TempSupportSegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
-   CString GetImageName(pgsTypes::PierSegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
+   CString GetImageName(pgsTypes::TempSupportSegmentConnectionType connectionType, ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType, ConnectionLibraryEntry::EndDistanceMeasurementType endType);
+   CString GetImageName(pgsTypes::PierSegmentConnectionType connectionType, ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType, ConnectionLibraryEntry::EndDistanceMeasurementType endType);
 
    void UpdateConnectionPicture(pgsTypes::TempSupportSegmentConnectionType connectionType);
    void UpdateConnectionPicture(pgsTypes::PierSegmentConnectionType connectionType);

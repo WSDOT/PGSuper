@@ -20,18 +20,18 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib\LiveLoadCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib\LiveLoadCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
 
-bool LiveLoadCriteria::Compare(const LiveLoadCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool LiveLoadCriteria::Compare(const LiveLoadCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (bIncludeDualTandem != other.bIncludeDualTandem)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Dual Design Tandem setting is different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Dual Design Tandem setting is different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -46,7 +46,7 @@ bool LiveLoadCriteria::Compare(const LiveLoadCriteria& other, const SpecLibraryE
    return bSame;
 }
 
-void LiveLoadCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void LiveLoadCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetSidewalkPressureUnit(), true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);

@@ -27,14 +27,11 @@
 #include <PgsExt\TendonStressArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace/Limits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /****************************************************************************
@@ -66,7 +63,7 @@ CTendonStressCheckTable& CTendonStressCheckTable::operator= (const CTendonStress
 }
 
 //======================== OPERATIONS =======================================
-void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const
+void CTendonStressCheckTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CGirderKey& girderKey = pGirderArtifact->GetGirderKey();
 
@@ -131,7 +128,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          (*p_table)(3, 0) << _T("Elsewhere along length of member away from anchorages and couplers immediately after anchor set. (") << x << RPT_FPU << _T(")");
 
          x = pLimits->GetSegmentTendonStressLimitCoefficientAfterLosses(segmentKey);
-         (*p_table)(4, 0) << _T("At service limit state after losses, ") << RPT_FPE << _T(" (") << x << RPT_FPY << _T(")");
+         (*p_table)(4, 0) << _T("At service limit state") << WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltService) << _T(", ") << RPT_FPE << _T(" (") << x << RPT_FPY << _T(")");
 
          (*p_table)(0, 1) << COLHDR(_T("Stress") << rptNewLine << _T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
          (*p_table)(0, 2) << COLHDR(_T("Tendon") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -236,7 +233,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       (*p_table)(3,0) << _T("Elsewhere along length of member away from anchorages and couplers immediately after anchor set. (") << x << RPT_FPU << _T(")");
 
       x = pLimits->GetGirderTendonStressLimitCoefficientAfterLosses(girderKey);
-      (*p_table)(4,0) << _T("At service limit state after losses, ") << RPT_FPE << _T(" (") << x << RPT_FPY << _T(")");
+      (*p_table)(4,0) << _T("At service limit state") << WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltService) << _T(", ") << RPT_FPE << _T(" (") << x << RPT_FPY << _T(")");
    
       (*p_table)(0,1) << COLHDR(_T("Stress") << rptNewLine << _T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(0,2) << COLHDR(_T("Tendon") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );

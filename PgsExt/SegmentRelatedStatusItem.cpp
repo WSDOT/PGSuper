@@ -23,14 +23,9 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\SegmentRelatedStatusItem.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 pgsSegmentRelatedStatusItem::pgsSegmentRelatedStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSegmentKey& segmentKey):
-CEAFStatusItem(statusGroupID,callbackID,strDescription),
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription),
 m_EntireBridge(false)
 {
    AddRelationshipTo(segmentKey);

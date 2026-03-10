@@ -25,21 +25,6 @@
 #include <PgsExt\CapacityToDemand.h>
 #include <MathEx.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   pgsFlexuralStressArtifact
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 pgsFlexuralStressArtifact::pgsFlexuralStressArtifact()
 {
    for ( int i = 0; i < 4; i++ )
@@ -99,26 +84,6 @@ m_Poi(poi),m_Task(task)
       m_FcReqd[pgsTypes::Compression][i] = NO_AVAILABLE_CONCRETE_STRENGTH;
       m_FcReqd[pgsTypes::Tension][i] = NO_AVAILABLE_CONCRETE_STRENGTH;
    }
-}
-
-pgsFlexuralStressArtifact::pgsFlexuralStressArtifact(const pgsFlexuralStressArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsFlexuralStressArtifact::~pgsFlexuralStressArtifact()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsFlexuralStressArtifact& pgsFlexuralStressArtifact::operator=(const pgsFlexuralStressArtifact& rOther)
-{
-   if ( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 void pgsFlexuralStressArtifact::SetPointOfInterest(const pgsPointOfInterest& poi)
@@ -501,38 +466,4 @@ Float64 pgsFlexuralStressArtifact::GetCDRatio(pgsTypes::StressLocation stressLoc
    }
 
    return GetCDRatio(c,d);
-}
-
-
-void pgsFlexuralStressArtifact::MakeCopy(const pgsFlexuralStressArtifact& rOther)
-{
-   m_Poi  = rOther.m_Poi;
-   m_Task = rOther.m_Task;
-
-   for ( int i = 0; i < 4; i++ )
-   {
-      pgsTypes::StressLocation stressLocation = (pgsTypes::StressLocation)i;
-      m_bIsApplicable[stressLocation] = rOther.m_bIsApplicable[stressLocation];
-      m_fPretension[stressLocation]   = rOther.m_fPretension[stressLocation];
-      m_fPosttension[stressLocation]  = rOther.m_fPosttension[stressLocation];
-      m_fExternal[stressLocation]     = rOther.m_fExternal[stressLocation];
-      m_fDemand[stressLocation]       = rOther.m_fDemand[stressLocation];
-      m_fLimit[stressLocation]    = rOther.m_fLimit[stressLocation];
-      m_bIsInPTZ[stressLocation]      = rOther.m_bIsInPTZ[stressLocation];
-
-      m_AltTensileStressRequirements[stressLocation] = rOther.m_AltTensileStressRequirements[stressLocation];
-
-      m_fAltAllowableStress[stressLocation] = rOther.m_fAltAllowableStress[stressLocation];
-      m_bIsAltTensileStressApplicable[stressLocation] = rOther.m_bIsAltTensileStressApplicable[stressLocation];
-
-      m_bBiaxialStresses[stressLocation] = rOther.m_bBiaxialStresses[stressLocation];
-
-      m_FcReqd[pgsTypes::Compression][stressLocation] = rOther.m_FcReqd[pgsTypes::Compression][stressLocation];
-      m_FcReqd[pgsTypes::Tension][stressLocation] = rOther.m_FcReqd[pgsTypes::Tension][stressLocation];
-   }
-}
-
-void pgsFlexuralStressArtifact::MakeAssignment(const pgsFlexuralStressArtifact& rOther)
-{
-   MakeCopy( rOther );
 }

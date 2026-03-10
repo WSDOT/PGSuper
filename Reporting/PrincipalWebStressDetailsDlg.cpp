@@ -26,18 +26,15 @@
 #include "Reporting.h"
 #include "PrincipalWebStressDetailsDlg.h"
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 #include <IFace\PrincipalWebStress.h>
 #include <IFace\Bridge.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <IFace/PointOfInterest.h>
 
 
 // CPrincipalWebStressDetailsDlg dialog
@@ -45,7 +42,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CPrincipalWebStressDetailsDlg, CDialog)
 
 
-CPrincipalWebStressDetailsDlg::CPrincipalWebStressDetailsDlg(IBroker* pBroker,std::shared_ptr<CPrincipalWebStressDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,bool bReportAxial, bool bReportShear,CWnd* pParent)
+CPrincipalWebStressDetailsDlg::CPrincipalWebStressDetailsDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CPrincipalWebStressDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,bool bReportAxial, bool bReportShear,CWnd* pParent)
 	: CDialog(CPrincipalWebStressDetailsDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pPwsRptSpec(pRptSpec)

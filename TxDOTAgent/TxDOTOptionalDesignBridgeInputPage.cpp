@@ -30,17 +30,15 @@
 #include "ProjectCriteriaNotFoundDlg.h"
 
 #include <MfcTools\CustomDDX.h>
+
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 
 #include <psgLib/PrestressedElementCriteria.h>
+#include <psgLib/LibraryManager.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CTxDOTOptionalDesignBridgeInputPage dialog
@@ -71,7 +69,7 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
 {
    CPropertyPage::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
+   auto pBroker = m_pBrokerRetriever->GetClassicBroker();
    if (pBroker==nullptr)
       return;
 

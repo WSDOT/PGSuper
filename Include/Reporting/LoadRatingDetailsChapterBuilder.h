@@ -21,55 +21,31 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 #include <PgsExt\RatingArtifact.h>
-
-
-/*****************************************************************************
-CLASS 
-   CLoadRatingDetailsChapterBuilder
-
-   Reports load rating outcome.
-
-
-DESCRIPTION
-   Reports load rating outcome.
-
-LOG
-   rab : 12.07.2009 : Created file
-*****************************************************************************/
 
 class REPORTINGCLASS CLoadRatingDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CLoadRatingDetailsChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
 private:
-   // Prevent accidental copying and assignment
-   CLoadRatingDetailsChapterBuilder(const CLoadRatingDetailsChapterBuilder&) = delete;
-   CLoadRatingDetailsChapterBuilder& operator=(const CLoadRatingDetailsChapterBuilder&) = delete;
-
    mutable bool m_bReportAtAllPoi;
    mutable bool m_bIsSingleGirderLine;
 
-   void ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool bSplicedGirder) const;
+   void ReportRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool bSplicedGirder) const;
 
-   void MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,bool bPositiveMoment,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
-   void ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
-   void StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
-   void ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,bool bPositiveMoment,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
-   void LoadPostingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,const std::vector<CGirderKey>& girderKeys) const;
+   void MomentRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,bool bPositiveMoment,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
+   void ShearRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
+   void StressRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
+   void ReinforcementYieldingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,bool bPositiveMoment,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
+   void LoadPostingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,const std::vector<CGirderKey>& girderKeys) const;
 
    bool ReportAtThisPoi(const pgsPointOfInterest& poi,const pgsPointOfInterest& controllingPoi) const;
 };

@@ -25,88 +25,78 @@
 #include <PgsExt\StatusItem.h>
 #include <PGSuperTypes.h>
 
-class pgsLiveLoadStatusItem : public CEAFStatusItem
+class pgsLiveLoadStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsLiveLoadStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 };
 
-class pgsLiveLoadStatusCallback : public iStatusCallback
+class pgsLiveLoadStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsLiveLoadStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
-
-private:
-   IBroker* m_pBroker;
+   pgsLiveLoadStatusCallback();
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 };
 
 
 // status for Lifting support location
-class pgsLiftingSupportLocationStatusItem : public CEAFStatusItem
+class pgsLiftingSupportLocationStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsLiftingSupportLocationStatusItem(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    CSegmentKey m_SegmentKey;
    pgsTypes::MemberEndType m_End;
 };
 
 ///////////////////////////
-class pgsLiftingSupportLocationStatusCallback : public iStatusCallback
+class pgsLiftingSupportLocationStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsLiftingSupportLocationStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsLiftingSupportLocationStatusCallback(WBFL::EAF::StatusSeverityType severity);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
 };
 
 // status for truck stiffness
-class pgsHaulTruckStatusItem : public CEAFStatusItem
+class pgsHaulTruckStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsHaulTruckStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 };
 
 ///////////////////////////
-class pgsHaulTruckStatusCallback : public iStatusCallback
+class pgsHaulTruckStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsHaulTruckStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
-
-private:
-   IBroker* m_pBroker;
+   pgsHaulTruckStatusCallback();
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 };
 
 // status for bunk point
-class pgsBunkPointLocationStatusItem : public CEAFStatusItem
+class pgsBunkPointLocationStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsBunkPointLocationStatusItem(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    CSegmentKey m_SegmentKey;
    pgsTypes::MemberEndType m_End;
 };
 
 ///////////////////////////
-class pgsBunkPointLocationStatusCallback : public iStatusCallback
+class pgsBunkPointLocationStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsBunkPointLocationStatusCallback(IBroker* pBroker);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
-
-private:
-   IBroker* m_pBroker;
+   pgsBunkPointLocationStatusCallback();
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 };

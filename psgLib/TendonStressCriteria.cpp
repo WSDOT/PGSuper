@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib/TendonStressCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/TendonStressCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 //#include <EAF/EAFDisplayUnits.h>
 
 TendonStressCriteria::TendonStressCriteria()
@@ -88,20 +88,20 @@ bool TendonStressCriteria::operator!=(const TendonStressCriteria& other) const
    return !operator==(other);
 }
 
-bool TendonStressCriteria::Compare(const TendonStressCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool TendonStressCriteria::Compare(const TendonStressCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if(operator!=(other))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Stress Limits for Post-tensioning are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Stress Limits for Post-tensioning are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void TendonStressCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void TendonStressCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

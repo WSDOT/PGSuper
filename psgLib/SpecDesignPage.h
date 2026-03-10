@@ -60,6 +60,7 @@ protected:
 	afx_msg void OnCheckA();
    afx_msg void OnDesignA();
 	afx_msg void OnCheckHauling();
+	afx_msg void OnCheckBearing();
 	afx_msg void OnCheckHd();
 	afx_msg void OnCheckLifting();
 	afx_msg void OnCheckSlope();

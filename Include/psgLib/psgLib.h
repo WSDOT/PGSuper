@@ -20,25 +20,13 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// psgLib.h : main header file for the PSGLIB DLL
-//
-
-#if !defined(AFX_PSGLIB_H__B76E130B_26EE_11D2_9D39_00609710E6CE__INCLUDED_)
-#define AFX_PSGLIB_H__B76E130B_26EE_11D2_9D39_00609710E6CE__INCLUDED_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
-
-//#ifndef __AFXWIN_H__
-//	#error include 'stdafx.h' before including this file for PCH
-//#endif
 
 #include "resource.h"		// main symbols
 
 
-#include <psgLib\LibraryManager.h>
-#include <WBFLCore.h>
+#include <PsgLib\LibraryManager.h>
+
 
 
 // set help file location for dll.
@@ -107,7 +95,7 @@ enum LibConflictOutcome {Rename, OverWrite};
 bool PSGLIBFUNC WINAPI psglibDealWithLibraryConflicts(ConflictList* pList, psgLibraryManager* pMasterMgr, const psgLibraryManager& projectMgr,bool isImported,bool bForceUpdate);
 bool PSGLIBFUNC WINAPI psglibMakeSaveableCopy(const psgLibraryManager& libMgr, psgLibraryManager* ptempManager);
 
-LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported, const std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bMustRename, std::_tstring* pNewName);
+LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported, const std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bMustRename, std::_tstring* pNewName);
 
 bool PSGLIBFUNC WINAPI psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr);
 
@@ -115,14 +103,12 @@ bool PSGLIBFUNC WINAPI psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryM
 // the structured load pointer to the beginning of the library information
 HRESULT PSGLIBFUNC pgslibReadProjectDocHeader(LPCTSTR lpszRootNodeName,IStructuredLoad* pLoad);
 
-HRESULT PSGLIBFUNC pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode* pUnitsMode);
+HRESULT PSGLIBFUNC pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,WBFL::EAF::UnitMode* pUnitsMode);
 
-HRESULT PSGLIBFUNC pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode, bool bIsMasterLibrary=true);
-HRESULT PSGLIBFUNC pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode, bool bIsMasterLibrary=true);
+HRESULT PSGLIBFUNC pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,WBFL::EAF::UnitMode* pUnitMode, bool bIsMasterLibrary=true);
+HRESULT PSGLIBFUNC pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,WBFL::EAF::UnitMode* pUnitMode, bool bIsMasterLibrary=true);
 
 /////////////////////////////////////////////////////////////////////////////
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_PSGLIB_H__B76E130B_26EE_11D2_9D39_00609710E6CE__INCLUDED_)

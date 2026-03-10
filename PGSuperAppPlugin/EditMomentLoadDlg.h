@@ -29,8 +29,8 @@
 // EditMomentLoadDlg.h : header file
 //
 #include "resource.h"
-#include <PgsExt\MomentLoadData.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\MomentLoadData.h>
+#include <PsgLib\TimelineManager.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditMomentLoadDlg dialog
@@ -52,7 +52,7 @@ public:
 
    CMomentLoadData m_Load;
    EventIDType m_EventID;
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    bool                 m_WasLiveLoad;
 

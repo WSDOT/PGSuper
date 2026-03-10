@@ -26,14 +26,12 @@
 #include "stdafx.h"
 #include "PGSuperApp.h"
 #include "ConstructionLoadDlg.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CConstructionLoadDlg dialog
 
@@ -53,8 +51,8 @@ void CConstructionLoadDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag(pDX,IDC_LOAD,IDC_LOAD_UNIT,m_Load,pDisplayUnits->GetOverlayWeightUnit());

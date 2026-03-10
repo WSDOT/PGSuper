@@ -36,18 +36,14 @@
 #include "PGSuperDoc.h"
 #include "Utilities.h"
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\ClosureJointData.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 inline CString GetHaunchInputLocationTypeAsString(pgsTypes::HaunchInputLocationType locType,pgsTypes::HaunchLayoutType layoutType,bool bIsPGSuper)
 {
@@ -129,7 +125,7 @@ void CEditHaunchByHaunchDlg::DoDataExchange(CDataExchange* pDX)
       DDX_CBItemData(pDX,IDC_HAUNCH_DISTRIBUTION,m_HaunchInputDistributionType);
    }
 
-   if (m_bNeedsGroupTabs && pgsTypes::hltAlongSegments == GetHaunchLayoutType() && m_HaunchInputLocationType != pgsTypes::hilSame4Bridge)
+   if (m_bNeedsGroupTabs && pgsTypes::hltAlongSegments == m_HaunchLayoutType && m_HaunchInputLocationType != pgsTypes::hilSame4Bridge)
    {
       if (m_HaunchInputLocationType == pgsTypes::hilPerEach)
       {
@@ -179,8 +175,7 @@ END_MESSAGE_MAP()
 
 BOOL CEditHaunchByHaunchDlg::OnInitDialog()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
@@ -189,6 +184,8 @@ BOOL CEditHaunchByHaunchDlg::OnInitDialog()
    m_pUnit = &(pDisplayUnits->GetComponentDimUnit());
 
    CBridgeDescription2* pBridge = GetBridgeDesc();
+
+   m_HaunchLayoutType = pBridge->GetHaunchLayoutType();
 
    auto pDeck = pBridge->GetDeckDescription();
    if (pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP)
@@ -306,8 +303,7 @@ BOOL CEditHaunchByHaunchDlg::OnInitDialog()
 
 void CEditHaunchByHaunchDlg::UpdateGroupBox()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString unitag = pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str();
 
@@ -329,7 +325,7 @@ void CEditHaunchByHaunchDlg::UpdateGroupBox()
    }
    else
    {
-      CString segspan = GetHaunchLayoutType() == pgsTypes::hltAlongSegments ? _T("Segments") : _T("Spans");
+      CString segspan = m_HaunchLayoutType == pgsTypes::hltAlongSegments ? _T("Segments") : _T("Spans");
       boxtag.Format(_T("Enter %s Depth Values (%s). Locations are fractional distances along %s"),strDepthType,unitag,segspan);
    }
 
@@ -339,18 +335,16 @@ void CEditHaunchByHaunchDlg::UpdateGroupBox()
 
 void CEditHaunchByHaunchDlg::UpdateLocationTypeControl(bool bIsPGSuper)
 {
-   pgsTypes::HaunchLayoutType layoutType = GetHaunchLayoutType();
-
    // HaunchInputDepthType combo
    CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_HAUNCH_INPUT_TYPE);
    int curIdx = pBox->GetCurSel();
 
    pBox->ResetContent();
-   int sqidx = pBox->AddString(GetHaunchInputLocationTypeAsString(pgsTypes::hilSame4Bridge,layoutType,bIsPGSuper));
+   int sqidx = pBox->AddString(GetHaunchInputLocationTypeAsString(pgsTypes::hilSame4Bridge, m_HaunchLayoutType,bIsPGSuper));
    pBox->SetItemData(sqidx,(DWORD)pgsTypes::hilSame4Bridge);
-   sqidx = pBox->AddString(GetHaunchInputLocationTypeAsString(pgsTypes::hilSame4AllGirders,layoutType,bIsPGSuper));
+   sqidx = pBox->AddString(GetHaunchInputLocationTypeAsString(pgsTypes::hilSame4AllGirders, m_HaunchLayoutType,bIsPGSuper));
    pBox->SetItemData(sqidx,(DWORD)pgsTypes::hilSame4AllGirders);
-   sqidx = pBox->AddString(GetHaunchInputLocationTypeAsString(pgsTypes::hilPerEach,layoutType,bIsPGSuper));
+   sqidx = pBox->AddString(GetHaunchInputLocationTypeAsString(pgsTypes::hilPerEach, m_HaunchLayoutType,bIsPGSuper));
    pBox->SetItemData(sqidx,(DWORD)pgsTypes::hilPerEach);
 
    pBox->SetCurSel(curIdx == CB_ERR ? 0 : curIdx);
@@ -409,7 +403,7 @@ void CEditHaunchByHaunchDlg::UpdateCurrentData()
 void CEditHaunchByHaunchDlg::UpdateActiveControls()
 {
    // 
-   bool bShowSpans = GetHaunchLayoutType() == pgsTypes::hltAlongSpans;
+   bool bShowSpans = m_HaunchLayoutType == pgsTypes::hltAlongSpans;
 
    // First hide all grids
    m_pHaunchEntireBridgeGrid->ShowWindow(SW_HIDE);
@@ -527,8 +521,7 @@ void CEditHaunchByHaunchDlg::OnHaunchInputDistributionTypeChanged()
 
    UpdateActiveControls();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
    UpdateLocationTypeControl(bIsPGSuper);
@@ -536,8 +529,16 @@ void CEditHaunchByHaunchDlg::OnHaunchInputDistributionTypeChanged()
 
 void CEditHaunchByHaunchDlg::OnHaunchLayoutTypeChanged()
 {
-   // Treat same as if other high-level parameters changed
-   OnHaunchInputDistributionTypeChanged();
+   UpdateCurrentData(); // get data from grids before changing type
+
+   m_HaunchLayoutType = GetHaunchLayoutType();
+
+   UpdateActiveControls();
+
+   auto pBroker = EAFGetBroker();
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   bool bIsPGSuper = pDocType->IsPGSuperDocument();
+   UpdateLocationTypeControl(bIsPGSuper);
 }
 
 Float64 CEditHaunchByHaunchDlg::GetValueFromGrid(CString cellValue,CDataExchange* pDX,ROWCOL row,ROWCOL col,CGXGridCore* pGrid)

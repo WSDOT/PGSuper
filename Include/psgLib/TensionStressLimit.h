@@ -22,11 +22,18 @@
 
 #pragma once
 
-
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptParagraph;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
+namespace WBFL
+{
+   namespace System
+   {
+      class IStructuredSave;
+      class IStructuredLoad;
+   };
+};
 
 struct PSGLIBCLASS TensionStressLimit
 {
@@ -38,11 +45,10 @@ struct PSGLIBCLASS TensionStressLimit
    bool operator==(const TensionStressLimit& other) const;
 
    enum class ConcreteSymbol {fci,fc};
-   void Report(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, ConcreteSymbol concrete) const;
+   void Report(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, ConcreteSymbol concrete) const;
 
    void Save(LPCTSTR strUnitName,WBFL::System::IStructuredSave* pSave) const;
    void Load(LPCTSTR strUnitName, WBFL::System::IStructuredLoad* pLoad);
 
    Float64 GetStressLimit(Float64 lambda, Float64 fc) const;
 };
-

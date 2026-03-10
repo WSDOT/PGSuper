@@ -46,9 +46,12 @@
 #include <Reporting\PrincipalTensionStressCheckTable.h>
 #include <Reporting\RatingSummaryTable.h>
 #include <Reporting\ReinforcementFatigueCheck.h>
+#include <Reporting\MinDeckReinforcementCheck.h>
 
 #include <MathEx.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
@@ -59,43 +62,34 @@
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\SplittingChecks.h>
+#include <IFace\HorizontalTensionTieChecks.h>
 
 #include <PgsExt\GirderArtifact.h>
 
 #include <psgLib/EndZoneCriteria.h>
 #include <psgLib/SlabOffsetCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-void write_splitting_zone_check(IBroker* pBroker,
+void write_splitting_zone_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                const pgsGirderArtifact* pGirderArtifact,
                                rptChapter* pChapter);
 
-static void write_confinement_check(IBroker* pBroker,
-                                    IEAFDisplayUnits* pDisplayUnits,
+static void write_confinement_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                     const pgsGirderArtifact* pGirderArtifact,
                                     rptChapter* pChapter);
 
-/****************************************************************************
-CLASS
-   CSpecCheckChapterBuilder
-****************************************************************************/
+void write_horizontal_transverse_tension_tie_reinforcement_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+   const pgsGirderArtifact* pGirderArtifact,
+   rptChapter* pChapter);
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CSpecCheckChapterBuilder::CSpecCheckChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CSpecCheckChapterBuilder::GetName() const
 {
    return TEXT("Specification Checks");
@@ -109,8 +103,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
 
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey = pGirderRptSpec->GetGirderKey();
 
    GET_IFACE2(pBroker,IDocumentType,pDocType);
@@ -406,9 +399,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
       // confinement check
       write_confinement_check(pBroker,pDisplayUnits,pGirderArtifact,pChapter);
    }
+   
+   write_horizontal_transverse_tension_tie_reinforcement_check(pBroker, pDisplayUnits, pGirderArtifact, pChapter);
 
    // Optional live load deflection
    COptionalDeflectionCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+
+   // Minimum Deck Reinforcement in Negative Moment Region
+   CMinDeckReinforcementCheck().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 
    // Lifting
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
@@ -549,43 +547,21 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    // Precamber Check
    CConstructabilityCheckTable().BuildPrecamberCheck(pChapter, pBroker, girderList, pDisplayUnits);
 
+   //placeholder: build spec check chapter for bearing here. See Phase 3 document for conditions and applicable bearings
+
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSpecCheckChapterBuilder::Clone() const
-{
-   return std::make_unique<CSpecCheckChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-void write_splitting_zone_check(IBroker* pBroker,
+void write_splitting_zone_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                const pgsGirderArtifact* pGirderArtifact,
                                rptChapter* pChapter)
 {
    GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
-   pSplittingChecks->ReportSplittingChecks(pBroker, pGirderArtifact, pChapter);
+   pSplittingChecks->ReportSplittingChecks(pGirderArtifact, pChapter);
 }
 
-void write_confinement_check(IBroker* pBroker,
-                             IEAFDisplayUnits* pDisplayUnits,
+void write_confinement_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const pgsGirderArtifact* pGirderArtifact,
                              rptChapter* pChapter)
 {
@@ -597,8 +573,9 @@ void write_confinement_check(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,    pDisplayUnits->GetComponentDimUnit(), true );
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   pPara->SetName(_T("Confinement Stirrup Check"));
    *pChapter << pPara;
-   (*pPara) << _T("Confinement Stirrup Check [") << WBFL::LRFD::LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) << _T("]") << rptNewLine;
+   (*pPara) << pPara->GetName() << _T(" [") << WBFL::LRFD::LrfdCw8th(_T("5.10.10.2"), _T("5.9.4.4.2")) << _T("]") << rptNewLine;
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -658,4 +635,14 @@ void write_confinement_check(IBroker* pBroker,
          (*pPara) << RPT_FAIL;
       }
    } // next segment
+}
+
+
+void write_horizontal_transverse_tension_tie_reinforcement_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
+   const pgsGirderArtifact* pGirderArtifact,
+   rptChapter* pChapter)
+{
+   GET_IFACE2(pBroker, IHorizontalTensionTieChecks, pChecks);
+   pChecks->ReportHorizontalTensionTieForceChecks(pGirderArtifact, pChapter);
 }

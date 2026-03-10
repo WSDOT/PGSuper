@@ -26,6 +26,7 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\ShearCapacity.h>
@@ -37,16 +38,6 @@
 
 #include <psgLib/SpecificationCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CCritSectionChapterBuilder
-****************************************************************************/
 
 CCritSectionChapterBuilder::CCritSectionChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -55,8 +46,6 @@ CPGSuperChapterBuilder(bSelect)
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CCritSectionChapterBuilder::GetName() const
 {
    return TEXT("Critical Section for Shear Details");
@@ -67,17 +56,17 @@ rptChapter* CCritSectionChapterBuilder::Build(const std::shared_ptr<const WBFL::
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -181,7 +170,7 @@ rptChapter* CCritSectionChapterBuilder::Build(const std::shared_ptr<const WBFL::
    return pChapter;
 }
 
-void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState limitState,IBroker* pBroker,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState limitState,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const
 {
    USES_CONVERSION;
 
@@ -332,27 +321,3 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
       *pPara << rptNewLine;
    } // next CS
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCritSectionChapterBuilder::Clone() const
-{
-   return std::make_unique<CCritSectionChapterBuilder>(m_bDesign,m_bRating);
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

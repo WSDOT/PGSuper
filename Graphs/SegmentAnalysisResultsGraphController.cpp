@@ -35,19 +35,12 @@
 #include <EAF\EAFDocument.h>
 #include <Hints.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNCREATE(CSegmentAnalysisResultsGraphController,CSegmentGraphControllerBase)
 
 CSegmentAnalysisResultsGraphController::CSegmentAnalysisResultsGraphController():
 CSegmentGraphControllerBase(false)//*exclude ALL_GROUPS*/)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
 }
 
 void CSegmentAnalysisResultsGraphController::SetGraphMode(CSegmentAnalysisResultsGraphController::GraphModeType mode)
@@ -543,8 +536,7 @@ std::vector<ActionType> CSegmentAnalysisResultsGraphController::GetActionTypes()
 {
    std::vector<ActionType> vActions;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
    if (pProductLoads->ReportAxialResults())
    {
@@ -579,8 +571,7 @@ LPCTSTR CSegmentAnalysisResultsGraphController::GetActionName(ActionType action)
 {
    if (action == actionDeflection)
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker, IBridge, pBridge);
       if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
       {

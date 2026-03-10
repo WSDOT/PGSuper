@@ -22,26 +22,10 @@
 
 #pragma once
 
-
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\PoiMap.h>
-
 #include <IFace\PointOfInterest.h>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -59,67 +43,31 @@ LOG
 class pgsWsdotGirderHaulingChecker: public pgsGirderHaulingChecker
 {
 public:
-   // GROUP: LIFECYCLE
+   pgsWsdotGirderHaulingChecker() = delete;
+   pgsWsdotGirderHaulingChecker(const pgsWsdotGirderHaulingChecker&) = delete;
+   pgsWsdotGirderHaulingChecker& operator=(const pgsWsdotGirderHaulingChecker&) = delete;
+   pgsWsdotGirderHaulingChecker(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
+   virtual ~pgsWsdotGirderHaulingChecker() = default;
 
-   //------------------------------------------------------------------------
-   // Constructor
-   pgsWsdotGirderHaulingChecker(IBroker* pBroker,StatusGroupIDType statusGroupID);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsWsdotGirderHaulingChecker();
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   virtual pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) override;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey) override;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) override;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId) override;
-   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE) override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   std::shared_ptr<pgsHaulingAnalysisArtifact> CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) override;
+   std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey) override;
+   std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) override;
+   std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId) override;
+   std::shared_ptr<pgsHaulingAnalysisArtifact> DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE) override;
 
 private:
-   // GROUP: DATA MEMBERS
-   IBroker* m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidBunkPointLocation;
    StatusCallbackIDType m_scidHaulTruck;
 
-   // GROUP: LIFECYCLE
-   // can't construct without a broker
-   pgsWsdotGirderHaulingChecker() = delete;
-
-   // Prevent accidental copying and assignment
-   pgsWsdotGirderHaulingChecker(const pgsWsdotGirderHaulingChecker&) = delete;
-   pgsWsdotGirderHaulingChecker& operator=(const pgsWsdotGirderHaulingChecker&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
 #if defined _DEBUG
-   void AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,WBFL::Stability::HaulingCheckArtifact* pArtifact,const WBFL::Stability::HaulingStabilityProblem** ppStabilityProblem);
+   void AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,WBFL::Stability::HaulingCheckArtifact& pArtifact,const WBFL::Stability::HaulingStabilityProblem** ppStabilityProblem);
 #else
-   void AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,WBFL::Stability::HaulingCheckArtifact* pArtifact);
+   void AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,WBFL::Stability::HaulingCheckArtifact& pArtifact);
 #endif
 
-   void AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,pgsWsdotHaulingAnalysisArtifact* pArtifact);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   void AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,pgsWsdotHaulingAnalysisArtifact& pArtifact);
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-

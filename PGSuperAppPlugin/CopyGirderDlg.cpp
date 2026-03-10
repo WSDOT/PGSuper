@@ -31,6 +31,7 @@
 #include "CopyGirderDlg.h"
 #include "CopyGirderPropertiesCallbacks.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Selection.h>
@@ -38,23 +39,18 @@
 #include <IFace\EditByUI.h>
 
 #include <PgsExt\MacroTxn.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <EAF\EAFCustSiteVars.h>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <Reporting\CopyGirderPropertiesReportSpecification.h>
 #include <Reporting\CopyGirderPropertiesChapterBuilder.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyGirderDlg dialog
 
-CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, const std::map<IDType,ICopyGirderPropertiesCallback*>&  rcopyGirderPropertiesCallbacks, IDType selectedID, CWnd* pParent)
+CCopyGirderDlg::CCopyGirderDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::map<IDType,ICopyGirderPropertiesCallback*>&  rcopyGirderPropertiesCallbacks, IDType selectedID, CWnd* pParent)
 	: CDialog(CCopyGirderDlg::IDD, pParent),
    m_pBroker(pBroker),
    m_CopyGirderPropertiesCallbacks(rcopyGirderPropertiesCallbacks)
@@ -160,7 +156,7 @@ BOOL CCopyGirderDlg::OnInitDialog()
    m_cyMin = rect.Height();
 
    // set up report window
-   GET_IFACE(IReportManager, pReportMgr);
+   GET_IFACE(IEAFReportManager, pReportMgr);
    WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Girder Properties Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
@@ -204,10 +200,9 @@ BOOL CCopyGirderDlg::OnInitDialog()
    // set up reporting window
    UpdateReportData();
 
-   GET_IFACE(IReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
-   m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
-   m_pBrowser->GetBrowserWnd()->ModifyStyle(0,WS_BORDER);
+   CWnd* pWnd = GetDlgItem(IDC_BROWSER);
+   m_pBrowser = pReportMgr->CreateReportBrowser(pWnd->GetSafeHwnd(), WS_BORDER, pRptSpec, nullSpecBuilder);
 
    // restore the size of the window
    {
@@ -232,54 +227,7 @@ void CCopyGirderDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialog::OnSize(nType, cx, cy);
 
-   if (m_pBrowser)
-   {
-      CRect clientRect;
-      GetClientRect( &clientRect );
-
-      CRect sizeRect(0,0,7,7);
-      MapDialogRect(&sizeRect);
-
-      CRect hiddenRect;
-      GetDlgItem(IDC_BROWSER)->GetWindowRect(&hiddenRect);
-      ScreenToClient(hiddenRect);
-      m_pBrowser->Move(hiddenRect.TopLeft());
-      m_pBrowser->Size(hiddenRect.Size());
-
-      // bottom buttons
-      CRect btnSizeRect(0,0,50,14);
-      MapDialogRect( &btnSizeRect );
-
-      CRect btnRect;
-      btnRect.bottom = clientRect.bottom - sizeRect.Height();
-      btnRect.right  = clientRect.right  - LONG(sizeRect.Width() * 3); 
-      btnRect.left   = btnRect.right   - btnSizeRect.Width();
-      btnRect.top    = btnRect.bottom  - btnSizeRect.Height();
-
-      CButton* pButton = (CButton*)GetDlgItem(ID_HELP);
-      pButton->MoveWindow( btnRect, FALSE );
-
-      CRect printRect(btnRect); // put print button directly above Help
-
-      CRect horizOffsetRect(0,0,66,0); // horizontal spacing between buttons
-      MapDialogRect( &horizOffsetRect );
-      CSize horizOffset(-1*horizOffsetRect.Width(),0);
-
-      btnRect += horizOffset;
-      pButton = (CButton*)GetDlgItem(IDCANCEL);
-      pButton->MoveWindow( btnRect, FALSE );
-
-      btnRect += horizOffset;
-      pButton = (CButton*)GetDlgItem(IDOK);
-      pButton->MoveWindow( btnRect, FALSE );
-
-      CSize vertOffset(0, int(btnSizeRect.Height() * 1.75));
-      printRect -= vertOffset;
-      pButton = (CButton*)GetDlgItem(IDC_PRINT);
-      pButton->MoveWindow( printRect, FALSE );
-
-      Invalidate();
-   }
+   m_pBrowser->FitToParent();
 }
 
 void CCopyGirderDlg::FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, bool bIncludeAllGroups, bool bIncludeAllGirders)
@@ -363,7 +311,7 @@ void CCopyGirderDlg::FillGirderComboBox(CComboBox& cbGirder,GroupIndexType grpId
 
 void CCopyGirderDlg::UpdateReportData()
 {
-   GET_IFACE(IReportManager,pReportMgr);
+   GET_IFACE(IEAFReportManager,pReportMgr);
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
    CGirderKey gdrKey = GetFromGirder();
@@ -390,7 +338,7 @@ void CCopyGirderDlg::UpdateReport()
    {
       UpdateReportData();
 
-      GET_IFACE(IReportManager,pReportMgr);
+      GET_IFACE(IEAFReportManager,pReportMgr);
       std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
       std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CCopyGirderPropertiesReportSpecification>(m_pRptSpec);
@@ -645,7 +593,7 @@ void CCopyGirderDlg::OnOK()
    std::vector<ICopyGirderPropertiesCallback*> callbacks = GetSelectedCopyGirderPropertiesCallbacks();
    for (auto callback : callbacks)
    {
-      std::unique_ptr<CEAFTransaction> txn = callback->CreateCopyTransaction(m_FromGirderKey, m_ToGirderKeys);
+      std::unique_ptr<WBFL::EAF::Transaction> txn = callback->CreateCopyTransaction(m_FromGirderKey, m_ToGirderKeys);
       pMacro->AddTransaction(std::move(txn));
    }
 

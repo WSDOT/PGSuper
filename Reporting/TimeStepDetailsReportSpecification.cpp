@@ -22,16 +22,15 @@
 
 #include "StdAfx.h"
 #include <Reporting\TimeStepDetailsReportSpecification.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\PointOfInterest.h>
-#include <PgsExt\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PsgLib\GirderLabel.h>
 
-CTimeStepDetailsReportSpecification::CTimeStepDetailsReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
+
+CTimeStepDetailsReportSpecification::CTimeStepDetailsReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetOptions(bReportAtAllLocations,poi,intervalIdx);
@@ -67,8 +66,7 @@ std::_tstring CTimeStepDetailsReportSpecification::GetReportContextString() cons
    }
    else if ( girderKey.groupIndex != ALL_GROUPS && girderKey.girderIndex != ALL_GIRDERS )
    {
-      CComPtr<IBroker> pBroker;
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
       rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
       rptPoi.SetValue(POI_SPAN,m_Poi);
       rptPoi.PrefixAttributes(false); // put the attributes after the location

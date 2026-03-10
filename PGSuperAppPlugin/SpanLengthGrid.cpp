@@ -28,13 +28,10 @@
 #include "PGSuperUnits.h"
 #include "SpanLengthGrid.h"
 #include <Units\Measure.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CSpanLengthGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -126,8 +123,8 @@ void CSpanLengthGrid::CustomInit()
 			.SetValue(_T("Span"))
 		);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::Length& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;
    CString cv;
@@ -186,8 +183,8 @@ void CSpanLengthGrid::FillGrid(const std::vector<Float64>& vSpanLengths)
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // remove all but top row
@@ -234,8 +231,8 @@ void CSpanLengthGrid::GetSpanLengths(std::vector<Float64>& vSpanLengths)
 {
    vSpanLengths.clear();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const WBFL::Units::Length& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;

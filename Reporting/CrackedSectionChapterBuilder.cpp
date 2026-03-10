@@ -26,23 +26,20 @@
 #include <Reporting\CrackedSectionChapterBuilder.h>
 #include <Reporting\CrackedSectionReportSpecification.h>
 
-#include <IReportManager.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <IFace/Tools.h>
+#include <EAF/EAFReportManager.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\CrackedSection.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 #include <PGSuperColors.h>
 
 #include <algorithm>
 //#include "Helpers.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 static const COLORREF BACKGROUND_COLOR  = WHITE;
 static const COLORREF VOID_COLOR        = WHITE;
@@ -78,8 +75,7 @@ rptChapter* CCrackedSectionChapterBuilder::Build(const std::shared_ptr<const WBF
    pgsPointOfInterest poi = pSpec->GetPOI();
    bool bPositiveMoment = pSpec->IsPositiveMoment();
 
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -195,11 +191,6 @@ rptChapter* CCrackedSectionChapterBuilder::Build(const std::shared_ptr<const WBF
    (*pPara) << _T("The cracked section modulus ") << Sub2(_T("I"),_T("cr")) << _T(" is used for the permit rating analysis to evaluate yielding of flexural reinforcement at the Service I limit state. See MBE 6A.5.4.2.2b for guidance.") << rptNewLine;
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCrackedSectionChapterBuilder::Clone() const
-{
-   return std::make_unique<CCrackedSectionChapterBuilder>();
 }
 
 rptRcImage* CCrackedSectionChapterBuilder::CreateImage(ICrackedSectionSolution* pSolution,bool bPositiveMoment) const

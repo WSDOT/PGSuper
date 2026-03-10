@@ -20,29 +20,23 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// RelaxationAtFinalTable.h : Declaration of the CRelaxationAtFinalTable
+#pragma once
 
-#ifndef __RELAXATIONATFINALTABLE_H_
-#define __RELAXATIONATFINALTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 class CGirderData;
 
-/////////////////////////////////////////////////////////////////////////////
-// CRelaxationAtFinalTable
 class CRelaxationAtFinalTable : public rptRcTable
 {
 public:
-	static CRelaxationAtFinalTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-	void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CRelaxationAtFinalTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+	void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CRelaxationAtFinalTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CRelaxationAtFinalTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );
@@ -59,5 +53,3 @@ private:
 
    const CGirderData* m_pGD;
 };
-
-#endif //__RELAXATIONATFINALTABLE_H_

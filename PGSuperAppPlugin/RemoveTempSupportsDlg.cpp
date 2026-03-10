@@ -5,18 +5,14 @@
 #include "resource.h"
 #include "RemoveTempSupportsDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include "CastClosureJointDlg.h"// for label methods
 
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CRemoveTempSupportsDlg dialog
@@ -29,9 +25,9 @@ CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager& timelineM
    m_TimelineMgr = timelineMgr;
    m_pBridgeDesc = m_TimelineMgr.GetBridgeDescription();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   pBroker->GetInterface(IID_IEAFDisplayUnits,(IUnknown**)&m_pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   m_pDisplayUnits = pBroker->GetInterface<IEAFDisplayUnits>(IID_IEAFDisplayUnits);
 
    m_EventIndex = eventIdx;
    m_bReadOnly = bReadOnly;

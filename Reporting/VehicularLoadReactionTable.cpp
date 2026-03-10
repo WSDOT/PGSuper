@@ -25,19 +25,17 @@
 #include <Reporting\VehicularLoadResultsTable.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\PierData2.h>
-#include <PgsExt\GirderGroupData.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\GirderGroupData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -73,14 +71,14 @@ CVehicularLoadReactionTable& CVehicularLoadReactionTable::operator= (const CVehi
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
+rptRcTable* CVehicularLoadReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
                                                pgsTypes::LiveLoadType llType,
                                                const std::_tstring& strLLName,
                                                VehicleIndexType vehicleIdx, 
                                                pgsTypes::AnalysisType analysisType,
                                                bool bReportTruckConfig,
                                                bool bIncludeRotations,
-                                               IEAFDisplayUnits* pDisplayUnits) const
+                                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 
 {
    // Build table

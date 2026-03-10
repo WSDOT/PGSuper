@@ -26,6 +26,7 @@
 #include <PgsExt\SegmentArtifact.h>
 #include <PgsExt\TendonStressArtifact.h>
 #include <PgsExt\DuctSizeArtifact.h>
+#include <PgsExt/HorizontalTieForceArtifact.h>
 #include <set>
 
 //////////////////////////////////////////////
@@ -38,8 +39,8 @@ class PGSEXTCLASS pgsGirderArtifact
 {
 public:
    pgsGirderArtifact(const CGirderKey& girderKey);
-   pgsGirderArtifact(const pgsGirderArtifact& other);
-   pgsGirderArtifact& operator = (const pgsGirderArtifact& rOther);
+   pgsGirderArtifact(const pgsGirderArtifact& other) = default;
+   pgsGirderArtifact& operator = (const pgsGirderArtifact& rOther) = default;
 
    const CGirderKey& GetGirderKey() const;
 
@@ -93,9 +94,13 @@ public:
    pgsDuctSizeArtifact* GetDuctSizeArtifact(DuctIndexType ductIdx);
 
    void AddDeflectionCheckArtifact(const pgsDeflectionCheckArtifact& artifact);
-   IndexType GetDeflectionCheckArtifactCount();
+   IndexType GetDeflectionCheckArtifactCount() const;
    pgsDeflectionCheckArtifact* GetDeflectionCheckArtifact(IndexType idx);
    const pgsDeflectionCheckArtifact* GetDeflectionCheckArtifact(IndexType idx) const;
+
+   void AddHorizontalTensionTieArtifact(const pgsHorizontalTieForceArtifact& artifact);
+   IndexType GetHorizontalTensionTieArtifactCount() const;
+   const pgsHorizontalTieForceArtifact* GetHorizontalTensionTieArtifact(IndexType idx) const;
 
 
    // Returns true if a "with rebar" allowable tension stress was used anywhere along the girder
@@ -118,8 +123,6 @@ public:
    bool Passed() const;
 
 protected:
-   void MakeCopy(const pgsGirderArtifact& rOther);
-   void MakeAssignment(const pgsGirderArtifact& rOther);
 
 private:
    CGirderKey m_GirderKey;
@@ -138,4 +141,6 @@ private:
    pgsConstructabilityArtifact m_ConstructabilityArtifact;
 
    std::vector<pgsDeflectionCheckArtifact> m_DeflectionCheckArtifact;
+
+   std::vector<pgsHorizontalTieForceArtifact> m_HorizTensionTieArtifacts;
 };

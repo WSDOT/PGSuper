@@ -24,7 +24,9 @@
 #include "DesignGirder.h"
 #include "PGSuperDoc.h"
 #include <PgsExt\DesignConfigUtil.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
@@ -32,11 +34,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnDesignGirder::txnDesignGirder( std::vector<const pgsGirderDesignArtifact*>& artifacts, SlabOffsetDesignSelectionType slabOffsetDType, SpanIndexType fromSpan, GirderIndexType fromGirder)
 {
@@ -92,7 +89,7 @@ void txnDesignGirder::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnDesignGirder::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnDesignGirder::CreateClone() const
 {
    std::vector<const pgsGirderDesignArtifact*> artifacts;
    for (DesignDataConstIter iter = m_DesignDataColl.begin(); iter!=m_DesignDataColl.end(); iter++)
@@ -140,8 +137,8 @@ bool txnDesignGirder::IsRepeatable() const
 
 void txnDesignGirder::Init()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    for (auto& rdata : m_DesignDataColl)
@@ -277,8 +274,7 @@ void txnDesignGirder::Init()
 
 void txnDesignGirder::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    GET_IFACE2(pBroker,IEvents, pEvents);

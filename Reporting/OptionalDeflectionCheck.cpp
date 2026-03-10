@@ -24,6 +24,8 @@
 #include <Reporting\OptionalDeflectionCheck.h>
 #include <Reporting\StirrupDetailingCheckTable.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 
@@ -31,11 +33,6 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -71,8 +68,8 @@ COptionalDeflectionCheck& COptionalDeflectionCheck::operator= (const COptionalDe
 }
 
 //======================== OPERATIONS =======================================
-void COptionalDeflectionCheck::Build(rptChapter* pChapter, IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits) const
+void COptionalDeflectionCheck::Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 

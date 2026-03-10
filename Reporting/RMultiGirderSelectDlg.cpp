@@ -25,14 +25,10 @@
 #include "resource.h"
 #include "RMultiGirderSelectDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFUtilities.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CRMultiGirderSelectDlg dialog
@@ -67,14 +63,18 @@ END_MESSAGE_MAP()
 
 BOOL CRMultiGirderSelectDlg::OnInitDialog()
 {
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CDialog::OnInitDialog();
 
+   SetWindowText(_T("Select Girder(s)"));
+
  	m_pGrid->SubclassDlgItem(IDC_SELECT_GRID, this);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+    CComboBox* pGroupBox = (CComboBox*)GetDlgItem(IDC_STATIC_MULTI_SELECT_ITEM);
+    pGroupBox->SetWindowTextW(_T("Select Girder(s)"));
+
+    auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridge,pBridge);
 
    // need list of groups/girders

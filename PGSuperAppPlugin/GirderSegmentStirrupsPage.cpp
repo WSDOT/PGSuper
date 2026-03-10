@@ -24,18 +24,13 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "GirderSegmentStirrupsPage.h"
 #include "GirderSegmentDlg.h"
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <LRFD\RebarPool.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CGirderSegmentStirrupsPage dialog
@@ -63,6 +58,9 @@ END_MESSAGE_MAP()
 
 BOOL CGirderSegmentStirrupsPage::OnInitDialog() 
 {
+	m_bCanCopyFromLibrary = false; // copying of seed values not supported in pgsplice
+	m_bIsDisplayedInProject = true;
+
 	CShearSteelPage::OnInitDialog();
 
 	return TRUE;  // return TRUE unless you set the focus to a control

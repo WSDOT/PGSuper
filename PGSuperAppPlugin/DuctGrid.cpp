@@ -34,23 +34,19 @@
 
 #include "TimelineEventDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
 #include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <LRFD\PsStrand.h>
 
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CDuctGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -115,8 +111,8 @@ void CDuctGrid::CustomInit(CSplicedGirderData* pGirder)
 {
    m_pPTData = pGirder->GetPostTensioning();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CSplicedGirderGeneralPage* pParentPage = (CSplicedGirderGeneralPage*)GetParent();
@@ -308,8 +304,8 @@ void CDuctGrid::DeleteDuct()
 
 void CDuctGrid::SetRowStyle(ROWCOL row)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILibraryNames,pLibNames);
 
    std::vector<std::_tstring> vNames;
@@ -547,13 +543,13 @@ void CDuctGrid::RefreshRowHeading(ROWCOL rFrom,ROWCOL rTo)
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)(pParentPage->GetParent());
    std::_tstring strGirderName = pParent->m_pGirder->GetGirderName();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    const GirderLibraryEntry* pGirderEntry = pLibrary->GetGirderEntry(strGirderName.c_str());
-   CComPtr<IBeamFactory> factory;
-   pGirderEntry->GetBeamFactory(&factory);
+   auto factory = pGirderEntry->GetBeamFactory();
+
    WebIndexType nWebs = factory->GetWebCount(pGirderEntry->GetDimensions());
 
    for ( ROWCOL row = rFrom; row <= rTo; row++ )
@@ -640,8 +636,8 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
    StrandIndexType nStrands = (StrandIndexType)_tstol(GetCellValue(nRow,nNumStrandCol));
    CString ductName = GetCellValue(nRow,nDuctTypeCol);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILibrary,pLib);
    const DuctLibraryEntry* pDuctEntry = pLib->GetDuctEntry(ductName);
    if ( pDuctEntry == nullptr )
@@ -694,8 +690,8 @@ void CDuctGrid::UpdateMaxPjack(ROWCOL nRow)
 
    Float64 Pjack = WBFL::LRFD::PsStrand::GetPjackPT(*pStrand,nStrands);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GetParam()->SetLockReadOnly(FALSE);
    SetValueRange(CGXRange(nRow,nPjackCol),FormatDimension(Pjack,pDisplayUnits->GetGeneralForceUnit(),false));
@@ -730,8 +726,8 @@ void CDuctGrid::OnInstallationTypeChanged()
 
 void CDuctGrid::GetDuctData(ROWCOL row,CDuctData& duct,EventIndexType& stressingEvent)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,ILibraryNames,pLibNames);
@@ -754,8 +750,8 @@ void CDuctGrid::GetDuctData(ROWCOL row,CDuctData& duct,EventIndexType& stressing
 
 void CDuctGrid::SetDuctData(ROWCOL row,const CDuctData& duct,EventIndexType stressingEvent)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GetParam()->SetLockReadOnly(FALSE);

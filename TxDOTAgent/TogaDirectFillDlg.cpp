@@ -28,15 +28,11 @@
 #include "TxDOTOptionalDesignUtilities.h"
 #include "TOGAGirderSelectStrandsDlg.h"
 
+#include <IFace\Tools.h>
 #include <IFace\EditByUI.h>
 
-#include <PgsExt\BridgeDescription2.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PsgLib\BridgeDescription2.h>
+#include <psglib/LibraryManager.h>
 
 
 // CTogaDirectFillDlg dialog
@@ -70,7 +66,7 @@ END_MESSAGE_MAP()
 
 void CTogaDirectFillDlg::OnBnClickedSelectStrands()
 {
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
+   auto pBroker = m_pBrokerRetriever->GetClassicBroker();
    GET_IFACE2( pBroker, ISpecification, pSpec );
 
    // Max debond length is ~1/2 girder length

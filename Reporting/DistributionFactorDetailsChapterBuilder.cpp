@@ -23,23 +23,14 @@
 #include "StdAfx.h"
 #include <Reporting\DistributionFactorDetailsChapterBuilder.h>
 #include <Reporting\LiveLoadDistributionFactorTable.h>
-
-#include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFUtilities.h>
+
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CDistributionFactorDetailsChapterBuilder
-****************************************************************************/
 
 
 // free functions
@@ -47,16 +38,11 @@ rptRcTable* BuildDfTable(const WBFL::LRFD::ILiveLoadDistributionFactor::DFResult
 void FillRow(int row, rptRcTable* pTable, const std::_tstring& rowtit, const WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& res, bool isExterior);
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CDistributionFactorDetailsChapterBuilder::CDistributionFactorDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CDistributionFactorDetailsChapterBuilder::GetName() const
 {
    return TEXT("Live Load Distribution Factor Details");
@@ -67,17 +53,17 @@ rptChapter* CDistributionFactorDetailsChapterBuilder::Build(const std::shared_pt
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -124,9 +110,4 @@ rptChapter* CDistributionFactorDetailsChapterBuilder::Build(const std::shared_pt
       }
    }
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDistributionFactorDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CDistributionFactorDetailsChapterBuilder>();
 }

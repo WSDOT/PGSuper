@@ -20,28 +20,10 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_FLEXURALCAPACITYARTIFACT_H_
-#define INCLUDED_PGSEXT_FLEXURALCAPACITYARTIFACT_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
-
-#include <PgsExt\PointOfInterest.h>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
+#include <PsgLib\PointOfInterest.h>
 
 /*****************************************************************************
 CLASS 
@@ -60,32 +42,15 @@ LOG
 class PGSEXTCLASS pgsFlexuralCapacityArtifact
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    pgsFlexuralCapacityArtifact(bool bPositiveMoment);
+   pgsFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifact& rOther) = default;
+   ~pgsFlexuralCapacityArtifact() = default;
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsFlexuralCapacityArtifact(const pgsFlexuralCapacityArtifact& rOther);
+   pgsFlexuralCapacityArtifact& operator = (const pgsFlexuralCapacityArtifact& rOther) = default;
 
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsFlexuralCapacityArtifact();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   pgsFlexuralCapacityArtifact& operator = (const pgsFlexuralCapacityArtifact& rOther);
-
-   // GROUP: OPERATIONS
-
-   // GROUP: ACCESS
    void SetPointOfInterest(const pgsPointOfInterest& poi);
    const pgsPointOfInterest& GetPointOfInterest() const;
 
-   //------------------------------------------------------------------------
    void SetMaxReinforcementRatio(Float64 cde);
    Float64 GetMaxReinforcementRatio() const;
    void SetMaxReinforcementRatioLimit(Float64 cdeMax);
@@ -102,24 +67,7 @@ public:
    bool CapacityPassed() const;
    bool Passed() const;
 
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const pgsFlexuralCapacityArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsFlexuralCapacityArtifact& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
    pgsPointOfInterest m_Poi;
    bool m_bPositiveMoment;
    Float64 m_cde;
@@ -127,18 +75,4 @@ private:
    Float64 m_MrMin;
    Float64 m_Mu;
    Float64 m_Mr;
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_PGSEXT_FLEXURALCAPACITYARTIFACT_H_

@@ -24,9 +24,10 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "GirderSegmentDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Bridge.h>
@@ -36,11 +37,6 @@
 
 #include "PGSuperDocBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 #define IDC_CHECKBOX 100
@@ -217,7 +213,7 @@ void CGirderSegmentDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-std::unique_ptr<CEAFTransaction> CGirderSegmentDlg::GetExtensionPageTransaction()
+std::unique_ptr<WBFL::EAF::Transaction> CGirderSegmentDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
    {
@@ -283,8 +279,8 @@ ConfigStrandFillVector CGirderSegmentDlg::ComputeStrandFillVector(pgsTypes::Stra
 #pragma Reminder("UPDATE: this method is a duplicate of CGirderDescDlg")
    // find a way to make it one function
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CPrecastSegmentData* pSegment = m_Girder.GetSegment(m_SegmentKey.segmentIndex);

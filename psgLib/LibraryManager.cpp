@@ -21,19 +21,17 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <psgLib\LibraryManager.h>
+#include <PsgLib\LibraryManager.h>
 
 #include <EAF\EAFDocument.h>
 #include <EAF\EAFUtilities.h>
-#include <psgLib\LibraryEditorDoc.h>
+#include <EAF\Agent.h>
+
+#include <PsgLib\LibraryEditorDoc.h>
 
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+
 
 /****************************************************************************
 CLASS
@@ -63,14 +61,12 @@ bool GirderLibrary::NewEntry(LPCTSTR key)
    {
       // doesn't exist - add a new one.
       GirderLibraryEntry::CreateType createType = GirderLibraryEntry::DEFAULT;
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto broker = EAFGetBroker();
       CEAFDocument* pEAFDoc = EAFGetDocument();
-      if ( pBroker )
+      if ( broker )
       {
-         CComPtr<IDocumentType> pDocType;
-         pBroker->GetInterface(IID_IDocumentType,(IUnknown**)&pDocType);
-         ATLASSERT(pDocType);
+         auto pDocType = broker->GetInterface<IDocumentType>(IID_IDocumentType);
+         ASSERT(pDocType);
          createType = (pDocType->IsPGSuperDocument() ? GirderLibraryEntry::PRECAST : GirderLibraryEntry::SPLICED);
       }
       else if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )
@@ -97,9 +93,6 @@ bool GirderLibrary::NewEntry(LPCTSTR key)
 }
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 psgLibraryManager::psgLibraryManager() :
 WBFL::Library::LibraryManager()
 {
@@ -145,13 +138,8 @@ WBFL::Library::LibraryManager()
 psgLibraryManager::~psgLibraryManager()
 {
    // Release all the class factories before the DLL unloads
-   GirderLibraryEntry::ms_ClassFactories.clear();
    GirderLibraryEntry::ms_ExternalCLSIDTranslators.clear();
 }
-
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
 
 ConcreteLibrary&        psgLibraryManager::GetConcreteLibrary()
 {
@@ -346,21 +334,3 @@ void psgLibraryManager::GetMasterLibraryInfo(std::_tstring& strServer, std::_tst
    strConfiguration = m_strConfiguration;
    strLibFile = m_strLibFile;
 }
-
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

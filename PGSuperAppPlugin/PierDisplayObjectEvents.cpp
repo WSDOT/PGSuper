@@ -27,17 +27,19 @@
 #include "resource.h"
 #include "PGSuperApp.h"
 #include "PierDisplayObjectEvents.h"
-#include "mfcdual.h"
 #include "pgsuperdoc.h"
-#include <IFace\Project.h>
-#include <IFace\EditByUI.h>
-#include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <IFace/Tools.h>
+#include <IFace\Project.h>
+#include <IFace\Bridge.h>
+#include <IFace\EditByUI.h>
+
+#include <PsgLib\BridgeDescription2.h>
+
+#include <DManip/DisplayObject.h>
+#include <DManip/DisplayList.h>
+#include <DManip/DisplayMgr.h>
+#include <DManip/DisplayView.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierDisplayObjectEvents
@@ -49,34 +51,24 @@ CPierDisplayObjectEvents::CPierDisplayObjectEvents(PierIndexType pierIdx,const C
    m_pFrame      = pFrame;
 }
 
-BEGIN_INTERFACE_MAP(CPierDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CPierDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CPierDisplayObjectEvents,Events);
-
-void CPierDisplayObjectEvents::EditPier(iDisplayObject* pDO)
+void CPierDisplayObjectEvents::EditPier(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   CComPtr<iDisplayList> pList;
-   pDO->GetDisplayList(&pList);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pList->GetDisplayMgr(&pDispMgr);
-
-   CDisplayView* pView = pDispMgr->GetView();
+   auto pList = pDO->GetDisplayList();
+   auto pDispMgr = pList->GetDisplayMgr();
+   auto pView = pDispMgr->GetView();
    CDocument* pDoc = pView->GetDocument();
 
    ((CPGSDocBase*)pDoc)->EditPierDescription(m_PierIdx,EPD_GENERAL);
 }
 
-void CPierDisplayObjectEvents::SelectPier(iDisplayObject* pDO)
+void CPierDisplayObjectEvents::SelectPier(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    // do the selection at the frame level because it will do this view
    // and the other view
    m_pFrame->SelectPier(m_PierIdx);
 }
 
-void CPierDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
+void CPierDisplayObjectEvents::SelectPrev(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    if ( m_PierIdx == 0 )
    {
@@ -87,16 +79,35 @@ void CPierDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
       }
       else
       {
-         m_pFrame->SelectDeck();  // select deck if there is one
+         m_pFrame->SelectAlignment();  // select deck if there is one
       }
    }
    else
    {
-      m_pFrame->SelectSpan(m_PierIdx-1);
+       auto pBroker = EAFGetBroker();
+       GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+       const auto& bearingType = pBridgeDesc->GetBearingType();
+       if (bearingType == pgsTypes::brtPier)
+       {
+           ReactionLocation rl;
+           rl.PierIdx = m_PierIdx;
+           rl.Face = PierReactionFaceType::rftBack;
+
+           const CPierData2* pPier = m_pBridgeDesc->GetPier(m_PierIdx);
+           const CSpanData2* pPrevSpan = pPier->GetPrevSpan();
+           const CGirderGroupData* pPrevGroup = m_pBridgeDesc->GetGirderGroup(pPrevSpan);
+           CGirderKey girderKey(pPrevGroup->GetIndex(), 0);
+           rl.GirderKey = girderKey;
+           m_pFrame->SelectBearing(rl);
+       }
+       else
+       {
+           m_pFrame->SelectSpan(m_PierIdx - 1);
+       }
    }
 }
 
-void CPierDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
+void CPierDisplayObjectEvents::SelectNext(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    if ( m_PierIdx == m_pBridgeDesc->GetPierCount()-1 )
    {
@@ -112,18 +123,48 @@ void CPierDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
    }
    else
    {
-      m_pFrame->SelectSpan(m_PierIdx);
+	   bool bInterior = false;
+       auto pBroker = EAFGetBroker();
+       GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+       const auto& bearingType = pBridgeDesc->GetBearingType();
+       if (bearingType == pgsTypes::brtPier)
+       {
+           auto pBroker = EAFGetBroker();
+           GET_IFACE2(pBroker, IBridge, pBridge);
+           bInterior = pBridge->IsInteriorPier(m_PierIdx);
+           if (bInterior)
+           {
+               m_pFrame->SelectSpan(m_PierIdx);
+           }
+           else
+           {
+               ReactionLocation rl;
+               rl.PierIdx = m_PierIdx;
+               rl.Face = PierReactionFaceType::rftAhead;
+
+               const CPierData2* pPier = m_pBridgeDesc->GetPier(m_PierIdx);
+               const CSpanData2* pNextSpan = pPier->GetNextSpan();
+               const CGirderGroupData* pNextGroup = m_pBridgeDesc->GetGirderGroup(pNextSpan);
+
+               CGirderKey girderKey(pNextGroup->GetIndex(), 0);
+               rl.GirderKey = girderKey;
+               m_pFrame->SelectBearing(rl);
+           }
+       }
+       else
+       {
+           m_pFrame->SelectSpan(m_PierIdx);
+       }       
    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPierDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
    if (pDO->IsSelected())
    {
-      pThis->EditPier(pDO);
+      EditPier(pDO);
       return true;
    }
    else
@@ -132,121 +173,106 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayO
    }
 }
 
-STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPierDisplayObjectEvents::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
-{
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
+bool CPierDisplayObjectEvents::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
+{   
    return false;
 }
 
-STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPierDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPierDisplayObjectEvents::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPierDisplayObjectEvents::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPierDisplayObjectEvents::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CPierDisplayObjectEvents::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CPierDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditPier(pDO);
+      EditPier(pDO);
       return true;
    }
    else if ( nChar == VK_LEFT )
    {
-      pThis->SelectPrev(pDO);
+      SelectPrev(pDO);
       return true;
    }
    else if ( nChar == VK_RIGHT )
    {
-      pThis->SelectNext(pDO);
+      SelectNext(pDO);
       return true;
    }
    else if ( nChar == VK_UP || nChar == VK_DOWN )
    {
-      const CPierData2* pPier = pThis->m_pBridgeDesc->GetPier(pThis->m_PierIdx);
+      const CPierData2* pPier = m_pBridgeDesc->GetPier(m_PierIdx);
       const CSpanData2* pPrevSpan = pPier->GetPrevSpan();
       const CSpanData2* pNextSpan = pPier->GetNextSpan();
-      const CGirderGroupData* pPrevGroup = pThis->m_pBridgeDesc->GetGirderGroup(pPrevSpan);
-      const CGirderGroupData* pNextGroup = pThis->m_pBridgeDesc->GetGirderGroup(pNextSpan);
+      const CGirderGroupData* pPrevGroup = m_pBridgeDesc->GetGirderGroup(pPrevSpan);
+      const CGirderGroupData* pNextGroup = m_pBridgeDesc->GetGirderGroup(pNextSpan);
       const CGirderGroupData* pGroup = (pNextGroup ? pNextGroup : pPrevGroup);
 
       CGirderKey girderKey(pGroup->GetIndex(),0);
-      pThis->m_pFrame->SelectGirder( girderKey );
+      m_pFrame->SelectGirder( girderKey );
       return true;
    }
    else if ( nChar == VK_DELETE )
    {
-      pThis->m_pFrame->PostMessage(WM_COMMAND,ID_DELETE,0);
+      m_pFrame->PostMessage(WM_COMMAND,ID_DELETE,0);
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CPierDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE_(CPierDisplayObjectEvents,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
 
    if ( pDO->IsSelected() )
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
-
-      CDisplayView* pView = pDispMgr->GetView();
+      auto pList = pDO->GetDisplayList();
+      auto pDispMgr = pList->GetDisplayMgr();
+      auto pView = pDispMgr->GetView();
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_PIER_CONTEXT,nullptr);
 
-      CComPtr<IBroker> pBroker;
-      pDoc->GetBroker(&pBroker);
+      
+      auto pBroker = pDoc->GetBroker();
       GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-      const CPierData2* pPier = pBridgeDesc->GetPier(pThis->m_PierIdx);
+      const CPierData2* pPier = pBridgeDesc->GetPier(m_PierIdx);
 
       bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
 
       if ( pPier->IsBoundaryPier() )
       {
          // get all valid connection types for the pier represented by this display object
-         std::vector<pgsTypes::BoundaryConditionType> validConnectionTypes( pBridgeDesc->GetBoundaryConditionTypes(pThis->m_PierIdx) );
+         std::vector<pgsTypes::BoundaryConditionType> validConnectionTypes( pBridgeDesc->GetBoundaryConditionTypes(m_PierIdx) );
 
          // Mapping between connection type and menu id
          std::map<pgsTypes::BoundaryConditionType,UINT> menuIDs;
@@ -275,7 +301,7 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       else
       {
          // get all valid connection types for the pier represented by this display object
-         std::vector<pgsTypes::PierSegmentConnectionType> validConnectionTypes( pBridgeDesc->GetPierSegmentConnectionTypes(pThis->m_PierIdx) );
+         std::vector<pgsTypes::PierSegmentConnectionType> validConnectionTypes( pBridgeDesc->GetPierSegmentConnectionTypes(m_PierIdx) );
 
          // Mapping between connection type and menu id
          std::map<pgsTypes::PierSegmentConnectionType,UINT> menuIDs;
@@ -302,12 +328,10 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
       for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
          IBridgePlanViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnPierContextMenu(pThis->m_PierIdx,pMenu);
+         pCallback->OnPierContextMenu(m_PierIdx,pMenu);
       }
 
-      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
-
-      delete pMenu;
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
 
       return true;
    }
@@ -315,34 +339,34 @@ STDMETHODIMP_(bool) CPierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObj
    return false;
 }
 
-STDMETHODIMP_(void) CPierDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CPierDisplayObjectEvents::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
+
 }
 
-STDMETHODIMP_(void) CPierDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CPierDisplayObjectEvents::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
+
 }
 
-STDMETHODIMP_(void) CPierDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CPierDisplayObjectEvents::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
+
 }
 
-STDMETHODIMP_(void) CPierDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CPierDisplayObjectEvents::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
+
 }
 
-STDMETHODIMP_(void) CPierDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CPierDisplayObjectEvents::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
-   pThis->SelectPier(pDO);
+
+   SelectPier(pDO);
 }
 
-STDMETHODIMP_(void) CPierDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CPierDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CPierDisplayObjectEvents,Events);
+
 }
 

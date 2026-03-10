@@ -28,9 +28,9 @@
 
 #include <PGSuperTypes.h>
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
-#include <psgLib\ISupportIcon.h>
+#include <PsgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 
 #include <IFace\BeamFactory.h>
@@ -44,19 +44,19 @@
 
 #include <Materials/Rebar.h>
 
-#include <psgLib\ShearData.h>
+#include <PsgLib\ShearData.h>
 #include <pgsExt\CamberMultipliers.h>
 
-class pgsLibraryEntryDifferenceItem;
 class pgsCompatibilityData;
 class CGirderMainSheet;
 class GirderLibraryEntry;
 class GirderLibraryEntryObserver;
+namespace PGS {namespace Library{class DifferenceItem;};};
 
 PSGLIBTPL WBFL::System::SubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>;
 
 interface IStrandGrid;
-interface IBeamFactory;
+
 
 
 /*****************************************************************************
@@ -75,69 +75,15 @@ LOG
 class PSGLIBCLASS GirderLibraryEntryObserver
 {
 public:
-
-   // GROUP: LIFECYCLE
-   //------------------------------------------------------------------------
-   // called by our subject to let us now he's changed, along with an optional
-   // hint
-   virtual void Update(GirderLibraryEntry& subject, Int32 hint)=0;
-};
-
-/*****************************************************************************
-CLASS 
-   GirderLibraryEntry
-
-   A library entry class for girder templates
-
-
-DESCRIPTION
-   This class may be used to describe girder templates
-
-LOG
-   rdp : 07.20.1998 : Created file
-*****************************************************************************/
-
-class CClassFactoryHolder
-{
-public:
-   CClassFactoryHolder(IClassFactory* factory)
-   {
-      m_ClassFactory = factory;
-      m_ClassFactory->LockServer(TRUE);
-   }
-
-   CClassFactoryHolder(const CClassFactoryHolder& rother) 
-   {
-      CComPtr<IClassFactory> pholder(m_ClassFactory);
-
-      m_ClassFactory = rother.m_ClassFactory;
-      m_ClassFactory->LockServer(TRUE);
-
-      if (pholder)
-         pholder->LockServer(FALSE);
-   }
-
-
-   ~CClassFactoryHolder()
-   {
-   }
-
-   HRESULT CreateInstance(IUnknown* pUnkOuter,REFIID riid,void** ppvObject)
-   {
-      return m_ClassFactory->CreateInstance(pUnkOuter,riid,ppvObject);
-   }
-
-private:
-   CComPtr<IClassFactory> m_ClassFactory;
+   // called by our subject to let us now he's changed, along with an optional hint
+   virtual void Update(GirderLibraryEntry& subject, Int32 hint) = 0;
 };
 
 class PSGLIBCLASS GirderLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
        public WBFL::System::SubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>
 {
 public:
-   typedef std::map<std::_tstring,CClassFactoryHolder> ClassFactoryCollection;
-   static ClassFactoryCollection ms_ClassFactories;
-   static std::vector<CComPtr<IBeamFactoryCLSIDTranslator>> ms_ExternalCLSIDTranslators; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs for external beam publishers
+   static std::vector<std::shared_ptr<PGS::Beams::BeamFactoryCLSIDTranslator>> ms_ExternalCLSIDTranslators; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs for external beam publishers
 
    static CString GetAdjustableStrandType(pgsTypes::AdjustableStrandType strandType);
 
@@ -367,8 +313,8 @@ public:
 
     // GROUP: ACCESS
    //------------------------------------------------------------------------
-   void SetBeamFactory(IBeamFactory* pFactory);
-   void GetBeamFactory(IBeamFactory** ppFactory) const;
+   void SetBeamFactory(std::shared_ptr<PGS::Beams::BeamFactory> pFactory);
+   std::shared_ptr<PGS::Beams::BeamFactory> GetBeamFactory() const;
 
    std::_tstring GetGirderName() const;
    std::_tstring GetGirderFamilyName() const;
@@ -566,6 +512,13 @@ public:
    void GetLongSteelMaterial(WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const;
 
    //------------------------------------------------------------------------
+   // Equality warning between project and library for long and trans reinf equality. Added in version 30
+   bool DoWarnForTransReinfEquality() const;
+   void SetDoWarnForTransReinfEquality(bool doCheck);
+   bool DoWarnForLongReinfEquality() const;
+   void SetDoWarnForLongReinfEquality(bool doCheck);
+
+   //------------------------------------------------------------------------
    // Set the location of the harping point as a ratio of span length
    void SetHarpingPointLocation(Float64 d);
 
@@ -613,8 +566,8 @@ public:
    void SetMaxFractionDebondedStrandsPerRow(Float64 fraction);
    Float64 GetMaxFractionDebondedStrandsPerRow() const;
 
-   void SetMaxDebondedStrandsPerSection(StrandIndexType n10orLess, StrandIndexType number, bool bCheck,Float64 fraction);
-   void GetMaxDebondedStrandsPerSection(StrandIndexType* p10orLess, StrandIndexType* pNumber, bool* pbCheck, Float64* pFraction) const;
+   void SetMaxDebondedStrandsPerSection(StrandIndexType n10orLess, StrandIndexType n10orMore,StrandIndexType n10orMore_07Strand, bool bCheck,Float64 fraction);
+   void GetMaxDebondedStrandsPerSection(StrandIndexType* p10orLess, StrandIndexType* pn10orMore, StrandIndexType* pn10orMore_07Strand, bool* pbCheck, Float64* pFraction) const;
 
    void  SetMaxDebondedLength(bool useSpanFraction, Float64 spanFraction, bool useHardDistance, Float64 hardDistance);
    void  GetMaxDebondedLength(bool* pUseSpanFraction, Float64* pSpanFraction, bool* pUseHardDistance, Float64* pHardDistance)const;
@@ -637,7 +590,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const GirderLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename,bool bReturnOnFirstDifference=false,bool considerName=false,bool bCompareSeedValues=false) const;
+   bool Compare(const GirderLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename,bool bReturnOnFirstDifference=false,bool considerName=false,bool bCompareSeedValues=false) const;
 
    bool IsEqual(const GirderLibraryEntry& rOther,bool bConsiderName=false) const;
 
@@ -721,15 +674,15 @@ public:
    bool GetDoReportBearingElevationsAtGirderEdges() const;
 
 
-   pgsCompatibilityData* GetCompatibilityData() const;
+   std::shared_ptr<PGS::Beams::CompatibilityData> GetCompatibilityData() const;
 
 protected:
    void CopyValuesAndAttributes(const GirderLibraryEntry& rOther);
 
 private:
    // GROUP: DATA MEMBERS
-   pgsCompatibilityData* m_pCompatibilityData;
-   CComPtr<IBeamFactory> m_pBeamFactory;
+   std::shared_ptr<PGS::Beams::CompatibilityData> m_pCompatibilityData;
+   std::shared_ptr<PGS::Beams::BeamFactory> m_pBeamFactory;
    Dimensions m_Dimensions;
    bool m_bSupportsVariableDepthSection;
    bool m_bIsVariableDepthSectionEnabled;
@@ -754,6 +707,7 @@ private:
    Float64 m_MaxDebondStrandsPerRow;
    StrandIndexType m_MaxNumDebondedStrandsPerSection10orLess;
    StrandIndexType  m_MaxNumDebondedStrandsPerSection;
+   StrandIndexType m_MaxNumDebondedStrandsPerSectionFor07; // max number for 0.7" diameter strands (added as a required in LRFD 10th Edition)
    bool m_bCheckMaxNumDebondedStrandsPerSection;
    Float64 m_MaxDebondedStrandsPerSection;
    Float64 m_MinDebondLengthDB; // distance between debond sections as a multiple of strand diameters
@@ -797,6 +751,11 @@ private:
    StraightStrandCollection m_TemporaryStrands;
 
    LongSteelInfoVec m_LongSteelInfo;
+
+   // Equality check between project and library. Added in version 30
+   bool m_bWarnTransReinfLibraryEquality;
+   bool m_bWarnLongReinfLibraryEquality;
+
 
    // version 4.0 
    // Got rid of two separate collections of harped strands and consolidate into one.
@@ -1035,19 +994,13 @@ private:
 
    bool m_DoReportBearingElevationsAtGirderEdges;
 
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
    bool IsEqual(IPoint2d* p1,IPoint2d* p2) const;
    bool IsEqual(IPoint2dCollection* points1,IPoint2dCollection* points2) const;
 
    void AddDimension(const std::_tstring& name,Float64 value);
 
-   HRESULT CreateBeamFactory(const std::_tstring& strCLSID);
+   bool CreateBeamFactory(const std::_tstring& strCLSID);
    void LoadIBeamDimensions(WBFL::System::IStructuredLoad* pLoad);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
    static std::map<std::_tstring,std::_tstring> m_CLSIDMap; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs
    static void InitCLSIDMap();

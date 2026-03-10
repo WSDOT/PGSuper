@@ -102,9 +102,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="BridgeAgent.def" />
-    <None Include="BridgeAgent.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IFace">

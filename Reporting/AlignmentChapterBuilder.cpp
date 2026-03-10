@@ -24,6 +24,8 @@
 #include <Reporting\AlignmentChapterBuilder.h>
 #include <Reporting\BridgeDescChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
 #include <IFace\AnalysisResults.h>
@@ -32,28 +34,11 @@
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CAlignmentChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CAlignmentChapterBuilder::CAlignmentChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CAlignmentChapterBuilder::GetName() const
 {
    return TEXT("Alignment");
@@ -65,11 +50,10 @@ rptChapter* CAlignmentChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
    auto pBrokerSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
 
-   // This report does not use the passd span and girder parameters
+   // This report does not use the passed span and girder parameters
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   CComPtr<IBroker> pBroker;
-   pBrokerSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerSpec->GetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
@@ -79,30 +63,3 @@ rptChapter* CAlignmentChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
    return pChapter;
 }
-
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CAlignmentChapterBuilder::Clone() const
-{
-   return std::make_unique<CAlignmentChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-

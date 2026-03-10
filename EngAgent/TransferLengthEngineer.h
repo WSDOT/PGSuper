@@ -21,31 +21,29 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+
+#include "EngAgent.h"
 #include <PgsExt\TransferLength.h>
 
 class pgsPointOfInterest;
 class rptChapter;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class pgsTransferLengthEngineer
 {
 public:
-   pgsTransferLengthEngineer();
-   ~pgsTransferLengthEngineer();
-
-   void SetBroker(IBroker* pBroker);
+   pgsTransferLengthEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker);
+   ~pgsTransferLengthEngineer() = default;
 
    void Invalidate();
 
    std::shared_ptr<pgsTransferLength> GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType,const GDRCONFIG* pConfig = nullptr) const;
    Float64 GetTransferLength(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig = nullptr) const;
 
-   //------------------------------------------------------------------------
    // Returns the transfer length adjustment factor. The factor is 0 at the
    // point where bond begins and 1.0 at the end of the transfer length
    Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig = nullptr) const;
 
-   //------------------------------------------------------------------------
    // Returns the transfer length adjustment factor. The factor is 0 at the
    // point where bond begins and 1.0 at the end of the transfer length
    Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const;
@@ -55,13 +53,14 @@ public:
 private:
    mutable std::array<std::map<const CSegmentKey, std::shared_ptr<pgsTransferLength>>, 3> m_MinCache;
    mutable std::array<std::map<const CSegmentKey, std::shared_ptr<pgsTransferLength>>, 3> m_MaxCache;
-   IBroker* m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
 };
 
 class pgsTransferLengthBase : public pgsTransferLength
 {
 public:
-   virtual void ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportDetails(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
    virtual std::_tstring GetTransferLengthType(pgsTypes::TransferLengthType xferLengthType) const { return std::_tstring(_T("Transfer Length")); }
    virtual void ReportTransferLengthSpecReference(rptParagraph* pPara) const = 0;
 };
@@ -70,7 +69,7 @@ class pgsMinuteTransferLength : public pgsTransferLengthBase
 {
 public:
    virtual Float64 GetTransferLength() const override;
-   virtual void ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void ReportDetails(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
 
 protected:
    void ReportTransferLengthSpecReference(rptParagraph* pPara) const override { /*do nothing - there isn't a spec type for this*/ };
@@ -89,7 +88,7 @@ public:
    WBFL::Materials::PsStrand::Coating GetCoating() const;
 
    virtual Float64 GetTransferLength() const override;
-   virtual void ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void ReportDetails(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
 
 protected:
    WBFL::Materials::PsStrand::Coating m_Coating{WBFL::Materials::PsStrand::Coating::None};
@@ -108,7 +107,7 @@ public:
    Float64 GetStrandDiameter() const;
 
    virtual Float64 GetTransferLength() const override;
-   virtual void ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void ReportDetails(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
 
 protected:
    Float64 m_db{ 0.0 };
@@ -129,7 +128,7 @@ public:
    pgsTypes::TransferLengthType GetTransferLengthType() const;
 
    virtual Float64 GetTransferLength() const override;
-   virtual void ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void ReportDetails(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
 
 protected:
    virtual std::_tstring GetTransferLengthType(pgsTypes::TransferLengthType xferLengthType) const override { return xferLengthType == pgsTypes::TransferLengthType::Minimum ? _T("Minimum Transfer Length") : _T("Maximum Transfer Length"); }

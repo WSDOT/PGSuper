@@ -23,11 +23,11 @@
 #ifndef INCLUDED_EDITBOUNDARYCONDITIONS_H_
 #define INCLUDED_EDITBOUNDARYCONDITIONS_H_
 
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 #include <PGSuperTypes.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
-class txnEditBoundaryConditions : public CEAFTransaction
+class txnEditBoundaryConditions : public WBFL::EAF::Transaction
 {
 public:
    // pier boundary conditions
@@ -39,7 +39,7 @@ public:
    txnEditBoundaryConditions(SupportIndexType tsIdx, pgsTypes::TemporarySupportType oldSupportType, pgsTypes::TempSupportSegmentConnectionType oldConnectionType, EventIndexType oldEventIdx, pgsTypes::TemporarySupportType newSupportType, pgsTypes::TempSupportSegmentConnectionType newConnectionType, EventIndexType newEventIdx);
 
    virtual std::_tstring Name() const;
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual bool Execute();
    virtual void Undo();
    virtual bool IsUndoable() const;

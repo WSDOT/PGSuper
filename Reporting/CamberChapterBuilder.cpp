@@ -25,13 +25,9 @@
 #include <Reporting\BasicCamberChapterBuilder.h>
 #include <Reporting\TimeStepCamberChapterBuilder.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CCamberChapterBuilder::CCamberChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -46,8 +42,7 @@ LPCTSTR CCamberChapterBuilder::GetName() const
 rptChapter* CCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    rptChapter* pChapter;
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
@@ -60,9 +55,4 @@ rptChapter* CCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
       pChapter = CBasicCamberChapterBuilder().Build(pRptSpec,level);
    }
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCamberChapterBuilder::Clone() const
-{
-   return std::make_unique<CCamberChapterBuilder>();
 }

@@ -42,7 +42,7 @@ class CCopyGirderDlg : public CDialog
 {
 // Construction
 public:
-	CCopyGirderDlg(IBroker* pBroker, const std::map<IDType,ICopyGirderPropertiesCallback*>&  rcopyGirderPropertiesCallbacks, IDType selectedID, CWnd* pParent = nullptr);
+	CCopyGirderDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::map<IDType,ICopyGirderPropertiesCallback*>&  rcopyGirderPropertiesCallbacks, IDType selectedID, CWnd* pParent = nullptr);
 
 // Dialog Data
 	//{{AFX_DATA(CCopyGirderDlg)
@@ -116,7 +116,7 @@ protected:
    std::map<int,CGirderKey> m_FromListIndicies;
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    const std::map<IDType, ICopyGirderPropertiesCallback*> m_CopyGirderPropertiesCallbacks;
    std::set<IDType> m_SelectedIDs; 
 

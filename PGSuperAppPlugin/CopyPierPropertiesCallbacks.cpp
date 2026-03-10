@@ -25,21 +25,18 @@
 
 #include <EAF\EAFUtilities.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
 #include <IFace\DocumentType.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib/SpecLibraryEntry.h>
 
 #include <Reporter\ReportingUtils.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////// reporting utilities
 inline void ColorFromRow(rptRcTable* p_table, RowIndexType row, ColumnIndexType nCols)
@@ -217,8 +214,7 @@ enum CanCopyBoundaryConditionType { ccbOkCopy, ccbPGSplice, ccbIncompatiblePierT
 
 static CanCopyBoundaryConditionType CanCopyBoundaryConditionData(PierIndexType fromPierIdx, const std::vector<PierIndexType>& toPiers)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    // Multiple reasons why we cannot copy
    // First is that we won't even consider spliced girders (too complicated)
@@ -250,8 +246,7 @@ static CanCopyBoundaryConditionType CanCopyBoundaryConditionData(PierIndexType f
 
 static bool CanCopyConnectionData(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    // Multiple reasons why we cannot copy
    // In general, we cannot copy to or from when a segment spans a pier
@@ -278,12 +273,12 @@ static bool CanCopyConnectionData(PierIndexType fromPierIdx,const std::vector<Pi
 
 
 // Declaration of comparison reports
-static void PierAllPropertiesComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx);
-static void PierConnectionPropertiesComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);
-static void PierDiaphragmPropertiesComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx);
-static void PierModelPropertiesComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx);
+static void PierAllPropertiesComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx);
+static void PierConnectionPropertiesComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);
+static void PierDiaphragmPropertiesComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx);
+static void PierModelPropertiesComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx);
 
-static void PierMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx);
+static void PierMaterialsComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx);
 static void write_connection_abbrevation_footnotes(rptParagraph * pPara);
 
 ////////////////////////////////////////////////////
@@ -300,7 +295,7 @@ txnCopyPierAllProperties::~txnCopyPierAllProperties()
 {
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyPierAllProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyPierAllProperties::CreateClone() const
 {
    return std::make_unique<txnCopyPierAllProperties>(m_FromPierIdx,m_ToPiers);
 }
@@ -332,8 +327,7 @@ bool txnCopyPierConnectionProperties::Execute()
    {
       m_DidDoCopy = true;
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
 
       GET_IFACE2(pBroker, IEvents, pEvents);
       pEvents->HoldEvents(); // Large bridges can take a long time. Don't fire any changed events until all changes are done
@@ -398,8 +392,7 @@ void txnCopyPierConnectionProperties::Undo()
 {
    if (m_DidDoCopy)  
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
       CanCopyBoundaryConditionType canCopyBC = CanCopyBoundaryConditionData(m_FromPierIdx, m_ToPiers);
@@ -426,7 +419,7 @@ void txnCopyPierConnectionProperties::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyPierConnectionProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyPierConnectionProperties::CreateClone() const
 {
    return std::make_unique<txnCopyPierConnectionProperties>(m_FromPierIdx,m_ToPiers);
 }
@@ -449,8 +442,7 @@ txnCopyPierDiaphragmProperties::~txnCopyPierDiaphragmProperties()
 
 bool txnCopyPierDiaphragmProperties::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEvents, pEvents);
    pEvents->HoldEvents(); // Large bridges can take a long time. Don't fire any changed events until all changes are done
 
@@ -488,8 +480,8 @@ bool txnCopyPierDiaphragmProperties::Execute()
          ConnectionLibraryEntry::DiaphragmLoadType backLoadType, aheadLoadType;
          if (locType == pcblContinousSegment)
          {
-            backLoadType  = ConnectionLibraryEntry::ApplyAtBearingCenterline;
-            aheadLoadType = ConnectionLibraryEntry::ApplyAtBearingCenterline;
+            backLoadType  = ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline;
+            aheadLoadType = ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline;
          }
          else
          {
@@ -510,8 +502,7 @@ bool txnCopyPierDiaphragmProperties::Execute()
 
 void txnCopyPierDiaphragmProperties::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -531,7 +522,7 @@ void txnCopyPierDiaphragmProperties::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyPierDiaphragmProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyPierDiaphragmProperties::CreateClone() const
 {
    return std::make_unique<txnCopyPierDiaphragmProperties>(m_FromPierIdx,m_ToPiers);
 }
@@ -554,8 +545,7 @@ txnCopyPierModelProperties::~txnCopyPierModelProperties()
 
 bool txnCopyPierModelProperties::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEvents, pEvents);
    pEvents->HoldEvents(); // Large bridges can take a long time. Don't fire any changed events until all changes are done
 
@@ -619,8 +609,7 @@ bool txnCopyPierModelProperties::Execute()
 
 void txnCopyPierModelProperties::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    std::vector<CPierData2>::iterator iterPCD = m_PierData.begin();
@@ -638,7 +627,7 @@ void txnCopyPierModelProperties::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyPierModelProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyPierModelProperties::CreateClone() const
 {
    return std::make_unique<txnCopyPierModelProperties>(m_FromPierIdx,m_ToPiers);
 }
@@ -667,7 +656,7 @@ BOOL CCopyPierAllProperties::CanCopy(PierIndexType fromPierIdx,const std::vector
    return CanCopyConnectionData(fromPierIdx, toPiers);
 }
 
-std::unique_ptr<CEAFTransaction> CCopyPierAllProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyPierAllProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    return std::make_unique<txnCopyPierAllProperties>(fromPierIdx, toPiers);
 }
@@ -680,8 +669,7 @@ UINT CCopyPierAllProperties::GetPierEditorTabIndex()
 rptParagraph* CCopyPierAllProperties::BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    rptParagraph* pPara = new rptParagraph;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    PierAllPropertiesComparison(pPara, pBroker, fromPierIdx);
 
@@ -704,7 +692,7 @@ BOOL CCopyPierConnectionProperties::CanCopy(PierIndexType fromPierIdx,const std:
    return CanCopyConnectionData(fromPierIdx, toPiers);
 }
 
-std::unique_ptr<CEAFTransaction> CCopyPierConnectionProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyPierConnectionProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    return std::make_unique<txnCopyPierConnectionProperties>(fromPierIdx, toPiers);
 }
@@ -717,8 +705,7 @@ UINT CCopyPierConnectionProperties::GetPierEditorTabIndex()
 rptParagraph* CCopyPierConnectionProperties::BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    rptParagraph* pPara = new rptParagraph;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    PierConnectionPropertiesComparison(pPara, pBroker, fromPierIdx, toPiers);
 
@@ -741,7 +728,7 @@ BOOL CCopyPierDiaphragmProperties::CanCopy(PierIndexType fromPierIdx,const std::
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyPierDiaphragmProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyPierDiaphragmProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    return std::make_unique<txnCopyPierDiaphragmProperties>(fromPierIdx, toPiers);
 }
@@ -754,8 +741,7 @@ UINT CCopyPierDiaphragmProperties::GetPierEditorTabIndex()
 rptParagraph* CCopyPierDiaphragmProperties::BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    rptParagraph* pPara = new rptParagraph;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    PierDiaphragmPropertiesComparison(pPara, pBroker, fromPierIdx);
 
@@ -779,7 +765,7 @@ BOOL CCopyPierModelProperties::CanCopy(PierIndexType fromPierIdx,const std::vect
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyPierModelProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyPierModelProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    return std::make_unique<txnCopyPierModelProperties>(fromPierIdx, toPiers);
 }
@@ -792,8 +778,7 @@ UINT CCopyPierModelProperties::GetPierEditorTabIndex()
 rptParagraph* CCopyPierModelProperties::BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    rptParagraph* pPara = new rptParagraph;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    PierModelPropertiesComparison(pPara, pBroker, fromPierIdx);
 
@@ -807,7 +792,7 @@ rptParagraph* CCopyPierModelProperties::BuildComparisonReportParagraph(PierIndex
 //////////////////// Reporting functions /////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void PierAllPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx)
+void PierAllPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx)
 {
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -887,7 +872,7 @@ void PierAllPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker,
    }
 }
 
-void PierConnectionPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+void PierConnectionPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -1044,7 +1029,7 @@ void PierConnectionPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> p
    *pPara << rptNewLine;
 }
 
-void PierDiaphragmPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx)
+void PierDiaphragmPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx)
 {
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -1138,15 +1123,15 @@ void PierDiaphragmPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pB
 
          switch (pPier->GetDiaphragmLoadType(pgsTypes::Back))
          {
-         case ConnectionLibraryEntry::ApplyAtBearingCenterline:
+         case ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline:
             (*p_table)(row, col++) << _T("Apply load at centerline bearing");
             (*p_table)(row, col++) << RPT_NA;
             break;
-         case ConnectionLibraryEntry::ApplyAtSpecifiedLocation:
+         case ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation:
             (*p_table)(row, col++) << _T("Apply load to girder");
             (*p_table)(row, col++) << cmpdim.SetValue(pPier->GetDiaphragmLoadLocation(pgsTypes::Back));
             break;
-         case ConnectionLibraryEntry::DontApply:
+         case ConnectionLibraryEntry::DiaphragmLoadType::DontApply:
             (*p_table)(row, col++) << _T("Ignore weight");
             (*p_table)(row, col++) << RPT_NA;
             break;
@@ -1184,15 +1169,15 @@ void PierDiaphragmPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pB
 
          switch (pPier->GetDiaphragmLoadType(pgsTypes::Ahead))
          {
-         case ConnectionLibraryEntry::ApplyAtBearingCenterline:
+         case ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline:
             (*p_table)(row, col++) << _T("Apply load at centerline bearing");
             (*p_table)(row, col++) << RPT_NA;
             break;
-         case ConnectionLibraryEntry::ApplyAtSpecifiedLocation:
+         case ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation:
             (*p_table)(row, col++) << _T("Apply load to girder");
             (*p_table)(row, col++) << cmpdim.SetValue(pPier->GetDiaphragmLoadLocation(pgsTypes::Ahead));
             break;
-         case ConnectionLibraryEntry::DontApply:
+         case ConnectionLibraryEntry::DiaphragmLoadType::DontApply:
             (*p_table)(row, col++) << _T("Ignore weight");
             (*p_table)(row, col++) << RPT_NA;
             break;
@@ -1221,11 +1206,11 @@ void PierDiaphragmPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pB
    }
 }
 
-void PierBearingPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx)
+void PierBearingPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx)
 {
 }
 
-void PierModelPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx)
+void PierModelPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx)
 {
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -1517,7 +1502,7 @@ void PierModelPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroke
    }
 }
 
-void PierMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx)
+void PierMaterialsComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx)
 {
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
@@ -1619,19 +1604,19 @@ void write_connection_abbrevation_footnotes(rptParagraph * pPara)
 {
    *pPara << Underline(Bold(_T("Legend:"))) << rptNewLine;
    *pPara << Bold(_T("Bearing Offset Measure")) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, true, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, true, false) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, false, false) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true, false) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder, true, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder, true, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder, false, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier, true, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier, true, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier, false, false) << rptNewLine;
    *pPara << rptNewLine;
    *pPara << Bold(_T("End Distance Measure")) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder, true, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, true, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, false, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, true, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier, false, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder, false, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier, false, false) << rptNewLine;
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -1804,7 +1789,7 @@ bool PierDiaphragmData::IsSideEqual(pgsTypes::PierFaceType myFace,pgsTypes::Pier
       {
          return false;
       }
-      else if (m_DiaphragmLoadType[myFace] == ConnectionLibraryEntry::ApplyAtSpecifiedLocation)
+      else if (m_DiaphragmLoadType[myFace] == ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation)
       {
          return ::IsEqual(m_LoadLocation[myFace], rOther.m_LoadLocation[otherFace]);
       }

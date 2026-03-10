@@ -24,18 +24,16 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "PostTensioningPage.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocument.h>
 #include "PGSuperDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CPostTensioningPage dialog
@@ -54,8 +52,8 @@ CPostTensioningPage::~CPostTensioningPage()
 
 void CPostTensioningPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CPropertyPage::DoDataExchange(pDX);
@@ -85,8 +83,8 @@ BOOL CPostTensioningPage::OnInitDialog()
 
    // TODO:  Add extra initialization here
    BOOL bShow;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {

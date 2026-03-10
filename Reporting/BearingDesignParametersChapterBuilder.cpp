@@ -33,47 +33,32 @@
 #include <Reporting\CombinedReactionTable.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 #include <IFace\DistributionFactors.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\PierData2.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CBearingDesignParametersChapterBuilder
-****************************************************************************/
+#include <PsgLib\PierData2.h>
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CBearingDesignParametersChapterBuilder::CBearingDesignParametersChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CBearingDesignParametersChapterBuilder::GetName() const
 {
-   return TEXT("Bearing Design Parameters");
+   return TEXT("Bearing Design Parameters (Obsolete)");
 }
 
 rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey( pGirderRptSpec->GetGirderKey() );
 
    // we want the final configuration... that would be in the last interval
@@ -231,8 +216,11 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
    PierIndexType startPierIdx,endPierIdx;
    pBridge->GetGirderGroupPiers(girderKey.groupIndex,&startPierIdx,&endPierIdx);
 
+
+
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+
 
    // TRICKY: use adapter class to get correct reaction interfaces
    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, intervalIdx, girderKey) );
@@ -503,9 +491,4 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingRecessSlope.png")) << rptNewLine;
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder>CBearingDesignParametersChapterBuilder::Clone() const
-{
-   return std::make_unique<CBearingDesignParametersChapterBuilder>();
 }

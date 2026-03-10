@@ -26,7 +26,7 @@
 #include <Reporting\MVRChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
@@ -37,11 +37,6 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -77,9 +72,9 @@ CCombinedShearTable& CCombinedShearTable::operator= (const CCombinedShearTable& 
 }
 
 //======================== OPERATIONS =======================================
-void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
+void CCombinedShearTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,
                                 const CGirderKey& girderKey,
-                                IEAFDisplayUnits* pDisplayUnits,
+                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                 IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                                 bool bDesign,bool bRating) const
 {
@@ -113,9 +108,9 @@ void CCombinedShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
 }
 
 
-void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedShearTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating) const
 {
@@ -411,9 +406,9 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    }
 }
 
-void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedShearTable::BuildCombinedLiveTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating) const
 {
@@ -710,9 +705,9 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    }
 }
 
-void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedShearTable::BuildLimitStateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating) const
 {

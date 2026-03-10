@@ -24,18 +24,13 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "BeamDimensionGrid.h"
 #include "GirderDimensionsPage.h"
 #include "GirderMainSheet.h"
 #include <system\tokenizer.h>
 #include <IFace\BeamFactory.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CBeamDimensionGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -206,8 +201,7 @@ void CBeamDimensionGrid::ResetGrid()
    if ( GetRowCount() > 0 )
       RemoveRows(1,GetRowCount());
 
-   CComPtr<IBeamFactory> pFactory;
-   pDad->m_Entry.GetBeamFactory(&pFactory);
+   auto pFactory = pDad->m_Entry.GetBeamFactory();
    const auto& names = pFactory->GetDimensionNames();
 
    const ROWCOL num_rows = (ROWCOL)names.size();

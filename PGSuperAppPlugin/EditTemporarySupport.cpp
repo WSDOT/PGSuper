@@ -24,13 +24,8 @@
 #include "EditTemporarySupport.h"
 #include "PGSpliceDoc.h"
 
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditTemporarySupport::txnEditTemporarySupport(SupportIndexType tsIndex,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc) :
 txnEditBridgeDescription(oldBridgeDesc,newBridgeDesc),
@@ -42,7 +37,7 @@ txnEditTemporarySupport::~txnEditTemporarySupport()
 {
 }
 
-std::unique_ptr<CEAFTransaction> txnEditTemporarySupport::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditTemporarySupport::CreateClone() const
 {
    return std::make_unique<txnEditTemporarySupport>(m_tsIndex,m_BridgeDescription[0],m_BridgeDescription[1]);
 }

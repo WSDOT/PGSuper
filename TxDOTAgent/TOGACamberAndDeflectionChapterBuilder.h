@@ -20,75 +20,16 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_TOGACAMBERANDDEFLECTIONCHAPTERBUILDER_H_
-#define INCLUDED_TOGACAMBERANDDEFLECTIONCHAPTERBUILDER_H_
-
-interface IEAFDisplayUnits;
+#pragma once
 
 #include <ReportManager\ReportManager.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-/*****************************************************************************
-CLASS 
-   CTogaCamberAndDeflectionChapterBuilder
-
-   Girder Summary Chapter Builder for TOGA.
-
-
-DESCRIPTION
-   Reports the IBNS and other girder data for TOGA
-
-LOG
-   rdp : 06.13.2006 : Created file
-*****************************************************************************/
-
 class CTogaCamberAndDeflectionChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CTogaCamberAndDeflectionChapterBuilder(bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CTogaCamberAndDeflectionChapterBuilder(const CTogaCamberAndDeflectionChapterBuilder&) = delete;
-   CTogaCamberAndDeflectionChapterBuilder& operator=(const CTogaCamberAndDeflectionChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_TogaCamberAndDeflectionChapterBuilder_H_

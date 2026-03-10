@@ -24,13 +24,13 @@
 
 #include <Reporting\ReportingExp.h>
 #include <ReportManager\TitlePageBuilder.h>
-#include <WBFLCore.h>
+
 
 class CTOGATitlePageBuilder :
    public WBFL::Reporting::TitlePageBuilder
 {
 public:
-   CTOGATitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion=true);
+   CTOGATitlePageBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion=true);
    CTOGATitlePageBuilder(const CTOGATitlePageBuilder& other);
    ~CTOGATitlePageBuilder(void);
 
@@ -40,6 +40,7 @@ public:
    virtual std::unique_ptr<WBFL::Reporting::TitlePageBuilder> Clone() const override;
 
 protected:
-   CComPtr<IBroker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
    bool m_bFullVersion;
 };

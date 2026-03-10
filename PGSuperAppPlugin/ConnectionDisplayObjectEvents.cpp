@@ -26,39 +26,22 @@
 #include "stdafx.h"
 #include "PGSuperApp.h"
 #include "ConnectionDisplayObjectEvents.h"
-#include "mfcdual.h"
 #include "pgsuperdoc.h"
 #include <IFace\EditByUI.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CConnectionDisplayObjectEvents
+#include <DManip/DisplayObject.h>
+#include <DManip/DisplayList.h>
+#include <DManip/DisplayMgr.h>
+#include <DManip/DisplayView.h>
 
 CConnectionDisplayObjectEvents::CConnectionDisplayObjectEvents(PierIndexType pierIdx)
 {
    m_PierIdx = pierIdx;
 }
 
-BEGIN_INTERFACE_MAP(CConnectionDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CConnectionDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CConnectionDisplayObjectEvents,Events);
-
-void CConnectionDisplayObjectEvents::EditPier(iDisplayObject* pDO)
+void CConnectionDisplayObjectEvents::EditPier(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   CComPtr<iDisplayList> pList;
-   pDO->GetDisplayList(&pList);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pList->GetDisplayMgr(&pDispMgr);
-
-   CDisplayView* pView = pDispMgr->GetView();
+   auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
    CDocument* pDoc = pView->GetDocument();
 
    ((CPGSuperDoc*)pDoc)->EditPierDescription(m_PierIdx,EPD_CONNECTION);
@@ -66,12 +49,11 @@ void CConnectionDisplayObjectEvents::EditPier(iDisplayObject* pDO)
 
 /////////////////////////////////////////////////////////////////////////////
 // CConnectionDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CConnectionDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
    if (pDO->IsSelected())
    {
-      pThis->EditPier(pDO);
+      EditPier(pDO);
       return true;
    }
    else
@@ -80,94 +62,78 @@ STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnLButtonDblClk(iDi
    }
 }
 
-STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CConnectionDisplayObjectEvents::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CConnectionDisplayObjectEvents::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CConnectionDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CConnectionDisplayObjectEvents::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CConnectionDisplayObjectEvents::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CConnectionDisplayObjectEvents::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CConnectionDisplayObjectEvents::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CConnectionDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditPier(pDO);
+      EditPier(pDO);
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CConnectionDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CConnectionDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(void) CConnectionDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CConnectionDisplayObjectEvents::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CConnectionDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CConnectionDisplayObjectEvents::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CConnectionDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CConnectionDisplayObjectEvents::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CConnectionDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CConnectionDisplayObjectEvents::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CConnectionDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CConnectionDisplayObjectEvents::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CConnectionDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CConnectionDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CConnectionDisplayObjectEvents,Events);
 }
 

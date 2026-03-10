@@ -56,5 +56,5 @@ LOG
 *****************************************************************************/
 
 // Main External function that write the file
-int TxDOT_WriteLegacyCADDataToFile(CString& filePath, IBroker* pBroker, const std::vector<CGirderKey>& girderKeys);
+int TxDOT_WriteLegacyCADDataToFile(CString& filePath, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys);
 

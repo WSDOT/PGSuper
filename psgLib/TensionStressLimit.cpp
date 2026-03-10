@@ -19,8 +19,9 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
 #include "StdAfx.h"
-#include <psgLib\TensionStressLimit.h>
+#include <PsgLib/TensionStressLimit.h>
 #include <EAF/EAFDisplayUnits.h>
 
 bool TensionStressLimit::operator==(const TensionStressLimit& other) const
@@ -37,7 +38,7 @@ bool TensionStressLimit::operator==(const TensionStressLimit& other) const
    return true;
 }
 
-void TensionStressLimit::Report(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits,ConcreteSymbol concrete) const
+void TensionStressLimit::Report(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,ConcreteSymbol concrete) const
 {
    INIT_UV_PROTOTYPE(rptSqrtPressureValue, tension_coefficient, pDisplayUnits->GetTensionCoefficientUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, tension, pDisplayUnits->GetStressUnit(), true);

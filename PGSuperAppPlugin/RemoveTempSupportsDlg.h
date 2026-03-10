@@ -1,8 +1,8 @@
 #pragma once
 
-#include <PgsExt\RemoveTemporarySupportsActivity.h>
-#include <PgsExt\TimelineManager.h>
-#include <PgsExt\TemporarySupportData.h>
+#include <PsgLib\RemoveTemporarySupportsActivity.h>
+#include <PsgLib\TimelineManager.h>
+#include <PsgLib\TemporarySupportData.h>
 #include <PgsExt\TimelineItemListBox.h>
 #include <EAF\EAFDisplayUnits.h>
 
@@ -27,7 +27,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
-   CComPtr<IEAFDisplayUnits> m_pDisplayUnits;
+   std::shared_ptr<IEAFDisplayUnits> m_pDisplayUnits;
    const CBridgeDescription2* m_pBridgeDesc;
 
    CTimelineItemListBox m_lbSource;

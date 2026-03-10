@@ -26,14 +26,12 @@
 
 #include "CLSID.h"
 
-#include "resource.h"       // main symbols
-
 #include "ReporterBase.h"
 
 #include <IFace\Project.h>
 #include <IFace\ReportOptions.h>
 
-#include <EAF\EAFInterfaceCache.h>
+
 
 #include <memory>
 
@@ -49,12 +47,7 @@ class rptReport;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperReporterImp
-class ATL_NO_VTABLE CPGSuperReporterImp : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CPGSuperReporterImp, &CLSID_PGSuperReportAgent>,
-   public CReporterBase,
-   public IConnectionPointContainerImpl<CPGSuperReporterImp>,
-   public IAgentEx,
+class CPGSuperReporterImp : public CReporterBase,
    public IReportOptions,
    public ISpecificationEventSink,
    public CProxyIReporterEventSink<CPGSuperReporterImp>
@@ -62,33 +55,16 @@ class ATL_NO_VTABLE CPGSuperReporterImp :
 public:
 	CPGSuperReporterImp()
 	{
-      m_pBroker = 0;
    }
-
-DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPER_REPORTER)
-
-BEGIN_COM_MAP(CPGSuperReporterImp)
-	COM_INTERFACE_ENTRY(IAgent)
-   COM_INTERFACE_ENTRY(IAgentEx)
-   COM_INTERFACE_ENTRY(ISpecificationEventSink)
-	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-   COM_INTERFACE_ENTRY(IReportOptions)
-END_COM_MAP()
-
-BEGIN_CONNECTION_POINT_MAP(CPGSuperReporterImp)
-	CONNECTION_POINT_ENTRY(IID_IReporterEventSink)
-END_CONNECTION_POINT_MAP()
 
 
 // IAgent
 public:
-	STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker) override;
-   STDMETHOD(RegInterfaces)() override;
-	STDMETHOD(Init)() override;
-	STDMETHOD(Reset)() override;
-	STDMETHOD(ShutDown)() override;
-   STDMETHOD(Init2)() override;
-   STDMETHOD(GetClassID)(CLSID* pCLSID) override;
+   bool RegisterInterfaces() override;
+   bool Init() override;
+   bool Reset() override;
+   bool ShutDown() override;
+   CLSID GetCLSID() const;
 
 protected:
    // CReporterBase implementation
@@ -96,16 +72,16 @@ protected:
 
 // ISpecificationEventSink
 public:
-   virtual HRESULT OnSpecificationChanged() override;
-   virtual HRESULT OnAnalysisTypeChanged() override;
+   HRESULT OnSpecificationChanged() override;
+   HRESULT OnAnalysisTypeChanged() override;
 
 // IReportOptions
-      virtual bool IncludeSpanAndGirder4Pois(const CGirderKey& rKey) override;
+   bool IncludeSpanAndGirder4Pois(const CGirderKey& rKey) override;
 
 private:
-   DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
-   DWORD m_dwSpecCookie;
+   IDType m_dwSpecCookie;
 
    HRESULT InitReportBuilders();
 };

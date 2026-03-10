@@ -22,7 +22,6 @@
 
 #pragma once
 
-#include <EAF\EAFAutoProgress.h>
 #include <PgsExt\ConstructabilityArtifact.h>
 #include <PgsExt\GirderDesignArtifact.h>
 #include <PgsExt\SegmentDesignArtifact.h>
@@ -30,16 +29,11 @@
 #include <PgsExt\FlexuralStressArtifact.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\SpanData2.h>
-#include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PoiArtifactKey.h>
 #include <PgsExt\PoiMgr.h>
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\HandlingData.h>
 #include <PgsExt\StrandSlopeArtifact.h>
 #include <PgsExt\StrandStressArtifact.h>
 #include <PgsExt\PrincipalTensionStressArtifact.h>
-#include <PgsExt\GirderLabel.h>
 #include <PgsExt\CapacityToDemand.h>
 #include <PgsExt\ReinforcementFatigueArtifact.h>

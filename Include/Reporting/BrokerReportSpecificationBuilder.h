@@ -24,18 +24,21 @@
 
 #include <Reporting\ReportingExp.h>
 #include <ReportManager\ReportManager.h>
-#include <WBFLCore.h>
+
+namespace WBFL { namespace EAF { class Broker; }; };
+
 
 class REPORTINGCLASS CBrokerReportSpecificationBuilder :
    public WBFL::Reporting::ReportSpecificationBuilder
 {
 public:
-   CBrokerReportSpecificationBuilder(IBroker* pBroker);
+   CBrokerReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CBrokerReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const override;
 
 protected:
-   CComPtr<IBroker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
 };

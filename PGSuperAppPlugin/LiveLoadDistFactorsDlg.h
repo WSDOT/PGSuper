@@ -31,7 +31,7 @@
 #include "resource.h"
 #include "LLDFGrid.h"
 #include "LLDFPierGrid.h"
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <LRFD\LRFD.h>
 
 inline GirderIndexType GetPierGirderCount(const CPierData2* pPier)
@@ -77,7 +77,7 @@ public:
 
    CBridgeDescription2 m_BridgeDesc;
    WBFL::LRFD::RangeOfApplicabilityAction m_RangeOfApplicabilityAction;
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

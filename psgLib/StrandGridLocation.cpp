@@ -24,16 +24,11 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "StrandGridLocation.h"
 #include <MfcTools\CustomDDX.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 static const int ENDBOX_CTRLS[] = {IDC_HS_BOX, IDC_HS_TXT, IDC_HS_XT, IDC_HS_YT, IDC_GEX, IDC_GEY, IDC_GEX_T, IDC_GEY_T, -1};
 

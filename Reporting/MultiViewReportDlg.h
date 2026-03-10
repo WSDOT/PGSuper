@@ -28,32 +28,29 @@ class CMultiViewReportDlg : public CDialog
 	DECLARE_DYNAMIC(CMultiViewReportDlg)
 
 public:
-	CMultiViewReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,
-                       const CGirderKey& girderKey,
+	CMultiViewReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,
+		std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,
                        UINT nIDTemplate = IDD_MULTIVIEWREPORT,CWnd* pParent = nullptr);
 	virtual ~CMultiViewReportDlg();
 
 // Dialog Data
 	enum { IDD = IDD_MULTIVIEWREPORT };
 
-   std::vector<CGirderKey> GetGirderKeys() const;
-
    std::vector<std::_tstring> m_ChapterList;
 
 protected:
    CGirderKey m_GirderKey;
-   std::vector<CGirderKey> m_GirderKeys;
+
 
 
    const WBFL::Reporting::ReportDescription& m_RptDesc;
    std::shared_ptr<WBFL::Reporting::ReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    CCheckListBox	m_ChList;
 
 protected:
-   void UpdateButtonText();
 
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 
@@ -62,7 +59,7 @@ protected:
    virtual void UpdateChapterList();
    virtual void ClearChapterCheckMarks(BOOL bClear = TRUE);
    virtual void InitChapterListFromSpec();
-   virtual void InitFromRptSpec();
+
 
 	virtual BOOL OnInitDialog();
 
@@ -70,8 +67,8 @@ protected:
 public:
    afx_msg void OnCbnSelchangeSpan();
    afx_msg void OnHelp();
-   afx_msg void OnBnClickedRadio();
-   afx_msg void OnBnClickedSelectMultipleButton();
+   afx_msg virtual void OnBnClickedRadio() {};
+   afx_msg virtual void OnBnClickedSelectMultipleButton();
    afx_msg void OnSelectAll();
    afx_msg void OnDeselectAll();
 };

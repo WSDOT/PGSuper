@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -40,6 +40,6 @@ public:
    CNetGirderPropertiesTable();
    virtual ~CNetGirderPropertiesTable();
 
-   virtual rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,
-                             IEAFDisplayUnits* pDisplayUnits) const;
+   virtual rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };

@@ -22,16 +22,16 @@
 
 #pragma once
 #include <PgsExt\PgsExtExp.h>
-#include <EAF\EAFTransaction.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <IFace\Project.h>
+#include <EAF\Transaction.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <array>
 
-class PGSEXTCLASS txnEditBridge : public CEAFTransaction
+class PGSEXTCLASS txnEditBridge : public WBFL::EAF::Transaction
 {
 public:
    txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
       pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
+       pgsTypes::ClimateCondition oldClimateCondition, pgsTypes::ClimateCondition newClimateCondition,
       Float64 oldRelHumidity, Float64 newRelHumidity
       );
 
@@ -41,7 +41,7 @@ public:
 
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const override;
    virtual std::_tstring Name() const override;
    virtual bool IsUndoable() const override;
    virtual bool IsRepeatable() const override;
@@ -53,5 +53,6 @@ private:
 
 	std::array<CBridgeDescription2, 2> m_BridgeDesc;
    std::array<pgsTypes::ExposureCondition, 2> m_ExposureCondition;
+   std::array<pgsTypes::ClimateCondition, 2> m_ClimateCondition;
    std::array<Float64, 2> m_RelHumidity;
 };

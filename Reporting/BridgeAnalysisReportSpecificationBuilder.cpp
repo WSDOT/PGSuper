@@ -25,16 +25,12 @@
 #include <Reporting\BridgeAnalysisReportSpecification.h>
 #include <Reporting\BridgeAnalysisReportDlg.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Selection.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CBridgeAnalysisReportSpecificationBuilder::CBridgeAnalysisReportSpecificationBuilder(IBroker* pBroker) :
+CBridgeAnalysisReportSpecificationBuilder::CBridgeAnalysisReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
 CGirderLineReportSpecificationBuilder(pBroker)
 {
 }
@@ -48,16 +44,16 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBridgeAnalysisReportSpeci
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Prompt for girder and chapter list
-   GET_IFACE(ISelection,pSelection);
+   GET_IFACE2(GetBroker(),ISelection,pSelection);
    GirderIndexType girder = pSelection->GetSelectedGirder().girderIndex;
 
-   CBridgeAnalysisReportDlg dlg(m_pBroker,rptDesc,pOldRptSpec); // span only mode
+   CBridgeAnalysisReportDlg dlg(GetBroker(), rptDesc, pOldRptSpec); // span only mode
    dlg.m_SegmentKey.girderIndex = girder;
 
    if ( dlg.DoModal() == IDOK )
    {
       // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
-      std::shared_ptr<CBridgeAnalysisReportSpecification> pOldGRptSpec = std::dynamic_pointer_cast<CBridgeAnalysisReportSpecification>(pOldRptSpec);
+      auto pOldGRptSpec = std::dynamic_pointer_cast<CBridgeAnalysisReportSpecification>(pOldRptSpec);
 
       std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
       if(pOldGRptSpec)

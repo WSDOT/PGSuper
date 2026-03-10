@@ -62,8 +62,9 @@ DESCRIPTION
 // {E53A3DB2-DD61-11d2-AD34-00105A9AF985}
 DEFINE_GUID(IID_ISegmentLifting, 
 0xe53a3db2, 0xdd61, 0x11d2, 0xad, 0x34, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface ISegmentLifting : IUnknown
+class ISegmentLifting
 {
+public:
    // location of lifting loop measured from end of girder
    virtual Float64 GetLeftLiftingLoopLocation(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetRightLiftingLoopLocation(const CSegmentKey& segmentKey) const = 0;
@@ -83,8 +84,9 @@ DESCRIPTION
 // {1D543E66-DD7E-11d2-AD34-00105A9AF985}
 DEFINE_GUID(IID_ISegmentHauling, 
 0x1d543e66, 0xdd7e, 0x11d2, 0xad, 0x34, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface ISegmentHauling : IUnknown
+class ISegmentHauling
 {
+public:
    // location of truck support location measured from end of girder
    virtual Float64 GetLeadingOverhang(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetTrailingOverhang(const CSegmentKey& segmentKey) const = 0;

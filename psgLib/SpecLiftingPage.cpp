@@ -24,19 +24,14 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
-#include <psgLib/LiftingCriteria.h>
-#include <psgLib/SpecificationCriteria.h>
+#include <PsgLib\PsgLib.h>
+#include <PsgLib/LiftingCriteria.h>
+#include <PsgLib/SpecificationCriteria.h>
 #include "SpecLiftingPage.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
 #include <Stability/StabilityTypes.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecLiftingPage property page

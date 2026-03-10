@@ -25,34 +25,21 @@
 #pragma once
 
 #include <Plugins\PGSuperIEPlugin.h>
-#include "resource.h"       // main symbols
+#include <EAF\ComponentObject.h>
 
-
-/////////////////////////////////////////////////////////////////////////////
-// CPGSuperDataImporter
-class ATL_NO_VTABLE CPGSuperDataImporter : 
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CPGSuperDataImporter, &CLSID_PGSuperDataImporter>,
-   public IPGSDataImporter
+class CPGSuperDataImporter : public WBFL::EAF::ComponentObject,
+   public PGS::IDataImporter
 {
 public:
-	CPGSuperDataImporter()
-	{
-	}
+   CPGSuperDataImporter()
+   {
+   }
 
-DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPERDATAIMPORTER)
-
-DECLARE_PROTECT_FINAL_CONSTRUCT()
-
-BEGIN_COM_MAP(CPGSuperDataImporter)
-	COM_INTERFACE_ENTRY(IPGSDataImporter)
-END_COM_MAP()
-
-// IPGSDataImporter
+   // IDataImporter
 public:
    STDMETHOD(Init)(UINT nCmdID) override;
-   STDMETHOD(GetMenuText)(/*[out,retval]*/BSTR*  bstrText) const override;
-   STDMETHOD(GetBitmapHandle)(/*[out]*/HBITMAP* phBmp) const override;
-   STDMETHOD(GetCommandHintText)(BSTR*  bstrText) const override;
-   STDMETHOD(Import)(/*[in]*/IBroker* pBroker) override;
+   CString GetMenuText() const override;
+   HBITMAP GetBitmapHandle() const override;
+   CString GetCommandHintText() const override;
+   HRESULT Import(std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
 };

@@ -34,8 +34,9 @@
 
 #include <PGSuperUnits.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -43,11 +44,6 @@
 
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 UINT AheadControls[] =
 {
@@ -142,8 +138,8 @@ void CPierGirderSpacingPage::DoDataExchange(CDataExchange* pDX)
    DDV_SpacingGrid(pDX,IDC_NEXT_SPAN_SPACING_GRID,&m_GirderSpacingGrid[pgsTypes::Ahead]);
    DDV_SpacingGrid(pDX,IDC_PREV_SPAN_SPACING_GRID,&m_GirderSpacingGrid[pgsTypes::Back]);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER, m_RefGirderIdx[pgsTypes::Back]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER, m_RefGirderIdx[pgsTypes::Ahead]);
@@ -273,8 +269,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
    CPierData2* pPier = pParent->m_pPier;
 
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
+   auto broker = EAFGetBroker();
    GET_IFACE2(broker,IBridge,pBridge);
 
    Float64 skew_angle;
@@ -502,7 +497,7 @@ void CPierGirderSpacingPage::FillGirderSpacingMeasurementComboBox(int nIDC, Conn
 
    // if the bearing offset is measured along the CL girder, the girder spacing cannot be measured at the CL bearing
    // this is because there would not be a unique CL bearing line common to all girders if the girders are not parallel to one another
-   if (bearingMeasure!=ConnectionLibraryEntry::AlongGirder)
+   if (bearingMeasure!=ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder)
    {
       idx = pSpacingType->AddString(_T("Measured at and along the CL bearing"));
       item_data = HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::AlongItem);
@@ -708,8 +703,8 @@ GirderIndexType CPierGirderSpacingPage::GetMinGirderCount(pgsTypes::PierFaceType
    // same factory
    const GirderLibraryEntry* pGdrEntry = pGirderGroup->GetGirderLibraryEntry(0);
 
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   auto factory = pGdrEntry->GetBeamFactory();
+
 
    return factory->GetMinimumBeamCount();
 }
@@ -883,8 +878,7 @@ void CPierGirderSpacingPage::OnChangeSameGirderSpacing()
          {
             // there is more than one unique girder spacing... which one do we want to use
             // for the entire bridge???
-            CComPtr<IBroker> broker;
-            EAFGetBroker(&broker);
+            auto broker = EAFGetBroker();
             GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
             CSelectItemDlg dlg;

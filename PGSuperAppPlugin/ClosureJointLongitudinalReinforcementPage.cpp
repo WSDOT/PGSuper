@@ -3,18 +3,13 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "ClosureJointLongitudinalReinforcementPage.h"
 #include "ClosureJointDlg.h"
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 #include <IFace\BeamFactory.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CClosureJointLongitudinalReinforcementPage dialog
@@ -52,8 +47,8 @@ void CClosureJointLongitudinalReinforcementPage::DoDataExchange(CDataExchange* p
       m_Grid.GetRebarData(&rebarData);
 
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
       const CPrecastSegmentData* pLeftSegment = pParent->m_ClosureJoint.GetLeftSegment();
       const CPrecastSegmentData* pRightSegment = pParent->m_ClosureJoint.GetRightSegment();
@@ -108,8 +103,8 @@ void CClosureJointLongitudinalReinforcementPage::DoDataExchange(CDataExchange* p
             point->Move(testpnt.X(), testpnt.Y());
 
             const GirderLibraryEntry* pGdrEntry = pSegment->GetGirder()->GetGirderLibraryEntry();
-            CComPtr<IBeamFactory> factory;
-            pGdrEntry->GetBeamFactory(&factory);
+            auto factory = pGdrEntry->GetBeamFactory();
+
 
             CComPtr<IGirderSection> gdrSection;
             factory->CreateGirderSection(pBroker, INVALID_ID, pGdrEntry->GetDimensions(), height, tbf, &gdrSection);

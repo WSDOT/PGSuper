@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psglib\LibraryEditorView.h>
+#include <PsgLib\LibraryEditorView.h>
 #include <PsgLib\ISupportLibraryManager.h>
 #include <LibraryFw\LibraryManager.h>
 
@@ -37,11 +37,6 @@
 #include "..\PGSuperAppPlugin\resource.h" // resource file for PGSuper
 #endif
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define color_mask RGB(255,255,255)
 

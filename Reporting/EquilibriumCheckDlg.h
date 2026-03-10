@@ -33,7 +33,7 @@ class CEquilibriumCheckDlg : public CDialog
 	DECLARE_DYNAMIC(CEquilibriumCheckDlg)
 
 public:
-	CEquilibriumCheckDlg(IBroker* pBroker,std::shared_ptr<CEquilibriumCheckReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent = nullptr);   // standard constructor
+	CEquilibriumCheckDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CEquilibriumCheckReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CEquilibriumCheckDlg();
 
 // Dialog Data
@@ -48,7 +48,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    std::shared_ptr<CEquilibriumCheckReportSpecification> m_pRptSpec;
 
    pgsPointOfInterest m_InitialPOI;

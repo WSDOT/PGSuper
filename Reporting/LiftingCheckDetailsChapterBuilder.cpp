@@ -30,7 +30,8 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
-
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Bridge.h>
@@ -41,29 +42,11 @@
 
 #include <EAF/EAFApp.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CLiftingCheckDetailsChapterBuilder
-****************************************************************************/
-
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CLiftingCheckDetailsChapterBuilder::CLiftingCheckDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CLiftingCheckDetailsChapterBuilder::GetName() const
 {
    return TEXT("Lifting Check Details");
@@ -71,9 +54,8 @@ LPCTSTR CLiftingCheckDetailsChapterBuilder::GetName() const
 
 rptChapter* CLiftingCheckDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CComPtr<IBroker> pBroker;
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    
@@ -130,10 +112,10 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(const std::shared_ptr<cons
                *pChapter << p;
             }
 
-            const WBFL::Stability::LiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(segmentKey);
-            const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
-            const WBFL::Stability::ILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
-            const WBFL::Stability::LiftingResults& results = pArtifact->GetLiftingResults();
+            auto pArtifact = pArtifacts->GetLiftingCheckArtifact(segmentKey);
+            auto pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
+            auto pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
+            auto results = pArtifact->GetLiftingResults();
 
             Float64 Ll, Lr;
             pStabilityProblem->GetSupportLocations(&Ll, &Lr);
@@ -162,27 +144,3 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(const std::shared_ptr<cons
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLiftingCheckDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CLiftingCheckDetailsChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

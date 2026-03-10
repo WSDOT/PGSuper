@@ -24,10 +24,17 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "LibraryMgrPluginExample_i.h"
+#include "CLSID.h"
 #include "dllmain.h"
 
-CLibraryMgrPluginExampleModule _AtlModule;
+#include "LibMgrDocPlugin.h"
+#include <EAF\ComponentModule.h>
+
+WBFL::EAF::ComponentModule Module_;
+
+EAF_BEGIN_OBJECT_MAP(ObjectMap)
+   EAF_OBJECT_ENTRY(CLSID_LibMgrDocPlugin, LibraryMgr::ExampleDocPlugin)
+EAF_END_OBJECT_MAP()
 
 class CLibraryMgrPluginExampleApp : public CWinApp
 {
@@ -47,10 +54,12 @@ CLibraryMgrPluginExampleApp theApp;
 
 BOOL CLibraryMgrPluginExampleApp::InitInstance()
 {
-	return CWinApp::InitInstance();
+   Module_.Init(ObjectMap);
+   return CWinApp::InitInstance();
 }
 
 int CLibraryMgrPluginExampleApp::ExitInstance()
 {
+   Module_.Term();
 	return CWinApp::ExitInstance();
 }

@@ -1,20 +1,20 @@
 HKCR
 {
-	PGSuper.PGSpliceAppPlugin.1 = s 'PGSplice'
+	PGSuper.PGSplicePluginApp.1 = s 'PGSplice'
 	{
 		CLSID = s '{64EC8856-B47A-4CD3-A8F0-1270ADD7733D}'
 	}
-	PGSuper.PGSpliceAppPlugin = s 'PGSplice'
+	PGSuper.PGSplicePluginApp = s 'PGSplice'
 	{
 		CLSID = s '{64EC8856-B47A-4CD3-A8F0-1270ADD7733D}'
-		CurVer = s 'PGSuper.PGSpliceAppPlugin.1'
+		CurVer = s 'PGSuper.PGSplicePluginApp.1'
 	}
 	NoRemove CLSID
 	{
 		ForceRemove {64EC8856-B47A-4CD3-A8F0-1270ADD7733D} = s 'PGSplice'
 		{
-			ProgID = s 'PGSuper.PGSpliceAppPlugin.1'
-			VersionIndependentProgID = s 'PGSuper.PGSpliceAppPlugin'
+			ProgID = s 'PGSuper.PGSplicePluginApp.1'
+			VersionIndependentProgID = s 'PGSuper.PGSplicePluginApp'
 			ForceRemove 'Programmable'
 			InprocServer32 = s '%MODULE%'
 			{

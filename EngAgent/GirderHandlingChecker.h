@@ -20,41 +20,26 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_GIRDERHANDLINGCHECKER_H_
-#define INCLUDED_PGSEXT_GIRDERHANDLINGCHECKER_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
 #include <PgsExt\PgsExtExp.h>
+#include "EngAgent.h"
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\PoiMap.h>
 #include <PgsExt\GirderModelFactory.h>
 
 #include <IFace\PointOfInterest.h>
 
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
 // Virtual members of polymorphic hauling checker
 class pgsGirderHaulingChecker
 {
 public:
-   virtual pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) = 0;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey) = 0;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) = 0;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId) = 0;
-   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId, bool* bSuccess, SHARED_LOGFILE LOGFILE) = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey) = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId) = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId, bool* bSuccess, SHARED_LOGFILE LOGFILE) = 0;
 };
-
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -73,24 +58,17 @@ LOG
 class pgsGirderHandlingChecker
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Constructor
-   pgsGirderHandlingChecker(IBroker* pBroker,StatusGroupIDType statusGroupID);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsGirderHandlingChecker();
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
+   pgsGirderHandlingChecker(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
+   pgsGirderHandlingChecker() = delete;
+   pgsGirderHandlingChecker(const pgsGirderHandlingChecker&) = delete;
+   pgsGirderHandlingChecker& operator=(const pgsGirderHandlingChecker&) = delete;
+   ~pgsGirderHandlingChecker() = default;
 
    // Factory Method to create the appropriate hauling checker
-   pgsGirderHaulingChecker* CreateGirderHaulingChecker();
+   std::unique_ptr<pgsGirderHaulingChecker> CreateGirderHaulingChecker();
 
    // Utility functions for the checking classes
-   static void ComputeMoments(IBroker* pBroker, pgsGirderModelFactory* pGirderModelFactory, const CSegmentKey& segmentKey,
+   static void ComputeMoments(std::weak_ptr<WBFL::EAF::Broker> pBroker, pgsGirderModelFactory* pGirderModelFactory, const CSegmentKey& segmentKey,
                        IntervalIndexType intervalIdx,
                        Float64 leftOH,Float64 glen,Float64 rightOH,
                        Float64 E, 
@@ -98,40 +76,8 @@ public:
                        const PoiList& rpoiVec,
                        std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection);
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
-   IBroker* m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
    StatusGroupIDType m_StatusGroupID;
-
-   // GROUP: LIFECYCLE
-   // can't construct without a broker
-   pgsGirderHandlingChecker() = delete;
-
-   // Prevent accidental copying and assignment
-   pgsGirderHandlingChecker(const pgsGirderHandlingChecker&) = delete;
-   pgsGirderHandlingChecker& operator=(const pgsGirderHandlingChecker&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_PGSEXT_GIRDERHANDLINGCHECKER_H_

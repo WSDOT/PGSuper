@@ -84,7 +84,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(ARPDIR)\PGSuper\Include\;$(ARPDIR)\PGSuper\Include\$(Platform);$(ARPDIR)\PGSuper\Include\Plugins;$(ARPDIR)\WBFL\Include;$(ARPDIR)\WBFL\Include\$(Platform);%(AdditionalIncludeDirectories);$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -173,14 +173,6 @@
     </ClCompile>
     <ClCompile Include="LibMgrDocPlugin.cpp" />
     <ClCompile Include="LibraryMgrPluginExample.cpp" />
-    <ClCompile Include="LibraryMgrPluginExample_i.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
-    </ClCompile>
     <ClCompile Include="MyView.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -193,12 +185,9 @@
     <None Include="LibraryMgrPluginExample.rgs" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="LibraryMgrPluginExample.idl" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="CLSID.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="LibMgrDocPlugin.h" />
-    <ClInclude Include="LibraryMgrPluginExample_i.h" />
     <ClInclude Include="MyView.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -210,12 +199,8 @@
     <Image Include="MenuItem.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

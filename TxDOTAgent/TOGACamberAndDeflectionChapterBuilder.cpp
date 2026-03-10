@@ -28,47 +28,34 @@
 #include "TogaCamberAndDeflectionChapterBuilder.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\PierData2.h>
 
+#include <PsgLib\PierData2.h>
+#include <psgLib/SpecLibraryEntry.h>
 #include <psgLib\ConnectionLibraryEntry.h>
 #include <psgLib/LiveLoadDeflectionCriteria.h>
 #include <psgLib/CreepCriteria.h>
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CTogaCamberAndDeflectionChapterBuilder
-****************************************************************************/
+static void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-
-static void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTogaCamberAndDeflectionChapterBuilder::CTogaCamberAndDeflectionChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTogaCamberAndDeflectionChapterBuilder::GetName() const
 {
    return TEXT("Camber and Deflections");
@@ -77,8 +64,7 @@ LPCTSTR CTogaCamberAndDeflectionChapterBuilder::GetName() const
 rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -89,24 +75,8 @@ rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr<
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaCamberAndDeflectionChapterBuilder::Clone() const
-{
-   return std::make_unique<CTogaCamberAndDeflectionChapterBuilder>();
-}
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
+void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;

@@ -20,69 +20,49 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// BulbTeeDistFactorEngineer.cpp : Implementation of CBulbTeeDistFactorEngineer
+// BulbTeeDistFactorEngineer.cpp : Implementation of BulbTeeDistFactorEngineer
 #include "stdafx.h"
-#include "BulbTeeDistFactorEngineer.h"
+#include "Beams.h"
+#include <Beams\BulbTeeDistFactorEngineer.h>
 #include <IFace\Project.h>
 
-#include "IBeamDistFactorEngineer.h"
+#include <Beams/IBeamDistFactorEngineer.h>
 #include "MultiWebDistFactorEngineer.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+using namespace PGS::Beams;
 
-/////////////////////////////////////////////////////////////////////////////
-// 
-void CBulbTeeDistFactorEngineer::Init()
+BulbTeeDistFactorEngineer::BulbTeeDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+   DistFactorEngineer(pBroker, statusGroupID)
 {
-   ATLASSERT(!m_pImpl);
-   CComObject<CMultiWebDistFactorEngineer>* pEngineer;
-   CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
-
-   pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btDeckBulbTee);
-
-   m_pImpl = pEngineer;
-
-   ATLASSERT(m_pImpl);
+   m_pImpl = std::make_unique<MultiWebDistFactorEngineer>(MultiWebDistFactorEngineer::BeamType::DeckBulbTee, pBroker, statusGroupID);
 }
 
-void CBulbTeeDistFactorEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID)
-{
-   m_pBroker = pBroker;
-
-   m_pImpl->SetBroker(pBroker, statusGroupID);
-}
-
-
-Float64 CBulbTeeDistFactorEngineer::GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig)
+Float64 BulbTeeDistFactorEngineer::GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig)
 {
    return m_pImpl->GetMomentDF(spanKey,ls, pConfig);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace, const GDRCONFIG* pConfig)
+Float64 BulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace, const GDRCONFIG* pConfig)
 {
    return m_pImpl->GetNegMomentDF(pierIdx,gdrIdx,ls,pierFace,pConfig);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig)
+Float64 BulbTeeDistFactorEngineer::GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig)
 {
    return m_pImpl->GetShearDF(spanKey,ls, pConfig);
 }
 
-void CBulbTeeDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void BulbTeeDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    m_pImpl->BuildReport(girderKey,pChapter,pDisplayUnits);
 }
 
-bool CBulbTeeDistFactorEngineer::Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
+bool BulbTeeDistFactorEngineer::Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
 {
    return m_pImpl->Run1250Tests(spanKey,ls,pid,bridgeId,resultsFile,poiFile);
 }
 
-bool CBulbTeeDistFactorEngineer::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
+bool BulbTeeDistFactorEngineer::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
                                Float64* gpM, Float64* gpM1, Float64* gpM2,
                                Float64* gnM, Float64* gnM1, Float64* gnM2,
                                Float64* gV,  Float64* gV1,  Float64* gV2 )
@@ -92,17 +72,17 @@ bool CBulbTeeDistFactorEngineer::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes
                                gV,  gV1, gV2); 
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls)
+Float64 BulbTeeDistFactorEngineer::GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls)
 {
    return m_pImpl->GetSkewCorrectionFactorForMoment(spanKey,ls);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls)
+Float64 BulbTeeDistFactorEngineer::GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls)
 {
    return m_pImpl->GetSkewCorrectionFactorForShear(spanKey,ls);
 }
 
-std::_tstring CBulbTeeDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
+std::_tstring BulbTeeDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
    return m_pImpl->GetComputationDescription(girderKey, libraryEntryName, decktype, connect);
 }

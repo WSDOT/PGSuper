@@ -30,7 +30,7 @@ class REPORTINGCLASS CEquilibriumCheckReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-	CEquilibriumCheckReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
+	CEquilibriumCheckReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
 	CEquilibriumCheckReportSpecification(const CEquilibriumCheckReportSpecification& rOther);
    ~CEquilibriumCheckReportSpecification(void);
 

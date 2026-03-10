@@ -29,11 +29,11 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "initguid.h"
+#include <initguid.h>
 #include "BridgeAgent.h"
 #include "CLSID.h"
 
-#include <WBFLCore_i.c>
+
 #include <WBFLTools_i.c>
 #include <WBFLGeometry_i.c>
 #include <WBFLCogo_i.c>
@@ -46,7 +46,7 @@
 #include <EAF\EAFTransactions.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\EditByUI.h>
 #include <IFace\DocumentType.h>
 #include <IFace\MomentCapacity.h>
@@ -55,19 +55,19 @@
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
-#include <System\ComCatMgr.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
+// This is needed as long as WBFLGeometricBridge is a COM object
+// This DLL implements custom versions of EffectiveFlangeWidthTool
 CComModule _Module;
-
 BEGIN_OBJECT_MAP(ObjectMap)
-	OBJECT_ENTRY(CLSID_BridgeAgent, CBridgeAgentImp)
 END_OBJECT_MAP()
+
+#include <EAF\ComponentModule.h>
+WBFL::EAF::ComponentModule Module_;
+
+EAF_BEGIN_OBJECT_MAP(ObjectMap2)
+	EAF_OBJECT_ENTRY(CLSID_BridgeAgent, CBridgeAgentImp)
+EAF_END_OBJECT_MAP()
 
 class CBridgeAgentApp : public CWinApp
 {
@@ -80,76 +80,13 @@ CBridgeAgentApp theApp;
 
 BOOL CBridgeAgentApp::InitInstance()
 {
-	_Module.Init(ObjectMap, m_hInstance);
+	_Module.Init(ObjectMap,m_hInstance);
+	Module_.Init(ObjectMap2);
 	return CWinApp::InitInstance();
 }
 
 int CBridgeAgentApp::ExitInstance()
 {
-	_Module.Term();
+	Module_.Term();
 	return CWinApp::ExitInstance();
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// Used to determine whether the DLL can be unloaded by OLE
-
-STDAPI DllCanUnloadNow(void)
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   LONG cLock = _Module.GetLockCount();
-   HRESULT hr = AfxDllCanUnloadNow();
-   bool bCanUnload = ( hr == S_OK && cLock == 0 );
-	return ( bCanUnload ) ? S_OK : S_FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Returns a class factory to create an object of the requested type
-
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-	return _Module.GetClassObject(rclsid, riid, ppv);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllRegisterServer - Adds entries to the system registry
-HRESULT RegisterAgent(bool bRegister)
-{
-   HRESULT hr = S_OK;
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_BridgeAgent,CATID_PGSuperAgent,bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_BridgeAgent,CATID_PGSpliceAgent,bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   return S_OK;
-}
-
-STDAPI DllRegisterServer(void)
-{
-	// registers object, typelib and all interfaces in typelib
-	HRESULT hr = _Module.RegisterServer(FALSE);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   return RegisterAgent(true);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllUnregisterServer - Removes entries from the system registry
-
-STDAPI DllUnregisterServer(void)
-{
-   RegisterAgent(false);
-	_Module.UnregisterServer();
-	return S_OK;
-}
-
-

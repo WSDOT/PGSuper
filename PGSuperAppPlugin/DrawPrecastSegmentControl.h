@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Graphing/PointMapper.h>
-#include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\PrecastSegmentData.h>
+#include <PsgLib\Keys.h>
 
 // CDrawPrecastSegmentControl
 

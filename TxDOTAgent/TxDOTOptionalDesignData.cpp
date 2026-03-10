@@ -27,11 +27,6 @@
 #include <WbflAtlExt.h>
 #include <limits>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -46,13 +41,6 @@ m_OriginalDesignGirderData(this),
 m_PrecasterDesignGirderData(this)
 {
    ResetData();
-}
-
-CTxDOTOptionalDesignData::CTxDOTOptionalDesignData(const CTxDOTOptionalDesignData& rOther):
-m_OriginalDesignGirderData(this),
-m_PrecasterDesignGirderData(this)
-{
-   MakeCopy(rOther);
 }
 
 CTxDOTOptionalDesignData::~CTxDOTOptionalDesignData()
@@ -113,31 +101,7 @@ void CTxDOTOptionalDesignData::ResetStrandNoData()
    m_PrecasterDesignGirderData.ResetStrandNoData();
 }
 
-//======================== OPERATORS  =======================================
-CTxDOTOptionalDesignData& CTxDOTOptionalDesignData::operator= (const CTxDOTOptionalDesignData& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//bool CTxDOTOptionalDesignData::operator==(const CTxDOTOptionalDesignData& rOther) const
-//{
-//   ASSERT(0);
-//   return false;
-//}
-//
-//
-//bool CTxDOTOptionalDesignData::operator!=(const CTxDOTOptionalDesignData& rOther) const
-//{
-//   return !operator==(rOther);
-//}
-
-//======================== OPERATIONS =======================================
-HRESULT CTxDOTOptionalDesignData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
+HRESULT CTxDOTOptionalDesignData::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress> pProgress)
 {
    HRESULT hr = S_OK;
 
@@ -200,7 +164,7 @@ HRESULT CTxDOTOptionalDesignData::Save(IStructuredSave* pStrSave,IProgress* pPro
    return hr;
 }
 
-HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
+HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress)
 {
    USES_CONVERSION;
 
@@ -429,7 +393,6 @@ HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pPro
 }
 
 
-//======================== ACCESS     =======================================
 void CTxDOTOptionalDesignData::SetGirderEntryName(const CString& value)
 {
    if (value != m_GirderEntryName)
@@ -875,7 +838,6 @@ const CTxDOTOptionalDesignGirderData* CTxDOTOptionalDesignData::GetPrecasterDesi
    return &m_PrecasterDesignGirderData;
 }
 
-//======================== INQUIRY    =======================================
 // Let our observers listen
 void CTxDOTOptionalDesignData::Attach(ITxDataObserver* pObserver)
 {
@@ -886,61 +848,6 @@ void CTxDOTOptionalDesignData::Attach(ITxDataObserver* pObserver)
 void CTxDOTOptionalDesignData::Detach(ITxDataObserver* pObserver)
 {
    m_pObservers.erase(pObserver);
-}
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CTxDOTOptionalDesignData::MakeCopy(const CTxDOTOptionalDesignData& rOther)
-{
-   m_GirderEntryName = rOther.m_GirderEntryName;
-   m_LeftConnectionEntryName = rOther.m_LeftConnectionEntryName;
-   m_RightConnectionEntryName = rOther.m_RightConnectionEntryName;
-   m_PGSuperFileName = rOther.m_PGSuperFileName;
-   m_GirderConcreteUnitWeight = rOther.m_GirderConcreteUnitWeight;
-
-   m_Bridge = rOther.m_Bridge;
-   m_BridgeID = rOther.m_BridgeID;
-   m_JobNumber = rOther.m_JobNumber;
-   m_Engineer = rOther.m_Engineer;
-   m_Company = rOther.m_Company;
-   m_Comments = rOther.m_Comments;
-
-   m_SpanNo = rOther.m_SpanNo;
-   m_BeamNo = rOther.m_BeamNo;
-
-   m_BeamType = rOther.m_BeamType;
-
-   // Set all floats to infinity
-   m_BeamSpacing = rOther.m_BeamSpacing;
-   m_SpanLength = rOther.m_SpanLength;
-   m_SlabThickness = rOther.m_SlabThickness;
-   m_RelativeHumidity = rOther.m_RelativeHumidity;
-   m_LldfMoment = rOther.m_LldfMoment;
-   m_LldfShear = rOther.m_LldfShear;
-
-   m_EcSlab = rOther.m_EcSlab;
-   m_EcBeam = rOther.m_EcBeam;
-   m_FcSlab = rOther.m_FcSlab;
-
-   m_Ft = rOther.m_Ft;
-   m_Fb = rOther.m_Fb;
-   m_Mu = rOther.m_Mu;
-
-   m_WNonCompDc = rOther.m_WNonCompDc;
-   m_WCompDc = rOther.m_WCompDc;
-   m_WCompDw = rOther.m_WCompDw;
-
-   m_SelectedProjectCriteriaLibrary = rOther.m_SelectedProjectCriteriaLibrary;
-
-   m_OriginalDesignGirderData = rOther.m_OriginalDesignGirderData;
-   m_PrecasterDesignGirderData = rOther.m_PrecasterDesignGirderData;
-}
-
-void CTxDOTOptionalDesignData::MakeAssignment(const CTxDOTOptionalDesignData& rOther)
-{
-   MakeCopy( rOther );
 }
 
 void CTxDOTOptionalDesignData::FireChanged(ITxDataObserver::ChangeType change)

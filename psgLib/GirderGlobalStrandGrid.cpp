@@ -24,22 +24,17 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "GirderGlobalStrandGrid.h"
 #include "StrandGridLocation.h"
 #include "GirderHarpedStrandPage.h"
 #include <system\tokenizer.h>
 
 #include <EAF\EAFApp.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 #include "StrandGenerationDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 static COLORREF DISABLED_COLOR = RGB(200,200,200);
 static COLORREF SYS_COLOR = GetSysColor(COLOR_WINDOW);

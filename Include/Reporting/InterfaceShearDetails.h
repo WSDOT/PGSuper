@@ -24,8 +24,8 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IBridge;
-interface IEAFDisplayUnits;
+class IBridge;
+class IEAFDisplayUnits;
 class pgsHorizontalShearArtifact;
 
 /*****************************************************************************
@@ -47,7 +47,7 @@ class REPORTINGCLASS CInterfaceShearDetails
 public:
    //------------------------------------------------------------------------
    // Default constructor
-   CInterfaceShearDetails(IEAFDisplayUnits* pDisplayUnits);
+   CInterfaceShearDetails(std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    //------------------------------------------------------------------------
    // Destructor
@@ -55,11 +55,11 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the table.
-   void Build(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls);
+   void Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls);
 
 protected:
-   void BuildDesign(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls);
-   void BuildRating(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey, IEAFDisplayUnits* pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls);
+   void BuildDesign(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls);
+   void BuildRating(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls);
 
 private:
    //------------------------------------------------------------------------
@@ -82,15 +82,15 @@ private:
    pgsTypes::ShearFlowMethod m_ShearFlowMethod;
    bool m_bDeckPanels;
 
-   rptRcTable* CreateVuiTable(IBroker* pBroker, rptChapter* pChapter,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits);
+   rptRcTable* CreateVuiTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
    void FillVuiTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact);
    
-   rptRcTable* CreateAvfTable(IBroker* pBroker, rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits);
+   rptRcTable* CreateAvfTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
    void FillAvfTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact);
    
-   rptRcTable* CreateVniTable(IBroker* pBroker, rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey,bool bIsUHPC, const std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts);
+   rptRcTable* CreateVniTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& girderKey,bool bIsUHPC, const std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts);
    void FillVniTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, bool bIsUHPC, const pgsHorizontalShearArtifact* pArtifact);
    
-   rptRcTable* CreateMinAvfTable(rptChapter* pChapter, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits, bool bIsRoughened, bool doAllStirrupsEngageDeck,bool bIsUHPC);
-   void FillMinAvfTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact, Float64 llss, IEAFDisplayUnits* pDisplayUnits, bool bIsUHPC);
+   rptRcTable* CreateMinAvfTable(rptChapter* pChapter, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bIsRoughened, bool doAllStirrupsEngageDeck,bool bIsUHPC);
+   void FillMinAvfTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact, Float64 llss, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bIsUHPC);
 };

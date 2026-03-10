@@ -27,52 +27,47 @@
 
 #include "PGSuperInterfaces.h"
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\Helpers.h>
+#include <psgLib/GirderLibraryEntry.h>
+#include <psgLib/SpecLibraryEntry.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\Helpers.h>
 
 #include <psgLib/CreepCriteria.h>
 
 
-HRESULT CPGSuperProjectImporter::FinalConstruct()
+CPGSuperProjectImporter::CPGSuperProjectImporter()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    VERIFY(m_Bitmap.LoadBitmap(IDB_IEPLUGIN));
-   return S_OK;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CPGSuperProjectImporter
-STDMETHODIMP CPGSuperProjectImporter::GetItemText(BSTR*  bstrText) const
+CString CPGSuperProjectImporter::GetItemText() const
 {
-   CComBSTR bstrItemText("Example Importer");
-   *bstrText = bstrItemText.Copy();
-   return S_OK;
+   return CString("Example Importer");
 }
 
-STDMETHODIMP CPGSuperProjectImporter::GetCLSID(CLSID* pCLSID) const
+CLSID CPGSuperProjectImporter::GetCLSID() const
 {
-   *pCLSID = CLSID_PGSuperProjectImporter;
-   return S_OK;
+   return CLSID_PGSuperProjectImporter;
 }
 
-STDMETHODIMP CPGSuperProjectImporter::GetIcon(HICON* phIcon) const
+HICON CPGSuperProjectImporter::GetIcon() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   *phIcon = AfxGetApp()->LoadIcon(IDI_IMPORTER);
-   return S_OK;
+   return AfxGetApp()->LoadIcon(IDI_IMPORTER);
 }
 
-STDMETHODIMP CPGSuperProjectImporter::Import(IBroker* pBroker)
+HRESULT CPGSuperProjectImporter::Import(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
-   AfxMessageBox(_T("This project importer simulates importing data from an external source by creating a default bridge. A real project importer would connect to an external data source and programatically create a PGSuper model."),MB_OK);
+   AfxMessageBox(_T("This project importer simulates importing data from an external source by creating a default bridge. A real project importer would connect to an external data source and programmatically create a PGSuper model."), MB_OK);
 
-   GET_IFACE2(pBroker,IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE2(pBroker, IEAFProgress, pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   pDisplayUnits->SetUnitMode(eafTypes::umUS);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   pDisplayUnits->SetUnitMode(WBFL::EAF::UnitMode::US);
 
    pProgress->UpdateMessage(_T("Building Bridge"));
    BuildBridge(pBroker);
@@ -86,9 +81,9 @@ STDMETHODIMP CPGSuperProjectImporter::Import(IBroker* pBroker)
    return S_OK;
 }
 
-void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
+void CPGSuperProjectImporter::BuildBridge(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
-   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   GET_IFACE2(pBroker, ILibraryNames, pLibNames);
 
    //
    // Build the bridge model
@@ -119,11 +114,10 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    bridge.SetGirderFamilyName(strGirderFamily.c_str());
 
    // get the beam factory so we can get important information about the beam
-   GET_IFACE2(pBroker,ILibrary,pLibrary);
+   GET_IFACE2(pBroker, ILibrary, pLibrary);
    const GirderLibraryEntry* pGirderEntry = pLibrary->GetGirderEntry(strGirderName.c_str());
 
-   CComPtr<IBeamFactory> beamFactory;
-   pGirderEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
 
    // use the same girder for the entire bridge
    bridge.UseSameGirderForEntireBridge(true);
@@ -143,7 +137,7 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    pgsTypes::SupportedDeckType deckType = deckTypes.front();
 
    Float64 minSpacing, maxSpacing;
-   beamFactory->GetAllowableSpacingRange(pGirderEntry->GetDimensions(),deckType,spacingType,&minSpacing,&maxSpacing);
+   beamFactory->GetAllowableSpacingRange(pGirderEntry->GetDimensions(), deckType, spacingType, &minSpacing, &maxSpacing);
    Float64 girder_spacing = minSpacing;
 
 
@@ -181,21 +175,21 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    Float64 span_length = WBFL::Units::ConvertToSysUnits(100.0, WBFL::Units::Measure::Feet); // set span length to 100ft
 
 
-   bridge.CreateFirstSpan(nullptr,nullptr,nullptr,INVALID_INDEX); // creates 2 piers and a span
-   bridge.SetSpanLength(0,span_length); 
+   bridge.CreateFirstSpan(nullptr, nullptr, nullptr, INVALID_INDEX); // creates 2 piers and a span
+   bridge.SetSpanLength(0, span_length);
 
-   bridge.SetSlabOffset(WBFL::Units::ConvertToSysUnits(12.0,WBFL::Units::Measure::Inch));
-   bridge.SetFillet(WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch));
+   bridge.SetSlabOffset(WBFL::Units::ConvertToSysUnits(12.0, WBFL::Units::Measure::Inch));
+   bridge.SetFillet(WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::Inch));
 
    //
    // define the bridge deck
    //
 
    CDeckPoint point;
-   if (deckType==pgsTypes::sdtCompositeCIP || deckType==pgsTypes::sdtCompositeSIP)
+   if (deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP)
    {
-      point.LeftEdge  = bridge_width/2.0;
-      point.RightEdge = bridge_width/2.0;
+      point.LeftEdge = bridge_width / 2.0;
+      point.RightEdge = bridge_width / 2.0;
       point.Station = 0.0;
       point.MeasurementType = pgsTypes::omtBridge;
    }
@@ -203,10 +197,10 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    CDeckDescription2 deck;
    deck.SetDeckType(deckType);
 
-   switch( deckType )
+   switch (deckType)
    {
    case pgsTypes::sdtCompositeCIP:
-      deck.GrossDepth        = WBFL::Units::ConvertToSysUnits(8.0,WBFL::Units::Measure::Inch);
+      deck.GrossDepth = WBFL::Units::ConvertToSysUnits(8.0, WBFL::Units::Measure::Inch);
       deck.OverhangTaper[pgsTypes::stLeft] = pgsTypes::dotTopTopFlange;
       deck.OverhangTaper[pgsTypes::stRight] = pgsTypes::dotTopTopFlange;
       deck.OverhangEdgeDepth[pgsTypes::stLeft] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::Inch);
@@ -215,9 +209,9 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
       break;
 
    case pgsTypes::sdtCompositeSIP:
-      deck.GrossDepth        = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::Inch);
-      deck.PanelDepth        = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::Inch);
-      deck.PanelSupport      = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
+      deck.GrossDepth = WBFL::Units::ConvertToSysUnits(4.0, WBFL::Units::Measure::Inch);
+      deck.PanelDepth = WBFL::Units::ConvertToSysUnits(4.0, WBFL::Units::Measure::Inch);
+      deck.PanelSupport = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
       deck.OverhangTaper[pgsTypes::stLeft] = pgsTypes::dotTopTopFlange;
       deck.OverhangTaper[pgsTypes::stRight] = pgsTypes::dotTopTopFlange;
       deck.OverhangEdgeDepth[pgsTypes::stLeft] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::Inch);
@@ -227,24 +221,24 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
 
    case pgsTypes::sdtCompositeOverlay:
    case pgsTypes::sdtNonstructuralOverlay:
-      deck.GrossDepth        = WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Inch);
+      deck.GrossDepth = WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch);
       break;
 
    case pgsTypes::sdtNone:
       break;
 
    default:
-      ATLASSERT(false); // shoudl never get here
+      ATLASSERT(false); // should never get here
    }
 
    deck.WearingSurface = pgsTypes::wstFutureOverlay;
-   if ( spacingType == pgsTypes::sbsUniformAdjacent )
+   if (spacingType == pgsTypes::sbsUniformAdjacent)
       deck.TransverseConnectivity = pgsTypes::atcConnectedAsUnit;
 
-   deck.Concrete.Fc               = WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::KSI);
-   deck.Concrete.WeightDensity    = WBFL::Units::ConvertToSysUnits(160.0,WBFL::Units::Measure::LbfPerFeet3); 
-   deck.Concrete.StrengthDensity  = WBFL::Units::ConvertToSysUnits(160.0,WBFL::Units::Measure::LbfPerFeet3); 
-   deck.Concrete.MaxAggregateSize = WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Inch); 
+   deck.Concrete.Fc = WBFL::Units::ConvertToSysUnits(5.0, WBFL::Units::Measure::KSI);
+   deck.Concrete.WeightDensity = WBFL::Units::ConvertToSysUnits(160.0, WBFL::Units::Measure::LbfPerFeet3);
+   deck.Concrete.StrengthDensity = WBFL::Units::ConvertToSysUnits(160.0, WBFL::Units::Measure::LbfPerFeet3);
+   deck.Concrete.MaxAggregateSize = WBFL::Units::ConvertToSysUnits(0.5, WBFL::Units::Measure::Inch);
 
    deck.Concrete.EcK1 = 1.0;
    deck.Concrete.EcK2 = 1.0;
@@ -254,9 +248,9 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    deck.Concrete.ShrinkageK2 = 1.0;
 
    deck.Concrete.bUserEc = false;
-   deck.Concrete.Ec = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)deck.Concrete.Type,deck.Concrete.Fc,deck.Concrete.StrengthDensity,false);
+   deck.Concrete.Ec = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)deck.Concrete.Type, deck.Concrete.Fc, deck.Concrete.StrengthDensity, false);
    deck.bInputAsDepthAndDensity = false;
-   deck.OverlayWeight = WBFL::Units::ConvertToSysUnits(0.025,WBFL::Units::Measure::KSF);
+   deck.OverlayWeight = WBFL::Units::ConvertToSysUnits(0.025, WBFL::Units::Measure::KSF);
 
    *bridge.GetDeckDescription() = deck;
 
@@ -271,25 +265,25 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    bridge.GetLeftRailingSystem()->strExteriorRailing = strBarrierName;
    bridge.GetRightRailingSystem()->strExteriorRailing = strBarrierName;
 
-   InitTimelineManager(pBroker,bridge);
+   InitTimelineManager(pBroker, bridge);
 
    /// Assign the bridge model to PGSuper
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    pIBridgeDesc->SetBridgeDescription(bridge);
 }
 
-void CPGSuperProjectImporter::SetSpecification(IBroker* pBroker)
+void CPGSuperProjectImporter::SetSpecification(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
-   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   GET_IFACE2(pBroker, ILibraryNames, pLibNames);
 
    std::vector<std::_tstring> specs;
-   pLibNames->EnumSpecNames( &specs );
+   pLibNames->EnumSpecNames(&specs);
 
-   GET_IFACE2( pBroker, ISpecification, pSpec );
-   pSpec->SetSpecification( specs[0] );
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   pSpec->SetSpecification(specs[0]);
 }
 
-void CPGSuperProjectImporter::InitGirderData(IBroker* pBroker)
+void CPGSuperProjectImporter::InitGirderData(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
    const auto* pStrand = pPool->GetStrand(
@@ -298,31 +292,31 @@ void CPGSuperProjectImporter::InitGirderData(IBroker* pBroker)
       WBFL::Materials::PsStrand::Coating::None,
       WBFL::Materials::PsStrand::Size::D1524);
 
-   GET_IFACE2( pBroker, IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2( pBroker, ISegmentData, pSegmentData);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
-   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
    {
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
       GirderIndexType nGirders = pGroup->GetGirderCount();
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
       {
          const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
-         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
          {
-            CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
-            pSegmentData->SetStrandMaterial(segmentKey,pgsTypes::Straight, pStrand);
-            pSegmentData->SetStrandMaterial(segmentKey,pgsTypes::Harped,   pStrand);
-            pSegmentData->SetStrandMaterial(segmentKey,pgsTypes::Temporary,pStrand);
+            CSegmentKey segmentKey(grpIdx, gdrIdx, segIdx);
+            pSegmentData->SetStrandMaterial(segmentKey, pgsTypes::Straight, pStrand);
+            pSegmentData->SetStrandMaterial(segmentKey, pgsTypes::Harped, pStrand);
+            pSegmentData->SetStrandMaterial(segmentKey, pgsTypes::Temporary, pStrand);
          }
       }
    }
 }
 
-void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescription2& bridge)
+void CPGSuperProjectImporter::InitTimelineManager(std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeDescription2& bridge)
 {
    // NOTE: The actual timing doesn't matter since we aren't doing a true time-step analysis
    // We will just use reasonable times so the sequence is correct

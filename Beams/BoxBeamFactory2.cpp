@@ -22,13 +22,14 @@
 
 // BoxBeamFactory2.cpp : Implementation of CBoxBeamFactory2
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 
 #include <Plugins\BeamFamilyCLSID.h>
 
 #include "BoxBeamFactory2.h"
 #include "BoxBeamDistFactorEngineer.h"
-#include "PsBeamLossEngineer.h"
+#include <Beams/PsBeamLossEngineer.h>
 #include "StrandMoverImpl.h"
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
@@ -37,21 +38,16 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <PgsExt\StatusItem.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+using namespace PGS::Beams;
 
+INIT_BEAM_FACTORY_SINGLETON(BoxBeamFactory2)
 
-/////////////////////////////////////////////////////////////////////////////
-// CBoxBeamFactory2
-HRESULT CBoxBeamFactory2::FinalConstruct()
+BoxBeamFactory2::BoxBeamFactory2() : BoxBeamFactoryImpl()
 {
    // Initialize with default values... This are not necessarily valid dimensions
    m_DimNames.emplace_back(_T("H1"));
@@ -115,11 +111,9 @@ HRESULT CBoxBeamFactory2::FinalConstruct()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Jmax
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // end block
-
-   return S_OK;
 }
 
-bool CBoxBeamFactory2::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
+bool BoxBeamFactory2::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
 {
    Float64 H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength;
    GetDimensions(dimensions,H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength);
@@ -287,7 +281,7 @@ bool CBoxBeamFactory2::ValidateDimensions(const IBeamFactory::Dimensions& dimens
    return true;
 }
 
-void CBoxBeamFactory2::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void BoxBeamFactory2::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("AASHTOBoxBeamDimensions"),2.0);
    for ( const auto& name : m_DimNames)
@@ -298,7 +292,7 @@ void CBoxBeamFactory2::SaveSectionDimensions(WBFL::System::IStructuredSave* pSav
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions BoxBeamFactory2::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -311,7 +305,7 @@ IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(WBFL::System::I
    }
 
 
-   IBeamFactory::Dimensions dimensions;
+   BeamFactory::Dimensions dimensions;
    std::vector<std::_tstring>::iterator iter;
 
    Float64 dimVersion = 1.0;
@@ -385,9 +379,9 @@ IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(WBFL::System::I
    return dimensions;
 }
 
-void CBoxBeamFactory2::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+void BoxBeamFactory2::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+                                  BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    HRESULT hr = S_OK;
@@ -397,7 +391,7 @@ void CBoxBeamFactory2::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
 
    CComPtr<IStrandMover> sm = pStrandMover;
 
-   // set the shapes for harped strand bounds - only in the thinest part of the webs
+   // set the shapes for harped strand bounds - only in the thinnest part of the webs
    Float64 H1 = GetDimension(dimensions,_T("H1"));
    Float64 H2 = GetDimension(dimensions,_T("H2"));
    Float64 H3 = GetDimension(dimensions,_T("H3"));
@@ -442,10 +436,10 @@ void CBoxBeamFactory2::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == BeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == BeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == BeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == BeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -454,30 +448,30 @@ void CBoxBeamFactory2::CreateStrandMover(const IBeamFactory::Dimensions& dimensi
    ATLASSERT (SUCCEEDED(hr));
 }
 
-std::_tstring CBoxBeamFactory2::GetImage() const
+std::_tstring BoxBeamFactory2::GetImage() const
 {
    return std::_tstring(_T("BoxBeam2.gif"));
 }
 
 
-CLSID CBoxBeamFactory2::GetCLSID() const
+CLSID BoxBeamFactory2::GetCLSID() const
 {
    return CLSID_BoxBeam2Factory;
 }
 
-LPCTSTR CBoxBeamFactory2::GetImageResourceName() const
+LPCTSTR BoxBeamFactory2::GetImageResourceName() const
 {
    return _T("BOXBEAM2");
 }
 
-HICON  CBoxBeamFactory2::GetIcon()  const
+HICON  BoxBeamFactory2::GetIcon()  const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_BOXBEAM2) );
 }
 
-void CBoxBeamFactory2::GetDimensions(const IBeamFactory::Dimensions& dimensions,
+void BoxBeamFactory2::GetDimensions(const BeamFactory::Dimensions& dimensions,
                                     Float64& H1, 
                                     Float64& H2, 
                                     Float64& H3, 
@@ -509,7 +503,7 @@ void CBoxBeamFactory2::GetDimensions(const IBeamFactory::Dimensions& dimensions,
    endBlockLength  = GetDimension(dimensions,_T("EndBlockLength"));
 }
 
-void CBoxBeamFactory2::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void BoxBeamFactory2::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -545,28 +539,28 @@ void CBoxBeamFactory2::GetAllowableSpacingRange(const IBeamFactory::Dimensions& 
    }
 }
 
-bool CBoxBeamFactory2::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool BoxBeamFactory2::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CBoxBeamFactory2::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void BoxBeamFactory2::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
 }
 
-bool CBoxBeamFactory2::HasLongitudinalJoints() const
+bool BoxBeamFactory2::HasLongitudinalJoints() const
 {
    return false;
 }
 
-bool CBoxBeamFactory2::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+bool BoxBeamFactory2::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
 {
    return false;
 }
 
-Float64 CBoxBeamFactory2::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 BoxBeamFactory2::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 W1 = GetDimension(dimensions,_T("W1"));
    Float64 W2 = GetDimension(dimensions,_T("W2"));
@@ -574,7 +568,7 @@ Float64 CBoxBeamFactory2::GetBeamWidth(const IBeamFactory::Dimensions& dimension
    return W2 + 2*W1; 
 }
 
-void CBoxBeamFactory2::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void BoxBeamFactory2::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 W1 = GetDimension(dimensions, _T("W1"));
    Float64 W2 = GetDimension(dimensions, _T("W2"));
@@ -588,7 +582,7 @@ void CBoxBeamFactory2::GetBeamTopWidth(const IBeamFactory::Dimensions& dimension
    *pRightWidth = top;
 }
 
-void CBoxBeamFactory2::DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
+void BoxBeamFactory2::DimensionBeam(const BeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
 {
    Float64 H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength;
    GetDimensions(dimensions, H1, H2, H3, H4, H5, W1, W2, W3, W4, F1, F2, C1, J, endBlockLength);

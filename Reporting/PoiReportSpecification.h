@@ -1,12 +1,12 @@
 #pragma once
 #include <Reporting\BrokerReportSpecification.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 class CPoiReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CPoiReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, const pgsPointOfInterest& poi);
+   CPoiReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi);
    ~CPoiReportSpecification(void);
 
    virtual bool IsValid() const override;

@@ -20,10 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// EffectiveFlangeWidthTool.h : Declaration of the CEffectiveFlangeWidthTool
-
-#ifndef __EFFECTIVEFLANGEWIDTHTOOL_H_
-#define __EFFECTIVEFLANGEWIDTHTOOL_H_
+#pragma once
 
 #include "resource.h"       // main symbols
 #include "BridgeAgent_clsid.c"
@@ -32,15 +29,22 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <map>
 
-interface IBeamFactory;
 class CBridgeDescription2;
+
+namespace PGS
+{
+   namespace Beams
+   {
+	  class BeamFactory;
+   };
+};
 
 // {5D8E135F-F568-4287-87E4-E92538AC2C7F}
 DEFINE_GUID(IID_IReportEffectiveFlangeWidth, 
 0x5d8e135f, 0xf568, 0x4287, 0x87, 0xe4, 0xe9, 0x25, 0x38, 0xac, 0x2c, 0x7f);
 interface IReportEffectiveFlangeWidth : IUnknown
 {
-   virtual void ReportEffectiveFlangeWidth(IBroker* pBroker,IGenericBridge* bridge,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+   virtual void ReportEffectiveFlangeWidth(IGenericBridge* bridge,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) = 0;
 };
 struct __declspec(uuid("{5D8E135F-F568-4287-87E4-E92538AC2C7F}")) IReportEffectiveFlangeWidth;
 
@@ -70,7 +74,7 @@ public:
 	{
 	}
 
-   void Init(IBroker* pBroker,StatusGroupIDType statusGroupID);
+   void Init(StatusGroupIDType statusGroupID);
 
    HRESULT FinalConstruct();
    void FinalRelease();
@@ -88,7 +92,6 @@ END_COM_MAP()
 
 private:
    CComPtr<IEffectiveFlangeWidthTool> m_Tool;
-   IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
 
    // callback IDs for the status callbacks we register
@@ -128,19 +131,19 @@ private:
 
    HRESULT EffectiveFlangeWidthBySegmentDetails(IGenericBridge* bridge,GirderIDType gdrID,SegmentIndexType segIdx,Float64 Xs,EffFlangeWidth* effFlangeWidth);
 
-   void ReportEffectiveFlangeWidth_InteriorGirder(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_InteriorGirder_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_InteriorGirder_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_InteriorGirderRow(IEffectiveFlangeWidthDetails* details,RowIndexType row,rptRcTable* table,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Prismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Nonprismatic(IBroker* pBroker,IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   void ReportEffectiveFlangeWidth_InteriorGirder(IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportEffectiveFlangeWidth_InteriorGirder_Prismatic(IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportEffectiveFlangeWidth_InteriorGirder_Nonprismatic(IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportEffectiveFlangeWidth_InteriorGirderRow(IEffectiveFlangeWidthDetails* details,RowIndexType row,rptRcTable* table,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder(IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange(IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Prismatic(IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder_SingleTopFlange_Nonprismatic(IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange(IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Prismatic(IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Nonprismatic(IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-   void GetBeamFactory(IBroker* pBroker,const CSegmentKey& segmentKey,IBeamFactory** factory);
+   std::shared_ptr<PGS::Beams::BeamFactory> GetBeamFactory(const CSegmentKey& segmentKey);
    bool DoUseTributaryWidth(const CBridgeDescription2* pBridgeDesc);
 
 // ISupportsErrorInfo
@@ -166,7 +169,5 @@ public:
 
 // IReportEffectiveFlangeWidth
 public:
-   virtual void ReportEffectiveFlangeWidth(IBroker* pBroker,IGenericBridge* bridge,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
+   void ReportEffectiveFlangeWidth(IGenericBridge* bridge,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
 };
-
-#endif //__EFFECTIVEFLANGEWIDTHTOOL_H_

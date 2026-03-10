@@ -20,46 +20,49 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib/SpecificationCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/SpecificationCriteria.h>
+#include <PsgLib/DifferenceItem.h>
+
 //#include <EAF/EAFDisplayUnits.h>
 #include <boost\algorithm\string\replace.hpp>
 
-bool SpecificationCriteria::Compare(const SpecificationCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool SpecificationCriteria::Compare(const SpecificationCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
    if (Description != other.Description)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Description"), Description.c_str(), other.Description.c_str()));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Description"), Description.c_str(), other.Description.c_str()));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (bUseCurrentSpecification != other.bUseCurrentSpecification || Edition != other.Edition)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Basis is different"), WBFL::LRFD::BDSManager::GetEditionAsString(Edition), WBFL::LRFD::BDSManager::GetEditionAsString(other.Edition)));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Basis is different"), WBFL::LRFD::BDSManager::GetEditionAsString(Edition), WBFL::LRFD::BDSManager::GetEditionAsString(other.Edition)));
       if (bReturnOnFirstDifference) return false;
    }
 
    if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims < Edition && Units != other.Units)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Specification Units Systems are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Specification Units Systems are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void SpecificationCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+
+
+void SpecificationCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
    *pPara << Bold(_T("Description: ")) << GetDescription() << rptNewLine;
-   *pPara << Bold(_T("Based on: ")) << WBFL::LRFD::BDSManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::BDSManager::GetEditionAsString();
+   *pPara << Bold(_T("Based on: "));
 
    if (Units == WBFL::LRFD::BDSManager::Units::SI)
    {

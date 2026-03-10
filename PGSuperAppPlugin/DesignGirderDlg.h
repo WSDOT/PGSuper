@@ -29,11 +29,11 @@
 // DesignGirderDlg.h : header file
 //
 
-interface IBroker;
 #include "resource.h"
 #include "MultiGirderSelectDlg.h"
 #include <PGSuperTypes.h>
 #include <IFace\Artifact.h>
+
 /////////////////////////////////////////////////////////////////////////////
 // CDesignGirderDlg dialog
 
@@ -41,7 +41,7 @@ class CDesignGirderDlg : public CDialog
 {
 // Construction
 public:
-	CDesignGirderDlg(const CGirderKey& girderKey, IBroker* pBroker, arSlabOffsetDesignType haunchDesignRequest, CWnd* pParent = nullptr);   // standard constructor
+	CDesignGirderDlg(const CGirderKey& girderKey, std::shared_ptr<WBFL::EAF::Broker> pBroker, arSlabOffsetDesignType haunchDesignRequest, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CDesignGirderDlg)
@@ -64,7 +64,7 @@ public:
 
 // Implementation
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    // Request made by calling function for haunch design. This may be altered if design cannot be done (e.g., no deck bridge)
    arSlabOffsetDesignType m_HaunchDesignRequest;

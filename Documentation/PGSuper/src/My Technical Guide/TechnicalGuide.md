@@ -7,6 +7,7 @@ Topics
 * @subpage tg_07_strands
 * @subpage tg_biaxial_stresses
 * @subpage tg_bearing_seat_geometry
+* @subpage tg_bearing_shear_deformation
 * @subpage tg_camber
 * @subpage tg_deflections
 * @subpage tg_capacity_demand_ratios

@@ -25,17 +25,21 @@
 #include <Reporting\ReportNotes.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\TimelineEvent.h>
+#include <PsgLib\TimelineEvent.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Limits.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
-rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
-                                            bool bDesign,IEAFDisplayUnits* pDisplayUnits,bool bGirderStresses) const
+
+rptRcTable* CPosttensionStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                                            bool bDesign,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bGirderStresses) const
 {
    pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
    pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);

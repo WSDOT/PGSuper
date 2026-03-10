@@ -23,96 +23,71 @@
 #include "StdAfx.h"
 #include "TxDOTOptionalDesignDocProxyAgent.h"
 #include "TxDOTOptionalDesignDoc.h"
-#include "TxDOTAppPlugin.h"
+#include "TOGAPluginApp.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
 #include "resource.h"
 
 #include <MFCTools\VersionInfo.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace/Limits.h>
 #include <IFace\Intervals.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CTxDOTOptionalDesignDocProxyAgent
-****************************************************************************/
-
-CTxDOTOptionalDesignDocProxyAgent::CTxDOTOptionalDesignDocProxyAgent():
+CTxDOTOptionalDesignDocProxyAgent::CTxDOTOptionalDesignDocProxyAgent(CTxDOTOptionalDesignDoc* pDoc):
 m_NeedValidate(true),
 m_GirderArtifact(CSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0))
-{
-   m_pTxDOTOptionalDesignDoc = nullptr;
-}
-
-CTxDOTOptionalDesignDocProxyAgent::~CTxDOTOptionalDesignDocProxyAgent()
-{
-}
-
-void CTxDOTOptionalDesignDocProxyAgent::SetDocument(CTxDOTOptionalDesignDoc* pDoc)
 {
    m_pTxDOTOptionalDesignDoc = pDoc;
 
    pDoc->m_ProjectData.Attach(this);
 }
 
-//////////////////////////////////////////////////////////
-// IAgentEx
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::SetBroker(IBroker* pBroker)
+CTxDOTOptionalDesignDocProxyAgent::~CTxDOTOptionalDesignDocProxyAgent()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
-   return S_OK;
 }
 
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::RegInterfaces()
+
+bool CTxDOTOptionalDesignDocProxyAgent::RegisterInterfaces()
 {
-   CComQIPtr<IBrokerInitEx2> pBrokerInit(m_pBroker);
-   pBrokerInit->RegInterface( IID_IUpdateTemplates, this );
-   pBrokerInit->RegInterface( IID_ISelection,       this );
-   pBrokerInit->RegInterface( IID_IDocumentType,    this );
-   pBrokerInit->RegInterface( IID_IVersionInfo,     this );
-   pBrokerInit->RegInterface( IID_IGetTogaData,     this );
-   pBrokerInit->RegInterface( IID_IGetTogaResults,  this );
-   return S_OK;
+   EAF_AGENT_REGISTER_INTERFACES;
+
+   REGISTER_INTERFACE(IUpdateTemplates);
+   REGISTER_INTERFACE(ISelection);
+   REGISTER_INTERFACE(IDocumentType);
+   REGISTER_INTERFACE(IVersionInfo);
+   REGISTER_INTERFACE(IGetTogaData);
+   REGISTER_INTERFACE(IGetTogaResults);
+   return true;
 }
 
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::Init()
+bool CTxDOTOptionalDesignDocProxyAgent::Init()
 {
-//   EAF_AGENT_INIT;
-
-   return S_OK;
+   EAF_AGENT_INIT;
+   return true;
 }
 
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::Init2()
+bool CTxDOTOptionalDesignDocProxyAgent::Reset()
 {
-   return S_OK;
+   EAF_AGENT_RESET;
+   return true;
 }
 
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::Reset()
+bool CTxDOTOptionalDesignDocProxyAgent::ShutDown()
 {
-   return S_OK;
+   EAF_AGENT_SHUTDOWN;
+
+   //CLOSE_LOGFILE;
+
+   return true;
 }
 
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::ShutDown()
+CLSID CTxDOTOptionalDesignDocProxyAgent::GetCLSID() const
 {
-   EAF_AGENT_CLEAR_INTERFACE_CACHE;
-//   CLOSE_LOGFILE;
-
-   return S_OK;
-}
-
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::GetClassID(CLSID* pCLSID)
-{
-   *pCLSID = CLSID_TxDOTOptionalDesignDocProxyAgent;
-   return S_OK;
+   return CLSID_TxDOTOptionalDesignDocProxyAgent;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -386,7 +361,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
       // build model
-      IBroker* pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
+      std::shared_ptr<WBFL::EAF::Broker> pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
 
       GET_IFACE2(pBroker,IConcreteStressLimits, pLimits );
 
@@ -597,9 +572,9 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
    }
 }
 
-void CTxDOTOptionalDesignDocProxyAgent::CheckShear(IPointOfInterest* pIPoi)
+void CTxDOTOptionalDesignDocProxyAgent::CheckShear(std::shared_ptr<IPointOfInterest> pIPoi)
 {
-   IBroker* pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
+   std::shared_ptr<WBFL::EAF::Broker> pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
 
    CSegmentKey origSegmentKey(TOGA_SPAN,TOGA_ORIG_GDR,0);
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);

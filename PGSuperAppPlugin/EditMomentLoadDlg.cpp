@@ -25,6 +25,8 @@
 #include "stdafx.h"
 #include "PGSuperApp.h"
 #include "EditMomentLoadDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -32,17 +34,12 @@
 
 #include <System\Tokenizer.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "TimelineEventDlg.h"
 
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditMomentLoadDlg dialog
@@ -55,7 +52,7 @@ CEditMomentLoadDlg::CEditMomentLoadDlg(const CMomentLoadData& load,const CTimeli
 {
 	//{{AFX_DATA_INIT(CEditMomentLoadDlg)
 	//}}AFX_DATA_INIT
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    m_EventID = m_TimelineMgr.FindUserLoadEventID(m_Load.m_ID);
 

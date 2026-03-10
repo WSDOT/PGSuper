@@ -28,18 +28,21 @@
 #include "TexasIBNSParagraphBuilder.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\PierData2.h>
 
+#include <PsgLib\PierData2.h>
+#include <psglib/SpecLibraryEntry.h>
 #include <psgLib\ConnectionLibraryEntry.h>
 
 #include <psgLib/LiveLoadDeflectionCriteria.h>
@@ -47,31 +50,16 @@
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CTexasCamberAndDeflectionChapterBuilder
-****************************************************************************/
 
 
-static void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList,
-                                  ColumnIndexType startIdx, ColumnIndexType endIdx, bool isSingleGirder, IEAFDisplayUnits* pDisplayUnits);
+static void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList,
+                                  ColumnIndexType startIdx, ColumnIndexType endIdx, bool isSingleGirder, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTexasCamberAndDeflectionChapterBuilder::CTexasCamberAndDeflectionChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTexasCamberAndDeflectionChapterBuilder::GetName() const
 {
    return TEXT("Camber and Deflections");
@@ -84,18 +72,18 @@ rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr
    // This can be called for multi or single girders
    std::vector<CGirderKey> girder_list;
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
 
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if (pGirderRptSpec!=nullptr)
    {
-      pGirderRptSpec->GetBroker(&pBroker);
+      pBroker = pGirderRptSpec->GetBroker();
       girder_list.push_back( pGirderRptSpec->GetGirderKey() );
    }
    else
    {
       auto pReportSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
-      pReportSpec->GetBroker(&pBroker);
+      pBroker = pReportSpec->GetBroker();
 
       girder_list = pReportSpec->GetGirderKeys();
    }
@@ -133,26 +121,9 @@ rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasCamberAndDeflectionChapterBuilder::Clone() const
-{
-   return std::make_unique<CTexasCamberAndDeflectionChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList,
+void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList,
                            ColumnIndexType startIdx, ColumnIndexType endIdx, bool isSingleGirder, 
-                           IEAFDisplayUnits* pDisplayUnits)
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;

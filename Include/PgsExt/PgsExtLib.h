@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_PGSEXTLIB_H_
-#define INCLUDED_PGSEXT_PGSEXTLIB_H_
+#pragma once
 
 #include <PGSuperAll.h>
 #include <WBFLAtlExt.h>
@@ -30,9 +29,8 @@
 #include <System\System.h>
 #include <LRFD\LRFD.h>
 
-#include <IFace\Tools.h>
 #include <EAF\EAFUtilities.h>
-#include <EAF\EAFHelp.h>
+#include <EAF\Help.h>
 
 #if defined _NOGRID
 #include <NoGrid.h>
@@ -55,5 +53,3 @@
 #else
 #define PGS_ASSERT_VALID
 #endif
-
-#endif // INCLUDED_PGSEXT_PGSEXTLIB_H_

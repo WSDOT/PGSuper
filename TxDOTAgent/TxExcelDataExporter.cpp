@@ -22,11 +22,6 @@
 #include "StdAfx.h"
 #include "TxExcelDataExporter.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
    // see http://support.microsoft.com/kb/186120
    // http://support.microsoft.com/kb/186122  How to Use MFC to Automate Excel and Obtain an Array from a Range

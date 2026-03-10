@@ -23,13 +23,14 @@
 #pragma once
 
 
-#include "psgLibLib.h"
-#include "TensionStressLimit.h"
+#include "PsgLibLib.h"
+#include <PsgLib/TensionStressLimit.h>
 
 class rptChapter;
-interface IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
+class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
+namespace PGS {namespace Library{class DifferenceItem;};};
+
 
 struct PSGLIBCLASS PrestressedElementCriteria
 {
@@ -38,6 +39,7 @@ struct PSGLIBCLASS PrestressedElementCriteria
    TensionStressLimit TensionStressLimit_WithReinforcement_BeforeLosses{ WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI),false,0.0 }; // Table 5.9.2.3.1b-1 does not consider PTZ for this requirement
    TensionStressLimit TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses{ WBFL::Units::ConvertToSysUnits(0.0948,WBFL::Units::Measure::SqrtKSI),true,WBFL::Units::ConvertToSysUnits(0.200,WBFL::Units::Measure::KSI)};
    //TensionStressLimit TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses; // this case is not defined in Table 5.9.2.3.1b-1
+   Float64 MaxCoverToUseHigherTensionStressLimit = 0.0; // assume zero cover unless spec or input overrides
 
    Float64 CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses = 0.60;
    Float64 CompressionStressCoefficient_AllLoads_AfterLosses = 0.60;
@@ -60,9 +62,9 @@ struct PSGLIBCLASS PrestressedElementCriteria
    Float64 CompressionStressCoefficient_AfterDeckPlacement = 0.6;
    TensionStressLimit TensionStressLimit_AfterDeckPlacement{0.0,false,WBFL::Units::ConvertToSysUnits(0.2, WBFL::Units::Measure::KSI) };
 
-   bool Compare(const PrestressedElementCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const PrestressedElementCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);

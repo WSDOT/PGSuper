@@ -24,13 +24,8 @@
 #include <Reporting\CopyTempSupportPropertiesReportSpecificationBuilder.h>
 #include <Reporting\CopyTempSupportPropertiesReportSpecification.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CCopyTempSupportPropertiesReportSpecificationBuilder::CCopyTempSupportPropertiesReportSpecificationBuilder(IBroker* pBroker) :
+CCopyTempSupportPropertiesReportSpecificationBuilder::CCopyTempSupportPropertiesReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
    CBrokerReportSpecificationBuilder(pBroker)
 {
 }

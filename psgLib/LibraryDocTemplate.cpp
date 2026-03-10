@@ -21,19 +21,14 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
-#include <psgLib\LibraryDocTemplate.h>
+#include <PsgLib\PsgLib.h>
+#include <PsgLib\LibraryDocTemplate.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNAMIC(CLibraryDocTemplate,CEAFDocTemplate)
 
 CLibraryDocTemplate::CLibraryDocTemplate(UINT nIDResource,
-                                         IEAFCommandCallback* pCallback,
+                                         std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
                                          CRuntimeClass* pDocClass,
                                          CRuntimeClass* pFrameClass,
                                          CRuntimeClass* pViewClass,

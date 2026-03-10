@@ -26,17 +26,13 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\StrandStressArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
-
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /****************************************************************************
@@ -73,7 +69,7 @@ CStrandStressCheckTable& CStrandStressCheckTable::operator= (const CStrandStress
 }
 
 //======================== OPERATIONS =======================================
-void CStrandStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const
+void CStrandStressCheckTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CGirderKey& girderKey = pGirderArtifact->GetGirderKey();
 

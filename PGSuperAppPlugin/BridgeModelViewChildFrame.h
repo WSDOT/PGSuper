@@ -31,8 +31,9 @@
 #include "SplitChildFrm.h"
 #include "SectionCutDrawStrategy.h"
 #include "PGSuperTypes.h"
+#include "ReactionLocation.h"
 
-#include <DManip\ToolPalette.h>
+#include <DManip/ToolPalette.h>
 
 #include <EAF\EAFViewControllerFactory.h>
 
@@ -72,6 +73,7 @@ public:
    void SelectSpan(SpanIndexType spanIdx);
    void SelectGirder(const CGirderKey& girderKey);
    void SelectSegment(const CSegmentKey& segmentKey);
+   void SelectBearing(const ReactionLocation& reactionLocation);
    void SelectClosureJoint(const CSegmentKey& closureKey);
    void SelectTemporarySupport(SupportIDType tsID);
    void SelectDeck();

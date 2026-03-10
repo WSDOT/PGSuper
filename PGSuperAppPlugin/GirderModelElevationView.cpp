@@ -33,7 +33,7 @@
 #include "PGSuperColors.h"
 #include "GirderModelElevationView.h"
 #include "GirderModelChildFrame.h"
-#include "DisplayObjectFactory.h"
+
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DrawBridgeSettings.h>
@@ -42,9 +42,10 @@
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include "SupportDrawStrategyImpl.h"
 #include "TemporarySupportDrawStrategyImpl.h"
@@ -52,26 +53,19 @@
 #include "PointLoadDrawStrategyImpl.h"
 #include "DistributedLoadDrawStrategyImpl.h"
 #include "MomentLoadDrawStrategyImpl.h"
-#include <DManip\SimpleDrawLineStrategy.h>
 #include "SectionCutDisplayImpl.h"
 #include "GMDisplayMgrEventsImpl.h"
 #include "GevEditLoad.h"
 #include "GirderDropSite.h"
 #include "GirderDisplayObjectEvents.h"
+#include "DisplayObjectFactory.h"
 
 #include "PGSuperColors.h"
 
 #include <sstream>
 
-#include <WBFLDManip.h>
-#include <WBFLDManipTools.h>
 #include <WBFLGenericBridgeTools.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <WBFLGeometry/GeomHelpers.h>
 
 // NOTE: See GirderModelChildFrame.cpp for information about the coordinate systems used in this view
 
@@ -139,18 +133,17 @@ static COLORREF GetLoadGroupColor(UserLoads::LoadCase lc)
    return  RED1;
 }
 
-static void CreateLegendEntry(UserLoads::LoadCase lc, iLegendDisplayObject* legend)
+static void CreateLegendEntry(UserLoads::LoadCase lc, std::shared_ptr<WBFL::DManip::iLegendDisplayObject> legend)
 {
    COLORREF color = GetLoadGroupColor(lc);
    CString name = GetLoadGroupNameForUserLoad(lc);
 
-   CComPtr<iSymbolLegendEntry> legend_entry;
-   legend_entry.CoCreateInstance(CLSID_LegendEntry);
+   auto legend_entry = WBFL::DManip::LegendEntry::Create();
 
    // add entry to legend
-   legend_entry->put_Name(CComBSTR(name));
-   legend_entry->put_Color(color);
-   legend_entry->put_DoDrawLine(FALSE);
+   legend_entry->SetName(name);
+   legend_entry->SetColor(color);
+   legend_entry->DrawLine(false);
    legend->AddEntry(legend_entry);
 }
 
@@ -223,122 +216,35 @@ void CGirderModelElevationView::OnInitialUpdate()
    EnableToolTips();
 
    // Setup the local display object factory
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   dispMgr->EnableLBtnSelect(TRUE);
-   dispMgr->EnableRBtnSelect(TRUE);
-   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
-   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
+   m_pDispMgr->EnableLBtnSelect(true);
+   m_pDispMgr->EnableRBtnSelect(true);
+   m_pDispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
+   m_pDispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
-   CDisplayObjectFactory* factory = new CDisplayObjectFactory(pDoc);
-   CComPtr<iDisplayObjectFactory> doFactory;
-   doFactory.Attach((iDisplayObjectFactory*)factory->GetInterface(&IID_iDisplayObjectFactory));
-   dispMgr->AddDisplayObjectFactory(doFactory);
-
-   // add factory from in dmaniptools
-   CComPtr<iDisplayObjectFactory> pfac2;
-   hr = pfac2.CoCreateInstance(CLSID_DManipToolsDisplayObjectFactory);
-   ATLASSERT(SUCCEEDED(hr));
-   dispMgr->AddDisplayObjectFactory(pfac2);
+   auto doFactory = std::make_shared<CDisplayObjectFactory>(pDoc);
+   m_pDispMgr->AddDisplayObjectFactory(doFactory);
 
    // set up default event handler for canvas
-   CGMDisplayMgrEventsImpl* pEvents = new CGMDisplayMgrEventsImpl(pDoc, m_pFrame, this, true);
-   CComPtr<iDisplayMgrEvents> events;
-   events.Attach((iDisplayMgrEvents*)pEvents->GetInterface(&IID_iDisplayMgrEvents));
-   dispMgr->RegisterEventSink(events);
+   auto events = CGMDisplayMgrEventsImpl::Create(pDoc, m_pFrame, this, true);
+   m_pDispMgr->RegisterEventSink(events);
 
    // Create display lists
-   // section cut - add first so it's always on top
-   CComPtr<iDisplayList> sc_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&sc_list);
-   sc_list->SetID(SECT_CUT_LIST);
-   dispMgr->AddDisplayList(sc_list);
-
-   // dimension lines
-   CComPtr<iDisplayList> dlList;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&dlList);
-   dlList->SetID(DIMLINE_LIST);
-   dispMgr->AddDisplayList(dlList);
-
-   // loads
-   CComPtr<iDisplayList> load_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&load_list);
-   load_list->SetID(LOAD_LIST);
-   dispMgr->AddDisplayList(load_list);
-
-   // supports
-   CComPtr<iDisplayList> sup_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&sup_list);
-   sup_list->SetID(SUPPORT_LIST);
-   dispMgr->AddDisplayList(sup_list);
-
-   // drop target
-   CComPtr<iDisplayList> dt_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&dt_list);
-   dt_list->SetID(DROP_TARGET_LIST);
-   dispMgr->AddDisplayList(dt_list);
-
-   // strand cg
-   CComPtr<iDisplayList> strand_cg_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&strand_cg_list);
-   strand_cg_list->SetID(STRAND_CG_LIST);
-   dispMgr->AddDisplayList(strand_cg_list);
-
-   // girder cg
-   CComPtr<iDisplayList> cg_list;
-   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&cg_list);
-   cg_list->SetID(CG_LIST);
-   dispMgr->AddDisplayList(cg_list);
-
-   // debond strands
-   CComPtr<iDisplayList> db_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&db_list);
-   db_list->SetID(DEBOND_LIST);
-   dispMgr->AddDisplayList(db_list);
-
-   // strands
-   CComPtr<iDisplayList> strand_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&strand_list);
-   strand_list->SetID(STRAND_LIST);
-   dispMgr->AddDisplayList(strand_list);
-
-   // rebar
-   CComPtr<iDisplayList> rb_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&rb_list);
-   rb_list->SetID(REBAR_LIST);
-   dispMgr->AddDisplayList(rb_list);
-
-   // tendons
-   CComPtr<iDisplayList> ts_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&ts_list);
-   ts_list->SetID(TENDON_LIST);
-   dispMgr->AddDisplayList(ts_list);
-
-   // strirrups
-   CComPtr<iDisplayList> stirrups_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&stirrups_list);
-   stirrups_list->SetID(STIRRUP_LIST);
-   dispMgr->AddDisplayList(stirrups_list);
-
-   // closure joint
-   CComPtr<iDisplayList> cp_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&cp_list);
-   cp_list->SetID(CP_LIST);
-   dispMgr->AddDisplayList(cp_list);
-
-   // girder
-   CComPtr<iDisplayList> gdr_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&gdr_list);
-   gdr_list->SetID(GDR_LIST);
-   dispMgr->AddDisplayList(gdr_list);
-
-   // properties list
-   CComPtr<iDisplayList> properties_list;
-   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&properties_list);
-   properties_list->SetID(PROPERTIES_LIST);
-   dispMgr->AddDisplayList(properties_list);
+   m_pDispMgr->CreateDisplayList(SECT_CUT_LIST);
+   m_pDispMgr->CreateDisplayList(DIMLINE_LIST);
+   m_pDispMgr->CreateDisplayList(LOAD_LIST);
+   m_pDispMgr->CreateDisplayList(SUPPORT_LIST);
+   m_pDispMgr->CreateDisplayList(DROP_TARGET_LIST);
+   m_pDispMgr->CreateDisplayList(STRAND_CG_LIST);
+   m_pDispMgr->CreateDisplayList(CG_LIST);
+   m_pDispMgr->CreateDisplayList(DEBOND_LIST);
+   m_pDispMgr->CreateDisplayList(STRAND_LIST);
+   m_pDispMgr->CreateDisplayList(REBAR_LIST);
+   m_pDispMgr->CreateDisplayList(TENDON_LIST);
+   m_pDispMgr->CreateDisplayList(STIRRUP_LIST);
+   m_pDispMgr->CreateDisplayList(CP_LIST);
+   m_pDispMgr->CreateDisplayList(GDR_LIST);
+   m_pDispMgr->CreateDisplayList(PROPERTIES_LIST);
 
    // build display objects
    // set up a valid dc first
@@ -405,19 +311,13 @@ void CGirderModelElevationView::OnUpdate(CView* pSender, LPARAM lHint, CObject* 
       CDManipClientDC dc(this);
 
       // only need to update section cut location
-      CComPtr<iDisplayMgr> dispMgr;
-      GetDisplayMgr(&dispMgr);
-
-      CComPtr<iDisplayList> pDL;
-      dispMgr->FindDisplayList(SECT_CUT_LIST,&pDL);
+      auto pDL = m_pDispMgr->FindDisplayList(SECT_CUT_LIST);
       ATLASSERT(pDL);
 
-      CComPtr<iDisplayObject> dispObj;
-      pDL->FindDisplayObject(SECTION_CUT_ID,&dispObj);
+      auto dispObj = pDL->FindDisplayObject(SECTION_CUT_ID);
       ATLASSERT(dispObj);
 
-      CComPtr<iDisplayObjectEvents> sink;
-      dispObj->GetEventSink(&sink);
+      auto sink = dispObj->GetEventSink();
 
       sink->OnChanged(dispObj);
    }
@@ -438,91 +338,87 @@ void CGirderModelElevationView::UpdateDisplayObjects()
 {
    // NOTE: Each girder in this view is in Girder Path Coordinates
 
-   // get the display manager
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
    // clean out all the display objects
-   dispMgr->ClearDisplayObjects();
+   m_pDispMgr->ClearDisplayObjects();
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
 
    // Grab hold of the broker so we can pass it as a parameter
-   CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   
+   auto pBroker = pDoc->GetBroker();
 
    UINT settings = pDoc->GetGirderEditorSettings();
    
    CGirderKey girderKey(GetGirderKey());
 
-   BuildSupportDisplayObjects(     pDoc, pBroker, girderKey, eventIdx, dispMgr);
-   BuildDropTargetDisplayObjects(  pDoc, pBroker, girderKey, eventIdx, dispMgr);
-   BuildSegmentDisplayObjects(     pDoc, pBroker, girderKey, eventIdx, dispMgr);
-   BuildClosureJointDisplayObjects( pDoc, pBroker, girderKey, eventIdx, dispMgr);
+   BuildSupportDisplayObjects(     pDoc, pBroker, girderKey, eventIdx);
+   BuildDropTargetDisplayObjects(  pDoc, pBroker, girderKey, eventIdx);
+   BuildSegmentDisplayObjects(     pDoc, pBroker, girderKey, eventIdx);
+   BuildClosureJointDisplayObjects( pDoc, pBroker, girderKey, eventIdx);
 
    if (settings & IDG_EV_GIRDER_CG)
    {
-      BuildSegmentCGDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr);
+      BuildSegmentCGDisplayObjects(pDoc, pBroker, girderKey, eventIdx);
    }
 
    if (settings & IDG_EV_SHOW_STRANDS)
    {
-      BuildStrandDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr);
-      BuildTendonDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr);
+      BuildStrandDisplayObjects(pDoc, pBroker, girderKey, eventIdx);
+      BuildTendonDisplayObjects(pDoc, pBroker, girderKey, eventIdx);
    }
 
    if (settings & IDG_EV_SHOW_PS_CG)
    {
-      BuildStrandCGDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr);
+      BuildStrandCGDisplayObjects(pDoc, pBroker, girderKey, eventIdx);
    }
 
    if (settings & IDG_EV_SHOW_LONG_REINF)
    {
-      BuildRebarDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr);
+      BuildRebarDisplayObjects(pDoc, pBroker, girderKey, eventIdx);
    }
 
    if (settings & IDG_EV_SHOW_STIRRUPS)
    {
-      BuildStirrupDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr);
+      BuildStirrupDisplayObjects(pDoc, pBroker, girderKey, eventIdx);
    }
 
    bool cases_exist[3] = {false,false,false};
    if (settings & IDG_EV_SHOW_LOADS)
    {
-      BuildPointLoadDisplayObjects(      pDoc, pBroker, girderKey, eventIdx, dispMgr, cases_exist);
-      BuildDistributedLoadDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr, cases_exist);
-      BuildMomentLoadDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr, cases_exist);
+      BuildPointLoadDisplayObjects(      pDoc, pBroker, girderKey, eventIdx, cases_exist);
+      BuildDistributedLoadDisplayObjects(pDoc, pBroker, girderKey, eventIdx, cases_exist);
+      BuildMomentLoadDisplayObjects(pDoc, pBroker, girderKey, eventIdx, cases_exist);
    }
 
    if (settings & IDG_EV_SHOW_DIMENSIONS)
    {
-      BuildDimensionDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr);
+      BuildDimensionDisplayObjects(pDoc, pBroker, girderKey, eventIdx);
    }
 
-   BuildSectionCutDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr);
+   BuildSectionCutDisplayObjects(pDoc, pBroker, girderKey, eventIdx);
 
    // Legend must be displayed last so we can place it relative to bounding box
    if (settings & IDG_EV_SHOW_LEGEND && settings & IDG_EV_SHOW_LOADS)
    {
-      BuildLegendDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr, cases_exist);
+      BuildLegendDisplayObjects(pDoc, pBroker, girderKey, eventIdx, cases_exist);
    }
 
-   BuildPropertiesDisplayObjects(pDoc, pBroker, girderKey, eventIdx, dispMgr);
+   BuildPropertiesDisplayObjects(pDoc, pBroker, girderKey, eventIdx);
 
 
-   DManip::MapMode mode = (settings & IDG_EV_DRAW_ISOTROPIC) ? DManip::Isotropic : DManip::Anisotropic;
+   auto mode = (settings & IDG_EV_DRAW_ISOTROPIC) ? WBFL::DManip::MapMode::Isotropic : WBFL::DManip::MapMode::Anisotropic;
    CDisplayView::SetMappingMode(mode);
 }
 
 void CGirderModelElevationView::DoPrint(CDC* pDC, CPrintInfo* pInfo)
 {
-   this->OnBeginPrinting(pDC, pInfo);
-   this->OnPrepareDC(pDC);
-   this->ScaleToFit();
-   this->OnDraw(pDC);
-   this->OnEndPrinting(pDC, pInfo);
+   OnBeginPrinting(pDC, pInfo);
+   OnPrepareDC(pDC);
+   ScaleToFit();
+   OnDraw(pDC);
+   OnEndPrinting(pDC, pInfo);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -558,7 +454,7 @@ int CGirderModelElevationView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	return 0;
 } 
 
-DROPEFFECT CGirderModelElevationView::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point)
+DROPEFFECT CGirderModelElevationView::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState, const WBFL::Geometry::Point2d& point)
 {
    // This override has to determine if the thing being dragged over it can
    // be dropped. In order to do that, it must unpackage the OleDataObject.
@@ -573,8 +469,7 @@ DROPEFFECT CGirderModelElevationView::CanDrop(COleDataObject* pDataObject,DWORD 
    {
       // need to peek at our object first and make sure it's coming from the local process
       // this is ugly because it breaks encapsulation of CSectionCutDisplayImpl
-      CComPtr<iDragDataSource> source;               
-      ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+      auto source = WBFL::DManip::DragDataSource::Create();
       source->SetDataObject(pDataObject);
       source->PrepareFormat(CSectionCutDisplayImpl::ms_Format);
 
@@ -594,7 +489,7 @@ DROPEFFECT CGirderModelElevationView::CanDrop(COleDataObject* pDataObject,DWORD 
    {
       if (m_Legend)
       {
-         CComQIPtr<iDraggable> drag(m_Legend);
+         auto drag = std::dynamic_pointer_cast<WBFL::DManip::iDraggable>(m_Legend);
          UINT format = drag->Format();
          if ( pDataObject->IsDataAvailable(format) )
          {
@@ -608,27 +503,20 @@ DROPEFFECT CGirderModelElevationView::CanDrop(COleDataObject* pDataObject,DWORD 
 
 pgsPointOfInterest CGirderModelElevationView::GetCutLocation()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(SECT_CUT_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(SECT_CUT_LIST);
    ATLASSERT(pDL);
 
-   CComPtr<iDisplayObject> dispObj;
-   pDL->FindDisplayObject(SECTION_CUT_ID,&dispObj);
+   auto dispObj = pDL->FindDisplayObject(SECTION_CUT_ID);
 
    if ( dispObj == nullptr )
    {
       return pgsPointOfInterest();
    }
 
-   CComPtr<iDisplayObjectEvents> sink;
-   dispObj->GetEventSink(&sink);
+   auto sink = dispObj->GetEventSink();
 
-   CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(dispObj);
-   CComQIPtr<iSectionCutDrawStrategy,&IID_iSectionCutDrawStrategy> sectionCutStrategy(sink);
-
+   auto point_disp = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(dispObj);
+   auto sectionCutStrategy = std::dynamic_pointer_cast<iSectionCutDrawStrategy>(sink);
    return sectionCutStrategy->GetCutPOI(m_pFrame->GetCurrentCutLocation());
 }
 
@@ -655,9 +543,6 @@ void CGirderModelElevationView::OnSize(UINT nType, int cx, int cy)
       CSize size = rect.Size();
       size.cx = Max(0L,size.cx);
       size.cy = Max(0L,size.cy);
-
-      CComPtr<iDisplayMgr> dispMgr;
-      GetDisplayMgr(&dispMgr);
 
       SetLogicalViewRect(MM_TEXT,rect);
 
@@ -696,10 +581,10 @@ void CGirderModelElevationView::OnViewSettings()
 	((CPGSDocBase*)GetDocument())->EditGirderViewSettings(VS_GIRDER_ELEVATION);
 }
 
-void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 groupOffset,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,iDisplayList* pDL)
+void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 groupOffset,const CPrecastSegmentData* pSegment,pgsTypes::MemberEndType endType,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,std::shared_ptr<WBFL::DManip::iDisplayList> pDL)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
@@ -842,22 +727,17 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
       sectionHeight -= precamber;
    }
 
-   CComPtr<IPoint2d> point;
-   point.CoCreateInstance(CLSID_Point2d);
-   point->Move(pierLocation + groupOffset,-sectionHeight);
+   WBFL::Geometry::Point2d point(pierLocation + groupOffset,-sectionHeight);
 
    // create display object
-   CComPtr<iPointDisplayObject> ptDispObj;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&ptDispObj);
-
+   auto ptDispObj = WBFL::DManip::PointDisplayObject::Create();
    ptDispObj->SetItemData((void*)pbIsPier,true);
 
    // create drawing strategy
-   IUnknown* unk;
+   std::shared_ptr<WBFL::DManip::iDrawPointStrategy> strategy;
    if ( pPier )
    {
-      CSupportDrawStrategyImpl* pDrawStrategy = new CSupportDrawStrategyImpl(pPier);
-      unk = pDrawStrategy->GetInterface(&IID_iDrawPointStrategy);
+      strategy = std::make_shared<CSupportDrawStrategyImpl>(pPier);
    }
    else
    {
@@ -865,21 +745,18 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
       Float64 temp, leftBrgOffset, rightBrgOffset;
       pIGirder->GetSegmentBearingOffset(segmentKey,&temp,&leftBrgOffset);
       pIGirder->GetSegmentBearingOffset(CSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex+1),&rightBrgOffset,&temp);
-      CTemporarySupportDrawStrategyImpl* pDrawStrategy = new CTemporarySupportDrawStrategyImpl(pTS->GetSupportType(),leftBrgOffset,rightBrgOffset);
-      unk = pDrawStrategy->GetInterface(&IID_iDrawPointStrategy);
+      strategy = std::make_shared<CTemporarySupportDrawStrategyImpl>(pTS->GetSupportType(),leftBrgOffset,rightBrgOffset);
    }
 
-   ptDispObj->SetDrawingStrategy((iDrawPointStrategy*)unk);
-   unk->Release();
+   ptDispObj->SetDrawingStrategy(strategy);
 
-   CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> supportRep(ptDispObj);
-   supportRep->SetPosition(point,FALSE,FALSE);
-   supportRep->SetID( ID );
+   ptDispObj->SetPosition(point,false,false);
+   ptDispObj->SetID( ID );
 
-   pDL->AddDisplayObject(supportRep);
+   pDL->AddDisplayObject(ptDispObj);
 }
 
-void CGirderModelElevationView::CreateIntermediatePierDisplayObject(Float64 groupOffset,const CPrecastSegmentData* pSegment,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,iDisplayList* pDL)
+void CGirderModelElevationView::CreateIntermediatePierDisplayObject(Float64 groupOffset,const CPrecastSegmentData* pSegment,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,std::shared_ptr<WBFL::DManip::iDisplayList> pDL)
 {
    const CSpanData2* pStartSpan = pSegment->GetSpan(pgsTypes::metStart);
    const CSpanData2* pEndSpan   = pSegment->GetSpan(pgsTypes::metEnd);
@@ -889,8 +766,8 @@ void CGirderModelElevationView::CreateIntermediatePierDisplayObject(Float64 grou
       return; // no intermediate pier
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -914,30 +791,23 @@ void CGirderModelElevationView::CreateIntermediatePierDisplayObject(Float64 grou
          Float64 pierLocation;
          VERIFY( pBridge->GetPierLocation(segmentKey,pierIdx,&pierLocation) );
 
-         CComPtr<IPoint2d> point;
-         point.CoCreateInstance(CLSID_Point2d);
-         point->Move(pierLocation + groupOffset,-sectionHeight);
+         WBFL::Geometry::Point2d point(pierLocation + groupOffset,-sectionHeight);
 
          // create display object
-         CComPtr<iPointDisplayObject> ptDispObj;
-         ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&ptDispObj);
+         auto ptDispObj = WBFL::DManip::PointDisplayObject::Create();
 
          bool* pbIsPier = new bool;
          *pbIsPier = true;
          ptDispObj->SetItemData((void*)pbIsPier,true);
 
          // create drawing strategy
-         CSupportDrawStrategyImpl* pDrawStrategy = new CSupportDrawStrategyImpl(pPier);
-         IUnknown* unk = pDrawStrategy->GetInterface(&IID_iDrawPointStrategy);
+         auto pDrawStrategy = std::make_shared<CSupportDrawStrategyImpl>(pPier);
+         ptDispObj->SetDrawingStrategy(pDrawStrategy);
 
-         ptDispObj->SetDrawingStrategy((iDrawPointStrategy*)unk);
-         unk->Release();
+         ptDispObj->SetPosition(point,false,false);
+         ptDispObj->SetID( pierIdx );
 
-         CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> supportRep(ptDispObj);
-         supportRep->SetPosition(point,FALSE,FALSE);
-         supportRep->SetID( pierIdx );
-
-         pDL->AddDisplayObject(supportRep);
+         pDL->AddDisplayObject(ptDispObj);
       }
 
       pSpan = pSpan->GetNextPier()->GetNextSpan();
@@ -948,7 +818,7 @@ void CGirderModelElevationView::CreateIntermediatePierDisplayObject(Float64 grou
    }
 }
 
-void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(Float64 groupOffset,const CPrecastSegmentData* pSegment,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,iDisplayList* pDL)
+void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(Float64 groupOffset,const CPrecastSegmentData* pSegment,EventIndexType eventIdx,const CTimelineManager* pTimelineMgr,std::shared_ptr<WBFL::DManip::iDisplayList> pDL)
 {
    const CSpanData2* pStartSpan = pSegment->GetSpan(pgsTypes::metStart);
    const CSpanData2* pEndSpan   = pSegment->GetSpan(pgsTypes::metEnd);
@@ -990,8 +860,8 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
             continue; // temp support does not exist in this event
          }
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         
+         auto pBroker = EAFGetBroker();
          GET_IFACE2(pBroker,ISectionProperties,pSectProp);
          GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -1002,34 +872,26 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
          Float64 sectionHeight = pSectProp->GetSegmentHeightAtTemporarySupport(segmentKey,pTS->GetIndex());
          Float64 pierLocation = pBridge->GetTemporarySupportLocation(pTS->GetIndex(),segmentKey.girderIndex);
 
-         CComPtr<IPoint2d> point;
-         point.CoCreateInstance(CLSID_Point2d);
-         point->Move(pierLocation+groupOffset,-sectionHeight);
+         WBFL::Geometry::Point2d point(pierLocation+groupOffset,-sectionHeight);
 
          // create display object
-         CComPtr<iPointDisplayObject> ptDispObj;
-         ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&ptDispObj);
+         auto ptDispObj = WBFL::DManip::PointDisplayObject::Create();
 
          // create drawing strategy
-         CTemporarySupportDrawStrategyImpl* pDrawStrategy = new CTemporarySupportDrawStrategyImpl(pTS->GetSupportType(),sectionHeight/4,sectionHeight/4);
-         IUnknown* unk = pDrawStrategy->GetInterface(&IID_iDrawPointStrategy);
+         auto pDrawStrategy = std::make_shared<CTemporarySupportDrawStrategyImpl>(pTS->GetSupportType(),sectionHeight/4,sectionHeight/4);
+         ptDispObj->SetDrawingStrategy(pDrawStrategy);
 
-         ptDispObj->SetDrawingStrategy((iDrawPointStrategy*)unk);
-         unk->Release();
+         ptDispObj->SetPosition(point,false,false);
+         ptDispObj->SetID( pTS->GetID() );
 
-         CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> supportRep(ptDispObj);
-         supportRep->SetPosition(point,FALSE,FALSE);
-         supportRep->SetID( pTS->GetID() );
-
-         pDL->AddDisplayObject(supportRep);
+         pDL->AddDisplayObject(ptDispObj);
       }
    }
 }
 
-void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,EventIndexType eventIdx)
 {
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(SUPPORT_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(SUPPORT_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -1078,28 +940,25 @@ void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSDocBase* pDoc, IB
    } // group loop
 }
 
-void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx)
 {
-   CComPtr<iDisplayList> pSupportDisplayList;
-   dispMgr->FindDisplayList(SUPPORT_LIST,&pSupportDisplayList);
+   auto pSupportDisplayList = m_pDispMgr->FindDisplayList(SUPPORT_LIST);
    ATLASSERT(pSupportDisplayList);
 
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(DROP_TARGET_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(DROP_TARGET_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
    COLORREF color = HOTPINK1;
 
    PierIndexType startPierIdx, endPierIdx;
-   CComPtr<IPoint2d> p1, p2;
+   std::optional<WBFL::Geometry::Point2d> p1, p2;
    IndexType nItems = pSupportDisplayList->GetDisplayObjectCount();
    for ( IndexType idx = 0; idx < nItems; idx++ )
    {
-      CComPtr<iDisplayObject> pDO;
-      pSupportDisplayList->GetDisplayObject(idx,&pDO);
+      auto pDO = pSupportDisplayList->GetDisplayObject(idx);
 
-      CComQIPtr<iPointDisplayObject> doPoint(pDO);
+      auto doPoint = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(pDO);
       ATLASSERT(doPoint != nullptr);
 
       bool* pbIsPier;
@@ -1107,44 +966,35 @@ void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSDocBase* pDoc,
 
       if ( pbIsPier && *pbIsPier )
       {
-         if ( p1 == nullptr )
+         if ( p1.has_value() )
          {
-            CComPtr<IPoint2d> p;
-            doPoint->GetPosition(&p);
-            p->Clone(&p1);
-            p1->put_Y(0.0);
-
-            startPierIdx = pDO->GetID();
-         }
-         else
-         {
-            CComPtr<IPoint2d> p;
-            doPoint->GetPosition(&p);
-            p2.Release();
-            p->Clone(&p2);
-            p2->put_Y(0.0);
+            auto p = doPoint->GetPosition();
+            p2 = WBFL::Geometry::Point2d(p.X(), 0.0);
 
             endPierIdx = pDO->GetID();
          }
-
-         if ( p1 != nullptr && p2 != nullptr && (startPierIdx < endPierIdx) )
+         else
          {
-            CComPtr<iDisplayObject> line;
-            BuildLine(pDL,p1,p2,color,1,&line);
+            auto p = doPoint->GetPosition();
+            p1 = WBFL::Geometry::Point2d(p.X(), 0.0);
 
-            line->Visible(FALSE);
+            startPierIdx = pDO->GetID();
+         }
+
+         if ( p1.has_value() && p2.has_value() && (startPierIdx < endPierIdx) )
+         {
+            auto line = BuildLine(pDL,p1.value(), p2.value(), color, 1);
+
+            line->Visible(false);
 
             SpanIndexType spanIdx = (SpanIndexType)startPierIdx;
 
             // create a drop site for drag and drop loads
-            CGirderDropSite* pDropSite = new CGirderDropSite(pDoc, CSpanKey(spanIdx,girderKey.girderIndex), m_pFrame);
-            CComPtr<iDropSite> dropSite;
-            dropSite.Attach((iDropSite*)pDropSite->GetInterface(&IID_iDropSite));
+            auto dropSite = std::make_shared<CGirderDropSite>(pDoc, CSpanKey(spanIdx,girderKey.girderIndex), m_pFrame);
             line->RegisterDropSite(dropSite);
 
-            p1.Release();
             p1 = p2;
-            p2.Release();
+            p2.reset();
 
             startPierIdx = endPierIdx;
          }
@@ -1152,11 +1002,10 @@ void CGirderModelElevationView::BuildDropTargetDisplayObjects(CPGSDocBase* pDoc,
    }
 }
 
-void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
    // get the display list and clear out any old display objects
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(GDR_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(GDR_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -1211,25 +1060,23 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,IBr
             }
 
             // create the display object
-            CComPtr<iPointDisplayObject> doPnt;
-            ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
+            auto doPnt = WBFL::DManip::PointDisplayObject::Create();
 
             CComPtr<IPoint2d> pnt;
             position->get_LocatorPoint(lpTopLeft,&pnt);
-            doPnt->SetPosition(pnt,FALSE,FALSE);
+            doPnt->SetPosition(geomUtil::GetPoint(pnt),false,false);
 
             // create the drawing strategy
-            CComPtr<iShapeDrawStrategy> strategy;
-            ::CoCreateInstance(CLSID_ShapeDrawStrategy,nullptr,CLSCTX_ALL,IID_iShapeDrawStrategy,(void**)&strategy);
+            auto strategy = WBFL::DManip::ShapeDrawStrategy::Create();
             doPnt->SetDrawingStrategy(strategy);
 
             // configure the strategy
-            strategy->SetShape(shape);
+            strategy->SetShape(geomUtil::ConvertShape(shape));
             strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);
             strategy->SetSolidFillColor(segmentFillColor);
             strategy->SetVoidLineColor(VOID_BORDER_COLOR);
             strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
-            strategy->DoFill(true);
+            strategy->Fill(true);
 
             CString strMsg(GetSegmentTooltip(pBroker,segmentKey));
             doPnt->SetMaxTipWidth(TOOLTIP_WIDTH);
@@ -1238,11 +1085,8 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,IBr
 
             // Register an event sink with the segment display object so that we can handle double clicks
             // on the segment differently then a general double click
-            CGirderElevationViewSegmentDisplayObjectEvents* pEvents = new CGirderElevationViewSegmentDisplayObjectEvents(segmentKey, GetFrame());
-            CComPtr<iDisplayObjectEvents> events;
-            events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-            CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doPnt);
-            dispObj->RegisterEventSink(events);
+            auto events = std::make_shared<CGirderElevationViewSegmentDisplayObjectEvents>(segmentKey, GetFrame());
+            doPnt->RegisterEventSink(events);
 
             // put the display object in its display list
             pDL->AddDisplayObject(doPnt);
@@ -1253,11 +1097,10 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,IBr
    } // group loop
 }
 
-void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
    // get the display list and clear out any old display objects
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(CP_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(CP_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -1313,22 +1156,19 @@ void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDo
             position->Offset(group_offset,0);
 
             // create the display object
-            CComPtr<iPointDisplayObject> doPnt;
-            ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-            doPnt->SetID(segID);
+            auto doPnt = WBFL::DManip::PointDisplayObject::Create(segID);
 
             // create the drawing strategy
-            CComPtr<iShapeDrawStrategy> strategy;
-            ::CoCreateInstance(CLSID_ShapeDrawStrategy,nullptr,CLSCTX_ALL,IID_iShapeDrawStrategy,(void**)&strategy);
+            auto strategy = WBFL::DManip::ShapeDrawStrategy::Create();
             doPnt->SetDrawingStrategy(strategy);
 
             // configure the strategy
-            strategy->SetShape(shape);
+            strategy->SetShape(geomUtil::ConvertShape(shape));
             strategy->SetSolidLineColor(CLOSURE_BORDER_COLOR);
             strategy->SetSolidFillColor(CLOSURE_FILL_COLOR);
             strategy->SetVoidLineColor(VOID_BORDER_COLOR);
             strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
-            strategy->DoFill(true);
+            strategy->Fill(true);
 
             CString strMsg(GetClosureTooltip(pBroker,closureKey));
             doPnt->SetMaxTipWidth(TOOLTIP_WIDTH);
@@ -1346,15 +1186,13 @@ void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDo
    } // group loop
 }
 
-void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(STRAND_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(STRAND_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
-   CComPtr<iDisplayList> pDebondDL;
-   dispMgr->FindDisplayList(DEBOND_LIST,&pDebondDL);
+   auto pDebondDL = m_pDispMgr->FindDisplayList(DEBOND_LIST);
    ATLASSERT(pDebondDL);
    pDebondDL->Clear();
 
@@ -1434,7 +1272,7 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
                   {
                      to_point.Release();
                      profilePoints->get_Item(pntIdx, &to_point);
-                     BuildLine(pDL, from_point, to_point, STRAND_FILL_COLOR);
+                     BuildLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), STRAND_FILL_COLOR);
                      from_point = to_point;
                   } // next pntIdx
                } // next strandIdx
@@ -1469,8 +1307,8 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
                      from_point->MoveEx(left_debond);
                      from_point->put_X(group_offset + running_segment_length);
 
-                     BuildLine(pDebondDL, from_point, left_debond, DEBOND_FILL_COLOR);
-                     BuildDebondTick(pDebondDL, left_debond, DEBOND_FILL_COLOR);
+                     BuildLine(pDebondDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(left_debond), DEBOND_FILL_COLOR);
+                     BuildDebondTick(pDebondDL, geomUtil::GetPoint(left_debond), DEBOND_FILL_COLOR);
                   }
 
                   if (!IsEqual(end, segment_length))
@@ -1483,8 +1321,8 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
                      to_point->MoveEx(right_debond);
                      to_point->put_X(group_offset + running_segment_length + segment_length);
 
-                     BuildLine(pDebondDL, right_debond, to_point, DEBOND_FILL_COLOR);
-                     BuildDebondTick(pDebondDL, right_debond, DEBOND_FILL_COLOR);
+                     BuildLine(pDebondDL, geomUtil::GetPoint(right_debond), geomUtil::GetPoint(to_point), DEBOND_FILL_COLOR);
+                     BuildDebondTick(pDebondDL, geomUtil::GetPoint(right_debond), DEBOND_FILL_COLOR);
                   }
                }
             }
@@ -1497,12 +1335,11 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, IBr
    } // end of group loop
 }
 
-void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
 #pragma Reminder("UPDATE: this shows the geometric centroid of the strand, need to show location of resultant PS force")
 
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(STRAND_CG_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(STRAND_CG_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -1578,7 +1415,7 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
                   CComPtr<IPoint2d> to_point;
                   profilePoints->get_Item(pntIdx, &to_point);
 
-                  BuildDashLine(pDL, from_point, to_point, STRAND_CG_COLOR_1, STRAND_CG_COLOR_2);
+                  BuildDashLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), STRAND_CG_COLOR_1, STRAND_CG_COLOR_2);
 
                   from_point = to_point;
                }
@@ -1592,10 +1429,9 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, I
    }
 }
 
-void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx)
 {
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(CG_LIST, &pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(CG_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -1689,7 +1525,7 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
                thisPoint.CoCreateInstance(CLSID_Point2d);
                thisPoint->Move(X, -Yt + precamber + tft);
 
-               BuildDashLine(pDL, prevPoint, thisPoint, SECTION_CG_COLOR_1, SECTION_CG_COLOR_2);
+               BuildDashLine(pDL, geomUtil::GetPoint(prevPoint), geomUtil::GetPoint(thisPoint), SECTION_CG_COLOR_1, SECTION_CG_COLOR_2);
 
                prevPoint = thisPoint;
             } // next poi
@@ -1702,10 +1538,9 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
    } // next group
 }
 
-void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(TENDON_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(TENDON_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -1785,11 +1620,11 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
 
             if ( bIsTendonInstalled )
             {
-               BuildLine(pDL, from_point, to_point, GIRDER_TENDON_LINE_COLOR);
+               BuildLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), GIRDER_TENDON_LINE_COLOR);
             }
             else
             {
-               BuildDashLine(pDL, from_point, to_point, GIRDER_DUCT_LINE_COLOR1, GIRDER_DUCT_LINE_COLOR2);
+               BuildDashLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), GIRDER_DUCT_LINE_COLOR1, GIRDER_DUCT_LINE_COLOR2);
             }
 
             from_point = to_point;
@@ -1828,7 +1663,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
                X += group_offset;
                to_point->Move(X, Y);
 
-               BuildLine(pDL, from_point, to_point, SEGMENT_TENDON_LINE_COLOR);
+               BuildLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), SEGMENT_TENDON_LINE_COLOR);
 
                from_point = to_point;
             } // next point
@@ -1840,10 +1675,9 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, IBr
    } // next group
 }
 
-void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(REBAR_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(REBAR_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -1943,7 +1777,7 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBro
                   CComPtr<IPoint2dCollection> profile;
                   rebarPattern->get_Profile(0,&profile);
                   profile->Offset(group_offset + running_segment_length,0);
-                  BuildLine(pDL, profile, REBAR_COLOR);
+                  BuildLine(pDL, geomUtil::CreatePointCollection(profile), REBAR_COLOR);
                }
 
                rebarPattern.Release();
@@ -1960,7 +1794,7 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, IBro
    } // next group
 }
 
-template <class T> bool IsLoadApplicable(IBroker* pBroker,const T* pLoad,EventIndexType eventIdx,const CGirderKey& girderKey)
+template <class T> bool IsLoadApplicable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const T* pLoad,EventIndexType eventIdx,const CGirderKey& girderKey)
 {
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -1991,10 +1825,9 @@ template <class T> bool IsLoadApplicable(IBroker* pBroker,const T* pLoad,EventIn
    return bMatchSpan && bMatchGirder;
 }
 
-void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
+void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx, bool* casesExist)
 {
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(LOAD_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(LOAD_LIST);
    ATLASSERT(pDL);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -2017,9 +1850,7 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
       }
    }
 
-   CComPtr<iDisplayObjectFactory> factory;
-   dispMgr->GetDisplayObjectFactory(0, &factory);
-
+   auto factory = m_pDispMgr->GetDisplayObjectFactory(0);
 
    SpanIndexType displayStartSpanIdx, displayEndSpanIdx;
    GetSpanRange(pBroker,girderKey,&displayStartSpanIdx,&displayEndSpanIdx);
@@ -2081,15 +1912,13 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
                }
             }
 
-            CComPtr<iDisplayObject> disp_obj;
-            factory->Create(CPointLoadDrawStrategyImpl::ms_Format,nullptr,&disp_obj);
+            auto disp_obj = factory->Create(CPointLoadDrawStrategyImpl::ms_Format,nullptr);
 
-            CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
+            auto point_disp = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(disp_obj);
 
-            CComPtr<iDrawPointStrategy> pStrategy;
-            point_disp->GetDrawingStrategy(&pStrategy);
+            auto pStrategy = point_disp->GetDrawingStrategy();
 
-            CComQIPtr<iPointLoadDrawStrategy,&IID_iPointLoadDrawStrategy> pls(pStrategy);
+            auto pls = std::dynamic_pointer_cast<iPointLoadDrawStrategy>(pStrategy);
             pls->Init(point_disp, pBroker, *pLoad, loadIdx, span_length, max, color);
 
             CSegmentKey segmentKey;
@@ -2101,16 +1930,12 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
 
             Float64 x_position = Xgp + groupOffset - span_offset; // load position
 
-            CComPtr<IPoint2d> point;
-            point.CoCreateInstance(__uuidof(Point2d));
-            point->put_X(x_position);
-            point->put_Y(0.0);
-
-            point_disp->SetPosition(point, FALSE, FALSE);
+            WBFL::Geometry::Point2d point(x_position, 0.0);
+            point_disp->SetPosition(point, false, false);
 
             // tool tip
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
+            
+            auto pBroker = EAFGetBroker();
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strMagnitude = FormatDimension(pLoad->m_Magnitude,pDisplayUnits->GetGeneralForceUnit(),true);
             CString strLocation  = FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit(),true);
@@ -2135,10 +1960,9 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
    }
 }
 
-void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
+void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx, bool* casesExist)
 {
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(LOAD_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(LOAD_LIST);
    ATLASSERT(pDL);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -2165,8 +1989,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
       }
    }
 
-   CComPtr<iDisplayObjectFactory> factory;
-   dispMgr->GetDisplayObjectFactory(0, &factory);
+   auto factory = m_pDispMgr->GetDisplayObjectFactory(0);
 
    // create load display objects from filtered list
    for (loadIdx = 0; loadIdx < nLoads; loadIdx++ )
@@ -2222,15 +2045,13 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
                break;
             }
 
-            CComPtr<iDisplayObject> disp_obj;
-            factory->Create(CDistributedLoadDrawStrategyImpl::ms_Format,nullptr,&disp_obj);
+            auto disp_obj = factory->Create(CDistributedLoadDrawStrategyImpl::ms_Format,nullptr);
 
-            CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
+            auto point_disp = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(disp_obj);
 
-            CComPtr<iDrawPointStrategy> pStrategy;
-            point_disp->GetDrawingStrategy(&pStrategy);
+            auto pStrategy = point_disp->GetDrawingStrategy();
 
-            CComQIPtr<iDistributedLoadDrawStrategy,&IID_iDistributedLoadDrawStrategy> pls(pStrategy);
+            auto pls = std::dynamic_pointer_cast<iDistributedLoadDrawStrategy>(pStrategy);
             pls->Init(point_disp, pBroker, *pLoad, loadIdx, load_length, span_length, max, color);
 
             // get the point for the load display object
@@ -2243,16 +2064,12 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
 
             Float64 x_position = Xgp + groupOffset - span_offset; // load position
 
-            CComPtr<IPoint2d> point;
-            point.CoCreateInstance(__uuidof(Point2d));
-            point->put_X(x_position);
-            point->put_Y(0.0);
-
+            WBFL::Geometry::Point2d point(x_position, 0.0);
             point_disp->SetPosition(point, FALSE, FALSE);
 
             // tool tip
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
+            
+            auto pBroker = EAFGetBroker();
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strStartMagnitude = FormatDimension(pLoad->m_WStart,pDisplayUnits->GetForcePerLengthUnit(),true);
             CString strEndMagnitude   = FormatDimension(pLoad->m_WEnd,pDisplayUnits->GetForcePerLengthUnit(),true);
@@ -2280,10 +2097,9 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
    }
 }
 
-void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey, EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
+void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist)
 {
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(LOAD_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(LOAD_LIST);
    ATLASSERT(pDL);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -2325,8 +2141,7 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
       }
    }
 
-   CComPtr<iDisplayObjectFactory> factory;
-   dispMgr->GetDisplayObjectFactory(0, &factory);
+   auto factory = m_pDispMgr->GetDisplayObjectFactory(0);
 
    // create load display objects from filtered list
    for (IndexType loadIdx = 0; loadIdx < nLoads; loadIdx++)
@@ -2337,13 +2152,11 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
       {
          casesExist[pLoad->m_LoadCase] = true;
 
-         CComPtr<iDisplayObject> disp_obj;
-         factory->Create(CMomentLoadDrawStrategyImpl::ms_Format,nullptr,&disp_obj);
+         auto disp_obj = factory->Create(CMomentLoadDrawStrategyImpl::ms_Format,nullptr);
 
-         CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
+         auto point_disp = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(disp_obj);
 
-         CComPtr<iDrawPointStrategy> pStrategy;
-         point_disp->GetDrawingStrategy(&pStrategy);
+         auto pStrategy = point_disp->GetDrawingStrategy();
 
          COLORREF color = GetLoadGroupColor(pLoad->m_LoadCase);
 
@@ -2372,15 +2185,13 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
                Xspan *= span_length;
             }
 
-            CComPtr<iDisplayObject> disp_obj;
-            factory->Create(CMomentLoadDrawStrategyImpl::ms_Format,nullptr,&disp_obj);
+            auto disp_obj = factory->Create(CMomentLoadDrawStrategyImpl::ms_Format,nullptr);
 
-            CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
+            auto point_disp = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(disp_obj);
 
-            CComPtr<iDrawPointStrategy> pStrategy;
-            point_disp->GetDrawingStrategy(&pStrategy);
+            auto pStrategy = point_disp->GetDrawingStrategy();
 
-            CComQIPtr<iMomentLoadDrawStrategy,&IID_iMomentLoadDrawStrategy> pls(pStrategy);
+            auto pls = std::dynamic_pointer_cast<iMomentLoadDrawStrategy>(pStrategy);
             pls->Init(point_disp, pBroker, *pLoad, loadIdx, span_length, max, color);
 
 
@@ -2393,16 +2204,12 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
 
             Float64 x_position = Xgp + groupOffset - span_offset; // load position
 
-            CComPtr<IPoint2d> point;
-            point.CoCreateInstance(__uuidof(Point2d));
-            point->put_X(x_position);
-            point->put_Y(0.0);
-
+            WBFL::Geometry::Point2d point(x_position, 0.0);
             point_disp->SetPosition(point, FALSE, FALSE);
 
             // tool tip
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
+            
+            auto pBroker = EAFGetBroker();
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strMagnitude = FormatDimension(pLoad->m_Magnitude,pDisplayUnits->GetMomentUnit(),true);
             CString strLocation  = FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit(),true);
@@ -2425,26 +2232,22 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
    }
 }
 
-void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey, EventIndexType eventIdx,iDisplayMgr* dispMgr, bool* casesExist)
+void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, EventIndexType eventIdx, bool* casesExist)
 {
    if (casesExist[UserLoads::DC] || casesExist[UserLoads::DW] || casesExist[UserLoads::LL_IM])
    {
       IndexType prevNumEntries(INVALID_INDEX);
-      m_Legend.Release();
-      m_Legend.CoCreateInstance(CLSID_LegendDisplayObject);
-      m_Legend->put_Title(CComBSTR(_T("Legend")));
-      m_Legend->put_DoDrawBorder(TRUE);
-      m_Legend->put_IsDraggable(TRUE);
+      m_Legend = WBFL::DManip::LegendDisplayObject::Create();
+      m_Legend->SetTitle(_T("Legend"));
+      m_Legend->DrawBorder(true);
+      m_Legend->IsDraggable(true);
 
       // locate the legend at the top left corner the first time through only
       ScaleToFit(false);
-      CComPtr<IRect2d> rect;
-      m_pDispMgr->GetBoundingBox(false, &rect);
+      auto rect = m_pDispMgr->GetBoundingBox(false);
+      auto point = rect.TopRight();
 
-      CComPtr<IPoint2d> point;
-      rect->get_TopRight(&point);
-
-      m_Legend->put_Position(point,FALSE,FALSE);
+      m_Legend->SetPosition(point,false,false);
 
       IndexType nEntries = 0;
       if (casesExist[UserLoads::DC])
@@ -2466,8 +2269,7 @@ void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSDocBase* pDoc, IBr
       }
 
       // add to display list
-      CComPtr<iDisplayList> pDL;
-      dispMgr->FindDisplayList(LOAD_LIST,&pDL);
+      auto pDL = m_pDispMgr->FindDisplayList(LOAD_LIST);
       ATLASSERT(pDL);
 
       pDL->AddDisplayObject(m_Legend);
@@ -2475,19 +2277,17 @@ void CGirderModelElevationView::BuildLegendDisplayObjects(CPGSDocBase* pDoc, IBr
       // now can change size and shape of legend
       if (nEntries != prevNumEntries)
       {
-         m_Legend->put_NumRows(nEntries);
+         m_Legend->SetNumRows(nEntries);
       }
 
-      CSize size;
-      m_Legend->GetMinCellSize(&size);
-      m_Legend->put_CellSize(size);
+      auto size = m_Legend->GetMinCellSize();
+      m_Legend->SetCellSize(size);
    }
 }
 
-void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(DIMLINE_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(DIMLINE_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -2503,8 +2303,6 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
    CComPtr<IPoint2d> from_point, to_point;
    from_point.CoCreateInstance(__uuidof(Point2d));
    to_point.CoCreateInstance(__uuidof(Point2d));
-
-   CComPtr<iDimensionLine> dimLine;
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -2617,8 +2415,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
             from_point->get_X(&x1);
             to_point->get_X(&x2);
 
-            dimLine.Release();
-            BuildDimensionLine(pDL, from_point, to_point, x2 - x1, &dimLine);
+            auto dimLine = BuildDimensionLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), x2 - x1);
             dimLine->SetWitnessLength(twip_offset);
 
             if ( 1 < nSegments )
@@ -2661,8 +2458,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
                from_point->get_X(&x1);
                to_point->get_X(&x2);
 
-               dimLine.Release();
-               BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+               auto dimLine = BuildDimensionLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), x2-x1);
                dimLine->SetWitnessLength(3*twip_offset/2);
             }
 
@@ -2689,8 +2485,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
             from_point->get_X(&x1);
             to_point->get_X(&x2);
 
-            dimLine.Release();
-            BuildDimensionLine(pDL, from_point, to_point, x2 - x1, &dimLine);
+            dimLine = BuildDimensionLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), x2 - x1);
             dimLine->SetWitnessLength(-twip_offset);
 
             StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped);
@@ -2717,8 +2512,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
                from_point->get_X(&x1);
                to_point->get_X(&x2);
 
-               dimLine.Release();
-               BuildDimensionLine(pDL, from_point, to_point, x2 - x1, &dimLine);
+               dimLine = BuildDimensionLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), x2 - x1);
                dimLine->SetWitnessLength(twip_offset / 2);
 
                Xgs = pPoi->ConvertPoiToGirderPathCoordinate(vPoi.back());
@@ -2734,8 +2528,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
                from_point->get_X(&x1);
                to_point->get_X(&x2);
 
-               dimLine.Release();
-               BuildDimensionLine(pDL, from_point, to_point, x2 - x1, &dimLine);
+               dimLine = BuildDimensionLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), x2 - x1);
                dimLine->SetWitnessLength(twip_offset / 2);
 
                // harp locations from cl bearing (along bottom)
@@ -2753,8 +2546,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
                from_point->get_X(&x1);
                to_point->get_X(&x2);
 
-               dimLine.Release();
-               BuildDimensionLine(pDL, from_point, to_point, x2 - x1, &dimLine);
+               dimLine = BuildDimensionLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), x2 - x1);
                dimLine->SetWitnessLength(-twip_offset / 2);
 
                end_dist = pBridge->GetSegmentEndEndDistance(segmentKey);
@@ -2771,8 +2563,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
                from_point->get_X(&x1);
                to_point->get_X(&x2);
 
-               dimLine.Release();
-               BuildDimensionLine(pDL, from_point, to_point, x2 - x1, &dimLine);
+               dimLine = BuildDimensionLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), x2 - x1);
                dimLine->SetWitnessLength(-twip_offset / 2);
             }
 
@@ -2803,8 +2594,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
                from_point->get_X(&x1);
                to_point->get_X(&x2);
 
-               dimLine.Release();
-               BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+               dimLine = BuildDimensionLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), x2-x1);
                dimLine->SetWitnessLength(-twip_offset);
             }
 
@@ -2832,8 +2622,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
                from_point->get_X(&x1);
                to_point->get_X(&x2);
 
-               dimLine.Release();
-               BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+               dimLine = BuildDimensionLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), x2-x1);
                dimLine->SetWitnessLength(-twip_offset);
             }
 
@@ -2862,8 +2651,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
          from_point->get_X(&x1);
          to_point->get_X(&x2);
 
-         dimLine.Release();
-         BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+         auto dimLine = BuildDimensionLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), x2-x1);
          dimLine->SetWitnessLength(2*twip_offset);
 
          // Overall length along the bottom
@@ -2891,8 +2679,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
          from_point->get_X(&x1);
          to_point->get_X(&x2);
 
-         dimLine.Release();
-         BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+         dimLine = BuildDimensionLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), x2-x1);
          dimLine->SetWitnessLength(-2*twip_offset);
       }
 
@@ -2949,8 +2736,7 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
       from_point->get_X(&x1);
       to_point->get_X(&x2);
 
-      dimLine.Release();
-      BuildDimensionLine(pDL, from_point, to_point, x2-x1, &dimLine);
+      auto dimLine = BuildDimensionLine(pDL, geomUtil::GetPoint(from_point), geomUtil::GetPoint(to_point), x2-x1);
       dimLine->SetWitnessLength(-3*twip_offset/2);
       dimLine->SetHiddenWitnessLength(twip_offset);
 
@@ -2959,37 +2745,32 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
    }
 }
 
-void CGirderModelElevationView::BuildSectionCutDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildSectionCutDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,EventIndexType eventIdx)
 {
-   CComPtr<iDisplayObjectFactory> factory;
-   dispMgr->GetDisplayObjectFactory(0, &factory);
+   auto factory = m_pDispMgr->GetDisplayObjectFactory(0);
 
-   CComPtr<iDisplayObject> disp_obj;
-   factory->Create(CSectionCutDisplayImpl::ms_Format,nullptr,&disp_obj);
+   auto disp_obj = factory->Create(CSectionCutDisplayImpl::ms_Format,nullptr);
 
-   CComPtr<iDisplayObjectEvents> sink;
-   disp_obj->GetEventSink(&sink);
+   auto sink = disp_obj->GetEventSink();
 
-   CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
+   auto point_disp = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(disp_obj);
    point_disp->SetToolTipText(_T("Click drag to move section cut"));
 
-   CComQIPtr<iSectionCutDrawStrategy,&IID_iSectionCutDrawStrategy> sc_strat(sink);
+   auto sc_strat = std::dynamic_pointer_cast<iSectionCutDrawStrategy>(sink);
    sc_strat->Init(point_disp, pBroker, girderKey, m_pFrame);
    sc_strat->SetColor(CUT_COLOR);
 
    point_disp->SetID(SECTION_CUT_ID);
 
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(SECT_CUT_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(SECT_CUT_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
    pDL->AddDisplayObject(disp_obj);
 }
 
-void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker,const CGirderKey& girderKey,EventIndexType eventIdx,iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,EventIndexType eventIdx)
 {
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(STIRRUP_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(STIRRUP_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -3136,40 +2917,32 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
                      top = precamber + slab_offset + delta_top_flange_thickening;
                   }
 
-                  CComPtr<IPoint2d> p1, p2;
-                  p1.CoCreateInstance(CLSID_Point2d);
-                  p2.CoCreateInstance(CLSID_Point2d);
+                  WBFL::Geometry::Point2d p1(x + running_segment_length + group_offset,bottom);
+                  WBFL::Geometry::Point2d p2(x + running_segment_length + group_offset,top);
 
-                  p1->Move(x + running_segment_length + group_offset,bottom);
-                  p2->Move(x + running_segment_length + group_offset,top);
+                  auto doPnt1 = WBFL::DManip::PointDisplayObject::Create();
+                  auto doPnt2 = WBFL::DManip::PointDisplayObject::Create();
+                  doPnt1->SetPosition(p1,false, false);
+                  doPnt2->SetPosition(p2,false, false);
 
-                  CComPtr<iPointDisplayObject> doPnt1, doPnt2;
-                  ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt1);
-                  ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt2);
-                  doPnt1->SetPosition(p1,FALSE,FALSE);
-                  doPnt2->SetPosition(p2,FALSE,FALSE);
+                  auto c1 = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doPnt1);
+                  auto c2 = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doPnt2);
 
-                  CComQIPtr<iConnectable,&IID_iConnectable> c1(doPnt1);
-                  CComQIPtr<iConnectable,&IID_iConnectable> c2(doPnt2);
+                  auto s1 = c1->AddSocket(0,p1);
+                  auto s2 = c2->AddSocket(0,p2);
 
-                  CComPtr<iSocket> s1, s2;
-                  c1->AddSocket(0,p1,&s1);
-                  c2->AddSocket(0,p2,&s2);
-
-                  CComPtr<iLineDisplayObject> line;
-                  ::CoCreateInstance(CLSID_LineDisplayObject,nullptr,CLSCTX_ALL,IID_iLineDisplayObject,(void**)&line);
+                  auto line = WBFL::DManip::LineDisplayObject::Create();
 
                   // color
-                  CComPtr<iDrawLineStrategy> pStrategy;
-                  line->GetDrawLineStrategy(&pStrategy);
+                  auto pStrategy = line->GetDrawLineStrategy();
 
                   // dangerous cast here
-                  iSimpleDrawLineStrategy* pSimple = dynamic_cast<iSimpleDrawLineStrategy*>(pStrategy.p);
+                  auto pSimple = std::dynamic_pointer_cast<WBFL::DManip::SimpleDrawLineStrategy>(pStrategy);
                   if (pSimple)
                   {
                      pSimple->SetColor(STIRRUP_COLOR);
-                     pSimple->SetBeginType(leNone);
-                     pSimple->SetEndType(leNone);
+                     pSimple->SetBeginType(WBFL::DManip::PointType::None);
+                     pSimple->SetEndType(WBFL::DManip::PointType::None);
                   }
                   else
                   {
@@ -3177,17 +2950,13 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
                   }
 
                   // Attach connector to the sockets 
-                  CComPtr<iConnector> connector;
-                  line->QueryInterface(IID_iConnector,(void**)&connector);
-                  CComPtr<iPlug> startPlug;
-                  CComPtr<iPlug> endPlug;
-                  connector->GetStartPlug(&startPlug);
-                  connector->GetEndPlug(&endPlug);
+                  auto connector = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(line);
+                  auto startPlug = connector->GetStartPlug();
+                  auto endPlug = connector->GetEndPlug();
 
                   // connect the line to the sockets
-                  DWORD dwCookie;
-                  s1->Connect(startPlug,&dwCookie);
-                  s2->Connect(endPlug,&dwCookie);
+                  s1->Connect(startPlug);
+                  s2->Connect(endPlug);
 
                   pDL->AddDisplayObject(line);
                }
@@ -3202,15 +2971,13 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
    }
 }
 
-void CGirderModelElevationView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx, iDisplayMgr* dispMgr)
+void CGirderModelElevationView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, EventIndexType eventIdx)
 {
-   CComPtr<iDisplayList> pDL;
-   dispMgr->FindDisplayList(PROPERTIES_LIST, &pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(PROPERTIES_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
-   CComPtr<iAnchoredTextBlock> textBlock;
-   textBlock.CoCreateInstance(CLSID_AnchoredTextBlock);
+   auto textBlock = WBFL::DManip::AnchoredTextBlock::Create();
    textBlock->SetLocation(CPoint(5, 5)); // location of text block relative to top left corner
 
    CString strProps(_T("Horizontal dimensions are based on plan view projection and do not include girder grade."));
@@ -3219,82 +2986,57 @@ void CGirderModelElevationView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc,
    pDL->AddDisplayObject(textBlock);
 }
 
-void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2dCollection* points, COLORREF color,UINT nWidth,iDisplayObject** ppDO)
+std::shared_ptr<WBFL::DManip::iDisplayObject> CGirderModelElevationView::BuildLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const std::vector<WBFL::Geometry::Point2d>& points, COLORREF color, UINT nWidth)
 {
-   CComPtr<iCompositeDisplayObject> compDO;
-   if ( ppDO )
+   PRECONDITION(2 <= points.size());
+
+   auto compDO = WBFL::DManip::CompositeDisplayObject::Create();
+
+   auto iter = points.begin();
+   auto end = points.end();
+   iter++;
+   for(;iter != end;iter++)
    {
-      compDO.CoCreateInstance(CLSID_CompositeDisplayObject);
-      compDO.QueryInterface(ppDO);
+      auto fromPoint = *(std::prev(iter));
+      auto toPoint = *iter;
+      auto dispObj = BuildLine(pDL,fromPoint,toPoint,color,nWidth);
+
+      compDO->AddDisplayObject(dispObj);
    }
 
-   IndexType nPoints;
-   points->get_Count(&nPoints);
-   if ( nPoints < 2 )
-   {
-      return;
-   }
+   pDL->AddDisplayObject(compDO);
 
-   for ( IndexType idx = 1; idx < nPoints; idx++ )
-   {
-      CComPtr<IPoint2d> fromPoint, toPoint;
-      points->get_Item(idx-1,&fromPoint);
-      points->get_Item(idx,&toPoint);
-
-      CComPtr<iDisplayObject> dispObj;
-      BuildLine(pDL,fromPoint,toPoint,color,nWidth,&dispObj);
-
-      if ( ppDO )
-      {
-         compDO->AddDisplayObject(dispObj);
-      }
-   }
-
-   if ( ppDO )
-   {
-      pDL->AddDisplayObject(compDO);
-   }
+   return compDO;
 }
 
-void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color,UINT nWidth,iDisplayObject** ppDO)
+std::shared_ptr<WBFL::DManip::iDisplayObject> CGirderModelElevationView::BuildLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const WBFL::Geometry::Point2d& fromPoint, const WBFL::Geometry::Point2d& toPoint, COLORREF color,UINT nWidth)
 {
    // put points at locations and make them sockets
-   CComPtr<iPointDisplayObject> from_rep;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&from_rep);
-   from_rep->SetPosition(fromPoint,FALSE,FALSE);
+   auto from_rep = WBFL::DManip::PointDisplayObject::Create();
+   from_rep->SetPosition(fromPoint,false,false);
    from_rep->SetID(m_DisplayObjectID++);
-   CComQIPtr<iConnectable,&IID_iConnectable> from_connectable(from_rep);
-   CComPtr<iSocket> from_socket;
-   from_connectable->AddSocket(0,fromPoint,&from_socket);
-   from_rep->Visible(FALSE);
+   auto from_connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(from_rep);
+   auto from_socket = from_connectable->AddSocket(0,fromPoint);
+   from_rep->Visible(false);
    pDL->AddDisplayObject(from_rep);
 
-   CComPtr<iPointDisplayObject> to_rep;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&to_rep);
-   to_rep->SetPosition(toPoint,FALSE,FALSE);
+   auto to_rep = WBFL::DManip::PointDisplayObject::Create();
+   to_rep->SetPosition(toPoint,false,false);
    to_rep->SetID(m_DisplayObjectID++);
-   CComQIPtr<iConnectable,&IID_iConnectable> to_connectable(to_rep);
-   CComPtr<iSocket> to_socket;
-   to_connectable->AddSocket(0,toPoint,&to_socket);
-   to_rep->Visible(FALSE);
+   auto to_connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(to_rep);
+   auto to_socket = to_connectable->AddSocket(0,toPoint);
+   to_rep->Visible(false);
    pDL->AddDisplayObject(to_rep);
 
    // Create the dimension line object
-   CComPtr<iLineDisplayObject> line;
-   ::CoCreateInstance(CLSID_LineDisplayObject,nullptr,CLSCTX_ALL,IID_iLineDisplayObject,(void**)&line);
+   auto line = WBFL::DManip::LineDisplayObject::Create();
+   line->SetID(m_DisplayObjectID++);
 
    // color
-   CComPtr<iDrawLineStrategy> pStrategy;
-   line->GetDrawLineStrategy(&pStrategy);
-
-   if ( ppDO )
-   {
-      (*ppDO) = line;
-      (*ppDO)->AddRef();
-   }
+   auto pStrategy = line->GetDrawLineStrategy();
 
    // dangerous cast here
-   iSimpleDrawLineStrategy* pSimple = dynamic_cast<iSimpleDrawLineStrategy*>(pStrategy.p);
+   auto pSimple = std::dynamic_pointer_cast<WBFL::DManip::SimpleDrawLineStrategy>(pStrategy);
    if (pSimple)
    {
       pSimple->SetColor(color);
@@ -3306,59 +3048,45 @@ void CGirderModelElevationView::BuildLine(iDisplayList* pDL, IPoint2d* fromPoint
    }
 
    // Attach connector to the sockets 
-   CComPtr<iConnector> connector;
-   line->QueryInterface(IID_iConnector,(void**)&connector);
-   CComPtr<iPlug> startPlug;
-   CComPtr<iPlug> endPlug;
-   connector->GetStartPlug(&startPlug);
-   connector->GetEndPlug(&endPlug);
+   auto connector = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(line);
+   auto startPlug = connector->GetStartPlug();
+   auto endPlug = connector->GetEndPlug();
 
    // connect the line to the sockets
    DWORD dwCookie;
-   from_socket->Connect(startPlug,&dwCookie);
-   to_socket->Connect(endPlug,&dwCookie);
-
-   line->SetID(m_DisplayObjectID++);
+   dwCookie = from_socket->Connect(startPlug);
+   dwCookie = to_socket->Connect(endPlug);
 
    pDL->AddDisplayObject(line);
+
+   return line;
 }
 
-void CGirderModelElevationView::BuildDashLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color1, COLORREF color2,iDisplayObject** ppDO)
+std::shared_ptr<WBFL::DManip::iDisplayObject> CGirderModelElevationView::BuildDashLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const WBFL::Geometry::Point2d& fromPoint, const WBFL::Geometry::Point2d& toPoint, COLORREF color1, COLORREF color2)
 {
    // put points at locations and make them sockets
-   CComPtr<iPointDisplayObject> from_rep;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&from_rep);
-   from_rep->SetPosition(fromPoint,FALSE,FALSE);
+   auto from_rep = WBFL::DManip::PointDisplayObject::Create();
+   from_rep->SetPosition(fromPoint, false, false);
    from_rep->SetID(m_DisplayObjectID++);
-   CComQIPtr<iConnectable,&IID_iConnectable> from_connectable(from_rep);
-   CComPtr<iSocket> from_socket;
-   from_connectable->AddSocket(0,fromPoint,&from_socket);
-   from_rep->Visible(FALSE);
+   auto from_connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(from_rep);
+   auto from_socket = from_connectable->AddSocket(0, fromPoint);
+   from_rep->Visible(false);
    pDL->AddDisplayObject(from_rep);
 
-   CComPtr<iPointDisplayObject> to_rep;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&to_rep);
-   to_rep->SetPosition(toPoint,FALSE,FALSE);
+   auto to_rep = WBFL::DManip::PointDisplayObject::Create();
+   to_rep->SetPosition(toPoint, false, false);
    to_rep->SetID(m_DisplayObjectID++);
-   CComQIPtr<iConnectable,&IID_iConnectable> to_connectable(to_rep);
-   CComPtr<iSocket> to_socket;
-   to_connectable->AddSocket(0,toPoint,&to_socket);
-   to_rep->Visible(FALSE);
+   auto to_connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(to_rep);
+   auto to_socket = to_connectable->AddSocket(0, toPoint);
+   to_rep->Visible(false);
    pDL->AddDisplayObject(to_rep);
 
    // Create the dimension line object
-   CComPtr<iLineDisplayObject> line;
-   ::CoCreateInstance(CLSID_LineDisplayObject,nullptr,CLSCTX_ALL,IID_iLineDisplayObject,(void**)&line);
-
-   if ( ppDO )
-   {
-      (*ppDO) = line;
-      (*ppDO)->AddRef();
-   }
+   auto line = WBFL::DManip::LineDisplayObject::Create();
+   line->SetID(m_DisplayObjectID++);
 
    // color
-   CComPtr<iSimpleDrawDashedLineStrategy> strategy;
-   ::CoCreateInstance(CLSID_SimpleDrawDashedLineStrategy,nullptr,CLSCTX_ALL,IID_iSimpleDrawDashedLineStrategy,(void**)&strategy);
+   auto strategy = WBFL::DManip::SimpleDrawDashedLineStrategy::Create();
    line->SetDrawLineStrategy(strategy);
 
    strategy->SetColor1(color1);
@@ -3366,89 +3094,75 @@ void CGirderModelElevationView::BuildDashLine(iDisplayList* pDL, IPoint2d* fromP
    strategy->SetDashLength(10);
 
    // Attach connector to the sockets 
-   CComPtr<iConnector> connector;
-   line->QueryInterface(IID_iConnector,(void**)&connector);
-   CComPtr<iPlug> startPlug;
-   CComPtr<iPlug> endPlug;
-   connector->GetStartPlug(&startPlug);
-   connector->GetEndPlug(&endPlug);
+   auto connector = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(line);
+   auto startPlug = connector->GetStartPlug();
+   auto endPlug = connector->GetEndPlug();
 
    // connect the line to the sockets
    DWORD dwCookie;
-   from_socket->Connect(startPlug,&dwCookie);
-   to_socket->Connect(endPlug,&dwCookie);
-
-   line->SetID(m_DisplayObjectID++);
+   dwCookie = from_socket->Connect(startPlug);
+   dwCookie = to_socket->Connect(endPlug);
 
    pDL->AddDisplayObject(line);
+
+   return line;
 }
 
-void CGirderModelElevationView::BuildDebondTick(iDisplayList* pDL, IPoint2d* tickPoint,COLORREF color)
+void CGirderModelElevationView::BuildDebondTick(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const WBFL::Geometry::Point2d& tickPoint,COLORREF color)
 {
    // put points at locations and make them sockets
-   CComPtr<iPointDisplayObject> doPnt;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-   doPnt->SetPosition(tickPoint,FALSE,FALSE);
+   auto doPnt = WBFL::DManip::PointDisplayObject::Create();
+   doPnt->SetPosition(tickPoint,false,false);
    doPnt->SetID(m_DisplayObjectID++);
 
-   CComPtr<iSimpleDrawPointStrategy> strategy;
-   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,nullptr,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
+   auto strategy = WBFL::DManip::SimpleDrawPointStrategy::Create();
    strategy->SetColor(color);
-   strategy->SetPointType(ptCircle);
+   strategy->SetPointType(WBFL::DManip::PointType::Circle);
 
    doPnt->SetDrawingStrategy(strategy);
 
    pDL->AddDisplayObject(doPnt);
 }
 
-void CGirderModelElevationView::BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,Float64 dimension,iDimensionLine** ppDimLine)
+std::shared_ptr<WBFL::DManip::DimensionLine> CGirderModelElevationView::BuildDimensionLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const WBFL::Geometry::Point2d& fromPoint, const WBFL::Geometry::Point2d& toPoint,Float64 dimension)
 {
    // put points at locations and make them sockets
-   CComPtr<iPointDisplayObject> from_rep;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&from_rep);
-   from_rep->SetPosition(fromPoint,FALSE,FALSE);
+   auto from_rep = WBFL::DManip::PointDisplayObject::Create();
+   from_rep->SetPosition(fromPoint, false, false);
    from_rep->SetID(m_DisplayObjectID++);
-   CComQIPtr<iConnectable,&IID_iConnectable> from_connectable(from_rep);
-   CComPtr<iSocket> from_socket;
-   from_connectable->AddSocket(0,fromPoint,&from_socket);
-   from_rep->Visible(FALSE);
+   auto from_connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(from_rep);
+   auto from_socket = from_connectable->AddSocket(0, fromPoint);
+   from_rep->Visible(false);
    pDL->AddDisplayObject(from_rep);
 
-   CComPtr<iPointDisplayObject> to_rep;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&to_rep);
-   to_rep->SetPosition(toPoint,FALSE,FALSE);
+   auto to_rep = WBFL::DManip::PointDisplayObject::Create();
+   to_rep->SetPosition(toPoint, false, false);
    to_rep->SetID(m_DisplayObjectID++);
-   CComQIPtr<iConnectable,&IID_iConnectable> to_connectable(to_rep);
-   CComPtr<iSocket> to_socket;
-   to_connectable->AddSocket(0,toPoint,&to_socket);
-   to_rep->Visible(FALSE);
+   auto to_connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(to_rep);
+   auto to_socket = to_connectable->AddSocket(0, toPoint);
+   to_rep->Visible(false);
    pDL->AddDisplayObject(to_rep);
 
    // Create the dimension line object
-   CComPtr<iDimensionLine> dimLine;
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,nullptr,CLSCTX_ALL,IID_iDimensionLine,(void**)&dimLine);
-
-   dimLine->SetArrowHeadStyle(DManip::ahsFilled);
+   auto dimLine = WBFL::DManip::DimensionLine::Create();
+   dimLine->SetArrowHeadStyle(WBFL::DManip::ArrowHeadStyleType::Filled);
 
    // Attach connector (the dimension line) to the sockets 
-   CComPtr<iConnector> connector;
-   dimLine->QueryInterface(IID_iConnector,(void**)&connector);
-   CComPtr<iPlug> startPlug;
-   CComPtr<iPlug> endPlug;
-   connector->GetStartPlug(&startPlug);
-   connector->GetEndPlug(&endPlug);
+   auto connector = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(dimLine);
+   auto startPlug = connector->GetStartPlug();
+   auto endPlug = connector->GetEndPlug();
 
+   // connect the line to the sockets
    DWORD dwCookie;
-   from_socket->Connect(startPlug,&dwCookie);
-   to_socket->Connect(endPlug,&dwCookie);
+   dwCookie = from_socket->Connect(startPlug);
+   dwCookie = to_socket->Connect(endPlug);
 
    // Create the text block and attach it to the dimension line
-   CComPtr<iTextBlock> textBlock;
-   ::CoCreateInstance(CLSID_TextBlock,nullptr,CLSCTX_ALL,IID_iTextBlock,(void**)&textBlock);
+   auto textBlock = WBFL::DManip::TextBlock::Create();
 
    // Format the dimension text
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strDimension = FormatDimension(dimension,pDisplayUnits->GetSpanLengthUnit());
 
@@ -3462,32 +3176,23 @@ void CGirderModelElevationView::BuildDimensionLine(iDisplayList* pDL, IPoint2d* 
 
    pDL->AddDisplayObject(dimLine);
 
-   if ( ppDimLine )
-   {
-      (*ppDimLine) = dimLine;
-      (*ppDimLine)->AddRef();
-   }
+   return dimLine;
 }
 
 void CGirderModelElevationView::OnGevCtxEditLoad() 
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer selObjs;
-   dispMgr->GetSelectedObjects(&selObjs);
+   auto selObjs = m_pDispMgr->GetSelectedObjects();
 
    if (selObjs.size()==1)
    {
-      DisplayObjectItem pid = *(selObjs.begin());
+      auto pid = *(selObjs.begin());
 
-      CComQIPtr<iPointDisplayObject, &IID_iPointDisplayObject> pdo(pid);
+      auto pdo = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(pid);
       if (pdo!=nullptr)
       {
-         CComPtr<iDrawPointStrategy> strategy;
-         pdo->GetDrawingStrategy(&strategy);
+         auto strategy = pdo->GetDrawingStrategy();
 
-         CComQIPtr<iGevEditLoad, &IID_iGevEditLoad> pel(strategy);
+         auto pel = std::dynamic_pointer_cast<iGevEditLoad>(strategy);
          if (pel!=nullptr)
          {
             pel->EditLoad();
@@ -3501,23 +3206,17 @@ void CGirderModelElevationView::OnGevCtxEditLoad()
 
 void CGirderModelElevationView::OnGevCtxDeleteLoad() 
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer selObjs;
-   dispMgr->GetSelectedObjects(&selObjs);
+   auto selObjs = m_pDispMgr->GetSelectedObjects();
 
    if (selObjs.size()==1)
    {
-      DisplayObjectItem pid = *(selObjs.begin());
+      auto pid = *(selObjs.begin());
 
-      CComQIPtr<iPointDisplayObject, &IID_iPointDisplayObject> pdo(pid);
+      auto pdo = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(pid);
       if (pdo!=nullptr)
       {
-         CComPtr<iDrawPointStrategy> strategy;
-         pdo->GetDrawingStrategy(&strategy);
-
-         CComQIPtr<iGevEditLoad, &IID_iGevEditLoad> pel(strategy);
+         auto strategy = pdo->GetDrawingStrategy();
+         auto pel = std::dynamic_pointer_cast<iGevEditLoad>(strategy);
          if (pel!=nullptr)
          {
             pel->DeleteLoad();
@@ -3532,23 +3231,17 @@ void CGirderModelElevationView::OnGevCtxDeleteLoad()
 void CGirderModelElevationView::OnDestroy() 
 {
    // free up our connectable objects so they don't leak
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   IndexType dlcnt = dispMgr->GetDisplayListCount();
+   IndexType dlcnt = m_pDispMgr->GetDisplayListCount();
    for (IndexType idl=0; idl<dlcnt; idl++)
    {
-      CComPtr<iDisplayList> dlist;
-      dispMgr->GetDisplayList(idl, &dlist);
+      auto dlist = m_pDispMgr->GetDisplayList(idl);
 
       IndexType docnt = dlist->GetDisplayObjectCount();
       for (IndexType ido=0; ido<docnt; ido++)
       {
-         CComPtr<iDisplayObject> pdo;
-         dlist->GetDisplayObject(ido,&pdo);
+         auto pdo = dlist->GetDisplayObject(ido);
 
-         CComQIPtr<iConnectable,&IID_iConnectable> connectable(pdo);
-
+         auto connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(pdo);
          if (connectable)
          {
             connectable->RemoveAllSockets();
@@ -3611,11 +3304,7 @@ void CGirderModelElevationView::OnDraw(CDC* pDC)
 
 BOOL CGirderModelElevationView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer selObjs;
-   dispMgr->GetSelectedObjects(&selObjs);
+   auto selObjs = m_pDispMgr->GetSelectedObjects();
 
    if ( selObjs.size() == 0 || selObjs.front()->GetID() != SECTION_CUT_ID )
    {
@@ -3648,21 +3337,13 @@ bool CGirderModelElevationView::DidGirderSelectionChange()
 
 CGirderKey CGirderModelElevationView::GetGirderKey()
 {
-   CGirderKey girderKey = m_pFrame->GetSelection();
-   //if ( girderKey.groupIndex == INVALID_INDEX )
-   //{
-   //   pgsPointOfInterest poi = GetCutLocation();
-   //   girderKey = poi.GetSegmentKey();
-   //}
-
-   //ATLASSERT(girderKey.groupIndex != INVALID_INDEX && girderKey.girderIndex != INVALID_INDEX);
-   return girderKey;
+   return m_pFrame->GetSelection();
 }
 
 Float64 CGirderModelElevationView::GetSegmentStartLocation(const CSegmentKey& segmentKey)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2(pBroker,IBridge,           pBridge);
 
@@ -3694,8 +3375,8 @@ Float64 CGirderModelElevationView::GetSegmentStartLocation(const CSegmentKey& se
 
 Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanKey& spanKey)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    GET_IFACE2_NOCHECK(pBroker,IBridge,           pBridge);
 
@@ -3731,7 +3412,7 @@ Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanKey& spanKey)
    return span_offset;
 }
 
-CString CGirderModelElevationView::GetSegmentTooltip(IBroker* pBroker, const CSegmentKey& segmentKey)
+CString CGirderModelElevationView::GetSegmentTooltip(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -3822,7 +3503,7 @@ CString CGirderModelElevationView::GetSegmentTooltip(IBroker* pBroker, const CSe
    return strMsg;
 }
 
-CString CGirderModelElevationView::GetClosureTooltip(IBroker* pBroker, const CClosureKey& closureKey)
+CString CGirderModelElevationView::GetClosureTooltip(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CClosureKey& closureKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -3851,7 +3532,7 @@ CString CGirderModelElevationView::GetClosureTooltip(IBroker* pBroker, const CCl
    return strMsg;
 }
 
-void CGirderModelElevationView::GetSpanRange(IBroker* pBroker,const CGirderKey& girderKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx)
+void CGirderModelElevationView::GetSpanRange(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType startPierIdx, endPierIdx;

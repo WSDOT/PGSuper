@@ -157,18 +157,34 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\SharedCtrls\MultiBearingSelectGrid.cpp" />
     <ClCompile Include="..\SharedCtrls\MultiGirderSelectGrid.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\SharedCtrls\MultiSelectGrid.cpp" />
     <ClCompile Include="ADimChapterBuilder.cpp" />
     <ClCompile Include="AlignmentChapterBuilder.cpp" />
     <ClCompile Include="BasicCamberChapterBuilder.cpp" />
+    <ClCompile Include="BearingDesignDetailsChapterBuilder.cpp" />
     <ClCompile Include="BearingDesignParametersChapterBuilder.cpp" />
+    <ClCompile Include="BearingDesignPropertiesTable.cpp" />
+    <ClCompile Include="BearingDesignSummaryChapterBuilder.cpp" />
+    <ClCompile Include="BearingMultiViewReportDlg.cpp" />
+    <ClCompile Include="BearingReactionTable.cpp" />
+    <ClCompile Include="BearingRotationTable.cpp" />
     <ClCompile Include="BearingSeatElevationsChapterBuilder2.cpp" />
     <ClCompile Include="BearingSeatElevationsDetailsChapterBuilder2.cpp" />
+    <ClCompile Include="BearingShearDeformationTable.cpp" />
+    <ClCompile Include="BearingSpecCheckChapterBuilder.cpp" />
+    <ClCompile Include="BearingSpecCheckSummaryChapterBuilder.cpp" />
+    <ClCompile Include="BearingTimestepDetailsChapterBuilder.cpp" />
+    <ClCompile Include="BearingTimeStepDetailsDlg.cpp" />
+    <ClCompile Include="BearingTimeStepDetailsReportSpecification.cpp" />
+    <ClCompile Include="BearingTimeStepDetailsReportSpecificationBuilder.cpp" />
+    <ClCompile Include="BearingTimeStepShearDeformationTable.cpp" />
     <ClCompile Include="BridgeAnalysisChapterBuilder.cpp" />
     <ClCompile Include="BridgeAnalysisReportDlg.cpp" />
     <ClCompile Include="BridgeAnalysisReportSpecification.cpp" />
@@ -177,7 +193,24 @@
     <ClCompile Include="BridgeDescDetailsChapterBuilder.cpp" />
     <ClCompile Include="BrokerReportSpecification.cpp" />
     <ClCompile Include="BrokerReportSpecificationBuilder.cpp" />
+    <ClCompile Include="CopyBearingPropertiesChapterBuilder.cpp" />
+    <ClCompile Include="CopyBearingPropertiesReportSpecification.cpp" />
+    <ClCompile Include="CopyBearingPropertiesReportSpecificationBuilder.cpp" />
+    <ClCompile Include="GirderMultiViewReportDlg.cpp" />
+    <ClCompile Include="HorizontalTensionTieCheckDetailsChapterBuilder.cpp" />
+    <ClCompile Include="MinDeckReinforcementCheck.cpp" />
+    <ClCompile Include="MultiBearingReportDlg.cpp" />
     <ClCompile Include="ReinforcementFatigueCheck.cpp" />
+    <ClCompile Include="ReportNotes.cpp" />
+    <ClCompile Include="RMultiBearingSelectDlg.cpp" />
+    <ClCompile Include="SectionPropertiesChapterBuilder.cpp" />
+    <ClCompile Include="SectionPropertiesReportSpecification.cpp" />
+    <ClCompile Include="SectionPropertiesReportSpecificationBuilder.cpp" />
+    <ClCompile Include="SelectSectionDlg.cpp" />
+    <ClCompile Include="SpanGirderBearingReportDlg.cpp" />
+    <ClCompile Include="SpanGirderBearingReportSpecification.cpp" />
+    <ClCompile Include="SpanGirderBearingReportSpecificationBuilder.cpp" />
+    <ClCompile Include="SpanItemReportDlg.cpp" />
     <ClCompile Include="SplittingCheckDetailsChapterBuilder.cpp" />
     <ClCompile Include="CamberChapterBuilder.cpp" />
     <ClCompile Include="CamberTable.cpp" />
@@ -312,7 +345,6 @@
     <ClCompile Include="SegmentTendonGeometryChapterBuilder.cpp" />
     <ClCompile Include="SelectCrackedSectionDlg.cpp" />
     <ClCompile Include="SelectMomentCapacitySectionDlg.cpp" />
-    <ClCompile Include="SelectPointOfInterestDlg.cpp" />
     <ClCompile Include="ShearCapacityDetailsChapterBuilder.cpp" />
     <ClCompile Include="ShearCheckTable.cpp" />
     <ClCompile Include="ShrinkageStrainChapterBuilder.cpp" />
@@ -369,9 +401,21 @@
     <ClInclude Include="..\Include\Reporting\AlignmentChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\AutoLib.h" />
     <ClInclude Include="..\Include\Reporting\BasicCamberChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingDesignDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BearingDesignParametersChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingDesignPropertiesTable.h" />
+    <ClInclude Include="..\Include\Reporting\BearingDesignSummaryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingReactionTable.h" />
+    <ClInclude Include="..\Include\Reporting\BearingRotationTable.h" />
     <ClInclude Include="..\Include\Reporting\BearingSeatElevationsChapterBuilder2.h" />
     <ClInclude Include="..\Include\Reporting\BearingSeatElevationsDetailsChapterBuilder2.h" />
+    <ClInclude Include="..\Include\Reporting\BearingShearDeformationTable.h" />
+    <ClInclude Include="..\Include\Reporting\BearingSpecCheckChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingSpecCheckSummaryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingTimeStepShearDeformationTable.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportSpecification.h" />
@@ -396,6 +440,9 @@
     <ClInclude Include="..\Include\Reporting\ConfinementCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\ConstructabilityCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\ContinuityCheck.h" />
+    <ClInclude Include="..\Include\Reporting\CopyBearingPropertiesChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CopyBearingPropertiesReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\CopyBearingPropertiesReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CopyGirderPropertiesChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CopyGirderPropertiesReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\CopyGirderPropertiesReportSpecificationBuilder.h" />
@@ -407,6 +454,7 @@
     <ClInclude Include="..\Include\Reporting\CopyTempSupportPropertiesReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CrackedSectionChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CrackedSectionDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CrackedSectionReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\CrackedSectionReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CreepCoefficientChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CritSectionChapterBuilder.h" />
@@ -433,6 +481,7 @@
     <ClInclude Include="..\Include\Reporting\HaulingCheckDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\HoldDownForceCheck.h" />
     <ClInclude Include="..\Include\Reporting\HorizontalInterfaceShearCapacityDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\HorizontalTensionTieCheckDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\InitialStrainAnalysisChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\InitialStrainAnalysisReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\InitialStrainAnalysisReportSpecificationBuilder.h" />
@@ -460,11 +509,13 @@
     <ClInclude Include="..\Include\Reporting\LongReinfShearCheckChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LossesChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LRFDCreepCoefficientChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\MinDeckReinforcementCheck.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityParagraphBuilder.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\MultiBearingReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\MultiGirderHaunchGeometryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\MultiGirderReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\MVRChapterBuilder.h" />
@@ -502,6 +553,9 @@
     <ClInclude Include="..\Include\Reporting\ReinforcementFatigueCheck.h" />
     <ClInclude Include="..\Include\Reporting\ReportingExp.h" />
     <ClInclude Include="..\Include\Reporting\ReportNotes.h" />
+    <ClInclude Include="..\Include\Reporting\SectionPropertiesChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\SectionPropertiesReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\SectionPropertiesReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\SectPropChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\SectPropTable.h" />
     <ClInclude Include="..\Include\Reporting\SectPropTable2.h" />
@@ -510,7 +564,11 @@
     <ClInclude Include="..\Include\Reporting\ShearCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\ShrinkageStrainChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\SpanDataChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportDlg.h" />
+    <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\SpanGirderReportDlg.h" />
+    <ClInclude Include="..\Include\Reporting\SpanItemReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\SpanGirderReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\SpanGirderReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\SpecCheckChapterBuilder.h" />
@@ -547,19 +605,24 @@
     <ClInclude Include="..\Include\Reporting\UserStressTable.h" />
     <ClInclude Include="..\Include\Reporting\VehicularLoadReactionTable.h" />
     <ClInclude Include="..\Include\Reporting\VehicularLoadResultsTable.h" />
+    <ClInclude Include="..\Include\SharedCtrls\MultiBearingSelectGrid.h" />
     <ClInclude Include="..\Include\SharedCtrls\MultiGirderSelectGrid.h" />
-    <ClInclude Include="CrackedSectionReportSpecification.h" />
+    <ClInclude Include="..\Include\SharedCtrls\MultiSelectGrid.h" />
+    <ClInclude Include="BearingMultiViewReportDlg.h" />
+    <ClInclude Include="BearingTimeStepDetailsDlg.h" />
     <ClInclude Include="EquilibriumCheckDlg.h" />
+    <ClInclude Include="GirderMultiViewReportDlg.h" />
     <ClInclude Include="InitialStrainAnalysisDlg.h" />
     <ClInclude Include="MultiViewReportDlg.h" />
     <ClInclude Include="PoiReportSpecification.h" />
     <ClInclude Include="PrincipalWebStressDetailsDlg.h" />
     <ClInclude Include="Reporting.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="RMultiBearingSelectDlg.h" />
     <ClInclude Include="RMultiGirderSelectDlg.h" />
     <ClInclude Include="SelectCrackedSectionDlg.h" />
     <ClInclude Include="SelectMomentCapacitySectionDlg.h" />
-    <ClInclude Include="SelectPointOfInterestDlg.h" />
+    <ClInclude Include="SelectSectionDlg.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="TimeStepDetailsDlg.h" />
   </ItemGroup>
@@ -572,7 +635,9 @@
   <ItemGroup>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\psgLib\psgLib.vcxproj">
+      <Project>{3d4395a4-6da8-40b5-bd41-c21104290b15}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

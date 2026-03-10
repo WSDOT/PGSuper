@@ -21,10 +21,11 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "BridgeAgent.h"
 #include "BridgeGeometryModelBuilder.h"
 #include "BridgeHelpers.h"
 
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
 #include <IFace\Project.h>
@@ -51,12 +52,6 @@ inline void GetMidPoint(IPoint2d* P1, IPoint2d* P2, IPoint2d** pMid)
 
    midPt.CopyTo(pMid);
 }
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CBridgeGeometryModelBuilder::CBridgeGeometryModelBuilder()
 {
@@ -198,26 +193,26 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       {
          auto [offset, offsetMeasureType] = pPier->GetBearingOffset(pgsTypes::Back);
          factory->put_BearingOffset( pfBack, offset );
-         factory->put_BearingOffsetMeasurementType( pfBack, offsetMeasureType == ConnectionLibraryEntry::AlongGirder ? mtAlongItem : mtNormal );
+         factory->put_BearingOffsetMeasurementType( pfBack, offsetMeasureType == ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder ? mtAlongItem : mtNormal );
 
          auto [endDist,endDistMeasureType] = pPier->GetGirderEndDistance(pgsTypes::Back);
          factory->put_EndDistance( pfBack, endDist );
-         if ( endDistMeasureType == ConnectionLibraryEntry::FromBearingAlongGirder )
+         if ( endDistMeasureType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder )
          {
             factory->put_EndDistanceMeasurementLocation( pfBack, mlCenterlineBearing );
             factory->put_EndDistanceMeasurementType(     pfBack, mtAlongItem );
          }
-         else if ( endDistMeasureType == ConnectionLibraryEntry::FromBearingNormalToPier )
+         else if ( endDistMeasureType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier )
          {
             factory->put_EndDistanceMeasurementLocation( pfBack, mlCenterlineBearing );
             factory->put_EndDistanceMeasurementType(     pfBack, mtNormal );
          }
-         else if ( endDistMeasureType == ConnectionLibraryEntry::FromPierAlongGirder )
+         else if ( endDistMeasureType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder )
          {
             factory->put_EndDistanceMeasurementLocation( pfBack, mlPierLine );
             factory->put_EndDistanceMeasurementType(     pfBack, mtAlongItem );
          }
-         else if ( endDistMeasureType == ConnectionLibraryEntry::FromPierNormalToPier )
+         else if ( endDistMeasureType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier )
          {
             factory->put_EndDistanceMeasurementLocation( pfBack, mlPierLine );
             factory->put_EndDistanceMeasurementType(     pfBack, mtNormal );
@@ -229,26 +224,26 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       {
          auto [offset, offsetMeasureType] = pPier->GetBearingOffset(pgsTypes::Ahead);
          factory->put_BearingOffset( pfAhead, offset );
-         factory->put_BearingOffsetMeasurementType( pfAhead, offsetMeasureType == ConnectionLibraryEntry::AlongGirder ? mtAlongItem : mtNormal );
+         factory->put_BearingOffsetMeasurementType( pfAhead, offsetMeasureType == ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder ? mtAlongItem : mtNormal );
 
          auto [endDist, endDistMeasureType] = pPier->GetGirderEndDistance(pgsTypes::Ahead);
          factory->put_EndDistance( pfAhead, endDist );
-         if ( endDistMeasureType == ConnectionLibraryEntry::FromBearingAlongGirder )
+         if ( endDistMeasureType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder )
          {
             factory->put_EndDistanceMeasurementLocation( pfAhead, mlCenterlineBearing );
             factory->put_EndDistanceMeasurementType(     pfAhead, mtAlongItem );
          }
-         else if ( endDistMeasureType == ConnectionLibraryEntry::FromBearingNormalToPier )
+         else if ( endDistMeasureType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier )
          {
             factory->put_EndDistanceMeasurementLocation( pfAhead, mlCenterlineBearing );
             factory->put_EndDistanceMeasurementType(     pfAhead, mtNormal );
          }
-         else if ( endDistMeasureType == ConnectionLibraryEntry::FromPierAlongGirder )
+         else if ( endDistMeasureType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder )
          {
             factory->put_EndDistanceMeasurementLocation( pfAhead, mlPierLine );
             factory->put_EndDistanceMeasurementType(     pfAhead, mtAlongItem );
          }
-         else if ( endDistMeasureType == ConnectionLibraryEntry::FromPierNormalToPier )
+         else if ( endDistMeasureType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier )
          {
             factory->put_EndDistanceMeasurementLocation( pfAhead, mlPierLine );
             factory->put_EndDistanceMeasurementType(     pfAhead, mtNormal );
@@ -412,28 +407,28 @@ bool CBridgeGeometryModelBuilder::LayoutTemporarySupports(const CBridgeDescripti
       auto [endDistance, measureType] = pTS->GetGirderEndDistance();
       factory->put_EndDistance( pfBack, endDistance );
       factory->put_EndDistance( pfAhead, endDistance );
-      if ( measureType == ConnectionLibraryEntry::FromBearingAlongGirder )
+      if ( measureType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder )
       {
          factory->put_EndDistanceMeasurementLocation(pfBack, mlCenterlineBearing);
          factory->put_EndDistanceMeasurementType(pfBack, mtAlongItem);
          factory->put_EndDistanceMeasurementLocation(pfAhead, mlCenterlineBearing);
          factory->put_EndDistanceMeasurementType(     pfAhead, mtAlongItem );
       }
-      else if ( measureType == ConnectionLibraryEntry::FromBearingNormalToPier )
+      else if ( measureType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier )
       {
          factory->put_EndDistanceMeasurementLocation( pfBack, mlCenterlineBearing );
          factory->put_EndDistanceMeasurementType(     pfBack, mtNormal );
          factory->put_EndDistanceMeasurementLocation( pfAhead, mlCenterlineBearing );
          factory->put_EndDistanceMeasurementType(     pfAhead, mtNormal );
       }
-      else if ( measureType == ConnectionLibraryEntry::FromPierAlongGirder )
+      else if ( measureType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder )
       {
          factory->put_EndDistanceMeasurementLocation( pfBack, mlPierLine );
          factory->put_EndDistanceMeasurementType(     pfBack, mtAlongItem );
          factory->put_EndDistanceMeasurementLocation( pfAhead, mlPierLine );
          factory->put_EndDistanceMeasurementType(     pfAhead, mtAlongItem );
       }
-      else if ( measureType == ConnectionLibraryEntry::FromPierNormalToPier )
+      else if ( measureType == ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier )
       {
          factory->put_EndDistanceMeasurementLocation( pfBack, mlPierLine );
          factory->put_EndDistanceMeasurementType(     pfBack, mtNormal );
@@ -477,8 +472,7 @@ bool CBridgeGeometryModelBuilder::LayoutGirderLines(const CBridgeDescription2* p
 
 bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry, GirderOrientationCollection& orientationCollection)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IRoadwayData, pIAlignment);
    bool bAnglePointInAlignment = false;
    const AlignmentData2& alignment_data = pIAlignment->GetAlignmentData2();
@@ -1002,7 +996,7 @@ void CBridgeGeometryModelBuilder::GetSpacingDataAtPier(IBridgeGeometry* pBridgeG
       // Bearing offset must be adjusted for how it is measured
       auto [brgOffset, measureType] = pPier->GetBearingOffset(pierFace);
 
-      if ( measureType == ConnectionLibraryEntry::AlongGirder)
+      if ( measureType == ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder)
       {
          // assumes CL girder is parallel to the alignment
          Float64 skew_angle;

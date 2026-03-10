@@ -27,38 +27,18 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 #include <IFace\ExtendUI.h>
 
-
-/*****************************************************************************
-CLASS 
-   CCopyGirderPropertiesChapterBuilder
-
-   Chapter builder for reporting construction event CopyGirderProperties
-*****************************************************************************/
-
 class REPORTINGCLASS CCopyGirderPropertiesChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CCopyGirderPropertiesChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   //================================
    // special function to work with control in copy girder dialog
    void SetCopyGirderProperties(std::vector<ICopyGirderPropertiesCallback*>& rCallBacks, const CGirderKey& fromGirderKey);
 
 protected:
    std::vector<ICopyGirderPropertiesCallback*> m_CallBacks;
    CGirderKey m_FromGirderKey;
-private:
-   // Prevent accidental copying and assignment
-   CCopyGirderPropertiesChapterBuilder(const CCopyGirderPropertiesChapterBuilder&) = delete;
-   CCopyGirderPropertiesChapterBuilder& operator=(const CCopyGirderPropertiesChapterBuilder&) = delete;
 };

@@ -20,78 +20,21 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_HORIZONTALINTERFACESHEARCAPACITYDETAILSCHAPTERBUILDER_H_
-#define INCLUDED_HORIZONTALINTERFACESHEARCAPACITYDETAILSCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CHorizontalInterfaceShearCapacityDetailsChapterBuilder
-
-   Builds the Shear Capacity Details chapter
-
-
-DESCRIPTION
-   Builds the Shear Capacity Details chapter
-
-LOG
-   rdp : 12.20.1998 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CHorizontalInterfaceShearCapacityDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CHorizontalInterfaceShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
    bool m_bDesign;
    bool m_bRating;
-
-   // Prevent accidental copying and assignment
-   CHorizontalInterfaceShearCapacityDetailsChapterBuilder(const CHorizontalInterfaceShearCapacityDetailsChapterBuilder&) = delete;
-   CHorizontalInterfaceShearCapacityDetailsChapterBuilder& operator=(const CHorizontalInterfaceShearCapacityDetailsChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_HORIZONTALINTERFACESHEARCAPACITYDETAILSCHAPTERBUILDER_H_

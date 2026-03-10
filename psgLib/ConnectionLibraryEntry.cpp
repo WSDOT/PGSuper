@@ -21,7 +21,8 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <psgLib\ConnectionLibraryEntry.h>
+#include <PsgLib\ConnectionLibraryEntry.h>
+#include <PsgLib\DifferenceItem.h>
 
 #include <System\IStructuredSave.h>
 #include <System\IStructuredLoad.h>
@@ -34,29 +35,24 @@
 #include <MathEx.h>
 
 #include <EAF\EAFApp.h>
-#include <psgLib\LibraryEntryDifferenceItem.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#pragma Reminder("UPDATE - ConnectionLibraryEntry enums")
+// The Enum and static functions on the ConnectionLibraryEntry class are more general and should not be bound
+// to the library entry. They are used throughout the API. For example IFace\Project.h must include the
+// entire connection library entry just to use the enums. In other places, we must include the entire connection library entry
+// just to use the static functions
+// It seems like we need a ConnectionData object
 
-
-/****************************************************************************
-CLASS
-   ConnectionLibraryEntry
-****************************************************************************/
 CString ConnectionLibraryEntry::GetBearingOffsetMeasurementType(ConnectionLibraryEntry::BearingOffsetMeasurementType measurementType)
 {
    LPCTSTR lpszType;
-   switch(measurementType)
+   switch (measurementType)
    {
-   case AlongGirder:
+   case ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder:
       lpszType = _T("Measured Along Centerline Girder");
       break;
 
-   case NormalToPier:
+   case ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier:
       lpszType = _T("Measured Normal to Abutment/Pier Line");
       break;
 
@@ -70,21 +66,21 @@ CString ConnectionLibraryEntry::GetBearingOffsetMeasurementType(ConnectionLibrar
 CString ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::EndDistanceMeasurementType measurementType)
 {
    LPCTSTR lpszType;
-   switch(measurementType)
+   switch (measurementType)
    {
-   case FromBearingAlongGirder:
+   case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder:
       lpszType = _T("Measured from CL Bearing, Along Girder");
       break;
 
-   case FromBearingNormalToPier:
+   case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier:
       lpszType = _T("Measured from and Normal to CL Bearing");
       break;
 
-   case FromPierAlongGirder:
+   case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder:
       lpszType = _T("Measured from Abutment/Pier Line, Along Girder");
       break;
 
-   case FromPierNormalToPier:
+   case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier:
       lpszType = _T("Measured from and Normal to the Abutment/Pier Line");
       break;
 
@@ -100,13 +96,13 @@ std::_tstring ConnectionLibraryEntry::StringForEndDistanceMeasurementType(Connec
 {
    switch (type)
    {
-   case ConnectionLibraryEntry::FromBearingAlongGirder:
+   case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder:
       return std::_tstring(_T("FromBearingAlongGirder"));
-   case ConnectionLibraryEntry::FromBearingNormalToPier:
+   case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier:
       return std::_tstring(_T("FromBearingNormalToPier"));
-   case ConnectionLibraryEntry::FromPierAlongGirder:
+   case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder:
       return std::_tstring(_T("FromPierAlongGirder"));
-   case ConnectionLibraryEntry::FromPierNormalToPier:
+   case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier:
       return std::_tstring(_T("FromPierNormalToPier"));
    default:
       ATLASSERT(false);
@@ -117,26 +113,26 @@ std::_tstring ConnectionLibraryEntry::StringForEndDistanceMeasurementType(Connec
 ConnectionLibraryEntry::EndDistanceMeasurementType ConnectionLibraryEntry::EndDistanceMeasurementTypeFromString(LPCTSTR strType)
 {
    std::_tstring type(strType);
-   if ( type == std::_tstring(_T("FromBearingAlongGirder")) )
+   if (type == std::_tstring(_T("FromBearingAlongGirder")))
    {
-      return FromBearingAlongGirder;
+      return ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder;
    }
-   else if ( type == std::_tstring(_T("FromBearingNormalToPier")) )
+   else if (type == std::_tstring(_T("FromBearingNormalToPier")))
    {
-      return FromBearingNormalToPier;
+      return ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier;
    }
-   else if ( type == std::_tstring(_T("FromPierAlongGirder")) )
+   else if (type == std::_tstring(_T("FromPierAlongGirder")))
    {
-      return FromPierAlongGirder;
+      return ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder;
    }
-   else if ( type == std::_tstring(_T("FromPierNormalToPier")) )
+   else if (type == std::_tstring(_T("FromPierNormalToPier")))
    {
-      return FromPierNormalToPier;
+      return ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier;
    }
    else
    {
       ATLASSERT(false);
-      return FromPierNormalToPier;
+      return ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier;
    }
 }
 
@@ -144,9 +140,9 @@ std::_tstring ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(Conn
 {
    switch (type)
    {
-   case ConnectionLibraryEntry::AlongGirder:
+   case ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder:
       return std::_tstring(_T("AlongGirder"));
-   case ConnectionLibraryEntry::NormalToPier:
+   case ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier:
       return std::_tstring(_T("NormalToPier"));
    default:
       ATLASSERT(false);
@@ -157,20 +153,22 @@ std::_tstring ConnectionLibraryEntry::StringForBearingOffsetMeasurementType(Conn
 ConnectionLibraryEntry::BearingOffsetMeasurementType ConnectionLibraryEntry::BearingOffsetMeasurementTypeFromString(LPCTSTR strType)
 {
    std::_tstring type(strType);
-   if ( type == std::_tstring(_T("AlongGirder")) )
+   if (type == std::_tstring(_T("AlongGirder")))
    {
-      return AlongGirder;
+      return ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder;
    }
-   else if ( type == std::_tstring(_T("NormalToPier")) )
+   else if (type == std::_tstring(_T("NormalToPier")))
    {
-      return NormalToPier;
+      return ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier;
    }
    else
    {
       ATLASSERT(false);
-      return NormalToPier;
+      return ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier;
    }
 }
+
+
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -178,12 +176,12 @@ ConnectionLibraryEntry::BearingOffsetMeasurementType ConnectionLibraryEntry::Bea
 ConnectionLibraryEntry::ConnectionLibraryEntry() :
 m_GirderEndDistance(0),
 m_GirderBearingOffset(0),
-m_EndDistanceMeasure(FromBearingNormalToPier),
-m_BearingOffsetMeasure(NormalToPier),
+m_EndDistanceMeasure(EndDistanceMeasurementType::FromBearingNormalToPier),
+m_BearingOffsetMeasure(BearingOffsetMeasurementType::NormalToPier),
 m_SupportWidth(0),
 m_DiaphragmHeight(-1), // compute
 m_DiaphragmWidth(-1), // compute
-m_DiaphragmLoadType(ApplyAtBearingCenterline),
+m_DiaphragmLoadType(DiaphragmLoadType::ApplyAtBearingCenterline),
 m_DiaphragmLoadLocation(0.0)
 {
 }
@@ -210,16 +208,16 @@ bool ConnectionLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("DiaphragmWidth"),m_DiaphragmWidth);
 
    // diaphragm load type - added for version 2.0
-   if (m_DiaphragmLoadType==ApplyAtBearingCenterline)
+   if (m_DiaphragmLoadType==DiaphragmLoadType::ApplyAtBearingCenterline)
    {
       pSave->Property(_T("DiaphragmLoadType"),_T("ApplyAtBearingCenterline"));
    }
-   else if (m_DiaphragmLoadType==ApplyAtSpecifiedLocation)
+   else if (m_DiaphragmLoadType==DiaphragmLoadType::ApplyAtSpecifiedLocation)
    {
       pSave->Property(_T("DiaphragmLoadType"),_T("ApplyAtSpecifiedLocation"));
       pSave->Property(_T("DiaphragmLoadLocation"),m_DiaphragmLoadLocation);
    }
-   else if (m_DiaphragmLoadType==DontApply)
+   else if (m_DiaphragmLoadType==DiaphragmLoadType::DontApply)
    {
       pSave->Property(_T("DiaphragmLoadType"),_T("DontApply"));
    }
@@ -287,13 +285,13 @@ bool ConnectionLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
          if (tmp==_T("AlongGirder"))
          {
-            m_BearingOffsetMeasure = AlongGirder;
-            m_EndDistanceMeasure = FromBearingAlongGirder;
+            m_BearingOffsetMeasure = BearingOffsetMeasurementType::AlongGirder;
+            m_EndDistanceMeasure = EndDistanceMeasurementType::FromBearingAlongGirder;
          }
          else if (tmp==_T("NormalToPier"))
          {
-            m_BearingOffsetMeasure = NormalToPier;
-            m_EndDistanceMeasure = FromBearingNormalToPier;
+            m_BearingOffsetMeasure = BearingOffsetMeasurementType::NormalToPier;
+            m_EndDistanceMeasure = EndDistanceMeasurementType::FromBearingNormalToPier;
          }
          else
          {
@@ -311,19 +309,19 @@ bool ConnectionLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
          if (tmp==_T("FromBearingAlongGirder") || tmp==_T("AlongGirder"))
          {
-            m_EndDistanceMeasure = FromBearingAlongGirder;
+            m_EndDistanceMeasure = EndDistanceMeasurementType::FromBearingAlongGirder;
          }
          else if (tmp==_T("FromBearingNormalToPier") || tmp==_T("NormalToPier"))
          {
-            m_EndDistanceMeasure = FromBearingNormalToPier;
+            m_EndDistanceMeasure = EndDistanceMeasurementType::FromBearingNormalToPier;
          }
          else if (tmp==_T("FromPierAlongGirder"))
          {
-            m_EndDistanceMeasure = FromPierAlongGirder;
+            m_EndDistanceMeasure = EndDistanceMeasurementType::FromPierAlongGirder;
          }
          else if (tmp==_T("FromPierNormalToPier"))
          {
-            m_EndDistanceMeasure = FromPierNormalToPier;
+            m_EndDistanceMeasure = EndDistanceMeasurementType::FromPierNormalToPier;
          }
          else
          {
@@ -338,11 +336,11 @@ bool ConnectionLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
          if (tmp==_T("AlongAlignment") || tmp==_T("AlongGirder")) // AlongAlignment is an artifact after testing but before release of 2.1
          {
-            m_BearingOffsetMeasure = AlongGirder;
+            m_BearingOffsetMeasure = BearingOffsetMeasurementType::AlongGirder;
          }
          else if (tmp==_T("NormalToPier"))
          {
-            m_BearingOffsetMeasure = NormalToPier;
+            m_BearingOffsetMeasure = BearingOffsetMeasurementType::NormalToPier;
          }
          else
          {
@@ -365,11 +363,11 @@ bool ConnectionLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
          if (tmp==_T("ApplyAtBearingCenterline"))
          {
-            m_DiaphragmLoadType = ApplyAtBearingCenterline;
+            m_DiaphragmLoadType = DiaphragmLoadType::ApplyAtBearingCenterline;
          }
          else if (tmp==_T("ApplyAtSpecifiedLocation"))
          {
-            m_DiaphragmLoadType = ApplyAtSpecifiedLocation;
+            m_DiaphragmLoadType = DiaphragmLoadType::ApplyAtSpecifiedLocation;
             if(!pLoad->Property(_T("DiaphragmLoadLocation"),&m_DiaphragmLoadLocation))
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -377,7 +375,7 @@ bool ConnectionLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          }
          else if (tmp==_T("DontApply"))
          {
-            m_DiaphragmLoadType=DontApply;
+            m_DiaphragmLoadType = DiaphragmLoadType::DontApply;
          }
          else
             THROW_LOAD(InvalidFileFormat,pLoad);
@@ -385,7 +383,7 @@ bool ConnectionLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
       else
       {
          // default
-         SetDiaphragmLoadType(ApplyAtBearingCenterline);
+         SetDiaphragmLoadType(DiaphragmLoadType::ApplyAtBearingCenterline);
       }
 
       if(!pLoad->EndUnit())
@@ -403,12 +401,12 @@ bool ConnectionLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
 bool ConnectionLibraryEntry::IsEqual(const ConnectionLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
+   std::vector<std::unique_ptr<PGS::Library::DifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool ConnectionLibraryEntry::Compare(const ConnectionLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool ConnectionLibraryEntry::Compare(const ConnectionLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -418,64 +416,61 @@ bool ConnectionLibraryEntry::Compare(const ConnectionLibraryEntry& rOther, std::
    if ( !::IsEqual(m_GirderEndDistance,rOther.m_GirderEndDistance) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("End Distance"),m_GirderEndDistance,rOther.m_GirderEndDistance,pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthItem>(_T("End Distance"),m_GirderEndDistance,rOther.m_GirderEndDistance,pDisplayUnits->ComponentDim));
    }
 
    if ( m_EndDistanceMeasure != rOther.m_EndDistanceMeasure )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("End Distance Measure"),GetEndDistanceMeasurementType(m_EndDistanceMeasure),GetEndDistanceMeasurementType(rOther.m_EndDistanceMeasure)));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("End Distance Measure"),GetEndDistanceMeasurementType(m_EndDistanceMeasure),GetEndDistanceMeasurementType(rOther.m_EndDistanceMeasure)));
    }
 
    if ( !::IsEqual(m_GirderBearingOffset,rOther.m_GirderBearingOffset) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Bearing Offset"),m_GirderBearingOffset,rOther.m_GirderBearingOffset,pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthItem>(_T("Bearing Offset"),m_GirderBearingOffset,rOther.m_GirderBearingOffset,pDisplayUnits->ComponentDim));
    }
 
    if ( m_BearingOffsetMeasure != rOther.m_BearingOffsetMeasure )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Bearing Offset Measure"),GetBearingOffsetMeasurementType(m_BearingOffsetMeasure),GetBearingOffsetMeasurementType(rOther.m_BearingOffsetMeasure)));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Bearing Offset Measure"),GetBearingOffsetMeasurementType(m_BearingOffsetMeasure),GetBearingOffsetMeasurementType(rOther.m_BearingOffsetMeasure)));
    }
 
    if ( !::IsEqual(m_DiaphragmHeight,rOther.m_DiaphragmHeight) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthKeywordItem>(_T("Diaphragm Height"),m_DiaphragmHeight,rOther.m_DiaphragmHeight,pDisplayUnits->ComponentDim,_T("Compute")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthKeywordItem>(_T("Diaphragm Height"),m_DiaphragmHeight,rOther.m_DiaphragmHeight,pDisplayUnits->ComponentDim,_T("Compute")));
    }
 
    if ( !::IsEqual(m_DiaphragmWidth,rOther.m_DiaphragmWidth) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthKeywordItem>(_T("Diaphragm Width"),m_DiaphragmWidth,rOther.m_DiaphragmWidth,pDisplayUnits->ComponentDim,_T("Compute")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthKeywordItem>(_T("Diaphragm Width"),m_DiaphragmWidth,rOther.m_DiaphragmWidth,pDisplayUnits->ComponentDim,_T("Compute")));
    }
 
    if ( m_DiaphragmLoadType != rOther.m_DiaphragmLoadType )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Application of Diaphragm Load is different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Application of Diaphragm Load is different"),_T(""),_T("")));
    }
    else
    {
       if ( !::IsEqual(m_DiaphragmLoadLocation, rOther.m_DiaphragmLoadLocation) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Load Distance from CL Pier to CG of Diaphragm"),m_DiaphragmLoadLocation,rOther.m_DiaphragmLoadLocation,pDisplayUnits->ComponentDim));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceLengthItem>(_T("Load Distance from CL Pier to CG of Diaphragm"),m_DiaphragmLoadLocation,rOther.m_DiaphragmLoadLocation,pDisplayUnits->ComponentDim));
       }
    }
 
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;
 }
-
-
-//======================== ACCESS     =======================================
 
 void ConnectionLibraryEntry::SetGirderEndDistance(Float64 fc)
 {
@@ -497,7 +492,7 @@ Float64 ConnectionLibraryEntry::GetGirderBearingOffset() const
    return m_GirderBearingOffset;
 }
 
-void ConnectionLibraryEntry::SetEndDistanceMeasurementType(ConnectionLibraryEntry::EndDistanceMeasurementType mt)
+void ConnectionLibraryEntry::SetEndDistanceMeasurementType(EndDistanceMeasurementType mt)
 {
    m_EndDistanceMeasure = mt;
 }
@@ -507,7 +502,7 @@ ConnectionLibraryEntry::EndDistanceMeasurementType ConnectionLibraryEntry::GetEn
    return m_EndDistanceMeasure;
 }
 
-void ConnectionLibraryEntry::SetBearingOffsetMeasurementType(ConnectionLibraryEntry::BearingOffsetMeasurementType mt)
+void ConnectionLibraryEntry::SetBearingOffsetMeasurementType(BearingOffsetMeasurementType mt)
 {
    m_BearingOffsetMeasure = mt;
 }
@@ -563,13 +558,6 @@ void ConnectionLibraryEntry::SetDiaphragmLoadLocation(Float64 loc)
    m_DiaphragmLoadLocation = loc;
 }
 
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 bool ConnectionLibraryEntry::Edit(bool allowEditing,int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -597,7 +585,7 @@ bool ConnectionLibraryEntry::Edit(bool allowEditing,int nPage)
       this->SetDiaphragmLoadType(dlg.m_DiaphragmLoadType);
       this->SetEndDistanceMeasurementType(dlg.m_EndDistanceMeasurementType);
       this->SetBearingOffsetMeasurementType(dlg.m_BearingOffsetMeasurementType);
-      if (dlg.m_DiaphragmLoadType==ApplyAtSpecifiedLocation)
+      if (dlg.m_DiaphragmLoadType==DiaphragmLoadType::ApplyAtSpecifiedLocation)
       {
          this->SetDiaphragmLoadLocation(dlg.m_DiaphragmLoadLocation);
       }
@@ -607,21 +595,9 @@ bool ConnectionLibraryEntry::Edit(bool allowEditing,int nPage)
    return false;
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
 HICON  ConnectionLibraryEntry::GetIcon() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_CONNECTION_ENTRY) );
 }
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================

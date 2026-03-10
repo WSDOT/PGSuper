@@ -4,6 +4,7 @@
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
 Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
@@ -18,6 +19,7 @@ Lifting checks failed
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
 Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
@@ -32,6 +34,7 @@ Lifting checks failed
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
 Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
@@ -46,6 +49,7 @@ Lifting checks failed
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
 Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
 Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
@@ -66,6 +70,7 @@ Hauling checks failed
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
 Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
 Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
@@ -85,6 +90,7 @@ Hauling checks failed
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 11 Cast Deck
 Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
 Compression stress check failed for Service I Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
@@ -104,6 +110,7 @@ Hauling checks failed
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
 Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
@@ -118,6 +125,7 @@ Lifting checks failed
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
 Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
@@ -132,6 +140,7 @@ Lifting checks failed
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
 Tension stress check failed for Service I Limit State in Interval 11 Cast Deck
 Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State

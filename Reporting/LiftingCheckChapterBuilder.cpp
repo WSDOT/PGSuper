@@ -23,21 +23,11 @@
 #include "StdAfx.h"
 #include <Reporting\LiftingCheckChapterBuilder.h>
 #include <Reporting\LiftingCheck.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 
-
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/****************************************************************************
-CLASS
-   CLiftingCheckChapterBuilder
-****************************************************************************/
 
 CLiftingCheckChapterBuilder::CLiftingCheckChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -51,14 +41,14 @@ LPCTSTR CLiftingCheckChapterBuilder::GetName() const
 
 rptChapter* CLiftingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    rptChapter* pChapter;
 
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pSegmentRptSpec = std::dynamic_pointer_cast<const CSegmentReportSpecification>(pRptSpec);
    if (pGirderRptSpec)
    {
-      pGirderRptSpec->GetBroker(&pBroker);
+      pBroker = pGirderRptSpec->GetBroker();
       GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
       pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
@@ -66,7 +56,7 @@ rptChapter* CLiftingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL:
    }
    else
    {
-      pSegmentRptSpec->GetBroker(&pBroker);
+      pBroker = pSegmentRptSpec->GetBroker();
       GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       const CSegmentKey& segmentKey(pSegmentRptSpec->GetSegmentKey());
       pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
@@ -74,10 +64,4 @@ rptChapter* CLiftingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL:
    }
 
    return pChapter;
-}
-
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLiftingCheckChapterBuilder::Clone() const
-{
-   return std::make_unique<CLiftingCheckChapterBuilder>();
 }

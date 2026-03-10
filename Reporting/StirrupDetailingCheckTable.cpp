@@ -27,6 +27,8 @@
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -37,11 +39,6 @@
 #include <LRFD\Rebar.h>
 #include <LRFD\RebarPool.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -63,8 +60,8 @@ CStirrupDetailingCheckTable::~CStirrupDetailingCheckTable()
 //======================== OPERATORS  =======================================
 
 //======================== OPERATIONS =======================================
-rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                                               IEAFDisplayUnits* pDisplayUnits,
+rptRcTable* CStirrupDetailingCheckTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                IntervalIndexType intervalIdx,
                                                pgsTypes::LimitState ls,
                                                bool* pWriteNote) const

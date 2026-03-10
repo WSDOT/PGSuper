@@ -26,39 +26,11 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-/*****************************************************************************
-CLASS 
-   CStirrupDetailingCheckChapterBuilder
-
-   Stirrup Detailing Check Details Chapter Builder.
-
-
-DESCRIPTION
-   Reports the details of the stirrup detailing check
-   calculation.
-
-LOG
-   rab : 11.03.1998 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CStirrupDetailingCheckChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CStirrupDetailingCheckChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-protected:
-
-private:
-   // Prevent accidental copying and assignment
-   CStirrupDetailingCheckChapterBuilder(const CStirrupDetailingCheckChapterBuilder&) = delete;
-   CStirrupDetailingCheckChapterBuilder& operator=(const CStirrupDetailingCheckChapterBuilder&) = delete;
 };

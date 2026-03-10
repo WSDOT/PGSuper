@@ -23,69 +23,108 @@
 // ExampleExtensionAgent.cpp : Implementation of CExampleExtensionAgent
 
 #include "stdafx.h"
+#include "ExtensionAgent.h"
 #include "ExampleExtensionAgent.h"
-
-#include <EAF\EAFOutputChildFrame.h>
+#include "resource.h"
 #include "MyView.h"
+#include "CLSID.h"
 
 #include <IFace\Tools.h>
 #include <IFace\EditByUI.h>
 #include <EAF\EAFStatusCenter.h>
-#include <EAF\EAFMenu.h>
+#include <EAF\Menu.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 
 // Includes for reporting
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include "MyReportSpecification.h"
 #include "MyReportSpecificationBuilder.h"
 #include "MyChapterBuilder.h"
 #include <Reporting\PGSuperTitlePageBuilder.h>
 
 // Includes for graphing
-#include <IGraphManager.h>
+#include <EAF/EAFGraphManager.h>
 #include "TestGraphBuilder.h"
 
+#include <EAF\EAFOutputChildFrame.h>
 #include <MFCTools\Prompts.h>
 
-BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
-   ON_COMMAND(ID_COMMAND1,OnCommand1)
+BEGIN_MESSAGE_MAP(CExampleExtensionAgent,CCmdTarget)
+   ON_COMMAND(ID_COMMAND1,&CExampleExtensionAgent::OnCommand1)
 	//ON_UPDATE_COMMAND_UI(ID_COMMAND1, OnUpdateCommand1)
-   ON_COMMAND(ID_PLUGINAGENT_MYVIEW,OnMyView)
+   ON_COMMAND(ID_PLUGINAGENT_MYVIEW, &CExampleExtensionAgent::OnMyView)
 END_MESSAGE_MAP()
 
-void CMyCmdTarget::OnCommand1()
+void CExampleExtensionAgent::OnCommand1()
 {
-   m_pMyAgent->SimulateUserInput();
+   SimulateUserInput();
 }
 
-void CMyCmdTarget::OnUpdateCommand1(CCmdUI* pCmdUI) 
+void CExampleExtensionAgent::OnUpdateCommand1(CCmdUI* pCmdUI)
 {
    // example of command ui processing
    //pCmdUI->SetCheck();
 }
 
-void CMyCmdTarget::OnMyView()
+void CExampleExtensionAgent::OnMyView()
 {
-   m_pMyAgent->CreateMyView();
+   CreateMyView();
 }
 
-// CExampleExtensionAgent
-
-HRESULT CExampleExtensionAgent::FinalConstruct()
+/////////////////////////////////////////////////////////////////////////////
+// IEAFCommandCallback
+BOOL CExampleExtensionAgent::OnCommandMessage(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
-   m_MyCommandTarget.m_pMyAgent = this;
+   return OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+}
 
-   m_bCheck = true;
+BOOL CExampleExtensionAgent::GetStatusBarMessageString(UINT nID, CString& rMessage) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	return S_OK;
+   // load appropriate string
+   if (rMessage.LoadString(nID))
+   {
+      // first newline terminates actual string
+      rMessage.Replace('\n', '\0');
+   }
+   else
+   {
+      // not found
+      TRACE1("Warning (CExampleExtensionAgent): no message line prompt for ID 0x%04X.\n", nID);
+   }
+
+   return TRUE;
+}
+
+BOOL CExampleExtensionAgent::GetToolTipMessageString(UINT nID, CString& rMessage) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CString string;
+   // load appropriate string
+   if (string.LoadString(nID))
+   {
+      // tip is after first newline 
+      int pos = string.Find('\n');
+      if (0 < pos)
+         rMessage = string.Mid(pos + 1);
+   }
+   else
+   {
+      // not found
+      TRACE1("Warning (CExampleExtensionAgent): no tool tip for ID 0x%04X.\n", nID);
+   }
+
+   return TRUE;
 }
 
 void CExampleExtensionAgent::RegisterViews()
 {
    GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
    int maxViewCount = 2; // only allow 2 instances of this view to be created at a time
-   m_MyViewKey = pViewRegistrar->RegisterView(IDR_MENU,this,RUNTIME_CLASS(CEAFOutputChildFrame),RUNTIME_CLASS(CMyView),nullptr,maxViewCount);
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
+   m_MyViewKey = pViewRegistrar->RegisterView(IDR_MENU,callback,RUNTIME_CLASS(CEAFOutputChildFrame),RUNTIME_CLASS(CMyView),nullptr,maxViewCount);
 }
 
 void CExampleExtensionAgent::UnregisterViews()
@@ -102,7 +141,7 @@ void CExampleExtensionAgent::CreateMyView()
 
 void CExampleExtensionAgent::RegisterGraphs()
 {
-   GET_IFACE(IGraphManager,pGraphMgr);
+   GET_IFACE(IEAFGraphManager,pGraphMgr);
 
    std::unique_ptr<CTestGraphBuilder> pTestGraphBuilder = std::make_unique<CTestGraphBuilder>();
    pTestGraphBuilder->SetMenuBitmap(&m_bmpMenu);
@@ -122,21 +161,23 @@ void CExampleExtensionAgent::CreateMenus()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IEAFMainMenu,pMainMenu);
-   CEAFMenu* pMenu = pMainMenu->GetMainMenu();
+   auto pMenu = pMainMenu->GetMainMenu();
 
    INT nMenus = pMenu->GetMenuItemCount();
    if ( nMenus == 0 )
       return;
 
-   m_pMyMenu = pMenu->CreatePopupMenu(nMenus-1,_T("MyExtension")); // put the menu before the last menu (Help)
-   m_pMyMenu->LoadMenu(IDR_MENU,this);
+   m_MyMenu = pMenu->CreatePopupMenu(nMenus-1,_T("MyExtension")); // put the menu before the last menu (Help)
+
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
+   m_MyMenu->LoadMenu(IDR_MENU,callback);
 }
 
 void CExampleExtensionAgent::RemoveMenus()
 {
    GET_IFACE(IEAFMainMenu,pMainMenu);
-   CEAFMenu* pMenu = pMainMenu->GetMainMenu();
-   pMenu->DestroyMenu(m_pMyMenu);
+   auto pMenu = pMainMenu->GetMainMenu();
+   pMenu->DestroyMenu(m_MyMenu);
 }
 
 void CExampleExtensionAgent::CreateToolBar()
@@ -144,8 +185,9 @@ void CExampleExtensionAgent::CreateToolBar()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    GET_IFACE(IEAFToolbars,pToolBars);
    m_ToolBarID = pToolBars->CreateToolBar(_T("Extension Agent Toolbar"));
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar(m_ToolBarID);
-   pToolBar->LoadToolBar(IDR_TOOLBAR,this);
+   auto pToolBar = pToolBars->GetToolBar(m_ToolBarID);
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
+   pToolBar->LoadToolBar(IDR_TOOLBAR,callback);
 
    //GET_IFACE(IEditByUI,pEditUI);
    //UINT stdID = pEditUI->GetStdToolBarID();
@@ -168,7 +210,7 @@ void CExampleExtensionAgent::RemoveToolBar()
 void CExampleExtensionAgent::RegisterReports()
 {
    // Register our reports
-   GET_IFACE(IReportManager,pRptMgr);
+   GET_IFACE(IEAFReportManager,pRptMgr);
 
    //
    // Create report spec builders
@@ -230,25 +272,16 @@ void CExampleExtensionAgent::SimulateUserInput()
 /////////////////////////////////////////////////////////////////////////
 // IAgentEx
 
-STDMETHODIMP CExampleExtensionAgent::SetBroker(IBroker *pBroker)
+bool CExampleExtensionAgent::RegisterInterfaces()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
-   return S_OK;
+   EAF_AGENT_REGISTER_INTERFACES;
+   return true;
 }
 
-STDMETHODIMP CExampleExtensionAgent::RegInterfaces()
+bool CExampleExtensionAgent::Init()
 {
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   // Register interfaces here
-   // pBrokerInit->RegInterface( IID_ISomeInterfaceThisAgentImplements, this);
-
-   return S_OK;
-}
-
-STDMETHODIMP CExampleExtensionAgent::Init()
-{
-   CREATE_LOGFILE(_T("ExtensionAgent"));
    EAF_AGENT_INIT;
+   CREATE_LOGFILE(_T("ExtensionAgent"));
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    VERIFY(m_bmpMenu.LoadBitmap(IDB_LOGO));
@@ -256,63 +289,39 @@ STDMETHODIMP CExampleExtensionAgent::Init()
    //
    // Attach to connection points
    //
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
+   m_dwExtendUICookie = REGISTER_EVENT_SINK(IExtendUIEventSink);
 
-   // Connection point for the user interface extension events
-   hr = pBrokerInit->FindConnectionPoint( IID_IExtendUIEventSink, &pCP );
-   if ( SUCCEEDED(hr) )
-   {
-      hr = pCP->Advise( GetUnknown(), &m_dwExtendUICookie );
-      ATLASSERT( SUCCEEDED(hr) );
-      pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-   }
-
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CExampleExtensionAgent::Init2()
+bool CExampleExtensionAgent::Reset()
 {
-   return S_OK;
-}
-
-STDMETHODIMP CExampleExtensionAgent::Reset()
-{
+   EAF_AGENT_RESET;
    m_bmpMenu.DeleteObject();
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CExampleExtensionAgent::ShutDown()
+bool CExampleExtensionAgent::ShutDown()
 {
+   EAF_AGENT_SHUTDOWN;
+
    //
    // Detach to connection points
    //
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
+   UNREGISTER_EVENT_SINK(IExtendUIEventSink, m_dwExtendUICookie);
 
-   hr = pBrokerInit->FindConnectionPoint(IID_IExtendUIEventSink, &pCP );
-   if ( SUCCEEDED(hr) )
-   {
-      hr = pCP->Unadvise( m_dwExtendUICookie );
-      ATLASSERT( SUCCEEDED(hr) );
-      pCP.Release(); // Recycle the connection point
-   }
-
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CExampleExtensionAgent::GetClassID(CLSID* pCLSID)
+CLSID CExampleExtensionAgent::GetCLSID() const
 {
-   *pCLSID = CLSID_ExampleExtensionAgent;
-   return S_OK;
+   return CLSID_ExampleExtensionAgent;
 }
 
 
 ////////////////////////////////////////////////////////////////////
 // IAgentPersist
-STDMETHODIMP CExampleExtensionAgent::Load(IStructuredLoad* pStrLoad)
+WBFL::EAF::Broker::LoadResult CExampleExtensionAgent::Load(IStructuredLoad* pStrLoad)
 {
    USES_CONVERSION;
    CComVariant var;
@@ -320,34 +329,34 @@ STDMETHODIMP CExampleExtensionAgent::Load(IStructuredLoad* pStrLoad)
    
    HRESULT hr = pStrLoad->BeginUnit(_T("ExampleExtensionAgent"));
    if ( FAILED(hr) )
-      return hr;
+      return WBFL::EAF::Broker::LoadResult::Error;
 
    var.vt = VT_BSTR;
    hr = pStrLoad->get_Property(_T("SampleData"),&var);
    if ( FAILED(hr) )
-      return hr;
+      return WBFL::EAF::Broker::LoadResult::Error;
 
    m_Answer = OLE2T(var.bstrVal);
 
    hr = pStrLoad->EndUnit();
    if ( FAILED(hr) )
-      return hr;
+      return WBFL::EAF::Broker::LoadResult::Error;
 
-   return S_OK;
+   return WBFL::EAF::Broker::LoadResult::Success;
 }
 
-STDMETHODIMP CExampleExtensionAgent::Save(IStructuredSave* pStrSave)
+bool CExampleExtensionAgent::Save(IStructuredSave* pStrSave)
 {
    pStrSave->BeginUnit(_T("ExampleExtensionAgent"),1.0);
    pStrSave->put_Property(_T("SampleData"),CComVariant(m_Answer));
    pStrSave->EndUnit();
-   return S_OK;
+   return true;
 }
 
 
 ////////////////////////////////////////////////////////////////////
 // IAgentUIIntegration
-STDMETHODIMP CExampleExtensionAgent::IntegrateWithUI(BOOL bIntegrate)
+bool CExampleExtensionAgent::IntegrateWithUI(bool bIntegrate)
 {
    if ( bIntegrate )
    {
@@ -364,12 +373,12 @@ STDMETHODIMP CExampleExtensionAgent::IntegrateWithUI(BOOL bIntegrate)
       UnregisterUIExtensions();
    }
 
-   return S_OK;
+   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 // IAgentReportingIntegration
-STDMETHODIMP CExampleExtensionAgent::IntegrateWithReporting(BOOL bIntegrate)
+bool CExampleExtensionAgent::IntegrateWithReporting(bool bIntegrate)
 {
    if ( bIntegrate )
    {
@@ -379,12 +388,12 @@ STDMETHODIMP CExampleExtensionAgent::IntegrateWithReporting(BOOL bIntegrate)
    {
    }
 
-   return S_OK;
+   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 // IAgentGraphingIntegration
-STDMETHODIMP CExampleExtensionAgent::IntegrateWithGraphing(BOOL bIntegrate)
+bool CExampleExtensionAgent::IntegrateWithGraphing(bool bIntegrate)
 {
    if ( bIntegrate )
    {
@@ -394,54 +403,7 @@ STDMETHODIMP CExampleExtensionAgent::IntegrateWithGraphing(BOOL bIntegrate)
    {
    }
 
-   return S_OK;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// IEAFCommandCallback
-BOOL CExampleExtensionAgent::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
-{
-   return m_MyCommandTarget.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
-}
-
-BOOL CExampleExtensionAgent::GetStatusBarMessageString(UINT nID, CString& rMessage) const
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   // load appropriate string
-	if ( rMessage.LoadString(nID) )
-	{
-		// first newline terminates actual string
-      rMessage.Replace('\n','\0');
-	}
-	else
-	{
-		// not found
-		TRACE1("Warning (CExampleExtensionAgent): no message line prompt for ID 0x%04X.\n", nID);
-	}
-
-   return TRUE;
-}
-
-BOOL CExampleExtensionAgent::GetToolTipMessageString(UINT nID, CString& rMessage) const
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CString string;
-   // load appropriate string
-	if ( string.LoadString(nID) )
-	{
-		// tip is after first newline 
-      int pos = string.Find('\n');
-      if ( 0 < pos )
-         rMessage = string.Mid(pos+1);
-	}
-	else
-	{
-		// not found
-		TRACE1("Warning (CExampleExtensionAgent): no tool tip for ID 0x%04X.\n", nID);
-	}
-
-   return TRUE;
+   return true;
 }
 
 CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditBridgeData* pBridgeData)
@@ -450,7 +412,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditBridgeData* pBrid
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData)
+std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData)
 {
    return nullptr;
 }
@@ -481,7 +443,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditPierData* pEditPi
    return nullptr;
 }
 
-std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditPierData* pEditPierData)
+std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditPierData* pEditPierData)
 {
    CEditPierPage* pMyPage = (CEditPierPage*)pPage;
    m_bCheck = pMyPage->m_bCheck;
@@ -505,7 +467,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditTemporarySupportD
    return nullptr;
 }
 
-std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditTemporarySupportData* pEditTemporarySupportData)
+std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditTemporarySupportData* pEditTemporarySupportData)
 {
    return nullptr;
 }
@@ -522,7 +484,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSpanData* pEditSp
    return nullptr;
 }
 
-std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData)
+std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData)
 {
    return nullptr;
 }
@@ -533,7 +495,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSegmentData* pSeg
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData)
+std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData)
 {
    return nullptr;
 }
@@ -554,7 +516,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditClosureJointData*
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData)
+std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData)
 {
    return nullptr;
 }
@@ -570,7 +532,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSplicedGirderData
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData)
+std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData)
 {
    return nullptr;
 }
@@ -589,7 +551,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditGirderData* pGird
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData)
+std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData)
 {
    return nullptr;
 }

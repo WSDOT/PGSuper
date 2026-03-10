@@ -203,7 +203,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="AnalysisAgent.def" />
-    <None Include="AnalysisAgent.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AnalysisAgent.rc" />
@@ -228,11 +227,9 @@
   <ItemGroup>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\psgLib\psgLib.vcxproj">
       <Project>{3d4395a4-6da8-40b5-bd41-c21104290b15}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

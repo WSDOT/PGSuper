@@ -32,17 +32,13 @@
 #include "TimelineEventDlg.h"
 #include <PGSuperUnits.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PGSuperColors.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescRailingSystemPage property page
@@ -54,7 +50,7 @@ CBridgeDescRailingSystemPage::CBridgeDescRailingSystemPage() : CPropertyPage(CBr
 	//{{AFX_DATA_INIT(CBridgeDescRailingSystemPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    m_MinNWCDensity = WBFL::LRFD::ConcreteUtil::GetNWCDensityLimit();
    m_MaxLWCDensity = WBFL::LRFD::ConcreteUtil::GetLWCDensityLimit();
@@ -215,8 +211,8 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
    EnableToolTips(TRUE);
 
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
@@ -291,8 +287,8 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
 
 void CBridgeDescRailingSystemPage::FillTrafficBarrierComboBoxes()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;
@@ -566,8 +562,8 @@ void CBridgeDescRailingSystemPage::OnLeftExteriorBarrierChanged()
    CString strRailing;
    pCB->GetLBText(curSel,strRailing);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    const TrafficBarrierEntry* pEntry = pLibrary->GetTrafficBarrierEntry( strRailing );
    int nShowCmd = SW_SHOW;
@@ -602,8 +598,8 @@ void CBridgeDescRailingSystemPage::OnRightExteriorBarrierChanged()
    CString strRailing;
    pCB->GetLBText(curSel,strRailing);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    const TrafficBarrierEntry* pEntry = pLibrary->GetTrafficBarrierEntry( strRailing );
    int nShowCmd = SW_SHOW;
@@ -866,8 +862,8 @@ void CBridgeDescRailingSystemPage::UpdateRightConcreteParametersToolTip()
 
 CString CBridgeDescRailingSystemPage::UpdateConcreteParametersToolTip(CRailingSystem* pRailingSystem)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::DensityData& density = pDisplayUnits->GetDensityUnit();

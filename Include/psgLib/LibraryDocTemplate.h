@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 #include <EAF\EAFDocTemplate.h>
 
@@ -29,7 +29,7 @@ class PSGLIBCLASS CLibraryDocTemplate : public CEAFDocTemplate
 {
 public:
    CLibraryDocTemplate(UINT nIDResource,
-                       IEAFCommandCallback* pCallback,
+                       std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
                        CRuntimeClass* pDocClass,
                        CRuntimeClass* pFrameClass,
                        CRuntimeClass* pViewClass,

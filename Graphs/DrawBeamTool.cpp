@@ -24,20 +24,16 @@
 #include "resource.h"
 #include <Graphs\DrawBeamTool.h>
 
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\GirderHandling.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PGSuperColors.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 CDrawBeamTool::CDrawBeamTool()
@@ -70,7 +66,7 @@ Float64 CDrawBeamTool::GetMinAspectRatio() const
    return m_MinAspectRatio;
 }
 
-void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const WBFL::Graphing::PointMapper& mapper,WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift)
+void CDrawBeamTool::DrawBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker,CDC* pDC, const WBFL::Graphing::PointMapper& mapper,WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift)
 {
    m_pBroker = pBroker;
    m_pUnitConverter = pUnitConverter;
@@ -211,7 +207,7 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const WBFL::Graphing::Po
    } // end of group loop
 }
 
-void CDrawBeamTool::DrawBeamSegment(IBroker* pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& mapper,WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift)
+void CDrawBeamTool::DrawBeamSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& mapper,WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift)
 {
    m_pBroker = pBroker;
    m_pUnitConverter = pUnitConverter;
@@ -387,7 +383,7 @@ Float64 CDrawBeamTool::ComputeSegmentShift(const CSegmentKey& segmentKey)
    return shift;
 }
 
-void CDrawBeamTool::DrawSegment(Float64 beamShift, IntervalIndexType intervalIdx, bool bIsHaulingInterval, const CSegmentKey& segmentKey, IIntervals*pIntervals, IGirder* pIGirder, IPointOfInterest* pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC)
+void CDrawBeamTool::DrawSegment(Float64 beamShift, IntervalIndexType intervalIdx, bool bIsHaulingInterval, const CSegmentKey& segmentKey, std::shared_ptr<IIntervals>pIntervals, std::shared_ptr<IGirder> pIGirder, std::shared_ptr<IPointOfInterest> pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC)
 {
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
@@ -447,7 +443,7 @@ void CDrawBeamTool::DrawSegment(Float64 beamShift, IntervalIndexType intervalIdx
    pDC->SelectObject(pOldBrush);
 }
 
-void CDrawBeamTool::DrawClosureJoint(Float64 beamShift, IntervalIndexType intervalIdx, const CClosureKey& closureKey, IIntervals* pIntervals, IGirder* pIGirder, IPointOfInterest* pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC)
+void CDrawBeamTool::DrawClosureJoint(Float64 beamShift, IntervalIndexType intervalIdx, const CClosureKey& closureKey, std::shared_ptr<IIntervals> pIntervals, std::shared_ptr<IGirder> pIGirder, std::shared_ptr<IPointOfInterest> pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC)
 {
    if (intervalIdx < pIntervals->GetCastClosureJointInterval(closureKey))
    {
@@ -499,7 +495,7 @@ void CDrawBeamTool::DrawClosureJoint(Float64 beamShift, IntervalIndexType interv
 }
 
 
-void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift, IntervalIndexType intervalIdx, bool bIsHaulingInterval, const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType, IIntervals* pIntervals, IPointOfInterest* pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC)
+void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift, IntervalIndexType intervalIdx, bool bIsHaulingInterval, const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType, std::shared_ptr<IIntervals> pIntervals, std::shared_ptr<IPointOfInterest> pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC)
 {
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    if ((intervalIdx < releaseIntervalIdx)

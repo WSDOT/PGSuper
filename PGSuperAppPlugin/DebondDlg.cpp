@@ -29,19 +29,16 @@
 #include "GirderDescDlg.h"
 #include "PGSuperColors.h"
 #include <PgsExt\DesignConfigUtil.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
+#include <IFace/PointOfInterest.h>
 
 #include <MFCTools\CustomDDX.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDebondPage dialog
@@ -68,8 +65,8 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
    bool bSymmetricDebond = pParent->m_pSegment->Strands.IsSymmetricDebond();
 	DDX_Check_Bool(pDX, IDC_SYMMETRIC_DEBOND, bSymmetricDebond );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    if ( pDX->m_bSaveAndValidate )
    {
@@ -80,12 +77,9 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
 
       m_Grid.GetData(*(pParent->m_pSegment));
 
-      std::vector<CDebondData>& vDebond = pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight);
-      std::vector<CDebondData>::iterator iter(vDebond.begin());
-      std::vector<CDebondData>::iterator end(vDebond.end());
-      for ( ; iter != end; iter++ )
+      auto vDebond = pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight);
+      for(const auto& debond_info : vDebond)
       {
-         CDebondData& debond_info = *iter;
          if (gdr_length2 <= debond_info.Length[pgsTypes::metStart] || gdr_length2 <= debond_info.Length[pgsTypes::metEnd])
          {
             HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_DEBOND_GRID);
@@ -151,8 +145,8 @@ BOOL CGirderDescDebondPage::OnSetActive()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    bool bSymmetricDebond = pParent->m_pSegment->Strands.IsSymmetricDebond();
    bool bCanDebond = pStrandGeometry->CanDebondStrands(pParent->m_strGirderName.c_str(),pgsTypes::Straight);
@@ -180,7 +174,13 @@ BOOL CGirderDescDebondPage::OnSetActive()
 
    StrandIndexType nStrands = pParent->GetStraightStrandCount();
    ConfigStrandFillVector strtvec = pParent->ComputeStrandFillVector(pgsTypes::Straight);
-   ReconcileDebonding(strtvec, pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight)); 
+
+   auto debonding = pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight);
+   ASSERT(IsGridBasedStrandModel(pParent->m_pSegment->Strands.GetStrandDefinitionType()));
+   if (ReconcileDebonding(strtvec, debonding))
+   {
+      pParent->m_pSegment->Strands.SetDebonding(pgsTypes::Straight, debonding);
+   }
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -213,12 +213,6 @@ BOOL CGirderDescDebondPage::OnKillActive()
    return CPropertyPage::OnKillActive();
 }
 
-const std::vector<CDebondData>& CGirderDescDebondPage::GetDebondInfo() const
-{
-   CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   return pParent->m_pSegment->Strands.GetDebonding(pgsTypes::Straight);
-}
-
 
 void CGirderDescDebondPage::OnPaint() 
 {
@@ -245,8 +239,8 @@ void CGirderDescDebondPage::OnPaint()
    pWnd->Invalidate();
    pWnd->UpdateWindow();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IShapes, pShapes);
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    pgsPointOfInterest poi = pPoi->GetPointOfInterest(pParent->m_SegmentKey, 0.0);
@@ -426,8 +420,8 @@ void CGirderDescDebondPage::DrawShape(CDC* pDC,IShape* shape, WBFL::Graphing::Po
 
 void CGirderDescDebondPage::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& mapper,Float64 Xadjustment)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -530,13 +524,9 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& m
    CPrecastSegmentData segment = *(pParent->m_pSegment);
    m_Grid.GetData(segment);
 
-   std::vector<CDebondData>& vDebond(segment.Strands.GetDebonding(pgsTypes::Straight));
-   std::vector<CDebondData>::iterator debond_iter(vDebond.begin());
-   std::vector<CDebondData>::iterator debond_iter_end(vDebond.end());
-   for ( ; debond_iter != debond_iter_end; debond_iter++ )
+   auto vDebond(segment.Strands.GetDebonding(pgsTypes::Straight));
+   for(const auto& debond_info : vDebond)
    {
-      CDebondData& debond_info = *debond_iter;
-
       if ( debond_info.strandTypeGridIdx == INVALID_INDEX )
       {
          ATLASSERT(false); // we should be protecting against this

@@ -24,42 +24,28 @@
 #include "PGSuperApp.h"
 #include "PGSuperColors.h"
 #include "TemporarySupportDrawStrategyImpl.h"
-#include "mfcdual.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/PointDisplayObject.h>
+#include <DManip/DisplayList.h>
+#include <DManip/DisplayMgr.h>
+
+using namespace WBFL::DManip;
 
 // make our symbols 1/4" in size
 static const long SSIZE = 1440 * 1/4; // (twips)
 
-
 CTemporarySupportDrawStrategyImpl::CTemporarySupportDrawStrategyImpl(pgsTypes::TemporarySupportType supportType,Float64 leftBrgOffset,Float64 rightBrgOffset)
 {
-   m_CachePoint.CoCreateInstance(CLSID_Point2d);
    m_SupportType = supportType;
 
    m_LeftBrgOffset  = leftBrgOffset;
    m_RightBrgOffset = rightBrgOffset;
 }
 
-BEGIN_INTERFACE_MAP(CTemporarySupportDrawStrategyImpl,CCmdTarget)
-   INTERFACE_PART(CTemporarySupportDrawStrategyImpl,IID_iDrawPointStrategy,DrawPointStrategy)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CTemporarySupportDrawStrategyImpl,DrawPointStrategy);
-
-STDMETHODIMP_(void) CTemporarySupportDrawStrategyImpl::XDrawPointStrategy::Draw(iPointDisplayObject* pDO,CDC* pDC)
+void CTemporarySupportDrawStrategyImpl::Draw(std::shared_ptr<const iPointDisplayObject> pDO,CDC* pDC) const
 {
-   METHOD_PROLOGUE(CTemporarySupportDrawStrategyImpl,DrawPointStrategy);
-
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
 
    COLORREF color;
 
@@ -69,75 +55,49 @@ STDMETHODIMP_(void) CTemporarySupportDrawStrategyImpl::XDrawPointStrategy::Draw(
    }
    else
    {
-      color = pThis->m_SupportType == pgsTypes::StrongBack ? SB_FILL_COLOR : TS_FILL_COLOR;
+      color = m_SupportType == pgsTypes::StrongBack ? SB_FILL_COLOR : TS_FILL_COLOR;
    }
 
-   CComPtr<IPoint2d> pos;
-   pDO->GetPosition(&pos);
+   const auto& pos = pDO->GetPosition();
 
-   if ( pThis->m_SupportType == pgsTypes::StrongBack )
+   if ( m_SupportType == pgsTypes::StrongBack )
    {
-      pThis->DrawStrongBack(pDO,pDC,color,pos);
+      DrawStrongBack(pDO,pDC,color,pos);
    }
    else
    {
-      pThis->Draw(pDO,pDC,color,pos);
+      Draw(pDO,pDC,color,pos);
    }
 }
 
-STDMETHODIMP_(void) CTemporarySupportDrawStrategyImpl::XDrawPointStrategy::DrawHighlite(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite)
+void CTemporarySupportDrawStrategyImpl::DrawHighlight(std::shared_ptr<const iPointDisplayObject> pDO,CDC* pDC,bool bHighlite) const
 {
-   METHOD_PROLOGUE(CTemporarySupportDrawStrategyImpl,DrawPointStrategy);
    Draw(pDO,pDC);
 }
 
-STDMETHODIMP_(void) CTemporarySupportDrawStrategyImpl::XDrawPointStrategy::DrawDragImage(iPointDisplayObject* pDO,CDC* pDC, iCoordinateMap* map, const CPoint& dragStart, const CPoint& dragPoint)
+void CTemporarySupportDrawStrategyImpl::DrawDragImage(std::shared_ptr<const iPointDisplayObject> pDO,CDC* pDC, std::shared_ptr<const iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const
 {
-   METHOD_PROLOGUE(CTemporarySupportDrawStrategyImpl,DrawPointStrategy);
-
-   Float64 wx, wy;
-   map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
-   pThis->m_CachePoint->put_X(wx);
-   pThis->m_CachePoint->put_Y(wy);
+   m_CachePoint = map->LPtoWP(dragPoint.x, dragPoint.y);
 
    // Draw the support
-   pThis->Draw(pDO,pDC,PIER_FILL_COLOR,pThis->m_CachePoint);
+   Draw(pDO,pDC,PIER_FILL_COLOR,m_CachePoint);
 }
 
-STDMETHODIMP_(void) CTemporarySupportDrawStrategyImpl::XDrawPointStrategy::GetBoundingBox(iPointDisplayObject* pDO,IRect2d** rect)
+WBFL::Geometry::Rect2d CTemporarySupportDrawStrategyImpl::GetBoundingBox(std::shared_ptr<const iPointDisplayObject> pDO) const
 {
-   METHOD_PROLOGUE(CTemporarySupportDrawStrategyImpl,DrawPointStrategy);
+   const auto& point = pDO->GetPosition();
 
-   CComPtr<IPoint2d> point;
-   pDO->GetPosition(&point);
+   auto [px, py] = point.GetLocation();
 
-   Float64 px, py;
-   point->get_X(&px);
-   point->get_Y(&py);
+   auto map = pDO->GetDisplayList()->GetDisplayMgr()->GetCoordinateMap();
 
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
-
-   Float64 wid = pThis->m_LeftBrgOffset + pThis->m_RightBrgOffset;
+   Float64 wid = m_LeftBrgOffset + m_RightBrgOffset;
    Float64 hgt = 2*wid;
-#pragma Reminder("UPDATE: is the correct height used for strongbacks")
-   CComPtr<IRect2d> bounding_box;
-   bounding_box.CoCreateInstance(CLSID_Rect2d);
 
-   bounding_box->put_Left(px-wid);
-   bounding_box->put_Bottom(py-hgt);
-   bounding_box->put_Right(px+wid);
-   bounding_box->put_Top(py+hgt);
-
-   (*rect) = bounding_box;
-   (*rect)->AddRef();
+   return { (px - wid), (py - hgt), (px + wid), (py + hgt) };
 }
 
-void CTemporarySupportDrawStrategyImpl::GetLSymbolSize(iCoordinateMap* pMap, long* psx, long* psy)
+void CTemporarySupportDrawStrategyImpl::GetLSymbolSize(std::shared_ptr<const iCoordinateMap> pMap, long* psx, long* psy) const
 {
    long xo,yo;
    pMap->TPtoLP(0,0,&xo,&yo);
@@ -156,7 +116,7 @@ void CTemporarySupportDrawStrategyImpl::GetLSymbolSize(iCoordinateMap* pMap, lon
 }
 
 
-void CTemporarySupportDrawStrategyImpl::DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt)
+void CTemporarySupportDrawStrategyImpl::DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt) const
 {
    // base
    pDC->MoveTo(cx-wid,cy);
@@ -178,11 +138,11 @@ void CTemporarySupportDrawStrategyImpl::DrawGround(CDC* pDC, long cx, long cy, l
 }
 
 
-void CTemporarySupportDrawStrategyImpl::DrawTowerSupport(CDC* pDC, long cx, long cy, long wid, long hgt)
+void CTemporarySupportDrawStrategyImpl::DrawTowerSupport(CDC* pDC, long cx, long cy, long wid, long hgt) const
 {
    DrawGround(pDC, cx, cy+hgt, wid, hgt);
 
-   // rectagle
+   // rectangle
    POINT points[5];
    points[0].x = cx-wid/2;
    points[0].y = cy;
@@ -202,22 +162,15 @@ void CTemporarySupportDrawStrategyImpl::DrawTowerSupport(CDC* pDC, long cx, long
 }
 
 
-void CTemporarySupportDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color, IPoint2d* loc)
+void CTemporarySupportDrawStrategyImpl::Draw(std::shared_ptr<const iPointDisplayObject> pDO,CDC* pDC,COLORREF color, const WBFL::Geometry::Point2d& loc) const
 {
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto map = pDO->GetDisplayList()->GetDisplayMgr()->GetCoordinateMap();
 
    long wid,hgt;
-   GetLSymbolSize(pMap, &wid, &hgt);
+   GetLSymbolSize(map, &wid, &hgt);
 
    long topx,topy; // location of top
-   pMap->WPtoLP(loc,&topx,&topy);
+   map->WPtoLP(loc,&topx,&topy);
 
    CPen pen(PS_SOLID,1,color);
    CPen* pOldPen = pDC->SelectObject(&pen);
@@ -231,38 +184,30 @@ void CTemporarySupportDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,C
    pDC->SelectObject(pOldBrush);
 }
 
-void CTemporarySupportDrawStrategyImpl::DrawStrongBack(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* loc)
+void CTemporarySupportDrawStrategyImpl::DrawStrongBack(std::shared_ptr<const iPointDisplayObject> pDO,CDC* pDC,COLORREF color,const WBFL::Geometry::Point2d& loc) const
 {
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto map = pDO->GetDisplayList()->GetDisplayMgr()->GetCoordinateMap();
 
    CPen pen(PS_SOLID,2,color);
    CPen* pOldPen = pDC->SelectObject(&pen);
 
-   Float64 x,y;
-   loc->Location(&x,&y);
+   auto [x, y] = loc.GetLocation();
 
    long wx1,wy1;
    long wx2,wy2;
 
    Float64 strong_back_height_above_girder = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet);
 
-   pMap->WPtoLP(x-m_LeftBrgOffset,y,&wx1,&wy1);
-   pMap->WPtoLP(x-m_LeftBrgOffset,strong_back_height_above_girder,&wx2,&wy2);
+   map->WPtoLP(x-m_LeftBrgOffset,y,&wx1,&wy1);
+   map->WPtoLP(x-m_LeftBrgOffset,strong_back_height_above_girder,&wx2,&wy2);
 
    pDC->MoveTo(wx1,wy1);
    pDC->LineTo(wx2,wy2);
 
-   pMap->WPtoLP(x+m_RightBrgOffset,strong_back_height_above_girder,&wx1,&wy1);
+   map->WPtoLP(x+m_RightBrgOffset,strong_back_height_above_girder,&wx1,&wy1);
    pDC->LineTo(wx1,wy1);
 
-   pMap->WPtoLP(x+m_RightBrgOffset,y,&wx2,&wy2);
+   map->WPtoLP(x+m_RightBrgOffset,y,&wx2,&wy2);
    pDC->LineTo(wx2,wy2);
 
    pDC->SelectObject(pOldPen);

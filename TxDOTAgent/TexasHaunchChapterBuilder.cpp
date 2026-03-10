@@ -29,6 +29,7 @@
 #include "TexasIBNSParagraphBuilder.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
@@ -36,46 +37,32 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Constructability.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\PierData2.h>
 
+#include <PsgLib\PierData2.h>
 #include <psgLib\ConnectionLibraryEntry.h>
-
 #include <psgLib/SlabOffsetCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CTexasHaunchChapterBuilder
-****************************************************************************/
 
 
-static void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList,
-                                  ColumnIndexType startIdx, ColumnIndexType endIdx, IEAFDisplayUnits* pDisplayUnits);
+static void haunch_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList,
+                                  ColumnIndexType startIdx, ColumnIndexType endIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-static void haunch_minimum_note(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits);
+static void haunch_minimum_note(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTexasHaunchChapterBuilder::CTexasHaunchChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTexasHaunchChapterBuilder::GetName() const
 {
    return TEXT("TxDOT Haunch Summary");
@@ -84,19 +71,19 @@ LPCTSTR CTexasHaunchChapterBuilder::GetName() const
 rptChapter* CTexasHaunchChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    // This can be called for multi or single girders
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    std::vector<CGirderKey> girder_list;
 
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if (pGirderRptSpec!=nullptr)
    {
-      pGirderRptSpec->GetBroker(&pBroker);
+      pBroker = pGirderRptSpec->GetBroker();
       girder_list.push_back( pGirderRptSpec->GetGirderKey() );
    }
    else
    {
       auto pReportSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
-      pReportSpec->GetBroker(&pBroker);
+      pBroker = pReportSpec->GetBroker();
 
       girder_list = pReportSpec->GetGirderKeys();
    }
@@ -168,24 +155,9 @@ rptChapter* CTexasHaunchChapterBuilder::Build(const std::shared_ptr<const WBFL::
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasHaunchChapterBuilder::Clone() const
-{
-   return std::make_unique<CTexasHaunchChapterBuilder>();
-}
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
 
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-void haunch_minimum_note(rptChapter* pChapter, IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits)
+void haunch_minimum_note(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
 
@@ -234,9 +206,9 @@ void haunch_minimum_note(rptChapter* pChapter, IBroker* pBroker, const std::vect
    *p << _T("Refer to the Least Haunch Depth column in the Haunch Details chapter in the Details report for the location of the minimum haunch value.");
 }
 
-void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList,
+void haunch_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList,
                            ColumnIndexType startIdx, ColumnIndexType endIdx,
-                           IEAFDisplayUnits* pDisplayUnits)
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -255,7 +227,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
 
    // Setup up some unit value prototypes
    static WBFL::Units::Length3Data large_volume_unit(WBFL::Units::Measure::Feet3);
-   if ( pDisplayUnits->GetUnitMode() == eafTypes::umUS )
+   if ( pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US )
       large_volume_unit.Update(WBFL::Units::Measure::Yard3,0.001,12,2,WBFL::System::NumericFormatTool::Format::Fixed);
    else
       large_volume_unit.Update(WBFL::Units::Measure::Meter3,0.001,12,2,WBFL::System::NumericFormatTool::Format::Fixed);

@@ -26,25 +26,22 @@
 #include "Reporting.h"
 #include "TimeStepDetailsDlg.h"
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CTimeStepDetailsDlg dialog
 
 IMPLEMENT_DYNAMIC(CTimeStepDetailsDlg, CDialog)
 
-CTimeStepDetailsDlg::CTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
+CTimeStepDetailsDlg::CTimeStepDetailsDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CTimeStepDetailsDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pTsRptSpec(pRptSpec)

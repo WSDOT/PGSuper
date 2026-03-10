@@ -20,76 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_DEVLENGTHDETAILSCHAPTER_H_
-#define INCLUDED_DEVLENGTHDETAILSCHAPTER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CDevLengthDetailsChapterBuilder
-
-   Reports details of development length and transfer length calculations
-
-
-DESCRIPTION
-   Reports details of development length and transfer length calculations
-
-LOG
-   rab : 11.03.2005 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CDevLengthDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CDevLengthDetailsChapterBuilder(bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CDevLengthDetailsChapterBuilder(const CDevLengthDetailsChapterBuilder&) = delete;
-   CDevLengthDetailsChapterBuilder& operator=(const CDevLengthDetailsChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_DEVLENGTHDETAILSCHAPTER_H_

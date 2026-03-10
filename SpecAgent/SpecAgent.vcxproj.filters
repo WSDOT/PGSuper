@@ -13,6 +13,12 @@
     <ClCompile Include="StatusItems.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LRFDSplittingCheckEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SplittingCheckEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resource.h">
@@ -54,12 +60,15 @@
     <ClInclude Include="..\Include\IFace\SplittingChecks.h">
       <Filter>IFace</Filter>
     </ClInclude>
+    <ClInclude Include="LRFDSplittingCheckEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SplittingCheckEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="SpecAgent.def" />
-    <None Include="SpecAgent.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

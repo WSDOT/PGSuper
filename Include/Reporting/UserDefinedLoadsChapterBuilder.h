@@ -20,94 +20,36 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_USERDEFINEDLOADSCHAPTERBUILDER_H_
-#define INCLUDED_USERDEFINEDLOADSCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-interface IEAFDisplayUnits;
-
-/*****************************************************************************
-CLASS 
-   CUserDefinedLoadsChapterBuilder
-
-   Report user-defined load data
-
-
-DESCRIPTION
-   Report user-defined load data
-
-LOG
-   rdp : 06.01.1999 : Created file
-*****************************************************************************/
+class IEAFDisplayUnits;
 
 class REPORTINGCLASS CUserDefinedLoadsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CUserDefinedLoadsChapterBuilder(bool bSelect = true, bool SimplifiedVersion=false);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   static rptParagraph* CreatePointLoadTable(IBroker* pBroker,
+   static rptParagraph* CreatePointLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            const CSpanKey& spanKey,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion);
 
-   static rptParagraph* CreateDistributedLoadTable(IBroker* pBroker,
+   static rptParagraph* CreateDistributedLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            const CSpanKey& spanKey,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion);
 
-   static rptParagraph* CreateMomentLoadTable(IBroker* pBroker,
+   static rptParagraph* CreateMomentLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            const CSpanKey& spanKey,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 private:
-   // GROUP: DATA MEMBERS
    bool m_bSimplifiedVersion;
-
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CUserDefinedLoadsChapterBuilder(const CUserDefinedLoadsChapterBuilder&) = delete;
-   CUserDefinedLoadsChapterBuilder& operator=(const CUserDefinedLoadsChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_UserDefinedLoadsCHAPTERBUILDER_H_

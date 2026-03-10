@@ -3,8 +3,6 @@
 // Used by ExtensionAgentExample.rc
 //
 #define IDS_PROJNAME                    100
-#define IDR_EXTENSIONAGENTEXAMPLE       101
-#define IDR_EXAMPLEEXTENSIONAGENT       106
 #define IDR_TOOLBAR                     201
 #define IDC_CHECK                       202
 #define IDR_MENU                        203

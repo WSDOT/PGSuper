@@ -2,18 +2,14 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "PGSuperColors.h"
 #include "DrawPrecastSegmentControl.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
-#include <PgsExt\SplicedGirderData.h>
+#include <PsgLib\SplicedGirderData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CDrawPrecastSegmentControl
@@ -145,8 +141,8 @@ void CDrawPrecastSegmentControl::OnPaint()
    CPen* pOldPen     = dc.GetCurrentPen();
    CBrush* pOldBrush = dc.GetCurrentBrush();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridge,pBridge);
    if ( prevShape )
    {
@@ -208,8 +204,8 @@ void CDrawPrecastSegmentControl::CreateSegmentShape(const CSegmentKey& segmentKe
 {
    const CSplicedGirderData* pSplicedGirder = m_pSource->GetGirder();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IGirder,pGirder);
    pGirder->GetSegmentProfile(segmentKey,pSplicedGirder,true,ppShape);
    pGirder->GetSegmentBottomFlangeProfile(segmentKey,pSplicedGirder,true,ppPoints);

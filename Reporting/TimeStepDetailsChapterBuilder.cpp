@@ -24,6 +24,8 @@
 #include <Reporting\TimeStepDetailsChapterBuilder.h>
 #include <Reporting\TimeStepDetailsReportSpecification.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
@@ -34,21 +36,16 @@
 
 #include <WBFLGenericBridgeTools.h>
 
-#include <PgsExt\TimelineEvent.h>
+#include <PsgLib\TimelineEvent.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define DELTA_P    symbol(DELTA) << _T("P")
 #define DELTA_M    symbol(DELTA) << _T("M")
 #define DELTA_V    symbol(DELTA) << _T("V")
 #define DELTA_Pk   symbol(DELTA) << Sub2(_T("P"),_T("k"))
 #define DELTA_Mk   symbol(DELTA) << Sub2(_T("M"),_T("k"))
-#define DELTA_E    symbol(DELTA) << symbol(epsilon)
-#define DELTA_R    symbol(DELTA) << symbol(varphi)
+#define DELTA_E    symbol(DELTA) << Sub2(symbol(epsilon),_T("cr"))
+#define DELTA_R    symbol(DELTA) << Sub2(symbol(varphi),_T("cr"))
 #define DELTA_FR   symbol(DELTA) << RPT_STRESS(_T("r"))
 #define DELTA_ER   symbol(DELTA) << Sub2(symbol(epsilon),_T("r"))
 #define DELTA_ESH  symbol(DELTA) << Sub2(symbol(epsilon),_T("sh"))
@@ -62,22 +59,12 @@ static char THIS_FILE[] = __FILE__;
 #define CREEP_tb_to  CREEP(Sub2(_T("t"),_T("b")),Sub2(_T("t"),_T("o")))
 #define CREEP_te_to  CREEP(Sub2(_T("t"),_T("e")),Sub2(_T("t"),_T("o")))
 
-/****************************************************************************
-CLASS
-   CTimeStepDetailsChapterBuilder
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTimeStepDetailsChapterBuilder::CTimeStepDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTimeStepDetailsChapterBuilder::GetName() const
 {
    return TEXT("Time Step Details");
@@ -91,8 +78,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
 
    auto pTSDRptSpec = std::dynamic_pointer_cast<const CTimeStepDetailsReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pTSDRptSpec->GetBroker(&pBroker);
+   auto pBroker = pTSDRptSpec->GetBroker();
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
@@ -466,6 +452,19 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
          rptRcTable* pIncStressTable = BuildIncrementalStressTable(pBroker,vLoads,tsDetails, bHasDeck, pDisplayUnits);
          (*pPara) << pIncStressTable << rptNewLine;
          (*pPara) << _T("Change in stress in strands and tendons are the prestress losses during this interval.") << rptNewLine;
+         (*pPara) << _T("Incremental Total = Sum of incremental stresses from loads occurring during this interval.") << rptNewLine;
+         (*pPara) << _T("Cumulative Total = Sum of incremental stresses from loads occurring in all intervals up to and including interval.") << rptNewLine;
+         *pPara << rptNewLine;
+
+         // Incremental stains due to loads applied during this interval
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+         (*pChapter) << pPara;
+         (*pPara) << _T("Incremental component strain") << rptNewLine;
+         pPara = new rptParagraph;
+         (*pChapter) << pPara;
+         (*pPara) << rptRcImage(strImagePath + _T("IncrementalComponentStrain.png")) << rptNewLine;
+         rptRcTable* pIncStrainTable = BuildIncrementalStrainTable(pBroker, vLoads, tsDetails, bHasDeck, pDisplayUnits);
+         (*pPara) << pIncStrainTable << rptNewLine;
          *pPara << rptNewLine;
 
          prevGirderKey = CGirderKey(poi.GetSegmentKey());
@@ -527,12 +526,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimeStepDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CTimeStepDetailsChapterBuilder>();
-}
-
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,IIntervals* pIntervals,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IIntervals> pIntervals,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4);
    (*pTable)(0,0) << _T("Start") << rptNewLine << _T("(day)");
@@ -553,7 +547,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIntervalTable(const TIME_STEP_D
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteTable(const TIME_STEP_DETAILS& tsDetails, const CSegmentKey& segmentKey,IMaterials* pMaterials, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteTable(const TIME_STEP_DETAILS& tsDetails, const CSegmentKey& segmentKey,std::shared_ptr<IMaterials> pMaterials, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(13);
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
@@ -621,8 +615,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteTable(const TIME_STEP_D
    row++;
 
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
    const auto* pEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
@@ -660,7 +653,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteTable(const TIME_STEP_D
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentPropertiesTable(const TIME_STEP_DETAILS& tsDetails,bool bHasDeck,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentPropertiesTable(const TIME_STEP_DETAILS& tsDetails,bool bHasDeck,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    ecc,        pDisplayUnits->GetComponentDimUnit(),    false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    height,     pDisplayUnits->GetComponentDimUnit(),    false);
@@ -814,7 +807,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentPropertiesTable(const 
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionPropertiesTable(const TIME_STEP_DETAILS& tsDetails,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionPropertiesTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    ecc,        pDisplayUnits->GetComponentDimUnit(),    false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    height,     pDisplayUnits->GetComponentDimUnit(),    false);
@@ -848,7 +841,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionPropertiesTable(const TI
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildFreeCreepDeformationTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildFreeCreepDeformationTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLength2UnitValue,   area,       pDisplayUnits->GetAreaUnit(),            true);
    INIT_UV_PROTOTYPE(rptLength4UnitValue,   momI,       pDisplayUnits->GetMomentOfInertiaUnit(), true);
@@ -938,7 +931,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildFreeCreepDeformationTable(const
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildStrandRelaxationTable(const TIME_STEP_DETAILS& tsDetails,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildStrandRelaxationTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
 
@@ -975,7 +968,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildStrandRelaxationTable(const TIM
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildSegmentTendonRelaxationTable(const TIME_STEP_DETAILS& tsDetails,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildSegmentTendonRelaxationTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
 
@@ -1000,7 +993,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildSegmentTendonRelaxationTable(co
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildGirderTendonRelaxationTable(const TIME_STEP_DETAILS& tsDetails, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildGirderTendonRelaxationTable(const TIME_STEP_DETAILS& tsDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
 
@@ -1025,7 +1018,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildGirderTendonRelaxationTable(con
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          true);
    INIT_UV_PROTOTYPE(rptLength2UnitValue,   area,       pDisplayUnits->GetAreaUnit(),            true);
@@ -1144,7 +1137,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildComponentRestrainingForceTable(
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionRestrainingForceTable(const TIME_STEP_DETAILS& tsDetails,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionRestrainingForceTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    false);
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     false);
@@ -1191,7 +1184,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionRestrainingForceTable(co
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionRestrainingDeformationTable(const TIME_STEP_DETAILS& tsDetails,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionRestrainingDeformationTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptPerLengthUnitValue, curvature,  pDisplayUnits->GetCurvatureUnit(),       false);
 
@@ -1237,7 +1230,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildSectionRestrainingDeformationTa
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedSectionForceTable(const TIME_STEP_DETAILS& tsDetails,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedSectionForceTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    false);
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     false);
@@ -1291,7 +1284,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedSectionForceTable(con
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedComponentForceTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedComponentForceTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    false);
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     false);
@@ -1462,7 +1455,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedComponentForceTable(c
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* pBroker, const std::vector<pgsTypes::ProductForceType>& vLoads, const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<pgsTypes::ProductForceType>& vLoads, const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
@@ -1800,7 +1793,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(IBroker* 
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker* pBroker,const std::vector<pgsTypes::ProductForceType>& vLoads,const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<pgsTypes::ProductForceType>& vLoads,const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
@@ -1889,10 +1882,6 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    }
 
    // fill the table
-   std::array<Float64, 2> f_top_girder = {0,0};
-   std::array<Float64, 2> f_bot_girder = {0,0};
-   std::array<Float64, 2> f_top_deck   = {0,0};
-   std::array<Float64, 2> f_bot_deck   = {0,0};
    colIdx = 1;
    for ( IndexType i = 0; i < nLoads; i++, colIdx++ )
    {
@@ -1901,12 +1890,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
       pgsTypes::ProductForceType pfType = vLoads[i];
 
       // Girder
-      f_top_girder[rtIncremental] += tsDetails.Girder.f[pgsTypes::TopFace   ][pfType][rtIncremental];
-      f_bot_girder[rtIncremental] += tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtIncremental];
-      f_top_girder[rtCumulative]  += tsDetails.Girder.f[pgsTypes::TopFace   ][pfType][rtCumulative];
-      f_bot_girder[rtCumulative]  += tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtCumulative];
-      (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.f[pgsTypes::TopFace   ][pfType][rtIncremental]);
-      (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtIncremental]);
+      (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace   ][pfType][rtIncremental]);
+      (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental]);
 
       // Strands
       for ( int i = 0; i < 3; i++ )
@@ -1918,12 +1903,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
       if (bHasDeck)
       {
          // Deck
-         f_top_deck[rtIncremental] += tsDetails.Deck.f[pgsTypes::TopFace][pfType][rtIncremental];
-         f_bot_deck[rtIncremental] += tsDetails.Deck.f[pgsTypes::BottomFace][pfType][rtIncremental];
-         f_top_deck[rtCumulative] += tsDetails.Deck.f[pgsTypes::TopFace][pfType][rtCumulative];
-         f_bot_deck[rtCumulative] += tsDetails.Deck.f[pgsTypes::BottomFace][pfType][rtCumulative];
-         (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.f[pgsTypes::TopFace][pfType][rtIncremental]);
-         (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.f[pgsTypes::BottomFace][pfType][rtIncremental]);
+         (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental]);
+         (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental]);
       }
 
       // Segment Tendons
@@ -1943,8 +1924,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    rowIdx = pTable->GetNumberOfHeaderRows();
 
    // Girder
-   (*pTable)(rowIdx++,colIdx) << stress.SetValue(f_top_girder[rtIncremental]);
-   (*pTable)(rowIdx++,colIdx) << stress.SetValue(f_bot_girder[rtIncremental]);
+   (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.stress[pgsTypes::TopFace][rtIncremental]);
+   (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.stress[pgsTypes::BottomFace][rtIncremental]);
 
    // Strands
    for ( int i = 0; i < 3; i++ )
@@ -1956,8 +1937,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    if (bHasDeck)
    {
       // Deck
-      (*pTable)(rowIdx++, colIdx) << stress.SetValue(f_top_deck[rtIncremental]);
-      (*pTable)(rowIdx++, colIdx) << stress.SetValue(f_bot_deck[rtIncremental]);
+      (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.stress[pgsTypes::TopFace][rtIncremental]);
+      (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.stress[pgsTypes::BottomFace][rtIncremental]);
    }
 
    // Segment Tendons
@@ -1977,8 +1958,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    rowIdx = pTable->GetNumberOfHeaderRows();
 
    // Girder
-   (*pTable)(rowIdx++,colIdx) << stress.SetValue(f_top_girder[rtCumulative]);
-   (*pTable)(rowIdx++,colIdx) << stress.SetValue(f_bot_girder[rtCumulative]);
+   (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.stress[pgsTypes::TopFace][rtCumulative]);
+   (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.stress[pgsTypes::BottomFace][rtCumulative]);
 
    // Strands
    for ( int i = 0; i < 3; i++ )
@@ -1990,8 +1971,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    if (bHasDeck)
    {
       // Deck
-      (*pTable)(rowIdx++, colIdx) << stress.SetValue(f_top_deck[rtCumulative]);
-      (*pTable)(rowIdx++, colIdx) << stress.SetValue(f_bot_deck[rtCumulative]);
+      (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.stress[pgsTypes::TopFace][rtCumulative]);
+      (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.stress[pgsTypes::BottomFace][rtCumulative]);
    }
 
    // Segment Tendons
@@ -2067,7 +2048,260 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBroker* pBroker,const pgsPointOfInterest& poi,ResultsType resultsType,bool bGirder,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStrainTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<pgsTypes::ProductForceType>& vLoads, const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
+{
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+   IndexType nLoads = vLoads.size();
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nLoads + 3 + 3);
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_LEFT));
+   pTable->SetNumberOfHeaderRows(2);
+
+   // label loading types across the top row
+   RowIndexType rowIdx = 0;
+   ColumnIndexType colIdx = 0;
+   pTable->SetRowSpan(rowIdx, colIdx, 2);
+   (*pTable)(rowIdx, colIdx++) << _T("Component");
+
+   pTable->SetColumnSpan(rowIdx, colIdx, nLoads);
+   (*pTable)(rowIdx, colIdx) << _T("Loading");
+   colIdx += nLoads;
+
+   rowIdx++;
+   colIdx = 1;
+   for (IndexType i = 0; i < nLoads; i++)
+   {
+      pgsTypes::ProductForceType pfType = vLoads[i];
+      (*pTable)(rowIdx, colIdx++) << pProductLoads->GetProductLoadName(pfType) << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+   }
+
+   rowIdx = 0;
+   pTable->SetRowSpan(rowIdx, colIdx, 2);
+   (*pTable)(rowIdx, colIdx++) << _T("Incremental") << rptNewLine << _T("Total") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+
+   pTable->SetRowSpan(rowIdx, colIdx, 2);
+   (*pTable)(rowIdx, colIdx++) << _T("Cumulative") << rptNewLine << _T("Total") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+
+   pTable->SetColumnSpan(rowIdx, colIdx, 3);
+   (*pTable)(rowIdx, colIdx) << _T("Cumulative Strains");
+   rowIdx++;
+   (*pTable)(rowIdx, colIdx++) << pProductLoads->GetProductLoadName(pgsTypes::pftCreep) << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+   (*pTable)(rowIdx, colIdx++) << pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage) << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+   (*pTable)(rowIdx, colIdx++) << pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation) << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+
+
+   // Label the rows in column 0
+   rowIdx = pTable->GetNumberOfHeaderRows();
+   colIdx = 0;
+   (*pTable)(rowIdx++, colIdx) << _T("Top Girder");
+   (*pTable)(rowIdx++, colIdx) << _T("Bottom Girder");
+
+   //for (int i = 0; i < 3; i++)
+   //{
+   //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+   //   if (strandType == pgsTypes::Straight)
+   //   {
+   //      (*pTable)(rowIdx++, colIdx) << _T("Straight Strands");
+   //   }
+   //   else if (strandType == pgsTypes::Harped)
+   //   {
+   //      (*pTable)(rowIdx++, colIdx) << _T("Harped Strands");
+   //   }
+   //   else if (strandType == pgsTypes::Temporary)
+   //   {
+   //      (*pTable)(rowIdx++, colIdx) << _T("Temporary Strands");
+   //   }
+   //}
+
+   if (bHasDeck)
+   {
+      (*pTable)(rowIdx++, colIdx) << _T("Top Deck");
+      (*pTable)(rowIdx++, colIdx) << _T("Bottom Deck");
+   }
+
+   //DuctIndexType nTendons = tsDetails.SegmentTendons.size();
+   //for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
+   //{
+   //   const TIME_STEP_STRAND& tsTendon = tsDetails.SegmentTendons[tendonIdx];
+   //   (*pTable)(rowIdx++, colIdx) << _T("Segment Tendon ") << LABEL_DUCT(tendonIdx);
+   //}
+
+   //nTendons = tsDetails.GirderTendons.size();
+   //for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
+   //{
+   //   const TIME_STEP_STRAND& tsTendon = tsDetails.GirderTendons[tendonIdx];
+   //   (*pTable)(rowIdx++, colIdx) << _T("Girder Tendon ") << LABEL_DUCT(tendonIdx);
+   //}
+
+   // fill the table
+   colIdx = 1;
+   for (IndexType i = 0; i < nLoads; i++, colIdx++)
+   {
+      rowIdx = pTable->GetNumberOfHeaderRows();
+
+      pgsTypes::ProductForceType pfType = vLoads[i];
+
+      // Girder
+      (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] * 1E6;
+      (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] * 1E6;
+
+      //// Strands
+      //for (int i = 0; i < 3; i++)
+      //{
+      //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+      //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Strands[strandType].dfpei[pfType]);
+      //}
+
+      if (bHasDeck)
+      {
+         // Deck
+         (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] * 1E6;
+         (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] * 1E6;
+      }
+
+      //// Segment Tendons
+      //for (const auto& tsTendon : tsDetails.SegmentTendons)
+      //{
+      //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpei[pfType]);
+      //}
+
+      //// Girder Tendons
+      //for (const auto& tsTendon : tsDetails.GirderTendons)
+      //{
+      //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpei[pfType]);
+      //}
+   } // next loading
+
+   // Incremental Totals
+   rowIdx = pTable->GetNumberOfHeaderRows();
+
+   // Girder
+   (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain[pgsTypes::TopFace][rtIncremental] * 1E6;
+   (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain[pgsTypes::BottomFace][rtIncremental] * 1E6;
+
+   //// Strands
+   //for (int i = 0; i < 3; i++)
+   //{
+   //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Strands[strandType].dfpe);
+   //}
+
+   if (bHasDeck)
+   {
+      // Deck
+      (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain[pgsTypes::TopFace][rtIncremental] * 1E6;
+      (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain[pgsTypes::BottomFace][rtIncremental] * 1E6;
+   }
+
+   //// Segment Tendons
+   //for (const auto& tsTendon : tsDetails.SegmentTendons)
+   //{
+   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpe);
+   //}
+
+   //// Girder Tendons
+   //for (const auto& tsTendon : tsDetails.GirderTendons)
+   //{
+   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpe);
+   //}
+
+   // Cumulative Totals
+   colIdx++;
+   rowIdx = pTable->GetNumberOfHeaderRows();
+
+   // Girder
+   (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain[pgsTypes::TopFace][rtCumulative] * 1E6;
+   (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain[pgsTypes::BottomFace][rtCumulative] * 1E6;
+
+   //// Strands
+   //for (int i = 0; i < 3; i++)
+   //{
+   //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Strands[strandType].fpe);
+   //}
+
+   if (bHasDeck)
+   {
+      // Deck
+      (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain[pgsTypes::TopFace][rtCumulative] * 1E6;
+      (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain[pgsTypes::BottomFace][rtCumulative] * 1E6;
+   }
+
+   //// Segment Tendons
+   //for (const auto& tsTendon : tsDetails.SegmentTendons)
+   //{
+   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.fpe);
+   //}
+
+   //// Girder Tendons
+   //for (const auto& tsTendon : tsDetails.GirderTendons)
+   //{
+   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.fpe);
+   //}
+
+
+   // Cumulative Time-Dependent Effects
+   colIdx++;
+   rowIdx = pTable->GetNumberOfHeaderRows();
+
+   // Girder
+   (*pTable)(rowIdx, colIdx) << tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftCreep][rtCumulative] * 1E6;
+   (*pTable)(rowIdx, colIdx + 1) << tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftShrinkage][rtCumulative] * 1E6;
+   (*pTable)(rowIdx, colIdx + 2) << tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftRelaxation][rtCumulative] * 1E6;
+   rowIdx++;
+
+   (*pTable)(rowIdx, colIdx) << tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftCreep][rtCumulative] * 1E6;
+   (*pTable)(rowIdx, colIdx + 1) << tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftShrinkage][rtCumulative] * 1E6;
+   (*pTable)(rowIdx, colIdx + 2) << tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftRelaxation][rtCumulative] * 1E6;
+   rowIdx++;
+
+   //// Strands
+   //for (int i = 0; i < 3; i++)
+   //{
+   //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+   //   (*pTable)(rowIdx, colIdx) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftCreep]);
+   //   (*pTable)(rowIdx, colIdx + 1) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftShrinkage]);
+   //   (*pTable)(rowIdx, colIdx + 2) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftRelaxation]);
+   //   rowIdx++;
+   //}
+
+   if (bHasDeck)
+   {
+      // Deck
+      (*pTable)(rowIdx, colIdx) << tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftCreep][rtCumulative] * 1E6;
+      (*pTable)(rowIdx, colIdx + 1) << tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftShrinkage][rtCumulative] * 1E6;
+      (*pTable)(rowIdx, colIdx + 2) << tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftRelaxation][rtCumulative] * 1E6;
+      rowIdx++;
+
+      (*pTable)(rowIdx, colIdx) << tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftCreep][rtCumulative] * 1E6;
+      (*pTable)(rowIdx, colIdx + 1) << tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftShrinkage][rtCumulative] * 1E6;
+      (*pTable)(rowIdx, colIdx + 2) << tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftRelaxation][rtCumulative] * 1E6;
+      rowIdx++;
+   }
+
+   //// Segment Tendons
+   //for (const auto& tsTendon : tsDetails.SegmentTendons)
+   //{
+   //   (*pTable)(rowIdx, colIdx) << stress.SetValue(tsTendon.fpei[pgsTypes::pftCreep]);
+   //   (*pTable)(rowIdx, colIdx + 1) << stress.SetValue(tsTendon.fpei[pgsTypes::pftShrinkage]);
+   //   (*pTable)(rowIdx, colIdx + 2) << stress.SetValue(tsTendon.fpei[pgsTypes::pftRelaxation]);
+   //   rowIdx++;
+   //}
+
+   //// Girder Tendons
+   //for (const auto& tsTendon : tsDetails.GirderTendons)
+   //{
+   //   (*pTable)(rowIdx, colIdx) << stress.SetValue(tsTendon.fpei[pgsTypes::pftCreep]);
+   //   (*pTable)(rowIdx, colIdx + 1) << stress.SetValue(tsTendon.fpei[pgsTypes::pftShrinkage]);
+   //   (*pTable)(rowIdx, colIdx + 2) << stress.SetValue(tsTendon.fpei[pgsTypes::pftRelaxation]);
+   //   rowIdx++;
+   //}
+
+   return pTable;
+}
+
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,ResultsType resultsType,bool bGirder,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue,     stress,      pDisplayUnits->GetStressUnit(),    false);
 
@@ -2092,7 +2326,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
    (*pTable)(rowIdx,colIdx++) << _T("Interval");
 
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Stress");
+   (*pTable)(rowIdx,colIdx++) << _T("Girder") << _T("Face");
 
    pTable->SetColumnSpan(rowIdx,colIdx,nLoads);
    (*pTable)(rowIdx,colIdx) << _T("Loading");
@@ -2110,7 +2344,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
    {
       rowIdx = 0;
       pTable->SetRowSpan(rowIdx,colIdx,2);
-      (*pTable)(rowIdx,colIdx) << _T("Total");
+      (*pTable)(rowIdx,colIdx) << COLHDR(_T("Total"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
    }
 
    rowIdx = pTable->GetNumberOfHeaderRows();
@@ -2139,24 +2373,17 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
 
       const TIME_STEP_CONCRETE* pConcrete = (bGirder ? &tsDetails.Girder : &tsDetails.Deck);
 
-      Float64 fTop = 0;
-      Float64 fBot = 0;
-
       for ( IndexType i = 0; i < nLoads; i++, colIdx++)
       {
          pgsTypes::ProductForceType pfType = vLoads[i];
-
-         fTop += pConcrete->f[pgsTypes::TopFace   ][pfType][resultsType];
-         fBot += pConcrete->f[pgsTypes::BottomFace][pfType][resultsType];
-
-         (*pTable)(rowIdx,  colIdx) << stress.SetValue(pConcrete->f[pgsTypes::TopFace   ][pfType][resultsType]);
-         (*pTable)(rowIdx+1,colIdx) << stress.SetValue(pConcrete->f[pgsTypes::BottomFace][pfType][resultsType]);
+         (*pTable)(rowIdx,  colIdx) << stress.SetValue(pConcrete->stress_by_load_type[pgsTypes::TopFace   ][pfType][resultsType]);
+         (*pTable)(rowIdx+1,colIdx) << stress.SetValue(pConcrete->stress_by_load_type[pgsTypes::BottomFace][pfType][resultsType]);
       } // next loading
 
       if ( resultsType == rtCumulative)
       {
-         (*pTable)(rowIdx,  colIdx) << stress.SetValue(fTop);
-         (*pTable)(rowIdx+1,colIdx) << stress.SetValue(fBot);
+         (*pTable)(rowIdx,  colIdx) << stress.SetValue(pConcrete->stress[pgsTypes::TopFace][resultsType]);
+         (*pTable)(rowIdx+1,colIdx) << stress.SetValue(pConcrete->stress[pgsTypes::BottomFace][resultsType]);
       }
    }
 
@@ -2179,15 +2406,15 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
       {
          pgsTypes::ProductForceType pfType = vLoads[i];
 
-         (*pTable)(rowIdx,  colIdx) << stress.SetValue(pConcrete->f[pgsTypes::TopFace   ][pfType][rtCumulative]);
-         (*pTable)(rowIdx+1,colIdx) << stress.SetValue(pConcrete->f[pgsTypes::BottomFace][pfType][rtCumulative]);
+         (*pTable)(rowIdx,  colIdx) << stress.SetValue(pConcrete->stress_by_load_type[pgsTypes::TopFace   ][pfType][rtCumulative]);
+         (*pTable)(rowIdx+1,colIdx) << stress.SetValue(pConcrete->stress_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative]);
       } // next loading
    }
 
    return pTable;
 }
 
-void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const
+void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    (*pChapter) << pPara;
@@ -2812,7 +3039,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,IBr
    } // next element type (girder,deck)
 }
 
-void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const
+void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    (*pChapter) << pPara;
@@ -3174,7 +3401,7 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
    }
 }
 
-void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const
+void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    (*pChapter) << pPara;
@@ -3374,7 +3601,7 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
    }
 }
 
-void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptChapter* pChapter, IBroker* pBroker, const pgsPointOfInterest& poi, IntervalIndexType firstIntervalIdx, IntervalIndexType lastIntervalIdx, IEAFDisplayUnits* pDisplayUnits) const
+void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi, IntervalIndexType firstIntervalIdx, IntervalIndexType lastIntervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    GET_IFACE2(pBroker, IMaterials, pMaterials);
@@ -3512,7 +3739,7 @@ void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptCha
    }
 }
 
-void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,IEAFDisplayUnits* pDisplayUnits) const
+void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    GET_IFACE2(pBroker,IMaterials,pMaterials);

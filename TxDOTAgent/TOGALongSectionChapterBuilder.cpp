@@ -23,30 +23,13 @@
 #include "StdAfx.h"
 #include "TogaLongSectionChapterBuilder.h"
 
-
 #include <Reporting\SpanGirderReportSpecification.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CTogaLongSectionChapterBuilder
-****************************************************************************/
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTogaLongSectionChapterBuilder::CTogaLongSectionChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTogaLongSectionChapterBuilder::GetName() const
 {
    return TEXT("Beginning of Long Section of Report");
@@ -65,28 +48,3 @@ rptChapter* CTogaLongSectionChapterBuilder::Build(const std::shared_ptr<const WB
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaLongSectionChapterBuilder::Clone() const
-{
-   return std::make_unique<CTogaLongSectionChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

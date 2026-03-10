@@ -45,12 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ReportAgent.def" />
-    <None Include="PGSpliceReporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="Reporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

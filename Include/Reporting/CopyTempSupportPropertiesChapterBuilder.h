@@ -28,29 +28,14 @@
 #include <IFace\ExtendUI.h>
 
 
-/*****************************************************************************
-CLASS 
-   CCopyTempSupportPropertiesChapterBuilder
-
-   Chapter builder for reporting construction event CopyTempSupportProperties
-*****************************************************************************/
-
 class REPORTINGCLASS CCopyTempSupportPropertiesChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CCopyTempSupportPropertiesChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   //================================
    // special function to work with control in copy per dialog
    void SetCopyTempSupportProperties(std::vector<ICopyTemporarySupportPropertiesCallback*>& rCallBacks, PierIndexType fromTempSupportIdx, const std::vector<PierIndexType>& toTempSupports);
 
@@ -58,9 +43,4 @@ protected:
    std::vector<ICopyTemporarySupportPropertiesCallback*> m_CallBacks;
    PierIndexType m_FromTempSupportIdx;
    std::vector<PierIndexType> m_ToTempSupports;
-
-private:
-   // Prevent accidental copying and assignment
-   CCopyTempSupportPropertiesChapterBuilder(const CCopyTempSupportPropertiesChapterBuilder&) = delete;
-   CCopyTempSupportPropertiesChapterBuilder& operator=(const CCopyTempSupportPropertiesChapterBuilder&) = delete;
 };

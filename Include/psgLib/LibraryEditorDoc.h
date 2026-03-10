@@ -30,10 +30,10 @@
 #if _MSC_VER >= 1000
 #pragma once
 #endif // _MSC_VER >= 1000
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
-#include <psglib\ISupportLibraryManager.h>
-#include <psgLib\LibraryManager.h>
+#include <PsgLib\ISupportLibraryManager.h>
+#include <PsgLib\LibraryManager.h>
 
 #include <EAF\EAFDocument.h>
 
@@ -92,7 +92,7 @@ public:
    void HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName );
 
 private:
-   CEAFToolBar* m_pMyToolBar;
+   std::shared_ptr<WBFL::EAF::ToolBar> m_MyToolBar;
    HRESULT m_hrOpenRootNode; // keeps track of the state of BeginUnit for the root node
 
 protected:

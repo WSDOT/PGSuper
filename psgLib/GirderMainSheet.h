@@ -58,7 +58,7 @@ public:
       int refCount,
       CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
-   void SetBeamFactory(IBeamFactory* pBeamFactory);
+   void SetBeamFactory(std::shared_ptr<PGS::Beams::BeamFactory> pBeamFactory);
 
    bool IsSplicedGirder();
 

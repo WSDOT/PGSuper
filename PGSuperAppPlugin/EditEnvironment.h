@@ -23,21 +23,22 @@
 #ifndef INCLUDED_EDITENVIRONMENTTXN_H_
 #define INCLUDED_EDITENVIRONMENTTXN_H_
 
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 #include <IFace\Project.h>
 #include <array>
 
-class txnEditEnvironment : public CEAFTransaction
+class txnEditEnvironment : public WBFL::EAF::Transaction
 {
 public:
    txnEditEnvironment(pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
+                      pgsTypes::ClimateCondition oldClimateCondition, pgsTypes::ClimateCondition newClimateCondition,
                       Float64 oldRelHumidity, Float64 newRelHumidity );
 
    ~txnEditEnvironment();
 
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const;
    virtual bool IsRepeatable() const;
@@ -46,6 +47,7 @@ private:
    void Execute(int i);
 
    std::array<pgsTypes::ExposureCondition, 2> m_ExposureCondition;
+   std::array<pgsTypes::ClimateCondition, 2> m_ClimateCondition;
    std::array<Float64, 2> m_RelHumidity;
 };
 

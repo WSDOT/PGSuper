@@ -23,11 +23,6 @@
 #include "stdafx.h"
 #include "EditGirderline.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditGirderline::txnEditGirderline(const CGirderKey& girderKey,bool bApplyToAllGirderlines,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc) :
 txnEditBridgeDescription(oldBridgeDesc,newBridgeDesc)
@@ -41,7 +36,7 @@ txnEditGirderline::~txnEditGirderline()
 {
 }
 
-std::unique_ptr<CEAFTransaction> txnEditGirderline::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditGirderline::CreateClone() const
 {
    return std::make_unique<txnEditGirderline>(m_GirderKey,m_bApplyToAllGirderlines,m_BridgeDescription[0],m_BridgeDescription[1]);
 }

@@ -11,13 +11,16 @@
     <ClCompile Include="..\SharedCtrls\MultiGirderSelectGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PGSuperDataExporter.cpp">
+    <ClCompile Include="KDOTDataExporter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StdAfx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ExportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedCtrls\MultiSelectGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,7 +35,7 @@
     <ClInclude Include="KDOTExport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PGSuperDataExporter.h">
+    <ClInclude Include="KDOTDataExporter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PGSuperInterfaces.h">
@@ -50,12 +53,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="KDOTExport.def" />
-    <None Include="KDOTComponentInfo.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="PGSuperDataExporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

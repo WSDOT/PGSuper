@@ -37,8 +37,8 @@
 #include <afxwin.h>
 #include <afxcmn.h>
 
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\Keys.h>
 
 #include "GraphColor.h"
 #include <Graphing/GraphColor.h>

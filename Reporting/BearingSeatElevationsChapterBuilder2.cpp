@@ -22,21 +22,16 @@
 #include "StdAfx.h"
 #include "Reporting\BearingSeatElevationsChapterBuilder2.h"
 
+#include <IFace/Tools.h>
+#include <EAF/EAFReportManager.h>
+#include <EAF/EAFDisplayUnits.h>
 
-#include <IReportManager.h>
-#include <EAF\EAFDisplayUnits.h>
-
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\DeckDescription2.h>
-
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\DeckDescription2.h>
+#include <psgLib/GirderLibraryEntry.h>
 #include <PGSuperUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CBearingSeatElevationsChapterBuilderBase::CBearingSeatElevationsChapterBuilderBase(TableType type, bool bSelect) :
 CPGSuperChapterBuilder(bSelect),
@@ -50,8 +45,7 @@ CBearingSeatElevationsChapterBuilderBase::~CBearingSeatElevationsChapterBuilderB
 
 rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -224,7 +218,7 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(const std::shared_pt
 
 
 rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& strLabel,PierIndexType pierIdx,  pgsTypes::PierFaceType face, 
-                                                                 IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const
+                                                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IBridgeDescription> pIBridgeDesc,GirderIndexType girderIndex) const
 {
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -307,7 +301,7 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
 }
 
 rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildGirderEdgeTable(const CString& strLabel,PierIndexType pierIdx,  pgsTypes::PierFaceType face, 
-                                                                 IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const
+                                                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IBridgeDescription> pIBridgeDesc,GirderIndexType girderIndex) const
 {
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -397,11 +391,6 @@ LPCTSTR CBearingSeatElevationsChapterBuilder2::GetName() const
    return TEXT("Bearing Seat Elevations");
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingSeatElevationsChapterBuilder2::Clone() const
-{
-   return std::make_unique<CBearingSeatElevationsChapterBuilder2>(*this);
-}
-
 ////////////////////////////////////////////////////////////////////
 CBearingDeductChapterBuilder::CBearingDeductChapterBuilder(bool bSelect) :
 CBearingSeatElevationsChapterBuilderBase(CBearingSeatElevationsChapterBuilderBase::ttBearingDeduct, bSelect)
@@ -415,9 +404,4 @@ CBearingDeductChapterBuilder::~CBearingDeductChapterBuilder(void)
 LPCTSTR CBearingDeductChapterBuilder::GetName() const
 {
    return TEXT("Bearing Seat Deduct");
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingDeductChapterBuilder::Clone() const
-{
-   return std::make_unique<CBearingDeductChapterBuilder>(*this);
 }

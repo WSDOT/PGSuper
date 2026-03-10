@@ -26,37 +26,20 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-interface IEAFDisplayUnits;
-
-/*****************************************************************************
-CLASS 
-   CBridgeDescChapterBuilder
-
-   Bridge Description Chapter Builder.
-
-
-DESCRIPTION
-   Bridge Description Chapter Builder.  Generates a chapter that echos the bridge
-   description input.
-
-LOG
-   rab : 11.03.1998 : Created file
-*****************************************************************************/
+class IEAFDisplayUnits;
 
 class REPORTINGCLASS CBridgeDescChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   CBridgeDescChapterBuilder(bool bSelect = true);
-   virtual LPCTSTR GetName() const override;
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   static void WriteAlignmentData(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level);
-   static void WriteProfileData(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level);
-   static void WriteCrownData(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level);
-
-private:
-   // Prevent accidental copying and assignment
    CBridgeDescChapterBuilder(const CBridgeDescChapterBuilder&) = delete;
+   CBridgeDescChapterBuilder(bool bSelect = true);
+
    CBridgeDescChapterBuilder& operator=(const CBridgeDescChapterBuilder&) = delete;
+
+   LPCTSTR GetName() const override;
+   rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+
+   static void WriteAlignmentData(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, rptChapter* pChapter,Uint16 level);
+   static void WriteProfileData(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, rptChapter* pChapter,Uint16 level);
+   static void WriteCrownData(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, rptChapter* pChapter,Uint16 level);
 };

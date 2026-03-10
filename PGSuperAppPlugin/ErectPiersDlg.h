@@ -1,9 +1,9 @@
 #pragma once
 
-#include <PgsExt\ErectPiersActivity.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\ErectPiersActivity.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\TimelineManager.h>
 #include <PgsExt\TimelineItemListBox.h>
 
 #include <EAF\EAFDisplayUnits.h>
@@ -32,7 +32,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
-   CComPtr<IEAFDisplayUnits> m_pDisplayUnits;
+   std::shared_ptr<IEAFDisplayUnits> m_pDisplayUnits;
    const CBridgeDescription2* m_pBridgeDesc;
 
    CTimelineItemListBox m_lbSource;

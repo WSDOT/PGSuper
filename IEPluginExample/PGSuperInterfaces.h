@@ -51,7 +51,7 @@
 #include <IFace\Project.h>
 #include <IFace\PsLossEngineer.h>
 #include <IFace\ShearCapacity.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\Test1250.h>
 #include <IFace\TransverseReinforcementSpec.h>
 #include <IFace\UpdateTemplates.h>

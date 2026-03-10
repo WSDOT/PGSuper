@@ -24,24 +24,19 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
-#include <psgLib\LibraryEntryDifferenceItem.h>
+#include <PsgLib\PsgLib.h>
+#include <PsgLib\DifferenceItem.h>
 #include "LibraryEntryConflict.h"
 #include "RenameLibraryEntry.h"
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CLibraryEntryConflict dialog
 
 
 CLibraryEntryConflict::CLibraryEntryConflict(const std::_tstring& strServer, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName,
-                                             const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bMustRename,CWnd* pParent)
+                                             const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool bMustRename,CWnd* pParent)
 	: CDialog(CLibraryEntryConflict::IDD, pParent),
    m_KeyList(keylists),
    m_Server(strServer.c_str()),
@@ -159,11 +154,11 @@ BOOL CLibraryEntryConflict::OnInitDialog()
    int maxItemLength = 4;
    CString strConflicts;
    int idx = 0;
-   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>::const_iterator iter(m_vDifferences.begin());
-   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>::const_iterator iterEnd(m_vDifferences.end());
+   auto iter(m_vDifferences.cbegin());
+   auto iterEnd(m_vDifferences.cend());
    for ( ; iter != iterEnd; iter++, idx++ )
    {
-      const pgsLibraryEntryDifferenceItem* pConflict = (*iter).get();
+      const auto* pConflict = (*iter).get();
       CString strItem, strOldValue, strNewValue;
       pConflict->GetConflict(&strItem,&strOldValue,&strNewValue);
 

@@ -22,11 +22,6 @@
 
 #pragma once
 
-#include <PgsExt\PgsExtExp.h>
-
-// PCIUHPCConcretePage.h : header file
-//
-
 /////////////////////////////////////////////////////////////////////////////
 // CPCIUHPCConcretePage dialog
 

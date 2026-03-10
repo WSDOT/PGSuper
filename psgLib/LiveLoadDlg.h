@@ -31,7 +31,7 @@
 //
 #include <Units\Convert.h>
 #include "LiveLoadAxleGrid.h"
-#include <psgLib\LiveLoadLibraryEntry.h>
+#include <PsgLib\LiveLoadLibraryEntry.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CLiveLoadDlg dialog

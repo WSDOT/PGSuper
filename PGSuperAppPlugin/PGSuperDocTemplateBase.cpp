@@ -23,23 +23,18 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "PGSuperDocTemplateBase.h"
-#include "PGSuperBaseAppPlugin.h"
+#include "PGSPluginAppBase.h"
 
 #include "PGSuperCatCom.h"
 #include "Plugins\PGSuperIEPlugin.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 ////////////////////////////////////////////////////////////////////
 
 IMPLEMENT_DYNAMIC(CPGSuperDocTemplateBase,CEAFDocTemplate)
 
 CPGSuperDocTemplateBase::CPGSuperDocTemplateBase(UINT nIDResource,
-                                         IEAFCommandCallback* pCallback,
+                                         std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
                                          CRuntimeClass* pDocClass,
                                          CRuntimeClass* pFrameClass,
                                          CRuntimeClass* pViewClass,
@@ -49,9 +44,9 @@ CPGSuperDocTemplateBase::CPGSuperDocTemplateBase(UINT nIDResource,
 {
 }
 
-void CPGSuperDocTemplateBase::SetPlugin(IEAFAppPlugin* pPlugin)
+void CPGSuperDocTemplateBase::SetPluginApp(std::weak_ptr<WBFL::EAF::IPluginApp> plugin)
 {
-   CEAFDocTemplate::SetPlugin(pPlugin);
+   CEAFDocTemplate::SetPluginApp(plugin);
    LoadTemplateInformation();
 }
 
@@ -68,7 +63,8 @@ void CPGSuperDocTemplateBase::LoadTemplateInformation()
    CWinApp* pApp = AfxGetApp();
    HICON defaultIcon = pApp->LoadIcon(GetTemplateIconResourceID());
 
-   CPGSAppPluginBase* pAppPlugin = dynamic_cast<CPGSAppPluginBase*>(m_pPlugin);
+   auto pAppPlugin = std::dynamic_pointer_cast<CPGSPluginAppBase>(m_pPlugin.lock());
+
    CString strWorkgroupFolderName;
    pAppPlugin->GetTemplateFolders(strWorkgroupFolderName);
 

@@ -24,7 +24,8 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
+#include <PsgLib/Helpers.h>
 #include "ConnectionEntryDlg.h"
 #include <MfcTools\CustomDDX.h>
 #include <EAF\EAFApp.h>
@@ -32,11 +33,6 @@
 
 #include "PGSuperColors.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CConnectionEntryDlg dialog
@@ -155,19 +151,19 @@ void CConnectionEntryDlg::UpdateButtons()
 
    switch (m_DiaphragmLoadType)
    {
-   case ConnectionLibraryEntry::ApplyAtBearingCenterline:
+   case ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline:
       pdir->SetCheck(1);
       pbeam->SetCheck(0);
       pdont->SetCheck(0);
       EnableDLEdit(false);
       break;
-   case ConnectionLibraryEntry::ApplyAtSpecifiedLocation:
+   case ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation:
       pdir->SetCheck(0);
       pbeam->SetCheck(1);
       pdont->SetCheck(0);
       EnableDLEdit(true);
       break;
-   case ConnectionLibraryEntry::DontApply:
+   case ConnectionLibraryEntry::DiaphragmLoadType::DontApply:
       pdir->SetCheck(0);
       pbeam->SetCheck(0);
       pdont->SetCheck(1);
@@ -192,19 +188,19 @@ void CConnectionEntryDlg::EnableDLEdit(bool flag)
 
 void CConnectionEntryDlg::OnApplyDrToBearing() 
 {
-   m_DiaphragmLoadType = ConnectionLibraryEntry::ApplyAtBearingCenterline;
+   m_DiaphragmLoadType = ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline;
    UpdateButtons();
 }
 
 void CConnectionEntryDlg::OnApplyDrToBeam() 
 {
-   m_DiaphragmLoadType = ConnectionLibraryEntry::ApplyAtSpecifiedLocation;
+   m_DiaphragmLoadType = ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation;
    UpdateButtons();
 }
 
 void CConnectionEntryDlg::OnDontApply() 
 {
-   m_DiaphragmLoadType = ConnectionLibraryEntry::DontApply;
+   m_DiaphragmLoadType = ConnectionLibraryEntry::DiaphragmLoadType::DontApply;
    UpdateButtons();
 }
 
@@ -238,11 +234,11 @@ void CConnectionEntryDlg::FillBearingOffsetComboBox()
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_BEARING_OFFSET_MEASURE);
    pCB->ResetContent();
 
-   int idx = pCB->AddString(ConnectionLibraryEntry::GetBearingOffsetMeasurementType(ConnectionLibraryEntry::NormalToPier));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::NormalToPier));
+   int idx = pCB->AddString(ConnectionLibraryEntry::GetBearingOffsetMeasurementType(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier));
 
-   idx = pCB->AddString(ConnectionLibraryEntry::GetBearingOffsetMeasurementType(ConnectionLibraryEntry::AlongGirder));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::AlongGirder));
+   idx = pCB->AddString(ConnectionLibraryEntry::GetBearingOffsetMeasurementType(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder));
 }
 
 void CConnectionEntryDlg::FillEndDistanceComboBox()
@@ -250,17 +246,17 @@ void CConnectionEntryDlg::FillEndDistanceComboBox()
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_END_DISTANCE_MEASURE);
    pCB->ResetContent();
 
-   int idx = pCB->AddString(ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::FromBearingAlongGirder));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingAlongGirder));
+   int idx = pCB->AddString(ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder));
 
-   idx = pCB->AddString(ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::FromBearingNormalToPier));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingNormalToPier));
+   idx = pCB->AddString(ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier));
 
-   idx = pCB->AddString(ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::FromPierAlongGirder));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierAlongGirder));
+   idx = pCB->AddString(ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder));
 
-   idx = pCB->AddString(ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::FromPierNormalToPier));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierNormalToPier));
+   idx = pCB->AddString(ConnectionLibraryEntry::GetEndDistanceMeasurementType(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier));
 }
 
 HBRUSH CConnectionEntryDlg::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
@@ -274,47 +270,47 @@ HBRUSH CConnectionEntryDlg::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
    return hBrush;
 }
 
-CString CConnectionEntryDlg::GetImageName(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
+CString CConnectionEntryDlg::GetImageName(ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType, ConnectionLibraryEntry::EndDistanceMeasurementType endType)
 {
    CString strName;
-   if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )
+   if ( brgOffsetType == ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder )
    {
       switch( endType )
       {
-      case ConnectionLibraryEntry::FromBearingAlongGirder:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder:
          strName = _T("CONNECTION_BRGALONGGDR_ENDALONGGDRFROMBRG");
          break;
 
-      case ConnectionLibraryEntry::FromBearingNormalToPier:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier:
          strName = _T("CONNECTION_BRGALONGGDR_ENDALONGNORMALFROMBRG");
          break;
 
-      case ConnectionLibraryEntry::FromPierAlongGirder:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder:
          strName = _T("CONNECTION_BRGALONGGDR_ENDALONGGDRFROMPIER");
          break;
 
-      case ConnectionLibraryEntry::FromPierNormalToPier:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier:
          strName = _T("CONNECTION_BRGALONGGDR_ENDALONGNORMALFROMPIER");
          break;
       }
    }
-   else if ( brgOffsetType == ConnectionLibraryEntry::NormalToPier )
+   else if ( brgOffsetType == ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier )
    {
       switch( endType )
       {
-      case ConnectionLibraryEntry::FromBearingAlongGirder:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder:
          strName = _T("CONNECTION_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
          break;
 
-      case ConnectionLibraryEntry::FromBearingNormalToPier:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier:
          strName = _T("CONNECTION_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
          break;
 
-      case ConnectionLibraryEntry::FromPierAlongGirder:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder:
          strName = _T("CONNECTION_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
          break;
 
-      case ConnectionLibraryEntry::FromPierNormalToPier:
+      case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier:
          strName = _T("CONNECTION_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
          break;
       }

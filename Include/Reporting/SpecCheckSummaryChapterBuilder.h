@@ -26,55 +26,25 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 
 class pgsGirderArtifact;
-
-/*****************************************************************************
-CLASS 
-   CSpecCheckSummaryChapterBuilder
-
-   Writes out a summary of the spec chec.
-
-
-DESCRIPTION
-   Writes out a summary of the spec chec. The summary is either PASS or FAILED
-   with a listing of everything that failed.
-
-LOG
-   rab : 03.17.1999 : Created file
-*****************************************************************************/
 
 class REPORTINGCLASS CSpecCheckSummaryChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CSpecCheckSummaryChapterBuilder(bool referToDetailsReport,bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
    virtual rptChapter* BuildEx(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level,
                                const pgsGirderArtifact* pGirderArtifact) const;
 
-   //------------------------------------------------------------------------
-   void CreateContent(rptChapter* pChapter, IBroker* pBroker,
+   void CreateContent(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,
                       const pgsGirderArtifact* pGirderArtifact) const;
 
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-protected:
 
 private:
    bool m_ReferToDetailsReport;
-
-   // Prevent accidental copying and assignment
-   CSpecCheckSummaryChapterBuilder(const CSpecCheckSummaryChapterBuilder&) = delete;
-   CSpecCheckSummaryChapterBuilder& operator=(const CSpecCheckSummaryChapterBuilder&) = delete;
 };

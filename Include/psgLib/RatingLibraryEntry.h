@@ -22,22 +22,25 @@
 
 #pragma once
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 #include <PGSuperTypes.h>
-#include <psgLib\ISupportIcon.h>
+#include <PsgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 #include <System\SubjectT.h>
 #include <LRFD\MBEManager.h>
 #include <array>
 
-class pgsLibraryEntryDifferenceItem;
 class CRatingDialog;
 class RatingLibraryEntry;
 class RatingLibraryEntryObserver;
+class rptChapter;
+class IEAFDisplayUnits;
+namespace PGS {namespace Library{class DifferenceItem;};};
+
+
 PSGLIBTPL WBFL::System::SubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>;
 
-class rptChapter;
-interface IEAFDisplayUnits;
+
 
 // Live Load, Load Factor Model before LRFR2013
 class PSGLIBCLASS CLiveLoadFactorModel
@@ -239,7 +242,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const RatingLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const RatingLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
 
    bool IsEqual(const RatingLibraryEntry& rOther,bool bConsiderName=false) const;
 
@@ -273,7 +276,7 @@ public:
    const CLiveLoadFactorModel2& GetLiveLoadFactorModel2(pgsTypes::SpecialPermitType permitType) const;
 
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
 protected:
    //------------------------------------------------------------------------

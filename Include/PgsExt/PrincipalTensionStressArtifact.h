@@ -22,11 +22,8 @@
 
 #pragma once
 
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
-
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 class PGSEXTCLASS pgsPrincipalTensionSectionArtifact
 {

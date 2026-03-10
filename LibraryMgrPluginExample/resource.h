@@ -5,9 +5,7 @@
 #define IDS_PROJNAME                    100
 #define IDR_LIBRARYMGRPLUGINEXAMPLE     101
 #define IDR_LIBMGRDOCPLUGIN             103
-#define IDB_BITMAP1                     201
 #define IDB_MENUITEM                    201
-#define IDR_MENU1                       202
 #define IDR_PLUGIN_MENU                 202
 #define IDM_PLUGIN_VIEW                 33025
 

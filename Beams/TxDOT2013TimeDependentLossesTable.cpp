@@ -22,18 +22,14 @@
 
 // TxDOT2013TimeDependentLossesTable.cpp : Implementation of CTxDOT2013TimeDependentLossesTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "TxDOT2013TimeDependentLossesTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CTxDOT2013TimeDependentLossesTable::CTxDOT2013TimeDependentLossesTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CTxDOT2013TimeDependentLossesTable::CTxDOT2013TimeDependentLossesTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -53,7 +49,7 @@ rptRcTable(NumColumns,0)
    scalar.SetPrecision(2);
 }
 
-CTxDOT2013TimeDependentLossesTable* CTxDOT2013TimeDependentLossesTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTxDOT2013TimeDependentLossesTable* CTxDOT2013TimeDependentLossesTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -88,7 +84,7 @@ CTxDOT2013TimeDependentLossesTable* CTxDOT2013TimeDependentLossesTable::PrepareT
    return table;
 }
 
-void CTxDOT2013TimeDependentLossesTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTxDOT2013TimeDependentLossesTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    // Typecast to our known type (eating own doggy food)
    std::shared_ptr<const WBFL::LRFD::RefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLossesTxDOT2013>(pDetails->pLosses);

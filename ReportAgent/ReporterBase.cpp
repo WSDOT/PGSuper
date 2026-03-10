@@ -26,11 +26,13 @@
 
 #include <Reporting\BrokerReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
+#include <Reporting\SpanGirderBearingReportSpecificationBuilder.h>
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include <Reporting\BridgeAnalysisReportSpecificationBuilder.h>
 #include <Reporting\TimelineManagerReportSpecificationBuilder.h>
 #include <Reporting\CopyGirderPropertiesReportSpecificationBuilder.h>
 #include <Reporting\CopyPierPropertiesReportSpecificationBuilder.h>
+#include <Reporting\CopyBearingPropertiesReportSpecificationBuilder.h>
 #include <Reporting\CopyTempSupportPropertiesReportSpecificationBuilder.h>
 
 #include <Reporting\AlignmentChapterBuilder.h>
@@ -57,6 +59,7 @@
 #include <Reporting\StirrupDetailingCheckChapterBuilder.h>
 #include <Reporting\ADimChapterBuilder.h>
 #include <Reporting\SplittingCheckDetailsChapterBuilder.h>
+#include <Reporting\HorizontalTensionTieCheckDetailsChapterBuilder.h>
 #include <Reporting\CreepCoefficientChapterBuilder.h>
 #include <Reporting\CamberChapterBuilder.h>
 #include <Reporting\LongReinfShearCheckChapterBuilder.h>
@@ -68,6 +71,7 @@
 #include <Reporting\CastingYardRebarRequirementChapterBuilder.h>
 #include <Reporting\BearingSeatElevationsDetailsChapterBuilder2.h>
 #include <Reporting\CopyGirderPropertiesChapterBuilder.h>
+#include <Reporting\CopyBearingPropertiesChapterBuilder.h>
 #include <Reporting\CopyPierPropertiesChapterBuilder.h>
 #include <Reporting\CopyTempSupportPropertiesChapterBuilder.h>
 
@@ -79,6 +83,8 @@
 #include <Reporting\LongitudinalReinforcementForShearLoadRatingChapterBuilder.h>
 #include <Reporting\SpecCheckChapterBuilder.h>
 #include <Reporting\SpecCheckSummaryChapterBuilder.h>
+#include <Reporting\BearingSpecCheckChapterBuilder.h>
+#include <Reporting\BearingSpecCheckSummaryChapterBuilder.h>
 #include <Reporting\LiftingCheckChapterBuilder.h>
 #include <Reporting\LiftingCheckDetailsChapterBuilder.h>
 #include <Reporting\HaulingCheckDetailsChapterBuilder.h>
@@ -91,10 +97,15 @@
 #include <Reporting\TimeStepParametersChapterBuilder.h>
 
 #include <Reporting\BearingDesignParametersChapterBuilder.h>
+#include <Reporting\BearingDesignSummaryChapterBuilder.h>
+#include <Reporting\BearingDesignDetailsChapterBuilder.h>
 #include <Reporting\DistributionFactorDetailsChapterBuilder.h>
 
 #include <Reporting\TimeStepDetailsChapterBuilder.h>
 #include <Reporting\TimeStepDetailsReportSpecificationBuilder.h>
+
+#include <Reporting\BearingTimeStepDetailsChapterBuilder.h>
+#include <Reporting\BearingTimeStepDetailsReportSpecificationBuilder.h>
 
 #include <Reporting\PrincipalWebStressDetailsChapterBuilder.h>
 #include <Reporting\PrincipalWebStressDetailsReportSpecificationBuilder.h>
@@ -117,60 +128,58 @@
 #include <Reporting\CrackedSectionReportSpecificationBuilder.h>
 #include <Reporting\CrackedSectionChapterBuilder.h>
 
-#include <IReportManager.h>
+#include <IFace\Tools.h>
 #include <IFace\Project.h>
+#include <Reporting/SectionPropertiesChapterBuilder.h>
+#include <Reporting/SectionPropertiesReportSpecificationBuilder.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-void CReporterBase::SetBroker(IBroker* pBroker)
+HRESULT CReporterBase::InitCommonReportBuilders(std::shared_ptr<WBFL::EAF::Broker> broker)
 {
-   m_pBroker = pBroker;
-}
+   GET_IFACE2_NOCHECK(broker, IEAFReportManager, pRptMgr);
 
-HRESULT CReporterBase::InitCommonReportBuilders()
-{
-   CreateBridgeGeometryReport();
-   CreateDetailsReport();
-   CreateLoadRatingReport();
-   CreateLoadRatingSummaryReport();
-   CreateBearingDesignReport();
-   CreateBridgeAnalysisReport();
-   CreateHaulingReport();
-   CreateLiftingReport();
-   CreateSpecChecReport();
-   CreateDistributionFactorSummaryReport();
-   CreateTimeStepDetailsReport();
-   CreatePrincipalWebStressDetailsReport();
-   CreatePierReactionsReport();
-   CreateTimelineReport();
-   CreateCopyGirderPropertiesReport();
-   CreateCopyPierPropertiesReport();
-   CreateCopyTempSupportPropertiesReport();
+   CreateBridgeGeometryReport(pRptMgr);
+   CreateSectionPropertiesReport(pRptMgr);
+   CreateDetailsReport(pRptMgr);
+   CreateLoadRatingReport(pRptMgr);
+   CreateLoadRatingSummaryReport(pRptMgr);
+   CreateBearingDesignReport(pRptMgr);
+   CreateBearingTimeStepDetailsReport(pRptMgr);
+   CreateBridgeAnalysisReport(pRptMgr);
+   CreateHaulingReport(pRptMgr);
+   CreateLiftingReport(pRptMgr);
+   CreateSpecChecReport(pRptMgr);
+   CreateBearingSpecCheckReport(pRptMgr);
+   CreateDistributionFactorSummaryReport(pRptMgr);
+   CreateTimeStepDetailsReport(pRptMgr);
+   CreatePrincipalWebStressDetailsReport(pRptMgr);
+   CreatePierReactionsReport(pRptMgr);
+   CreateTimelineReport(pRptMgr);
+   CreateCopyGirderPropertiesReport(pRptMgr);
+   CreateCopyBearingPropertiesReport(pRptMgr);
+   CreateCopyPierPropertiesReport(pRptMgr);
+   CreateCopyTempSupportPropertiesReport(pRptMgr);
 
 #if defined _DEBUG || defined _BETA_VERSION
    // these are just some testing/debugging reports
-   CreateDistributionFactorsReport();
-   CreateStageByStageDetailsReport();
-   CreatePointOfInterestReport();
+   CreateDistributionFactorsReport(pRptMgr);
+   CreateStageByStageDetailsReport(pRptMgr);
+   CreatePointOfInterestReport(pRptMgr);
 #endif
 
-   CreateMomentCapacityDetailsReport();
-   CreateCrackedSectionDetailsReport();
+   CreateMomentCapacityDetailsReport(pRptMgr);
+   CreateCrackedSectionDetailsReport(pRptMgr);
 
    return S_OK;
 }
 
-void CReporterBase::CreateBridgeGeometryReport()
+void CReporterBase::CreateBridgeGeometryReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
-   
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pBrokerRptSpecBuilder(  std::make_shared<CBrokerReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Bridge Geometry Report")));
+   pRptBuilder->EnableHeadingNumbers(true);
+
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
@@ -185,64 +194,81 @@ void CReporterBase::CreateBridgeGeometryReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateDetailsReport()
-{
-   GET_IFACE(IReportManager,pRptMgr);
+//////////////////
 
+void CReporterBase::CreateSectionPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr)
+{
+    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pSectionPropertiesRptSpecBuilder(std::make_shared<CSectionPropertiesReportSpecificationBuilder>(m_pBroker));
+
+    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Section Properties Report")));
+
+
+    pRptBuilder->SetReportSpecificationBuilder(pSectionPropertiesRptSpecBuilder);
+    pRptBuilder->AddTitlePageBuilder(std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
+    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSectionPropertiesChapterBuilder>()));
+    pRptMgr->AddReportBuilder(pRptBuilder);
+}
+
+
+///////////////
+
+void CReporterBase::CreateDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr)
+{
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder(std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,CGirderKey(0,0)));
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Details Report")));
+   pRptBuilder->EnableHeadingNumbers(true);
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
    
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CAlignmentChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CDeckElevationChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingSeatElevationsChapterBuilder2>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBridgeDescChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTimelineChapterBuilder>()));
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CIntervalChapterBuilder>()));
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSpanDataChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSectPropChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CUserDefinedLoadsChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CMVRChapterBuilder>(true,false)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CStressChapterBuilder>(true,false)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CPrestressForceChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSpecCheckSummaryChapterBuilder>(false)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSpecCheckChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBridgeDescDetailsChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CProjectCriteriaChapterBuilder>(false)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLoadingDetailsChapterBuilder>(true,false,true)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLiveLoadDetailsChapterBuilder>(true,false)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CDevLengthDetailsChapterBuilder>()) ); 
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLossesChapterBuilder>()) ); 
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCastingYardRebarRequirementChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CMomentCapacityDetailsChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CShearCapacityDetailsChapterBuilder>(true, false)));
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CStirrupDetailingCheckChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCritSectionChapterBuilder>(true,false)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLongReinfShearCheckChapterBuilder>(true,false)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CHorizontalInterfaceShearCapacityDetailsChapterBuilder>(true, false)));
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CPrincipalTensionStressDetailsChapterBuilder>()));
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSplittingCheckDetailsChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CEffFlangeWidthDetailsChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CDistributionFactorDetailsChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCreepCoefficientChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCamberChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CADimChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingSeatElevationsDetailsChapterBuilder2>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignParametersChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLiftingCheckDetailsChapterBuilder>()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CHaulingCheckDetailsChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CAlignmentChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CDeckElevationChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingSeatElevationsChapterBuilder2>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBridgeDescChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTimelineChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CIntervalChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSpanDataChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSectPropChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CUserDefinedLoadsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CMVRChapterBuilder>(true, false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CStressChapterBuilder>(true, false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CPrestressForceChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSpecCheckSummaryChapterBuilder>(false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSpecCheckChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBridgeDescDetailsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CProjectCriteriaChapterBuilder>(false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLoadingDetailsChapterBuilder>(true, false, true)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLiveLoadDetailsChapterBuilder>(true, false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CDevLengthDetailsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLossesChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCastingYardRebarRequirementChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CMomentCapacityDetailsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CShearCapacityDetailsChapterBuilder>(true, false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CStirrupDetailingCheckChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCritSectionChapterBuilder>(true, false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLongReinfShearCheckChapterBuilder>(true, false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CHorizontalInterfaceShearCapacityDetailsChapterBuilder>(true, false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CPrincipalTensionStressDetailsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSplittingCheckDetailsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CHorizontalTensionTieCheckDetailsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CEffFlangeWidthDetailsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CDistributionFactorDetailsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCreepCoefficientChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCamberChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CADimChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingSeatElevationsDetailsChapterBuilder2>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignDetailsChapterBuilder>()));
+   //pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignParametersChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLiftingCheckDetailsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CHaulingCheckDetailsChapterBuilder>()));
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateLoadRatingReport()
+void CReporterBase::CreateLoadRatingReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pLoadRatingRptSpecBuilder(std::make_shared<CLoadRatingReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Load Rating Report")));
@@ -281,10 +307,8 @@ void CReporterBase::CreateLoadRatingReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateLoadRatingSummaryReport()
+void CReporterBase::CreateLoadRatingSummaryReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pLoadRatingRptSpecBuilder(std::make_shared<CLoadRatingSummaryReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Load Rating Summary Report")));
@@ -304,10 +328,8 @@ void CReporterBase::CreateLoadRatingSummaryReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateBearingDesignReport()
+void CReporterBase::CreateBearingDesignReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiViewRptSpecBuilder(std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Bearing Design Parameters Report")));
@@ -316,14 +338,15 @@ void CReporterBase::CreateBearingDesignReport()
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignParametersChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignSummaryChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignDetailsChapterBuilder>()));
+   //pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignParametersChapterBuilder>()));
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateSpecChecReport()
-{
-   GET_IFACE(IReportManager,pRptMgr);
 
+void CReporterBase::CreateSpecChecReport(std::shared_ptr<IEAFReportManager> pRptMgr)
+{
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiViewRptSpecBuilder(std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Spec Check Report")));
@@ -337,10 +360,24 @@ void CReporterBase::CreateSpecChecReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateMultiGirderSpecCheckReport()
-{
-   GET_IFACE(IReportManager,pRptMgr);
 
+void CReporterBase::CreateBearingSpecCheckReport(std::shared_ptr<IEAFReportManager> pRptMgr)
+{
+
+    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiViewRptSpecBuilder(
+        std::make_shared<CMultiViewSpanGirderBearingReportSpecificationBuilder>(m_pBroker));
+
+    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Bearing Spec Check Report")));
+
+    pRptBuilder->AddTitlePageBuilder(std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
+    pRptBuilder->SetReportSpecificationBuilder(pMultiViewRptSpecBuilder);
+    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingSpecCheckSummaryChapterBuilder>(false)));
+    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingSpecCheckChapterBuilder>()));
+    pRptMgr->AddReportBuilder(pRptBuilder);
+}
+
+void CReporterBase::CreateMultiGirderSpecCheckReport(std::shared_ptr<IEAFReportManager> pRptMgr)
+{
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiGirderRptSpecBuilder( std::make_shared<CMultiGirderReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Multi-Girder Spec Check Summary")));
@@ -353,10 +390,21 @@ void CReporterBase::CreateMultiGirderSpecCheckReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateLiftingReport()
+void CReporterBase::CreateMultiBearingSpecCheckReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
 
+    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiBearingRptSpecBuilder(std::make_shared<CMultiBearingReportSpecificationBuilder>(m_pBroker));
+
+    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Multi-Bearing Spec Check Summary")));
+
+    pRptBuilder->AddTitlePageBuilder(std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
+    pRptBuilder->SetReportSpecificationBuilder(pMultiBearingRptSpecBuilder);
+    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingSpecCheckSummaryChapterBuilder>(false)));
+    pRptMgr->AddReportBuilder(pRptBuilder);
+}
+
+void CReporterBase::CreateLiftingReport(std::shared_ptr<IEAFReportManager> pRptMgr)
+{
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pSegmentRptSpecBuilder(std::make_shared<CSegmentReportSpecificationBuilder>(m_pBroker, CSegmentKey(0, 0, 0)));
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Lifting Report")));
@@ -370,10 +418,8 @@ void CReporterBase::CreateLiftingReport()
    pRptMgr->AddReportBuilder(pRptBuilder );
 }
 
-void CReporterBase::CreateHaulingReport()
+void CReporterBase::CreateHaulingReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pSegmentRptSpecBuilder(std::make_shared<CSegmentReportSpecificationBuilder>(m_pBroker, CSegmentKey(0, 0, 0)));
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Hauling Report")));
@@ -387,10 +433,8 @@ void CReporterBase::CreateHaulingReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateBridgeAnalysisReport()
+void CReporterBase::CreateBridgeAnalysisReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pBridgeAnalysisRptSpecBuilder( std::make_shared<CBridgeAnalysisReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Bridge Analysis Report")));
@@ -405,10 +449,8 @@ void CReporterBase::CreateBridgeAnalysisReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateDistributionFactorSummaryReport()
+void CReporterBase::CreateDistributionFactorSummaryReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pBrokerRptSpecBuilder( std::make_shared<CBrokerReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Live Load Distribution Factors Summary")));
@@ -422,10 +464,8 @@ void CReporterBase::CreateDistributionFactorSummaryReport()
 }
 
 #if defined _DEBUG || defined _BETA_VERSION
-void CReporterBase::CreateDistributionFactorsReport()
+void CReporterBase::CreateDistributionFactorsReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiViewRptSpecBuilder(std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("(DEBUG) Live Load Distribution Factors Report")));
@@ -440,9 +480,8 @@ void CReporterBase::CreateDistributionFactorsReport()
 }
 #endif
 
-void CReporterBase::CreateStageByStageDetailsReport()
+void CReporterBase::CreateStageByStageDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder(  std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,CGirderKey(0,0)) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("(DEBUG) Interval by Interval Details Report")));
@@ -458,24 +497,36 @@ void CReporterBase::CreateStageByStageDetailsReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateTimeStepDetailsReport()
+void CReporterBase::CreateTimeStepDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pPoiRptSpecBuilder(  std::make_shared<CTimeStepDetailsReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pTimeStepRptSpecBuilder(  std::make_shared<CTimeStepDetailsReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Time Step Details Report")));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pPoiRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder( pTimeStepRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTimeStepDetailsChapterBuilder>()) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreatePrincipalWebStressDetailsReport()
+void CReporterBase::CreateBearingTimeStepDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
+    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pBearingTimeStepRptSpecBuilder(std::make_shared<CBearingTimeStepDetailsReportSpecificationBuilder>(m_pBroker));
+
+    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Bearing Shear Deformation Details Report")));
+#if defined _DEBUG || defined _BETA_VERSION
+    pRptBuilder->IncludeTimingChapter();
+#endif
+    pRptBuilder->AddTitlePageBuilder(std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
+    pRptBuilder->SetReportSpecificationBuilder(pBearingTimeStepRptSpecBuilder);
+    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingTimeStepDetailsChapterBuilder>()));
+    pRptMgr->AddReportBuilder(pRptBuilder);
+}
+
+void CReporterBase::CreatePrincipalWebStressDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr)
+{
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pPoiRptSpecBuilder(  std::make_shared<CPrincipalWebStressDetailsReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Principal Web Stress Details Report")));
@@ -488,9 +539,8 @@ void CReporterBase::CreatePrincipalWebStressDetailsReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreatePointOfInterestReport()
+void CReporterBase::CreatePointOfInterestReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder(  std::make_shared<CGirderLineReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder( std::make_shared<WBFL::Reporting::ReportBuilder>(_T("(DEBUG) Points of Interest Report")) );
@@ -503,10 +553,8 @@ void CReporterBase::CreatePointOfInterestReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateMultiHaunchGeometryReport()
+void CReporterBase::CreateMultiHaunchGeometryReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiGirderRptSpecBuilder( std::make_shared<CMultiGirderReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Multi-Girder Haunch Geometry Summary")));
@@ -519,10 +567,8 @@ void CReporterBase::CreateMultiHaunchGeometryReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreatePierReactionsReport()
+void CReporterBase::CreatePierReactionsReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager,pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CGirderLineReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Pier Reactions Report")));
@@ -535,10 +581,8 @@ void CReporterBase::CreatePierReactionsReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateTimelineReport()
+void CReporterBase::CreateTimelineReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager, pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CTimelineManagerReportSpecificationBuilder>(m_pBroker));
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Timeline Manager Report"), true)); // hidden report
@@ -548,10 +592,8 @@ void CReporterBase::CreateTimelineReport()
    pRptMgr->AddReportBuilder(pRptBuilder);
 }
 
-void CReporterBase::CreateCopyGirderPropertiesReport()
+void CReporterBase::CreateCopyGirderPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager, pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CCopyGirderPropertiesReportSpecificationBuilder>(m_pBroker));
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Copy Girder Properties Report"), true)); // hidden report
@@ -561,10 +603,8 @@ void CReporterBase::CreateCopyGirderPropertiesReport()
    pRptMgr->AddReportBuilder(pRptBuilder);
 }
 
-void CReporterBase::CreateCopyPierPropertiesReport()
+void CReporterBase::CreateCopyPierPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager, pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CCopyPierPropertiesReportSpecificationBuilder>(m_pBroker));
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Copy Pier Properties Report"), true)); // hidden report
@@ -574,10 +614,20 @@ void CReporterBase::CreateCopyPierPropertiesReport()
    pRptMgr->AddReportBuilder(pRptBuilder);
 }
 
-void CReporterBase::CreateCopyTempSupportPropertiesReport()
+void CReporterBase::CreateCopyBearingPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager, pRptMgr);
 
+    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CCopyBearingPropertiesReportSpecificationBuilder>(m_pBroker));
+
+    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Copy Bearing Properties Report"), true)); // hidden report
+    //pRptBuilder->AddTitlePageBuilder(nullptr); // no title page for this report
+    pRptBuilder->SetReportSpecificationBuilder(pRptSpecBuilder);
+    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCopyBearingPropertiesChapterBuilder>()));
+    pRptMgr->AddReportBuilder(pRptBuilder);
+}
+
+void CReporterBase::CreateCopyTempSupportPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr)
+{
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CCopyTempSupportPropertiesReportSpecificationBuilder>(m_pBroker));
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Copy Temporary Support Properties Report"), true)); // hidden report
@@ -587,10 +637,8 @@ void CReporterBase::CreateCopyTempSupportPropertiesReport()
    pRptMgr->AddReportBuilder(pRptBuilder);
 }
 
-void CReporterBase::CreateMomentCapacityDetailsReport()
+void CReporterBase::CreateMomentCapacityDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager, pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder = std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Moment Capacity Details Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMomentCapacityRptSpecBuilder(std::make_shared<CMomentCapacityReportSpecificationBuilder>(m_pBroker));
    pRptBuilder->AddTitlePageBuilder(std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
@@ -599,10 +647,8 @@ void CReporterBase::CreateMomentCapacityDetailsReport()
    pRptMgr->AddReportBuilder(pRptBuilder);
 }
 
-void CReporterBase::CreateCrackedSectionDetailsReport()
+void CReporterBase::CreateCrackedSectionDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr)
 {
-   GET_IFACE(IReportManager, pRptMgr);
-
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder = std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Cracked Section Analysis Details Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pCrackedSectionRptSpecBuilder(std::make_shared<CCrackedSectionReportSpecificationBuilder>(m_pBroker));
    pRptBuilder->AddTitlePageBuilder(std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
@@ -611,13 +657,13 @@ void CReporterBase::CreateCrackedSectionDetailsReport()
    pRptMgr->AddReportBuilder(pRptBuilder);
 }
 
-HRESULT CReporterBase::OnSpecificationChanged()
+HRESULT CReporterBase::OnSpecificationChanged(std::shared_ptr<WBFL::EAF::Broker> broker)
 {
-   GET_IFACE(IReportManager,pRptMgr);
+   GET_IFACE2(broker,IEAFReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportBuilder> detailsRptBuilder  = pRptMgr->GetReportBuilder(_T("Details Report"));
    std::shared_ptr<WBFL::Reporting::ReportBuilder> loadRatingRptBuilder = pRptMgr->GetReportBuilder(_T("Load Rating Report"));
 
-   GET_IFACE( ILossParameters, pLossParams);
+   GET_IFACE2(broker, ILossParameters, pLossParams);
    bool is_timestep = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP;
    if ( is_timestep )
    {

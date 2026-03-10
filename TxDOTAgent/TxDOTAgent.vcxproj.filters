@@ -115,7 +115,7 @@
     <ClCompile Include="TxDOTAgentImp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TxDOTAppPlugin.cpp">
+    <ClCompile Include="TOGAPluginApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TxDOTCadExporter.cpp">
@@ -203,6 +203,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TexasLoadRatingSummaryChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedCtrls\MultiSelectGrid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -327,7 +330,7 @@
     <ClInclude Include="TxDOTAgentImp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TxDOTAppPlugin.h">
+    <ClInclude Include="TOGAPluginApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TxDOTCadExporter.h">
@@ -423,6 +426,9 @@
     <ClInclude Include="TexasLoadRatingSummaryChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\SharedCtrls\MultiSelectGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\toolbar1.bmp">
@@ -438,18 +444,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="TxDOTAgentImp.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="TxDOTAppPlugin.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="TxDOTCadExporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="TxDOTComponentInfo.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="TxDOTAppPluginComponentInfo.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\registry.bin">

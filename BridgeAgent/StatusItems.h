@@ -27,26 +27,25 @@
 
 
 // status for general alignment description input
-class pgsAlignmentDescriptionStatusItem : public CEAFStatusItem
+class pgsAlignmentDescriptionStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    long m_DlgPage;
 };
 
 ///////////////////////////
-class pgsAlignmentDescriptionStatusCallback : public iStatusCallback
+class pgsAlignmentDescriptionStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsAlignmentDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsAlignmentDescriptionStatusCallback(WBFL::EAF::StatusSeverityType severity);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
 };
 
 // status for Concrete Strength
@@ -57,7 +56,7 @@ public:
    enum ElementType { ReleaseStrength, FinalStrength, Density, DensityForWeight, AggSize, Modulus, FirstPeakFlexuralStrength, Specification,
       InitialEffectiveCrackingStrength, DesignEffectiveCrackingStrength, CrackLocalizationStrength,CrackLocalizationStrain};
    pgsConcreteStrengthStatusItem(ConcreteType concType,ElementType elemType,const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    ConcreteType m_ConcreteType;
    ElementType m_ElementType;
@@ -65,16 +64,15 @@ public:
 };
 
 ///////////////////////////
-class pgsConcreteStrengthStatusCallback : public iStatusCallback
+class pgsConcreteStrengthStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsConcreteStrengthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType statusLevel);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsConcreteStrengthStatusCallback(WBFL::EAF::StatusSeverityType statusLevel);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
 };
 
 // status for point loads
@@ -82,22 +80,21 @@ class pgsPointLoadStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
    pgsPointLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanKey& spanKey);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    IndexType m_LoadIndex;
    CSpanKey m_SpanKey;
 };
 
-class pgsPointLoadStatusCallback : public iStatusCallback
+class pgsPointLoadStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsPointLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsPointLoadStatusCallback(WBFL::EAF::StatusSeverityType severity);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
 };
 
 // status for Distributed loads
@@ -105,23 +102,22 @@ class pgsDistributedLoadStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
    pgsDistributedLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanKey& spanKey);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    IndexType m_LoadIndex;
    CSpanKey m_SpanKey;
 };
 
 ///////////////////////////
-class pgsDistributedLoadStatusCallback : public iStatusCallback
+class pgsDistributedLoadStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsDistributedLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsDistributedLoadStatusCallback(WBFL::EAF::StatusSeverityType severity);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
 };
 
 // status for moment loads
@@ -129,21 +125,20 @@ class pgsMomentLoadStatusItem : public pgsSpanGirderRelatedStatusItem
 {
 public:
    pgsMomentLoadStatusItem(IndexType loadIndex,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,const CSpanKey& spanKey);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    IndexType m_LoadIndex;
    CSpanKey m_SpanKey;
 };
 
 ///////////////////////////
-class pgsMomentLoadStatusCallback : public iStatusCallback
+class pgsMomentLoadStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
-   pgsMomentLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   pgsMomentLoadStatusCallback(WBFL::EAF::StatusSeverityType severity);
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
-   eafTypes::StatusSeverityType m_Severity;
+   WBFL::EAF::StatusSeverityType m_Severity;
 };

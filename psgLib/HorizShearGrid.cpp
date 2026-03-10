@@ -24,8 +24,8 @@
 //
 #include "stdafx.h"
 #include "resource.h"
-#include <psgLib\HorizShearGrid.h>
-#include <psgLib\ShearSteelPage.h>
+#include <PsgLib\HorizShearGrid.h>
+#include <PsgLib\ShearSteelPage.h>
 #include "AdditionalInterfaceShearBarDlg.h"
 #include <Units\Measure.h>
 #include <EAF\EAFApp.h>
@@ -34,11 +34,6 @@
 #include <LRFD\RebarPool.h>
 #include <IFace\Tools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
  //GRID_IMPLEMENT_REGISTER(CHorizShearGrid, CS_DBLCLKS, 0, 0, 0);
 

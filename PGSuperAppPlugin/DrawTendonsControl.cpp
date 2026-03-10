@@ -24,22 +24,20 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "PGSuperColors.h"
 #include "DrawTendonsControl.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
-
+#include <IFace/PointOfInterest.h>
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\SplicedGirderData.h>
-#include <PgsExt\PrecastSegmentData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\SplicedGirderData.h>
+#include <PsgLib\PrecastSegmentData.h>
+
 
 
 // CDrawTendonsControl
@@ -165,8 +163,8 @@ void CDrawTendonsControl::OnPaint()
    rgn.CreateRectRgnIndirect(&rClient);
    dc.SelectClipRgn(&rgn);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IGirder,pIGirder);
 
    SegmentIndexType nSegments = m_pGirder->GetSegmentCount();

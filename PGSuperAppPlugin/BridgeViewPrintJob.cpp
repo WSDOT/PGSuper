@@ -30,17 +30,12 @@
 #include "PGSuperUnits.h"
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CBridgeViewPrintJob::CBridgeViewPrintJob(CBridgeModelViewChildFrame* pFrame,CBridgeViewPane* ppv, CBridgeViewPane* psv, IBroker* pBroker)
+CBridgeViewPrintJob::CBridgeViewPrintJob(CBridgeModelViewChildFrame* pFrame,CBridgeViewPane* ppv, CBridgeViewPane* psv, std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    ATLASSERT(ppv!=0);
    ATLASSERT(psv!=0);

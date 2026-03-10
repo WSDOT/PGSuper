@@ -23,13 +23,9 @@
 #include "stdafx.h"
 #include "EditBridge.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 txnEditBridgeDescription::txnEditBridgeDescription(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc)
@@ -53,7 +49,7 @@ void txnEditBridgeDescription::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction>txnEditBridgeDescription::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction>txnEditBridgeDescription::CreateClone() const
 {
    return std::make_unique<txnEditBridgeDescription>(m_BridgeDescription[0],m_BridgeDescription[1]);
 }
@@ -75,8 +71,8 @@ bool txnEditBridgeDescription::IsRepeatable() const
 
 void txnEditBridgeDescription::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done

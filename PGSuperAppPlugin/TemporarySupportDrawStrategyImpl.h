@@ -20,35 +20,31 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include <DManip\DManip.h>
+#pragma once
 
-class CTemporarySupportDrawStrategyImpl : public CCmdTarget
+#include <DManip/DrawPointStrategy.h>
+
+class CTemporarySupportDrawStrategyImpl : public WBFL::DManip::iDrawPointStrategy
 {
 public:
    CTemporarySupportDrawStrategyImpl(pgsTypes::TemporarySupportType supportType,Float64 leftBrgOffset,Float64 rightBrgOffset);
 
-   DECLARE_INTERFACE_MAP()
-
-   BEGIN_INTERFACE_PART(DrawPointStrategy,iDrawPointStrategy)
-      STDMETHOD_(void,Draw)(iPointDisplayObject* pDO,CDC* pDC);
-      STDMETHOD_(void,DrawDragImage)(iPointDisplayObject* pDO,CDC* pDC, iCoordinateMap* map, const CPoint& dragStart, const CPoint& dragPoint);
-      STDMETHOD_(void,DrawHighlite)(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite);
-      STDMETHOD_(void,GetBoundingBox)(iPointDisplayObject* pDO, IRect2d** rect);
-   END_INTERFACE_PART(DrawPointStrategy)
+   virtual void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const override;
+   virtual void DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const override;
+   virtual void DrawHighlight(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, bool bHighlight) const override;
+   virtual WBFL::Geometry::Rect2d GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO) const override;
 
 private:
    pgsTypes::TemporarySupportType m_SupportType;
    Float64 m_LeftBrgOffset;
    Float64 m_RightBrgOffset;
 
-   CComPtr<IPoint2d> m_CachePoint;
+   mutable WBFL::Geometry::Point2d m_CachePoint;
 
-   void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* loc);
-   void GetLSymbolSize(iCoordinateMap* pMap, long* psx, long* psy);
-
-   void DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt);
-   void DrawTowerSupport(CDC* pDC, long cx, long cy, long wid, long hgt);
-
-   void DrawStrongBack(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* loc);
+   void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC,COLORREF color,const WBFL::Geometry::Point2d& loc) const;
+   void GetLSymbolSize(std::shared_ptr<const WBFL::DManip::iCoordinateMap> pMap, long* psx, long* psy) const;
+   void DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt) const;
+   void DrawTowerSupport(CDC* pDC, long cx, long cy, long wid, long hgt) const;
+   void DrawStrongBack(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC,COLORREF color, const WBFL::Geometry::Point2d& loc) const;
 };
 

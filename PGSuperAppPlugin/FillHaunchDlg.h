@@ -31,7 +31,7 @@ class CFillHaunchDlg : public CDialog
 	DECLARE_DYNAMIC(CFillHaunchDlg)
 
 public:
-	CFillHaunchDlg(const CGirderKey& key, IBroker* pBroker, CWnd* pParent = nullptr);   // standard constructor
+	CFillHaunchDlg(const CGirderKey& key, std::shared_ptr<WBFL::EAF::Broker> pBroker, CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CFillHaunchDlg();
 
 // Dialog Data
@@ -56,9 +56,11 @@ private:
 	bool ModifyCompute(CBridgeDescription2& rBridgeDescription2);
 	bool ModifyAdd(CBridgeDescription2& rBridgeDescription2);
 
+	std::shared_ptr<WBFL::EAF::Broker> GetBroker() { return m_pBroker; }
+
 	// Tricky: we are setting groupIndex in m_GirderKey as user-selected span count for haunch-spans setting
    CGirderKey m_GirderKey;
-	IBroker* m_pBroker;
+	std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 	int m_Method; // radio settings (set to MethodType value)
 	int m_ToGirderSel; // 0==girder selected, 1==all girders
 	Float64 m_AddedVal; // value to be added if MethodType==mtAdd

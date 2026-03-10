@@ -4,7 +4,7 @@ Define project criteria for specification compliance checking of prestressed ele
 
 The parameters on this tab are stress limits. They can be set to match or deviate from AASHTO.
 
-Stress Limits for Temporary Stresses before Losses (LRFD 5.9.2.3.1 (*pre-2017: 5.9.4.1*) )
+Stress Limits for Temporary Stresses (LRFD 5.9.2.3.1 (*pre-2017: 5.9.4.1*) )
 -----------------------------------------------------------------
 The information in this section allows you to deviate from LRFD 5.9.2.3.1.
 
@@ -13,10 +13,11 @@ Item | Description
 Compressive Stress | Enter the coefficient for the compressive stress limit.
 Tensile Stress - In areas other than the precompressed tensile zone and without bonded reinforcement | Enter the coefficient for the tensile stress limit. Check the "But not greater than" box to estabilish an upper limit on the tensile stress limit.
 Tensile Stress - In areas with sufficient bonded reinforcement | Enter the coefficient for the tensile stress limit.
+Max cover for reinforcement to always resist tension force (5.9.2.3.1b) | Enter the maximum cover value. From AASHTO: "When the depth to the neural axis from the tension face of the member is less than the concrete cover as specified in Article 5.10.1, the reinforcement at a depth equal to the clear cover may be assumed to resist the tension force in the concrete for the purpose of determining the appropriate tensile stress limit". The cover specified by AASHTO is 2.0 inches, but a custom value may be entered. *Note that this value is also used to compute limits for all other cases where a higher temporary stress is allowed including: Lifting, Hauling, and immediately after temporary strand removal.*
 
 > NOTE: See @ref tg_longitudinal_reinforcement in the @ref technical_guide for discussion describing how longitudinal reinforcement in the girder factors into the determination of the tensile stress limit.
 
-Stress Limits at Service Limit States after Losses (LRFD 5.9.2.3.2 (*pre-2017: 5.9.4.2*))
+Stress Limits at Service Limit States (LRFD 5.9.2.3.2 (*pre-2017: 5.9.4.2*))
 -----------------------------------------------------------------
 The information in this section allows you to deviate from LRFD 5.9.2.3.2
 

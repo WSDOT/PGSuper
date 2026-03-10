@@ -22,19 +22,17 @@
 
 // ElasticShorteningTable.cpp : Implementation of CElasticShorteningTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "ElasticShorteningTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
+
 #include <PsgLib\SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CElasticShorteningTable::CElasticShorteningTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CElasticShorteningTable::CElasticShorteningTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -48,7 +46,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -113,8 +111,8 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       Float64 Aps = pDetails->pLosses->GetApsPermanent();
       Float64 P   = pDetails->pLosses->GetElasticShortening().P();
 
-      *pParagraph << Sub2(_T("0.7 f"),_T("pu")) << Sub2(_T(" A"),_T("ps")) << _T(" = 0.7(") 
-                  << stress.SetValue(Fpu) << _T(")(") << area.SetValue(Aps) 
+      *pParagraph << Sub2(_T("0.7 f"),_T("pu")) << Sub2(_T(" A"),_T("ps")) << _T(" = 0.7(")
+                  << stress.SetValue(Fpu) << _T(")(") << area.SetValue(Aps)
                   <<  _T(") = ") << force.SetValue(-P) << rptNewLine << rptNewLine;
 
       *pParagraph << Sub2(_T("f"),_T("cgp")) << _T(" = ") << stress.SetValue( pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp() ) << rptNewLine << rptNewLine;
@@ -611,7 +609,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    }
 }
 
-void CElasticShorteningTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CElasticShorteningTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
    RowIndexType rowOffset = GetNumberOfHeaderRows()-1;

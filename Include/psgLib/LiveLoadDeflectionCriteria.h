@@ -23,12 +23,13 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
-interface IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
+class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
+namespace PGS {namespace Library{class DifferenceItem;};};
+
 
 /// @brief Live load deflection criteria from LRFD 2.5.2.5.2
 struct PSGLIBCLASS LiveLoadDeflectionCriteria
@@ -39,9 +40,9 @@ struct PSGLIBCLASS LiveLoadDeflectionCriteria
 
    bool operator==(const LiveLoadDeflectionCriteria& other) const;
    bool operator!=(const LiveLoadDeflectionCriteria& other) const;
-   bool Compare(const LiveLoadDeflectionCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+   bool Compare(const LiveLoadDeflectionCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);

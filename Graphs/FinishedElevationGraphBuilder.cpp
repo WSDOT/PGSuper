@@ -31,7 +31,7 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <Units\UnitValueNumericalFormatTools.h>
 
 #include <IFace\Intervals.h>
@@ -41,6 +41,7 @@
 #include <IFace\Alignment.h>
 #include <IFace\EditByUI.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace/PointOfInterest.h>
 
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFDocument.h>
@@ -48,14 +49,10 @@
 #include <MFCTools\MFCTools.h>
 
 #include <psgLib/SlabOffsetCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 static const int PenWeight = GRAPH_PEN_WEIGHT;
 static const int PglWeight = GRAPH_PEN_WEIGHT + 1; // heavier weight for PGL
@@ -175,8 +172,8 @@ CGirderGraphControllerBase* CFinishedElevationGraphBuilder::CreateGraphControlle
 
 bool CFinishedElevationGraphBuilder::UpdateNow()
 {
-   GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
 
@@ -229,13 +226,13 @@ void CFinishedElevationGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,Gird
 class MatchPoiOffSegment
 {
 public:
-   MatchPoiOffSegment(IPointOfInterest* pIPointOfInterest) : m_pIPointOfInterest(pIPointOfInterest) {}
+   MatchPoiOffSegment(std::shared_ptr<IPointOfInterest> pIPointOfInterest) : m_pIPointOfInterest(pIPointOfInterest) {}
    bool operator()(const pgsPointOfInterest& poi) const
    {
       return m_pIPointOfInterest->IsOffSegment(poi);
    }
 
-   IPointOfInterest* m_pIPointOfInterest;
+   std::shared_ptr<IPointOfInterest> m_pIPointOfInterest;
 };
 
 void CFinishedElevationGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx)

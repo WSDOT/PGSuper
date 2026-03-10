@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "EngAgent.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
@@ -41,7 +42,7 @@
 
 #include <EAF\EAFDisplayUnits.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <Math\PiecewiseFunction.h>
 #include <psgLib\SpecLibraryEntry.h>
 #include <MathEx.h>
@@ -51,11 +52,6 @@
 
 #include <psgLib/ShearCapacityCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // Tolerance for stirrup spacing to fit withing min/max allowable spacings
 static const Float64 SPACING_TOL=1.0e-5;
@@ -272,22 +268,18 @@ private:
 CLASS
    pgsShearDesignTool
 ****************************************************************************/
-//////////////////////
 pgsShearDesignTool::pgsShearDesignTool(SHARED_LOGFILE lf):
 LOGFILE(lf),
 m_pArtifact(nullptr),
-m_pBroker(nullptr),
 m_StatusGroupID(INVALID_ID)
 {
 }
 
-void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecker* pLongShearChecker,
+void pgsShearDesignTool::Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, const LongReinfShearChecker* pLongShearChecker,
                                     StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif, 
                                     Float64 startConfinementZl, Float64 endConfinementZl,
                                     bool bPermit, bool bDesignFromScratch)
 {
-   ATLASSERT(pBroker);
-
    // Cache a bunch of stuff that does not change during design
    m_pBroker = pBroker;
    m_pLongReinfShearChecker = pLongShearChecker;
@@ -306,7 +298,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
 
    m_SegmentKey = m_pArtifact->GetSegmentKey();
 
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
    m_SegmentLength          = pBridge->GetSegmentLength(m_SegmentKey);
    m_SpanLength            = pBridge->GetSegmentSpanLength(m_SegmentKey);
    m_StartConnectionLength = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
@@ -319,12 +311,12 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
 
    m_RequiredFcForShearStress = 0.0;
 
-   GET_IFACE(IStirrupGeometry,pStirrupGeometry);
+   GET_IFACE2(GetBroker(),IStirrupGeometry,pStirrupGeometry);
    m_bIsCurrentStirrupLayoutSymmetrical = pStirrupGeometry->AreStirrupZonesSymmetrical(m_SegmentKey);
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   GET_IFACE(IMaterials,pMaterials);
+   GET_IFACE2(GetBroker(),ILibrary,pLib);
+   GET_IFACE2(GetBroker(),ISpecification,pSpec);
+   GET_IFACE2(GetBroker(),IMaterials,pMaterials);
 
    m_ConcreteType = pMaterials->GetSegmentConcreteType(m_SegmentKey);
 
@@ -336,7 +328,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
    ATLASSERT(pool != nullptr);
 
    // Shear Design Control items
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(GetBroker(),IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(m_SegmentKey.girderIndex);
@@ -386,7 +378,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
    m_bLongShearCapacityRequiresStirrupTightening = false;
 
    // Compute maximum possible bar spacing for design
-   GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
+   GET_IFACE2(GetBroker(),ITransverseReinforcementSpec,pTransverseReinforcementSpec);
    Float64 S_over;
 
    // The original code for this tool had a bug in it. It only got the basic max spacing values
@@ -429,7 +421,7 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
    // Compute splitting zone lengths if we need them
    if (m_EndZoneCriteria.bDesignSplitting)
    {
-      GET_IFACE(ISplittingChecks, pSplittingChecks);
+      GET_IFACE2(GetBroker(),ISplittingChecks, pSplittingChecks);
       m_StartSplittingZl = pSplittingChecks->GetSplittingZoneLength(m_SegmentKey, pgsTypes::metStart);
       m_EndSplittingZl   = pSplittingChecks->GetSplittingZoneLength(m_SegmentKey, pgsTypes::metEnd);
    }
@@ -442,13 +434,13 @@ void pgsShearDesignTool::Initialize(IBroker* pBroker, const LongReinfShearChecke
 
 void pgsShearDesignTool::ResetDesign(const PoiList& pois)
 {
-   ATLASSERT(m_pBroker!=nullptr); // make sure Initialize was called
+   ATLASSERT(GetBroker()!=nullptr); // make sure Initialize was called
 
    // Reset check artifacts
    m_StirrupCheckArtifact.Clear();
 
    // clear the cached critical section calculations
-   GET_IFACE(IShearCapacity,pShearCapacity);
+   GET_IFACE2(GetBroker(),IShearCapacity,pShearCapacity);
    pShearCapacity->ClearDesignCriticalSections();
 
    // locate and cache points of interest for design
@@ -487,7 +479,7 @@ void pgsShearDesignTool::DumpDesignParameters()
 {
 #ifdef _DEBUG
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
    StrandIndexType Nh = m_pArtifact->GetNumHarpedStrands();
 
@@ -576,7 +568,7 @@ bool pgsShearDesignTool::GetDoPrimaryBarsProvideSplittingCapacity() const
 {
    if(m_DoBarsProvideSplittingCapacity)
    {
-      GET_IFACE(IGirder, pGirder);
+      GET_IFACE2(GetBroker(),IGirder, pGirder);
       auto splittingDirection = pGirder->GetSplittingDirection(m_SegmentKey);
       if(splittingDirection == pgsTypes::sdVertical) // primary bars are vertical
          return true;
@@ -631,7 +623,7 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
    // Get CSS for current configuration and add POI to our list
    GDRCONFIG gconfig = GetSegmentConfiguration();
 
-   GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE2(GetBroker(),IPointOfInterest,pPoi);
    std::vector<pgsPointOfInterest> vCSPoi;
    pPoi->GetCriticalSections(pgsTypes::StrengthI, m_SegmentKey, gconfig, &vCSPoi);
    ATLASSERT(vCSPoi.size() == 2);
@@ -643,7 +635,7 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
 
    // Create some additional pois at 2H, 3H, 4H at each end of girder
    // This will give a better spacing layout for our stirrups
-   GET_IFACE(IGirder,pGdr);
+   GET_IFACE2(GetBroker(),IGirder,pGdr);
    Float64 hgLeft, hgRight; // height of girder at left and right ends
    PoiList vEndPois;
    pPoi->GetPointsOfInterest(m_SegmentKey, POI_START_FACE | POI_END_FACE, &vEndPois);
@@ -731,7 +723,7 @@ void pgsShearDesignTool::ValidatePointsOfInterest(const PoiList& vPois) const
    // remove all POI from the container that are outside of the CL Bearings...
    // PoiIsOusideOfBearings does the filtering and it keeps POIs that are at the closure joint (and this is what we want)
    // put the results into m_DesignPois using the back_inserter
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
    Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(m_SegmentKey);
    Float64 endDist   = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
    m_DesignPois.clear();
@@ -760,7 +752,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::Validate() const
 
 pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDemand() const
 {
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    IndexType numpois = m_DesignPois.size();
@@ -799,7 +791,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
             was_strut_tie_reqd = true;
 
             // Compute concrete strength required if shear stress forces strut and tie at CSS
-            GET_IFACE(IShearCapacity,pShearCapacity);
+            GET_IFACE2(GetBroker(),IShearCapacity,pShearCapacity);
             GDRCONFIG config = this->GetSegmentConfiguration(); // current design
 
             SHEARCAPACITYDETAILS scd;
@@ -828,7 +820,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
             was_strut_tie_reqd = true;
 
             // Compute concrete strength required if shear stress forces strut and tie at CSS
-            GET_IFACE(IShearCapacity,pShearCapacity);
+            GET_IFACE2(GetBroker(),IShearCapacity,pShearCapacity);
             GDRCONFIG config = this->GetSegmentConfiguration(); // current design
 
             SHEARCAPACITYDETAILS scd;
@@ -1064,7 +1056,7 @@ Float64 pgsShearDesignTool::GetVerticalAvsDemand(Float64 distFromStart) const
 
 void pgsShearDesignTool::ValidateHorizontalAvsDemand() const
 {
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    IndexType numpois = m_DesignPois.size();
@@ -1183,7 +1175,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignStirrups(Float6
 {
 #if defined _DEBUG
    // design is only for PGSuper documents
-   GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE2(GetBroker(),IDocumentType,pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument());
 #endif
 
@@ -1291,10 +1283,10 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
 
    Float64 gl2 = m_SegmentLength/2.0;
 
-   GET_IFACE(IGirder,pGdr);
+   GET_IFACE2(GetBroker(),IGirder,pGdr);
 
    // get rebar material
-   GET_IFACE(IMaterials,pMaterials);
+   GET_IFACE2(GetBroker(),IMaterials,pMaterials);
    Float64 Eb,fy,fu; 
    pMaterials->GetSegmentLongitudinalRebarProperties(m_SegmentKey,&Eb,&fy,&fu);
 
@@ -1467,7 +1459,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
       if (close_zone)
       {
          // Round zone length so it will look good in stirrup dialog grids
-         GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+         GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
          zone_len = WBFL::Units::ConvertFromSysUnits(zone_len,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
          zone_len = RoundOff(zone_len,0.0001); // three decimal places
          zone_len = WBFL::Units::ConvertToSysUnits(zone_len,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
@@ -1531,7 +1523,7 @@ bool pgsShearDesignTool::LayoutPrimaryStirrupZones() const
 
 bool pgsShearDesignTool::ModifyPreExistingStirrupDesign() const
 {
-   GET_IFACE(IMaterials,pMaterial);
+   GET_IFACE2(GetBroker(),IMaterials,pMaterial);
 
    // Some needed values
    WBFL::Materials::Rebar::Grade barGrade;
@@ -1804,7 +1796,7 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear() const
       }
    }
 
-   GET_IFACE(IMaterials,pMaterial);
+   GET_IFACE2(GetBroker(),IMaterials,pMaterial);
    WBFL::Materials::Rebar::Grade barGrade;
    WBFL::Materials::Rebar::Type barType;
    pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
@@ -1816,11 +1808,11 @@ bool pgsShearDesignTool::DetailHorizontalInterfaceShear() const
    // zone spacing and size jump rules here
    Float64 zone_max = m_ShearData.bAreZonesSymmetrical ? m_SegmentLength/2.0 : m_SegmentLength;
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    pgsPointOfInterest poiStart(m_SegmentKey,0.0);
    pgsPointOfInterest poiEnd(m_SegmentKey,m_SegmentLength);
-   GET_IFACE(IInterfaceShearRequirements,pInterfaceShear);
+   GET_IFACE2(GetBroker(),IInterfaceShearRequirements,pInterfaceShear);
    Float64 max_spacing = min(pInterfaceShear->GetMaxShearConnectorSpacing(poiStart),pInterfaceShear->GetMaxShearConnectorSpacing(poiEnd));
 
 
@@ -1961,7 +1953,7 @@ bool pgsShearDesignTool::DetailAdditionalSplitting() const
       if (pSplittingArtifact)
       {
          // Only design splitting if it is applicable
-         GET_IFACE(IMaterials,pMaterial);
+         GET_IFACE2(GetBroker(),IMaterials,pMaterial);
          WBFL::Materials::Rebar::Grade barGrade;
          WBFL::Materials::Rebar::Type barType;
          pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
@@ -2107,7 +2099,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement() const
          {
             // Confinement design may be provided by primary bars in from-scratch designs, and always
             // for designs based on existing layout
-            GET_IFACE(IMaterials,pMaterial);
+            GET_IFACE2(GetBroker(),IMaterials,pMaterial);
             WBFL::Materials::Rebar::Grade barGrade;
             WBFL::Materials::Rebar::Type barType;
             pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
@@ -2240,11 +2232,11 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
 
    bool b9thEdition(WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   GET_IFACE(IShearCapacity, pShearCapacity);
-   GET_IFACE(IBridge, pBridge);
+   GET_IFACE2(GetBroker(),IShearCapacity, pShearCapacity);
+   GET_IFACE2(GetBroker(),IBridge, pBridge);
 
    const std::array<pgsTypes::LimitState, 2> limit_states{pgsTypes::StrengthI, pgsTypes::StrengthII};
    Int32 nls = m_bIsPermit ? 2 : 1;
@@ -2255,11 +2247,11 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
 
    // We will use #5 bars if using rebar 
    // Compute min development length for this bar size
-   GET_IFACE(ILongitudinalRebar, pLongRebar);
+   GET_IFACE2(GetBroker(),ILongitudinalRebar, pLongRebar);
    const CLongitudinalRebarData* pLRD = pLongRebar->GetSegmentLongitudinalRebarData(m_SegmentKey);
    const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(pLRD->BarType, pLRD->BarGrade, WBFL::Materials::Rebar::Size::bs5); // #5
    Float64 rbfy = pRebar->GetYieldStrength();
-   GET_IFACE(IMaterials, pMaterials);
+   GET_IFACE2(GetBroker(),IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(m_SegmentKey) == pgsTypes::UHPC)
    {
       // Es*gamma_u*et,loc shall not exceed fy.... use Es*gamma_u*et,loc for rbfy
@@ -2282,7 +2274,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    }
 
    // make sure we have the POI's at the end faces of the precast element
-   GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE2(GetBroker(),IPointOfInterest,pPoi);
    PoiList vPoi = m_DesignPois;
    PoiList vPoi2;
    pPoi->GetPointsOfInterest(m_SegmentKey, POI_FACEOFSUPPORT, &vPoi2);
@@ -2430,7 +2422,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
 
 Float64 pgsShearDesignTool::ComputeMaxStirrupSpacing(IndexType PoiIdx) const
 {
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // Get max allowable spacing from spec check, then check if we are in confinement zone
@@ -2517,8 +2509,8 @@ IndexType pgsShearDesignTool::GetPoiIdxForLocation(Float64 location) const
 
 Float64 pgsShearDesignTool::GetMinStirrupSpacing(WBFL::Materials::Rebar::Size size) const
 {
-   GET_IFACE(ITransverseReinforcementSpec,pTransverseReinforcementSpec);
-   GET_IFACE(IMaterials,pMaterial);
+   GET_IFACE2(GetBroker(),ITransverseReinforcementSpec,pTransverseReinforcementSpec);
+   GET_IFACE2(GetBroker(),IMaterials,pMaterial);
    WBFL::Materials::Rebar::Grade barGrade;
    WBFL::Materials::Rebar::Type barType;
    pMaterial->GetSegmentTransverseRebarMaterial(m_SegmentKey,&barType,&barGrade);
@@ -2691,6 +2683,6 @@ Float64 pgsShearDesignTool::GetAvsReqdForSplitting() const
 
    const auto pSplittingArtifact = m_StirrupCheckArtifact.GetSplittingCheckArtifact();
 
-   GET_IFACE(ISplittingChecks, pSplittingChecks);
+   GET_IFACE2(GetBroker(),ISplittingChecks, pSplittingChecks);
    return pSplittingChecks->GetAsRequired(pSplittingArtifact.get());
 }

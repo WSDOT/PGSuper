@@ -258,9 +258,6 @@
     <ClInclude Include="BoxBeamFactoryImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BulbTeeDistFactorEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BulbTeeFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -286,9 +283,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DeckShrinkageLossTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DistFactorEngineerImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DoubleTeeFactory.h">
@@ -321,12 +315,6 @@
     <ClInclude Include="..\Include\Beams\Helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IBeamDistFactorEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IBeamFactoryImp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MultiWeb2Factory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -340,9 +328,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PostTensionInteractionTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PsBeamLossEngineer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RelaxationAftertransferTable.h">
@@ -367,9 +352,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ShrinkageAtHaulingTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SplicedIBeamFactoryImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SplicedNUBeamFactoryImpl.h">
@@ -399,9 +381,6 @@
     <ClInclude Include="TimeDependentLossFinalTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TimeStepLossEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TotalPrestressLossTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -420,34 +399,16 @@
     <ClInclude Include="UBeam2Factory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UBeamDistFactorEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UBeamFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="UBeamHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VoidedSlab2DistFactorEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VoidedSlabDistFactorEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VoidedSlabDistFactorEngineerTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VoidedSlabFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VoidedSlabFactory2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\IFace\DistFactorEngineer.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IBeamFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Beams\Interfaces.h">
@@ -464,9 +425,6 @@
     </ClInclude>
     <ClInclude Include="..\Include\IFace\PsLossEngineer.h">
       <Filter>IFace</Filter>
-    </ClInclude>
-    <ClInclude Include="PsLossEngineer.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StdAfx.h">
       <Filter>Header Files</Filter>
@@ -494,6 +452,48 @@
     </ClInclude>
     <ClInclude Include="PCIDeckedBulbTeeFactory.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\IBeamDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\DistFactorEngineerImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\TimeStepLossEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\PsBeamLossEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\BulbTeeDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\PsLossEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\UBeamDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\VoidedSlab2DistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\VoidedSlabDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\VoidedSlabDistFactorEngineerTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\IBeamFactoryImp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\SplicedIBeamFactoryImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Beams.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\DistFactorEngineer.h">
+      <Filter>IFace</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -557,58 +557,16 @@
     <None Include="Res\BoxBeam2.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="BoxBeamDistFactorEngineer.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="BoxBeamFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="BoxBeamFactory2.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="BoxBeamFamily.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="Res\BulbTee.emf">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="BulbTeeDistFactorEngineer.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="BulbTeeFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="BulbTeeFamily.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Res\DeckedSlabBeam.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="DeckedSlabBeamFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="DeckedSlabBeamFamily.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="Res\DoubleTee.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="DoubleTeeFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="DoubleTeeFamily.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="Res\IBeam.emf">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="IBeamDistFactorEngineer.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="IBeamFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="IBeamFamily.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Res\MultiWeb.emf">
@@ -617,43 +575,13 @@
     <None Include="Res\MultiWeb2.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="MultiWeb2Factory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="MultiWebfactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="MultiWebFamily.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="Res\NUbeam.emf">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="NUBeamFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="PsBeamLossEngineer.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Res\SplicedIBeam.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="SplicedIBeamFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="SplicedIBeamFamily.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="Res\SplicedNUBeam.emf">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="SplicedNUBeamFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="SplicedUBeamFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="SplicedUBeamFamily.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="StrandMoverImpl.rgs">
@@ -662,16 +590,7 @@
     <None Include="Res\TaperedIBeam.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="TaperedIBeamFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="TimeStepLossEngineer.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="Res\txdotdou.emf">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="TxDotDoubleTFactory.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Res\UBeam.emf">
@@ -680,51 +599,16 @@
     <None Include="Res\UBeam2.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="UBeam2Factory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="UBeamDistFactorEngineer.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="UBeamFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="UBeamFamily.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="Res\VoidedSlab.emf">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Res\VoidedSlab2.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="VoidedSlab2DistFactorEngineer.rgs">
+    <None Include="res\NUDeckedBulbTee.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="VoidedSlabDistFactorEngineer.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="VoidedSlabFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="VoidedSlabFactory2.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="VoidedSlabFamily.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="TxDOTSpreadSlabBeamDistFactorEngineer.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="NUDeckedBulbTeeFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="PCIDeckedBulbTeeFactory.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\NUDeckedBulbTee.emf" />
-    <None Include="res\PCIDeckedBulbTee.emf" />
-    <None Include="MultiWebDistFactorEngineer.rgs">
+    <None Include="res\PCIDeckedBulbTee.emf">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

@@ -24,11 +24,7 @@
 #include <PgsExt\InsertDeleteLoad.h>
 #include <EAF\EAFUtilities.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <IFace/Tools.h>
 
 //////////////////////////////////////////
 //////////////////////////////////////////
@@ -60,7 +56,7 @@ std::_tstring txnInsertPointLoad::Name() const
    return _T("Insert Point Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnInsertPointLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnInsertPointLoad::CreateClone() const
 {
    return std::make_unique<txnInsertPointLoad>(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
 }
@@ -77,8 +73,7 @@ bool txnInsertPointLoad::IsRepeatable() const
 
 bool txnInsertPointLoad::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
@@ -102,8 +97,7 @@ bool txnInsertPointLoad::Execute()
 
 void txnInsertPointLoad::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
@@ -136,7 +130,7 @@ std::_tstring txnDeletePointLoad::Name() const
    return _T("Delete Point Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnDeletePointLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnDeletePointLoad::CreateClone() const
 {
    return std::make_unique<txnDeletePointLoad>(m_LoadID);
 }
@@ -153,8 +147,7 @@ bool txnDeletePointLoad::IsRepeatable() const
 
 bool txnDeletePointLoad::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
@@ -177,8 +170,7 @@ bool txnDeletePointLoad::Execute()
 
 void txnDeletePointLoad::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
@@ -219,7 +211,7 @@ std::_tstring txnEditPointLoad::Name() const
    return _T("Edit Point Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnEditPointLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditPointLoad::CreateClone() const
 {
    return std::make_unique<txnEditPointLoad>(m_LoadID,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
 }
@@ -247,8 +239,7 @@ bool txnEditPointLoad::IsRepeatable() const
 
 void txnEditPointLoad::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
@@ -305,7 +296,7 @@ std::_tstring txnInsertDistributedLoad::Name() const
    return _T("Insert Distributed Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnInsertDistributedLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnInsertDistributedLoad::CreateClone() const
 {
    return std::make_unique<txnInsertDistributedLoad>(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
 }
@@ -322,8 +313,7 @@ bool txnInsertDistributedLoad::IsRepeatable() const
 
 bool txnInsertDistributedLoad::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
@@ -347,8 +337,7 @@ bool txnInsertDistributedLoad::Execute()
 
 void txnInsertDistributedLoad::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
@@ -381,7 +370,7 @@ std::_tstring txnDeleteDistributedLoad::Name() const
    return _T("Delete Distributed Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnDeleteDistributedLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnDeleteDistributedLoad::CreateClone() const
 {
    return std::make_unique<txnDeleteDistributedLoad>(m_LoadID);
 }
@@ -398,8 +387,7 @@ bool txnDeleteDistributedLoad::IsRepeatable() const
 
 bool txnDeleteDistributedLoad::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
@@ -421,8 +409,7 @@ bool txnDeleteDistributedLoad::Execute()
 
 void txnDeleteDistributedLoad::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
@@ -463,7 +450,7 @@ std::_tstring txnEditDistributedLoad::Name() const
    return _T("Edit Distributed Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnEditDistributedLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditDistributedLoad::CreateClone() const
 {
    return std::make_unique<txnEditDistributedLoad>(m_LoadID,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
 }
@@ -491,8 +478,7 @@ bool txnEditDistributedLoad::IsRepeatable() const
 
 void txnEditDistributedLoad::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
@@ -548,7 +534,7 @@ std::_tstring txnInsertMomentLoad::Name() const
    return _T("Insert Moment Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnInsertMomentLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnInsertMomentLoad::CreateClone() const
 {
    return std::make_unique<txnInsertMomentLoad>(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
 }
@@ -565,8 +551,7 @@ bool txnInsertMomentLoad::IsRepeatable() const
 
 bool txnInsertMomentLoad::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
@@ -590,8 +575,7 @@ bool txnInsertMomentLoad::Execute()
 
 void txnInsertMomentLoad::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
@@ -624,7 +608,7 @@ std::_tstring txnDeleteMomentLoad::Name() const
    return _T("Delete Moment Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnDeleteMomentLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnDeleteMomentLoad::CreateClone() const
 {
    return std::make_unique<txnDeleteMomentLoad>(m_LoadID);
 }
@@ -641,8 +625,8 @@ bool txnDeleteMomentLoad::IsRepeatable() const
 
 bool txnDeleteMomentLoad::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
+
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
@@ -663,8 +647,7 @@ bool txnDeleteMomentLoad::Execute()
 
 void txnDeleteMomentLoad::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
@@ -705,7 +688,7 @@ std::_tstring txnEditMomentLoad::Name() const
    return _T("Edit Moment Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnEditMomentLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditMomentLoad::CreateClone() const
 {
    return std::make_unique<txnEditMomentLoad>(m_LoadID,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
 }
@@ -733,8 +716,8 @@ bool txnEditMomentLoad::IsRepeatable() const
 
 void txnEditMomentLoad::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
+
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);

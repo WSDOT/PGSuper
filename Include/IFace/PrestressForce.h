@@ -20,31 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_PRESTRESS_H_
-#define INCLUDED_IFACE_PRESTRESS_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#if !defined INCLUDED_WBFLTYPES_H_
-#include <WbflTypes.h>
-#endif
-
+#include <PGSuperTypes.h>
 #include <Details.h>
-#include <PsgLib/HoldDownCriteria.h>
+#include <psgLib/HoldDownCriteria.h>
 
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
 class pgsPointOfInterest;
 class pgsTransferLength;
 class pgsDevelopmentLength;
 class rptChapter;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 namespace WBFL
 {
@@ -53,9 +39,6 @@ namespace WBFL
       class PsStrand;
    };
 };
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 INTERFACE
@@ -70,19 +53,20 @@ DESCRIPTION
 // {381E19E0-6E82-11d2-8EEB-006097DF3C68}
 DEFINE_GUID(IID_IPretensionForce, 
 0x381e19e0, 0x6e82, 0x11d2, 0x8e, 0xeb, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface IPretensionForce : IUnknown
+class IPretensionForce
 {
+public:
    virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands) const = 0;
    virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const = 0;
 
    virtual Float64 GetTransferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig = nullptr) const = 0;
-   virtual const std::shared_ptr<pgsTransferLength> GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual std::shared_ptr<const pgsTransferLength> GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType,const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual void ReportTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::TransferLengthType xferType, rptChapter* pChapter) const = 0;
 
    virtual Float64 GetDevelopmentLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual const std::shared_ptr<pgsDevelopmentLength> GetDevelopmentLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual std::shared_ptr<const pgsDevelopmentLength> GetDevelopmentLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const = 0;
    virtual Float64 GetDevelopmentLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual Float64 GetDevelopmentLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, Float64 fps, Float64 fpe,const GDRCONFIG* pConfig=nullptr) const = 0;
@@ -125,8 +109,9 @@ DESCRIPTION
 // {4E2D92B7-73B1-4dcd-8450-A4D18ED9F2B4}
 DEFINE_GUID(IID_IPosttensionForce, 
 0x4e2d92b7, 0x73b1, 0x4dcd, 0x84, 0x50, 0xa4, 0xd1, 0x8e, 0xd9, 0xf2, 0xb4);
-interface IPosttensionForce : IUnknown
+class IPosttensionForce
 {
+public:
    // Returns the maximum jacking force for a given number of strands
    virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands) const = 0;
    virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const = 0;
@@ -181,11 +166,12 @@ DESCRIPTION
 // {03D91150-6DBB-11d2-8EE9-006097DF3C68}
 DEFINE_GUID(IID_ILosses, 
 0x3d91150, 0x6dbb, 0x11d2, 0x8e, 0xe9, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface ILosses : IUnknown
+class ILosses
 {
+public:
    // Returns the details of the prestress loss calculation for losses computed up to and including
    // intervalIdx. Loses may be computed beyond this interval as well, however they are only
-   // guarenteed to be computed up to and including the specified interval. An intervalIdx of
+   // guaranteed to be computed up to and including the specified interval. An intervalIdx of
    // INVALID_INDEX means that losses are computed through all intervals
    virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx = INVALID_INDEX) const = 0;
 
@@ -201,8 +187,8 @@ interface ILosses : IUnknown
    virtual const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx=INVALID_INDEX) const = 0;
    virtual void ClearDesignLosses() = 0;
 
-   virtual void ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const = 0;
-   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
+   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
 
    // Returns the effective prestress loss... The effective losses are time depenent losses + elastic effects
    // effective losses = fpj - fpe
@@ -240,6 +226,4 @@ interface ILosses : IUnknown
    // This occurs for LRFD 3rd Edition 2004 and earlier and WSDOT_REFINED, TXDOT_REFINED_2004, WSDOT_LUMPSUM, and TIME_STEP methods
    virtual bool LossesIncludeInitialRelaxation() const = 0;
 };
-
-#endif // INCLUDED_IFACE_PRESTRESS_H_
 

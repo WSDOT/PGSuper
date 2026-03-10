@@ -24,14 +24,10 @@
 #include "EditPrecastSegment.h"
 #include "PGSpliceDoc.h"
 
+#include <IFace/Tools.h>
 #include <IFACE\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 txnEditPrecastSegment::txnEditPrecastSegment(const CSegmentKey& segmentKey,const txnEditPrecastSegmentData& newData) :
@@ -45,8 +41,8 @@ txnEditPrecastSegment::~txnEditPrecastSegment()
 
 bool txnEditPrecastSegment::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
@@ -86,8 +82,8 @@ bool txnEditPrecastSegment::Execute()
 
 void txnEditPrecastSegment::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
@@ -102,7 +98,7 @@ void txnEditPrecastSegment::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnEditPrecastSegment::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditPrecastSegment::CreateClone() const
 {
    return std::make_unique<txnEditPrecastSegment>(m_SegmentKey,m_NewSegmentData);
 }
@@ -126,8 +122,8 @@ bool txnEditPrecastSegment::IsRepeatable() const
 
 void txnEditPrecastSegment::SetSegmentData(const CSegmentKey& segmentKey,const txnEditPrecastSegmentData& data)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    pIBridgeDesc->SetPrecastSegmentData(segmentKey,data.m_SegmentData);

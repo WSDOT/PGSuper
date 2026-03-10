@@ -24,21 +24,17 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "SpecMainSheet.h"
 #include "SpecLibraryEntryImpl.h"
 #include <MfcTools\CustomDDX.h>
 
 #include <Units\Convert.h>
 #include <EAF\EAFApp.h>
+#include <EAF\Agent.h>
 
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecMainSheet
@@ -127,6 +123,7 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
    DDX_RadioEnum(pDX,IDC_GROSS,m_Entry.m_pImpl->m_SectionPropertiesCriteria.SectionPropertyMode);
    DDX_CBEnum(pDX,IDC_EFF_FLANGE_WIDTH,m_Entry.m_pImpl->m_SectionPropertiesCriteria.EffectiveFlangeWidthMethod);
 
+
    if (pDX->m_bSaveAndValidate)
    {
       DDX_Text(pDX, IDC_NAME, m_Name);
@@ -137,9 +134,11 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
       }
       m_Entry.SetName(m_Name);
 
-	   DDX_Text(pDX, IDC_EDIT_DESCRIPTION, m_Description);
+	  DDX_Text(pDX, IDC_EDIT_DESCRIPTION, m_Description);
       m_Entry.m_pImpl->m_SpecificationCriteria.Description = m_Description;
 
+      DDX_Text(pDX, IDC_THERMAL, m_Thermal);
+      m_Entry.m_pImpl->m_ThermalMovementCriteria.ThermalMovementFactor = m_Thermal;
 
       // specification units
       int chk = m_SpecDescrPage.GetCheckedRadioButton( IDC_SPEC_UNITS_SI,IDC_SPEC_UNITS_US);
@@ -158,6 +157,9 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
 
       m_Description = m_Entry.m_pImpl->m_SpecificationCriteria.Description.c_str();
 	   DDX_Text(pDX, IDC_EDIT_DESCRIPTION, m_Description);
+
+      m_Thermal = m_Entry.m_pImpl->m_ThermalMovementCriteria.ThermalMovementFactor;
+       DDX_Text(pDX, IDC_THERMAL, m_Thermal);
 
       // spec units
       WBFL::LRFD::BDSManager::Units Units = m_Entry.m_pImpl->m_SpecificationCriteria.Units;
@@ -226,8 +228,8 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   CString fciTag = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
-   CString fcTag  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))")  : _T("sqrt(f'c (KSI))"));
+   CString fciTag = (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
+   CString fcTag  = (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))")  : _T("sqrt(f'c (KSI))"));
 
    if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
@@ -253,9 +255,12 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_RELEASE_TENSION_WITH_REBAR_UNIT,fciTag);
    DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_WITH_REBAR,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure );
 
+   DDX_UnitValueAndTag(pDX, IDC_COVER_LIMIT, IDC_COVER_LIMIT_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.MaxCoverToUseHigherTensionStressLimit, pDisplayUnits->ComponentDim);
+   DDV_UnitValueZeroOrMore(pDX, IDC_COVER_LIMIT_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.MaxCoverToUseHigherTensionStressLimit, pDisplayUnits->ComponentDim);
+
    if (pDX->m_bSaveAndValidate && m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithReinforcement_BeforeLosses.Coefficient < m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Coefficient)
    {
-      AfxMessageBox(_T("Stress limits for Temporary Stresses before Losses (LRFD 5.9.4.1): Tensile stress limit with bonded reinforcement must be greater than or equal to than without"),MB_OK | MB_ICONWARNING);
+      AfxMessageBox(_T("Stress limits for Temporary Stresses (LRFD 5.9.4.1): Tensile stress limit with bonded reinforcement must be greater than or equal to than without"),MB_OK | MB_ICONWARNING);
       pDX->Fail();
    }
 
@@ -369,11 +374,11 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))");
    }
    else
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'ci (MPa))") : _T("(lambda)sqrt(f'ci (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'ci (MPa))") : _T("(lambda)sqrt(f'ci (KSI))");
    }
 
    DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_pImpl->m_LiftingCriteria.ModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
@@ -393,7 +398,7 @@ void CSpecMainSheet::ExchangeLiftingData(CDataExchange* pDX)
    DDV_UnitValueRange(pDX, IDC_MIN_CABLE_ANGLE,m_Entry.m_pImpl->m_LiftingCriteria.MinCableInclination, 0.0, 90., pDisplayUnits->Angle );
 
    Float64 sweepTolerance = m_Entry.m_pImpl->m_LiftingCriteria.SweepTolerance;
-   if ( pApp->GetUnitsMode() == eafTypes::umSI )
+   if ( pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI )
    {
       sweepTolerance *= 1000;
       DDX_Text(pDX,IDC_GIRDER_SWEEP_TOL,sweepTolerance);
@@ -501,11 +506,11 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
    else
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
 
    DDX_UnitValueAndTag(pDX, IDC_FR, IDC_FR_UNIT, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.ModulusOfRuptureCoefficient[pgsTypes::Normal], pDisplayUnits->SqrtPressure );
@@ -569,7 +574,7 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
 
    DDX_CBItemData(pDX, IDC_IMPACT_USAGE, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.ImpactUsage); // don't use DDX_CBEnum since the combo list is in a different order than the enum
 
-   CString slope_unit(pApp->GetUnitsMode() == eafTypes::umSI ? _T("m/m") : _T("ft/ft"));
+   CString slope_unit(pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("m/m") : _T("ft/ft"));
 
    DDX_Text(pDX, IDC_CROWN_SLOPE, m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.RoadwayCrownSlope);
    DDX_Text(pDX, IDC_CROWN_SLOPE_UNIT, slope_unit);
@@ -578,7 +583,7 @@ void CSpecMainSheet::ExchangeWsdotHaulingData(CDataExchange* pDX)
    DDX_Text(pDX, IDC_HE_ROADWAY_SUPERELEVATION_UNIT, slope_unit);
 
    Float64 sweepTolerance = m_Entry.m_pImpl->m_HaulingCriteria.WSDOT.SweepTolerance;
-   if ( pApp->GetUnitsMode() == eafTypes::umSI )
+   if ( pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI )
    {
       sweepTolerance *= 1000;
       DDX_Text(pDX,IDC_GIRDER_SWEEP_TOL,sweepTolerance);
@@ -654,11 +659,11 @@ void CSpecMainSheet::ExchangeKdotHaulingData(CDataExchange* pDX)
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
    else
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
 
    // Use the normal crown values for KDOT
@@ -706,11 +711,11 @@ void CSpecMainSheet::ExchangeMomentCapacityData(CDataExchange* pDX)
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
    else
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
 
    DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_pImpl->m_MomentCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
@@ -825,11 +830,11 @@ void CSpecMainSheet::ExchangeShearCapacityData(CDataExchange* pDX)
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
    else
    {
-      tag = pApp->GetUnitsMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+      tag = pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
 
    DDX_UnitValueAndTag(pDX, IDC_FR,      IDC_FR_LABEL,      m_Entry.m_pImpl->m_ShearCapacityCriteria.ModulusOfRuptureCoefficient[pgsTypes::Normal],          pDisplayUnits->SqrtPressure );
@@ -1000,12 +1005,10 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       ATLASSERT(0 <= rad_ord && rad_ord < map_size);
       m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod = map[rad_ord];
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      if ( pBroker )
+      auto broker = EAFGetBroker();
+      if ( broker )
       {
-         CComPtr<IDocumentType> pDocType;
-         pBroker->GetInterface(IID_IDocumentType,(IUnknown**)&pDocType);
+         auto pDocType = broker->GetInterface<IDocumentType>(IID_IDocumentType);
          if ( pDocType->IsPGSpliceDocument() && m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP && 0 <  m_Entry.GetRefCount() )
          {
             AfxMessageBox(_T("Time-step method must be selected for spliced girder bridges"));
@@ -1241,8 +1244,8 @@ void CSpecMainSheet::ExchangeClosureData(CDataExchange* pDX)
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   CString tagBeforeLosses = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
-   CString tagAfterLosses  = (pApp->GetUnitsMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))"));
+   CString tagBeforeLosses = (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'ci (MPa))") : _T("sqrt(f'ci (KSI))"));
+   CString tagAfterLosses  = (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))"));
 
    if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
@@ -1390,6 +1393,7 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    DDV_GreaterThanZero(pDX, IDC_N, m_Entry.m_pImpl->m_EndZoneCriteria.SplittingZoneLengthFactor);
 	DDX_Check_Bool(pDX, IDC_CHECK_CONFINEMENT,  m_Entry.m_pImpl->m_EndZoneCriteria.bCheckConfinement);
 	DDX_Check_Bool(pDX, IDC_DESIGN_CONFINEMENT, m_Entry.m_pImpl->m_EndZoneCriteria.bDesignConfinement);
+    DDX_Check_Bool(pDX, IDC_HORIZ_TENSION_TIE_CHECK, m_Entry.m_pImpl->m_EndZoneCriteria.bCheckHorizTensionTie);
 
    // Lifting
 	DDX_Check_Bool(pDX, IDC_CHECK_LIFTING,  m_Entry.m_pImpl->m_LiftingCriteria.bCheck);
@@ -1463,14 +1467,55 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
    // Roadway elevations
    DDX_UnitValueAndTag(pDX, IDC_ELEVATION_TOLERANCE, IDC_ELEVATION_TOLERANCE_UNIT, m_Entry.m_pImpl->m_SlabOffsetCriteria.FinishedElevationTolerance, pDisplayUnits->ComponentDim);
    DDV_UnitValueZeroOrMore(pDX, IDC_ELEVATION_TOLERANCE, m_Entry.m_pImpl->m_SlabOffsetCriteria.FinishedElevationTolerance, pDisplayUnits->ComponentDim);
+
+   DDX_Check_Bool(pDX, IDC_CHECK_BEARING, m_Entry.m_pImpl->m_BearingCriteria.bCheck);
 }
 
 void CSpecMainSheet::ExchangeBearingsData(CDataExchange* pDX)
 {
+   CEAFApp* pApp = EAFGetApp();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
    DDX_Check_Bool(pDX, IDC_TAPERED_SOLE_PLATE_REQUIRED, m_Entry.m_pImpl->m_BearingCriteria.bAlertTaperedSolePlateRequirement);
    DDX_Text(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_pImpl->m_BearingCriteria.TaperedSolePlateInclinationThreshold);
    DDV_LimitOrMore(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_pImpl->m_BearingCriteria.TaperedSolePlateInclinationThreshold, 0.0);
    DDX_Check_Bool(pDX, IDC_BEARING_REACTION_IMPACT, m_Entry.m_pImpl->m_BearingCriteria.bUseImpactForBearingReactions);
+
+   DDX_Radio(pDX, IDC_BEARING_METHOD_A, (int&)m_Entry.m_pImpl->m_BearingCriteria.AnalysisMethod);
+
+   DDX_UnitValueAndTag(pDX, IDC_SHEAR_MOD_MIN_LIMIT, IDC_SHEAR_MOD_MIN_LIMIT_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MinimumElastomerShearModulus, pDisplayUnits->ModE);
+
+   DDX_UnitValueAndTag(pDX, IDC_SHEAR_MOD_MAX_LIMIT, IDC_SHEAR_MOD_MAX_LIMIT_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MaximumElastomerShearModulus, pDisplayUnits->ModE);
+
+   DDX_Check_Bool(pDX, IDC_REQ_INT_LAYER_THICK_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bRequiredIntermediateElastomerThickness);
+   DDX_UnitValueAndTag(pDX, IDC_REQ_INT_LAYER_THICK, IDC_REQ_INT_LAYER_THICK_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.RequiredIntermediateElastomerThickness, pDisplayUnits->ComponentDim);
+
+   DDX_Check_Bool(pDX, IDC_MIN_BEARING_HEIGHT_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMinimumTotalBearingHeight);
+   DDX_UnitValueAndTag(pDX, IDC_MIN_BEARING_HEIGHT, IDC_MIN_BEARING_HEIGHT_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MinimumTotalBearingHeight, pDisplayUnits->ComponentDim);
+
+   DDX_Check_Bool(pDX, IDC_MIN_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMinimumBearingEdgeToGirderEdgeDistance);
+   DDX_UnitValueAndTag(pDX, IDC_MIN_BEARING_GIRDER_EDGE, IDC_MIN_BEARING_GIRDER_EDGE_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MinimumTotalBearingHeight, pDisplayUnits->ComponentDim);
+
+   DDX_Check_Bool(pDX, IDC_MAX_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMaximumBearingEdgeToGirderEdgeDistance);
+   DDX_UnitValueAndTag(pDX, IDC_MAX_BEARING_GIRDER_EDGE, IDC_MAX_BEARING_GIRDER_EDGE_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MaximumBearingEdgeToGirderEdgeDistance, pDisplayUnits->ComponentDim);
+
+   DDX_Check_Bool(pDX, IDC_REQ_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bRequiredBearingEdgeToGirderEdgeDistance);
+   DDX_UnitValueAndTag(pDX, IDC_REQ_BEARING_GIRDER_EDGE, IDC_REQ_BEARING_GIRDER_EDGE_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.RequiredBearingEdgeToGirderEdgeDistance, pDisplayUnits->ComponentDim);
+
+   DDX_UnitValueAndTag(pDX, IDC_MAX_LL_DEF_LIMIT, IDC_MAX_LL_DEF_LIMIT_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MaximumLiveLoadDeflection, pDisplayUnits->ComponentDim);
+
+   DDX_Check_Bool(pDX, IDC_MAX_TOTAL_BEARING_LOAD_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMaximumTotalLoad);
+   DDX_UnitValueAndTag(pDX, IDC_MAX_BEARING_TL, IDC_MAX_TL_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MaximumTotalLoad, pDisplayUnits->GeneralForce);
+
 }
 
 BOOL CSpecMainSheet::OnInitDialog() 

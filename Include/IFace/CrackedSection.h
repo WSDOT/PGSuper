@@ -22,8 +22,9 @@
 
 #pragma once
 
-class pgsPointOfInterest;
 #include <Details.h>
+
+class pgsPointOfInterest;
 
 /*****************************************************************************
 INTERFACE
@@ -35,8 +36,9 @@ DESCRIPTION
 // {CD48333F-E8B8-4025-89C4-86BA05E60121}
 DEFINE_GUID(IID_ICrackedSection, 
 0xcd48333f, 0xe8b8, 0x4025, 0x89, 0xc4, 0x86, 0xba, 0x5, 0xe6, 0x1, 0x21);
-interface ICrackedSection : IUnknown
+class ICrackedSection
 {
+public:
    virtual Float64 GetIcr(const pgsPointOfInterest& poi,bool bPositiveMoment) const = 0;
    virtual const CRACKEDSECTIONDETAILS* GetCrackedSectionDetails(const pgsPointOfInterest& poi, bool bPositiveMoment) const = 0;
    virtual std::vector<const CRACKEDSECTIONDETAILS*> GetCrackedSectionDetails(const PoiList& vPoi,bool bPositiveMoment) const = 0;

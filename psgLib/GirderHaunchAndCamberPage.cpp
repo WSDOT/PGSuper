@@ -24,17 +24,12 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "GirderHaunchAndCamberPage.h"
 #include "GirderMainSheet.h"
 #include <EAF\EAFDocument.h>
 #include <IFace\BeamFactory.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 // CGirderHaunchAndCamberPage dialog
 
 IMPLEMENT_DYNAMIC(CGirderHaunchAndCamberPage, CPropertyPage)
@@ -68,8 +63,7 @@ BOOL CGirderHaunchAndCamberPage::OnInitDialog()
       ic++;
    }
 
-   CComPtr<IBeamFactory> factory;
-   pDad->m_Entry.GetBeamFactory(&factory);
+   auto factory = pDad->m_Entry.GetBeamFactory();
    if (factory->CanPrecamber())
    {
       GetDlgItem(IDC_PRECAMBER_LIMIT_NOTE)->SetWindowText(_T("Precamber limit"));

@@ -20,9 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib\StrandSlopeCriteria.h>
+#include <PsgLib\StrandSlopeCriteria.h>
 #include <EAF/EAFDisplayUnits.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/DifferenceItem.h>
 
 bool StrandSlopeCriteria::operator==(const StrandSlopeCriteria& other) const
 {
@@ -38,13 +38,13 @@ bool StrandSlopeCriteria::operator!=(const StrandSlopeCriteria& other) const
       !::IsEqual(MaxSlope07, other.MaxSlope07);
 }
 
-bool StrandSlopeCriteria::Compare(const StrandSlopeCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool StrandSlopeCriteria::Compare(const StrandSlopeCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (operator!=(other))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Strand Slope requirements are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Strand Slope requirements are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -70,7 +70,7 @@ Float64 StrandSlopeCriteria::GetStrandSlopeLimit(WBFL::Materials::PsStrand::Size
    return strand_slope_limit;
 }
 
-void StrandSlopeCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void StrandSlopeCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

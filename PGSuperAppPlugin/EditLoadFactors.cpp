@@ -22,13 +22,10 @@
 
 #include "stdafx.h"
 #include "EditLoadFactors.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 txnEditLoadFactors::txnEditLoadFactors(const CLoadFactors& oldLoadFactors,const CLoadFactors& newLoadFactors)
 {
    m_LoadFactors[0] = oldLoadFactors;
@@ -50,7 +47,7 @@ void txnEditLoadFactors::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditLoadFactors::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditLoadFactors::CreateClone() const
 {
    return std::make_unique<txnEditLoadFactors>(m_LoadFactors[0],m_LoadFactors[1]);
 }
@@ -74,8 +71,8 @@ bool txnEditLoadFactors::IsRepeatable() const
 
 void txnEditLoadFactors::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done

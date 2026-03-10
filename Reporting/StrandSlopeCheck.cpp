@@ -23,17 +23,14 @@
 #include "StdAfx.h"
 #include <Reporting\StrandSlopeCheck.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\StrandSlopeArtifact.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -70,8 +67,8 @@ CStrandSlopeCheck& CStrandSlopeCheck::operator= (const CStrandSlopeCheck& rOther
 
 //======================== OPERATIONS =======================================
 void CStrandSlopeCheck::Build(rptChapter* pChapter,
-                              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 

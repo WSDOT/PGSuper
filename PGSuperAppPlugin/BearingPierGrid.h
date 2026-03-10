@@ -21,7 +21,8 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
+#include "BearingDetailsDlg.h"
 
 // Local data structures for Bearing Data at pier
 typedef struct BearingPierData
@@ -68,6 +69,7 @@ public:
    CBearingData2 GetBrgData(G_TYPE* pGrid, ROWCOL row, const WBFL::Units::LengthData* pCompUnit, CDataExchange* pDX);
 
 // grid columns of interest
+   ROWCOL m_BearingDefTypeCol;
    ROWCOL m_BearingShapeCol;
    ROWCOL m_BearingCountCol;
    ROWCOL m_BearingSpacingCol;
@@ -77,6 +79,7 @@ public:
    ROWCOL m_BearingRecessHeightCol;
    ROWCOL m_BearingRecessLengthCol;
    ROWCOL m_BearingSolePlateCol;
+   ROWCOL m_BearingDetailButtonCol;
 };
 
 // BearingPierGrid.h : header file
@@ -119,6 +122,8 @@ protected:
    virtual int GetColWidth(ROWCOL nCol);
    virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
    virtual BOOL OnValidateCell(ROWCOL nRow, ROWCOL nCol);
+   afx_msg void OnSelectionChange();
+   void OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol);
 
 public:
    // custom init for grid
@@ -135,8 +140,12 @@ private:
    void SetRowStyle(ROWCOL nRow);
 
    const WBFL::Units::LengthData* m_pCompUnit;
-   BearingPierData m_BearingPierData;
+
    BearingGridDataGetter<CBearingPierGrid> m_DGetter;
+
+   CBearingDetailsDlg m_details_dlg;
+
+   std::vector<CBearingData2> m_BearingPierDetailData;
 };
 
 // Template instantiation
@@ -144,9 +153,22 @@ template <class G_TYPE> CBearingData2 BearingGridDataGetter<G_TYPE>::GetBrgData(
 {
    CBearingData2 bd;
 
+   // Definition Type
+   bool isDetail = false;
+   CString str = pGrid->GetCellValue(row, m_BearingDefTypeCol);
+   if (str == _T("Detailed"))
+   {
+       bd.DefinitionType = btDetailed;
+       isDetail = true;
+   }
+   else
+   {
+       bd.DefinitionType = btBasic;
+   }
+
    // Shape
    bool isRound = false;
-   CString str = pGrid->GetCellValue(row, m_BearingShapeCol);
+   str = pGrid->GetCellValue(row, m_BearingShapeCol);
    if (str == _T("Round"))
    {
       bd.Shape = bsRound;

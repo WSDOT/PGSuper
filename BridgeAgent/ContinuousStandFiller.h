@@ -31,7 +31,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 #include <psgLib\GirderLibraryEntry.h>
 
 // This is a pure virtual adapter class for IPrecastGirder which allows input of strands using 

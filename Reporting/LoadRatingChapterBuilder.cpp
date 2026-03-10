@@ -25,9 +25,10 @@
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include <Reporting\RatingSummaryTable.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\Intervals.h>
-
 #include <IFace\RatingSpecification.h>
 #include <IFace\Bridge.h>
 
@@ -35,18 +36,6 @@
 
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/****************************************************************************
-CLASS
-   CLoadRatingChapterBuilder
-****************************************************************************/
 
 CLoadRatingChapterBuilder::CLoadRatingChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -61,8 +50,7 @@ LPCTSTR CLoadRatingChapterBuilder::GetName() const
 rptChapter* CLoadRatingChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    auto pLrGirderRptSpec = std::dynamic_pointer_cast<const CLoadRatingReportSpecificationBase>(pRptSpec);
    if (!pLrGirderRptSpec)
@@ -207,9 +195,4 @@ rptChapter* CLoadRatingChapterBuilder::Build(const std::shared_ptr<const WBFL::R
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingChapterBuilder::Clone() const
-{
-   return std::make_unique<CLoadRatingChapterBuilder>();
 }

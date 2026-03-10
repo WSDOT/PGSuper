@@ -27,17 +27,16 @@
 #include "PGSuperDoc.h"
 #include "BridgeDescLongitudinalRebar.h"
 #include "GirderDescDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <MFCTools\CustomDDX.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescLongitudinalRebar property page
@@ -68,8 +67,8 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    // longitudinal steel information from grid and store it
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -152,8 +151,8 @@ END_MESSAGE_MAP()
 void CGirderDescLongitudinalRebar::RestoreToLibraryDefaults(CLongitudinalRebarData* pLongData)
 {
    // get shear information from library
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( m_CurGrdName.c_str());
    ASSERT(pGirderEntry != 0);

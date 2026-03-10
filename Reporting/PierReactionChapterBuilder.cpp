@@ -32,13 +32,8 @@
 #include <Reporting\UserReactionTable.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-inline bool IsDifferentNumberOfGirdersPerSpan(IBridge* pBridge)
+inline bool IsDifferentNumberOfGirdersPerSpan(std::shared_ptr<IBridge> pBridge)
 {
    GroupIndexType ngrps = pBridge->GetGirderGroupCount();
    GirderIndexType ngdrs = pBridge->GetGirderCount(0);
@@ -51,22 +46,11 @@ inline bool IsDifferentNumberOfGirdersPerSpan(IBridge* pBridge)
    return false;
 }
 
-/****************************************************************************
-CLASS
-   CPierReactionChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CPierReactionChapterBuilder::CPierReactionChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CPierReactionChapterBuilder::GetName() const
 {
    return TEXT("Pier Reactions");
@@ -76,10 +60,9 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
 {
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
 
-   pGdrLineRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrLineRptSpec->GetBroker();
    girderKey = pGdrLineRptSpec->GetGirderKey();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
@@ -356,19 +339,19 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
    }
 
    p_design_table->SetColumnSpan(0, col, 2);
-   (*p_design_table)(0, col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Fx");
+   (*p_design_table)(0, col) << _T("* Design LL") << rptNewLine << _T("Optimize Fx");
    (*p_design_table)(1, col) << _T("Max");
    (*p_design_table)(1, col + 1) << _T("Min");
    col += 2;
 
    p_design_table->SetColumnSpan(0, col, 2);
-   (*p_design_table)(0, col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Fy");
+   (*p_design_table)(0, col) << _T("* Design LL") << rptNewLine << _T("Optimize Fy");
    (*p_design_table)(1, col) << _T("Max");
    (*p_design_table)(1, col + 1) << _T("Min");
    col += 2;
 
    p_design_table->SetColumnSpan(0, col, 2);
-   (*p_design_table)(0, col) << _T("* Design Live Load") << rptNewLine << _T("Optimize Mz");
+   (*p_design_table)(0, col) << _T("* Design LL") << rptNewLine << _T("Optimize Mz");
    (*p_design_table)(1, col) << _T("Max");
    (*p_design_table)(1, col + 1) << _T("Min");
    col += 2;
@@ -1636,9 +1619,4 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPierReactionChapterBuilder::Clone() const
-{
-   return std::make_unique<CPierReactionChapterBuilder>();
 }

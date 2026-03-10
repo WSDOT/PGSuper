@@ -20,31 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSLIB_SHEARZONEDATA_H_
-#define INCLUDED_PGSLIB_SHEARZONEDATA_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#include <WBFLCore.h>
-
-
-// PROJECT INCLUDES
-//
-#include "psgLibLib.h"
-
+#include "PsgLibLib.h"
+#include <PsgLib\ShearZoneData2.h>
+#include <MathEx.h>
 #include <StrData.h>
 #include <Materials/Rebar.h>
 
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-   class WBFL::System::IStructuredLoad;
-   class WBFL::System::IStructuredSave;
-   class CShearData2;
-// MISCELLANEOUS
-//
+class WBFL::System::IStructuredLoad;
+class WBFL::System::IStructuredSave;
+class CShearData;
 
 /*****************************************************************************
 CLASS 
@@ -61,12 +47,12 @@ LOG
    rdp : 12.03.1998 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS CShearZoneData2
+class PSGLIBCLASS CShearZoneData
 {
-   friend CShearData2; // only our friend can see legacy data
+   friend CShearData; // only or friend can see legacy data
 
 public:
-   ZoneIndexType  ZoneNum;
+   Uint32  ZoneNum;
    WBFL::Materials::Rebar::Size VertBarSize;
    Float64 BarSpacing;
    Float64 ZoneLength;
@@ -74,17 +60,22 @@ public:
    Float64 nHorzInterfaceBars;
    WBFL::Materials::Rebar::Size ConfinementBarSize;
 
-   bool bWasDesigned; // For use by design algorithm only
+private:
+   // These values are used only for CShearData version < 9
+   WBFL::Materials::Rebar::Size  legacy_HorzBarSize;
+   Uint32          legacy_nHorzBars;
 
+   // GROUP: LIFECYCLE
 public:
-   CShearZoneData2();
-   CShearZoneData2(const CShearZoneData2 & rOther) = default;
+   CShearZoneData();
+   CShearZoneData(const CShearZoneData& rOther) = default;
+   ~CShearZoneData() = default;
 
-   ~CShearZoneData2() = default;
+   CShearZoneData& operator = (const CShearZoneData& rOther) = default;
+   bool operator == (const CShearZoneData& rOther) const;
+   bool operator != (const CShearZoneData& rOther) const;
 
-   CShearZoneData2& operator=(const CShearZoneData2& rOther) = default;
-   bool operator == (const CShearZoneData2& rOther) const;
-   bool operator != (const CShearZoneData2& rOther) const;
+   // GROUP: OPERATIONS
 
 	HRESULT Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
                 WBFL::Materials::Rebar::Size ConfinementBarSize,Uint32 NumConfinementZones, 
@@ -92,20 +83,14 @@ public:
 
 	HRESULT Save(WBFL::System::IStructuredSave* pStrSave);
 
-private:
-   // These values are used only for CShearData version < 9
-   WBFL::Materials::Rebar::Size  legacy_HorzBarSize;
-   Uint32          legacy_nHorzBars;
+   CShearZoneData2 Convert() const;
 };
 
-class PSGLIBCLASS ShearZoneData2Less
+class PSGLIBCLASS ShearZoneDataLess
 {
 public:
-   bool operator()(const CShearZoneData2& a, const CShearZoneData2& b)
+   bool operator()(const CShearZoneData& a, const CShearZoneData& b)
    {
       return a.ZoneNum < b.ZoneNum;
    }
 };
-
-
-#endif // INCLUDED_PGSLIB_SHEARZONEDATA_H_

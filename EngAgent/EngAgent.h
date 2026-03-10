@@ -20,10 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_ENGAGENT_H_
-#define INCLUDED_ENGAGENT_H_
+#pragma once
 
 #include <PgsExt\PgsExt.h>
+
+#include <IFace\Tools.h>
 
 #include <IFace\PrestressForce.h>
 #include <IFace\DistributionFactors.h>
@@ -39,5 +40,5 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+#include <IFace\BearingDesignParameters.h>
 
-#endif // INCLUDED_ENGAGENT_H_

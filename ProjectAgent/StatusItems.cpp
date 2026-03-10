@@ -24,21 +24,15 @@
 
 #include "StatusItems.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 
 pgsRebarStrengthStatusItem::pgsRebarStrengthStatusItem(const CSegmentKey& segmentKey,Type type,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 pgsSegmentRelatedStatusItem(statusGroupID,callbackID,strDescription,segmentKey),m_SegmentKey(segmentKey),m_Type(type)
 {
 }
 
-bool pgsRebarStrengthStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsRebarStrengthStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsRebarStrengthStatusItem* other = dynamic_cast<pgsRebarStrengthStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsRebarStrengthStatusItem>(pOther);
    if ( !other )
       return false;
 
@@ -49,12 +43,12 @@ pgsRebarStrengthStatusCallback::pgsRebarStrengthStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsRebarStrengthStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsRebarStrengthStatusCallback::GetSeverity() const
 {
-   return eafTypes::statusWarning;
+   return WBFL::EAF::StatusSeverityType::Warning;
 }
 
-void pgsRebarStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsRebarStrengthStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    AfxMessageBox(pStatusItem->GetDescription());
 }

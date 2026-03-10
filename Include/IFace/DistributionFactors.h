@@ -20,30 +20,13 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_DISTRIBUTIONFACTORS_H_
-#define INCLUDED_IFACE_DISTRIBUTIONFACTORS_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#if !defined INCLUDED_WBFLTYPES_H_
 #include <WbflTypes.h>
-#endif
-
 #include <Details.h>
 
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 class rptChapter;
-struct IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 INTERFACE
@@ -57,8 +40,9 @@ DESCRIPTION
 // {61DC0CFA-7B2F-11d2-8854-006097C68A9C}
 DEFINE_GUID(IID_ILiveLoadDistributionFactors, 
 0x61dc0cfa, 0x7b2f, 0x11d2, 0x88, 0x54, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface ILiveLoadDistributionFactors : IUnknown
+class ILiveLoadDistributionFactors
 {
+public:
    // Verifies that certain curvature, stiffness, and parallelness requirements are satisfied. Must be called before computing LLDF. 
    // Returns bridge-wide range of applicability flag (LLDF_BWROA_*). Can be OR'd
    // If setting is RangeOfApplicabilityAction::Enforce, and ROA is out of range, an unwind exception is thrown.
@@ -78,7 +62,7 @@ interface ILiveLoadDistributionFactors : IUnknown
    virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V,const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual void GetNegMomentDistFactorPoints(const CSpanKey& spanKey,Float64* dfPoints,IndexType* nPoints) const = 0;
 
-   virtual void ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
    virtual void ReportReactionDistributionFactors(const CGirderKey& girderKey, rptChapter* pChapter, bool bSubHeading) const = 0;
    virtual bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) const = 0;
    virtual Uint32 GetNumberOfDesignLanes(SpanIndexType spanIdx) const = 0;
@@ -94,6 +78,4 @@ interface ILiveLoadDistributionFactors : IUnknown
    virtual Float64 GetDeflectionDistFactor(const CSpanKey& spanKey) const = 0;
    virtual Float64 GetDeflectionDistFactorEx(const CSpanKey& spanKey, Float64* pMPF, Uint32* pnLanes, GirderIndexType* pnGirders) const = 0;
 };
-
-#endif // INCLUDED_IFACE_DISTRIBUTIONFACTORS_H_
 

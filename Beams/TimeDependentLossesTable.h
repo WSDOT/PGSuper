@@ -20,29 +20,23 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// TimeDependentLossesTable.h : Declaration of the CTimeDependentLossesTable
+#pragma once
 
-#ifndef __TIMEDEPENDENTLOSSESTABLE_H_
-#define __TIMEDEPENDENTLOSSESTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 class CGirderData;
 
-/////////////////////////////////////////////////////////////////////////////
-// CTimeDependentLossesTable
 class CTimeDependentLossesTable : public rptRcTable
 {
 public:
-	static CTimeDependentLossesTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-	void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CTimeDependentLossesTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+	void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CTimeDependentLossesTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CTimeDependentLossesTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );
@@ -57,7 +51,5 @@ private:
    DECLARE_UV_PROTOTYPE( rptTimeUnitValue,    time);
    rptRcScalar scalar;
 
-   const CGirderData* m_pGD;
+   const CGirderData* m_pGD = nullptr;
 };
-
-#endif //__TIMEDEPENDENTLOSSESTABLE_H_

@@ -83,5 +83,5 @@ protected:
    void BuildNorthArrowDisplayObjects();
 
 
-   void CreateStationLabel(iDisplayList* pDisplayList,Float64 station,LPCTSTR strBaseLabel=nullptr,long angle=LABEL_NORMAL_TO_ALIGNMENT,UINT textAlign=TA_BASELINE | TA_LEFT);
+   void CreateStationLabel(std::shared_ptr<WBFL::DManip::iDisplayList> pDisplayList, Float64 station, LPCTSTR strBaseLabel = nullptr, long angle = LABEL_NORMAL_TO_ALIGNMENT, UINT textAlign = TA_BASELINE | TA_LEFT);
 };

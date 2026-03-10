@@ -31,15 +31,10 @@
 #include "PGSuperCalculationSheet.h"
 #include <IFace\VersionInfo.h>
 
-#include <EAF\EAFAppPlugin.h>
+#include <EAF\PluginApp.h>
 
 #include "Hints.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGraphView
@@ -100,8 +95,8 @@ bool CGraphView::DoResultsExist()
 
 void CGraphView::OnPrint(CDC* pDC, CPrintInfo* pInfo) 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    // get paper size
    PGSuperCalculationSheet border(pBroker);

@@ -22,7 +22,7 @@
 
 #pragma once
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 #include <Reporter\Reporter.h>
 
 /*****************************************************************************
@@ -42,45 +42,32 @@ LOG
 class PGSEXTCLASS rptPointOfInterest : public rptLengthUnitValue
 {
 public:
-   //------------------------------------------------------------------------
    rptPointOfInterest(const WBFL::Units::Length* pUnitOfMeasure = 0,
                       Float64 zeroTolerance = 0.,
                       bool bShowUnitTag = true);
 
-   //------------------------------------------------------------------------
-   rptPointOfInterest(const rptPointOfInterest& rOther);
+   rptPointOfInterest(const rptPointOfInterest& rOther) = default;
 
-   //------------------------------------------------------------------------
-   rptPointOfInterest& operator = (const rptPointOfInterest& rOther);
+   rptPointOfInterest& operator = (const rptPointOfInterest& rOther) = default;
 
-   //------------------------------------------------------------------------
    virtual rptReportContent* CreateClone() const override;
 
-   //------------------------------------------------------------------------
    virtual rptReportContent& SetValue(PoiAttributeType reference,const pgsPointOfInterest& poi);
 
-   //------------------------------------------------------------------------
    std::_tstring AsString() const;
 
    // Prefixes the POI with Span s Girder g
    void IncludeSpanAndGirder(bool bIncludeSpanAndGirder);
    bool IncludeSpanAndGirder() const;
 
-   //------------------------------------------------------------------------
    // If set to true, the poi attribute prefixes the distance value
    // eg  (HP) 2.34ft, otherwise it post-fixes the distance value 2.34ft (HP)
    void PrefixAttributes(bool bPrefixAttributes=true);
 
-   //------------------------------------------------------------------------
    // Returns true if the poi is to be prefixed
    bool PrefixAttributes() const;
 
-protected:
-   void MakeCopy(const rptPointOfInterest& rOther);
-   void MakeAssignment(const rptPointOfInterest& rOther);
-
 private:
-   CComPtr<IBroker> m_pBroker;
    pgsPointOfInterest m_POI;
    CSpanKey m_SpanKey;
    Float64 m_Xspan;

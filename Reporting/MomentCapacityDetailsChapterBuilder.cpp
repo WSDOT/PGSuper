@@ -25,38 +25,31 @@
 #include <Reporting\MomentCapacityDetailsChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
-#include <IFace\DocumentType.h>
 #include <IFace\ResistanceFactors.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
 #include <System\AutoVariable.h>
 
 #include <psgLib/SpecificationCriteria.h>
 #include <psgLib/MomentCapacityCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
+#include <psglib/GirderLibraryEntry.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CMomentCapacityDetailsChapterBuilder
-****************************************************************************/
-
-void write_moment_data_table(IBroker* pBroker,
-                             IEAFDisplayUnits* pDisplayUnits,
+void write_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                              const PoiList& vPoi,
                              rptChapter* pChapter,
@@ -64,8 +57,8 @@ void write_moment_data_table(IBroker* pBroker,
                              const CString& strStageName,
                                  bool bPositiveMoment);
 
-void write_crack_moment_data_table(IBroker* pBroker,
-                                   IEAFDisplayUnits* pDisplayUnits,
+void write_crack_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                                    const PoiList& vPoi,
                                    rptChapter* pChapter,
@@ -73,8 +66,8 @@ void write_crack_moment_data_table(IBroker* pBroker,
                                    const CString& strStageName,
                                  bool bPositiveMoment);
 
-void write_min_moment_data_table(IBroker* pBroker,
-                                 IEAFDisplayUnits* pDisplayUnits,
+void write_min_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                                  const PoiList& vPoi,
                                  rptChapter* pChapter,
@@ -82,8 +75,8 @@ void write_min_moment_data_table(IBroker* pBroker,
                                  const CString& strStageName,
                                  bool bPositiveMoment);
 
-void write_over_reinforced_moment_data_table(IBroker* pBroker,
-                                 IEAFDisplayUnits* pDisplayUnits,
+void write_over_reinforced_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                                  const PoiList& vPoi,
                                  rptChapter* pChapter,
@@ -91,17 +84,13 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
                                  const CString& strStageName,
                                  bool bPositiveMoment);
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
 
-//======================== LIFECYCLE  =======================================
 CMomentCapacityDetailsChapterBuilder::CMomentCapacityDetailsChapterBuilder(bool bReportCapacityOnly,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
    m_bCapacityOnly = bReportCapacityOnly;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CMomentCapacityDetailsChapterBuilder::GetName() const
 {
    return TEXT("Moment Capacity Details");
@@ -112,17 +101,17 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(const std::shared_ptr<co
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -216,32 +205,8 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(const std::shared_ptr<co
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMomentCapacityDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CMomentCapacityDetailsChapterBuilder>(m_bCapacityOnly);
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-void write_moment_data_table(IBroker* pBroker,
-                             IEAFDisplayUnits* pDisplayUnits,
+void write_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                              const PoiList& vPoi,
                              rptChapter* pChapter,
@@ -270,8 +235,7 @@ void write_moment_data_table(IBroker* pBroker,
 
    bool bAfter2005 = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false);
 
-   CComPtr<IBeamFactory> pFactory;
-   pGdrEntry->GetBeamFactory(&pFactory);
+   auto pFactory = pGdrEntry->GetBeamFactory();
 
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 
@@ -653,8 +617,8 @@ void write_moment_data_table(IBroker* pBroker,
 
 }
 
-void write_crack_moment_data_table(IBroker* pBroker,
-                                   IEAFDisplayUnits* pDisplayUnits,
+void write_crack_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                                    const PoiList& vPoi,
                                    rptChapter* pChapter,
@@ -854,8 +818,8 @@ void write_crack_moment_data_table(IBroker* pBroker,
    *pParagraph << rptNewLine;
 }
 
-void write_min_moment_data_table(IBroker* pBroker,
-                                 IEAFDisplayUnits* pDisplayUnits,
+void write_min_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                                  const PoiList& vPoi,
                                  rptChapter* pChapter,
@@ -957,8 +921,8 @@ void write_min_moment_data_table(IBroker* pBroker,
    }
 }
 
-void write_over_reinforced_moment_data_table(IBroker* pBroker,
-                                 IEAFDisplayUnits* pDisplayUnits,
+void write_over_reinforced_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                                  const PoiList& vPoi,
                                  rptChapter* pChapter,

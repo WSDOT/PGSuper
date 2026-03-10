@@ -25,11 +25,9 @@
 
 #include "CLSID.h"
 
-#include "resource.h"       // main symbols
-
 #include "GrapherBase.h"
 
-#include <EAF\EAFInterfaceCache.h>
+
 
 #include <memory>
 
@@ -39,43 +37,21 @@ class rptReport;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSpliceGrapherImp
-class ATL_NO_VTABLE CPGSpliceGrapherImp : 
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CPGSpliceGrapherImp, &CLSID_PGSpliceGraphingAgent>,
-	public IConnectionPointContainerImpl<CPGSpliceGrapherImp>,
-   public CGrapherBase,
-   public IAgentEx
+class CPGSpliceGrapherImp : public CGrapherBase
 {
 public:
 	CPGSpliceGrapherImp()
 	{
-      m_pBroker = 0;
-   }
-
-DECLARE_REGISTRY_RESOURCEID(IDR_PGSPLICE_GRAPHER)
-
-BEGIN_COM_MAP(CPGSpliceGrapherImp)
-	COM_INTERFACE_ENTRY(IAgent)
-   COM_INTERFACE_ENTRY(IAgentEx)
-	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-END_COM_MAP()
-
-BEGIN_CONNECTION_POINT_MAP(CPGSpliceGrapherImp)
-END_CONNECTION_POINT_MAP()
+    }
 
 
-// IAgent
+// Agent
 public:
-	STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker) override;
-   STDMETHOD(RegInterfaces)() override;
-	STDMETHOD(Init)() override;
-	STDMETHOD(Reset)() override;
-	STDMETHOD(ShutDown)() override;
-   STDMETHOD(Init2)() override;
-   STDMETHOD(GetClassID)(CLSID* pCLSID) override;
+   bool Init() override;
+   CLSID GetCLSID() const override;
 
 private:
-   DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
    HRESULT InitGraphBuilders();
 };

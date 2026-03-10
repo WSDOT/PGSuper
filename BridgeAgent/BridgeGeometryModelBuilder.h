@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 // Collection to store girder orientation angle and distance the girder layout line is shifted normal to itself to account 
 // for the work point location and orientation angle.

@@ -27,34 +27,34 @@
 #include "StatusItems.h"
 #include <algorithm>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\SegmentArtifact.h>
 #include <PgsExt\GirderArtifact.h>
+#include <PsgLib/HaulingCriteria.h>
 #include <PsgLib\SpecLibraryEntry.h>
+#include <psgLib/LimitStateConcreteStrengthCriteria.h>
 #include <LRFD\PsStrand.h>
 #include <LRFD\Rebar.h>
 
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <Units\Convert.h>
-
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\SplittingCheckEngineer.h>
 
 #include <MfcTools\Exceptions.h>
 
 #include <EAF\EAFDisplayUnits.h>
 
+#include <PsgLib\GirderLabel.h>
 #include <psgLib/StrandStressCriteria.h>
 #include <psgLib/TendonStressCriteria.h>
 #include <psgLib/LiftingCriteria.h>
-#include <psgLib/HaulingCriteria.h>
 #include <psgLib/PrestressedElementCriteria.h>
 #include <psgLib/ClosureJointCriteria.h>
 #include <psgLib/PrincipalTensionStressCriteria.h>
@@ -65,104 +65,63 @@
 #include <psgLib/InterfaceShearCriteria.h>
 #include <psgLib/DuctSizeCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CSpecAgentImp
-
-
-/////////////////////////////////////////////////////////////////////////////
-// IAgent
-//
-STDMETHODIMP CSpecAgentImp::SetBroker(IBroker* pBroker)
+bool CSpecAgentImp::RegisterInterfaces()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
+   EAF_AGENT_REGISTER_INTERFACES;
 
-   m_LRFDSplittingCheckEngineer.SetBroker(pBroker);
-   m_PCIUHPCSplittingCheckEngineer.SetBroker(pBroker);
-   m_UHPCSplittingCheckEngineer.SetBroker(pBroker);
+   REGISTER_INTERFACE(IStressCheck);
+   REGISTER_INTERFACE(IStrandStressLimit);
+   REGISTER_INTERFACE(ITendonStressLimit);
+   REGISTER_INTERFACE(IConcreteStressLimits);
+   REGISTER_INTERFACE(ITransverseReinforcementSpec);
+   REGISTER_INTERFACE(ISplittingChecks);
+   REGISTER_INTERFACE(IPrecastIGirderDetailsSpec);
+   REGISTER_INTERFACE(ISegmentLiftingSpecCriteria);
+   REGISTER_INTERFACE(ISegmentHaulingSpecCriteria);
+   REGISTER_INTERFACE(IKdotGirderHaulingSpecCriteria);
+   REGISTER_INTERFACE(IDebondLimits);
+   REGISTER_INTERFACE(IResistanceFactors);
+   REGISTER_INTERFACE(IInterfaceShearRequirements);
+   REGISTER_INTERFACE(IDuctLimits);
 
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CSpecAgentImp::RegInterfaces()
+bool CSpecAgentImp::Init()
 {
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-
-   pBrokerInit->RegInterface( IID_IStressCheck,                   this );
-   pBrokerInit->RegInterface( IID_IStrandStressLimit,         this );
-   pBrokerInit->RegInterface( IID_ITendonStressLimit,         this );
-   pBrokerInit->RegInterface( IID_IConcreteStressLimits,       this );
-   pBrokerInit->RegInterface( IID_ITransverseReinforcementSpec,   this );
-   pBrokerInit->RegInterface( IID_ISplittingChecks,               this );
-   pBrokerInit->RegInterface( IID_IPrecastIGirderDetailsSpec,     this );
-   pBrokerInit->RegInterface( IID_ISegmentLiftingSpecCriteria,    this );
-   pBrokerInit->RegInterface( IID_ISegmentHaulingSpecCriteria,    this );
-   pBrokerInit->RegInterface( IID_IKdotGirderHaulingSpecCriteria, this );
-   pBrokerInit->RegInterface( IID_IDebondLimits,                  this );
-   pBrokerInit->RegInterface( IID_IResistanceFactors,             this );
-   pBrokerInit->RegInterface( IID_IInterfaceShearRequirements,    this );
-   pBrokerInit->RegInterface( IID_IDuctLimits,                    this );
-
-   return S_OK;
-}
-
-STDMETHODIMP CSpecAgentImp::Init()
-{
-   CREATE_LOGFILE("SpecAgent");
    EAF_AGENT_INIT;
-   m_scidHaulTruckError = pStatusCenter->RegisterCallback(new pgsHaulTruckStatusCallback(m_pBroker, eafTypes::statusError));
-   return AGENT_S_SECONDPASSINIT;
-}
+   CREATE_LOGFILE("SpecAgent");
 
-STDMETHODIMP CSpecAgentImp::Init2()
-{
+   GET_IFACE(IEAFStatusCenter, pStatusCenter);
+   m_scidHaulTruckError = pStatusCenter->RegisterCallback(std::make_shared<pgsHaulTruckStatusCallback>(WBFL::EAF::StatusSeverityType::Error));
+
    // Attach to connection points
-   CComQIPtr<IBrokerInitEx2, &IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
+   m_dwBridgeDescCookie = REGISTER_EVENT_SINK(IBridgeDescriptionEventSink);
 
-   // Connection point for the bridge description
-   hr = pBrokerInit->FindConnectionPoint(IID_IBridgeDescriptionEventSink, &pCP);
-   ATLASSERT(SUCCEEDED(hr));
-   hr = pCP->Advise(GetUnknown(), &m_dwBridgeDescCookie);
-   ATLASSERT(SUCCEEDED(hr));
-   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CSpecAgentImp::GetClassID(CLSID* pCLSID)
+CLSID CSpecAgentImp::GetCLSID() const
 {
-   *pCLSID = CLSID_SpecAgent;
-   return S_OK;
+   return CLSID_SpecAgent;
 }
 
-STDMETHODIMP CSpecAgentImp::Reset()
+bool CSpecAgentImp::Reset()
 {
-   return S_OK;
+   EAF_AGENT_RESET;
+   return true;
 }
 
-STDMETHODIMP CSpecAgentImp::ShutDown()
+bool CSpecAgentImp::ShutDown()
 {
+   EAF_AGENT_SHUTDOWN;
+
    //
    // Detach to connection points
    //
-   CComQIPtr<IBrokerInitEx2, &IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
+   UNREGISTER_EVENT_SINK(IBridgeDescriptionEventSink, m_dwBridgeDescCookie);
 
-   hr = pBrokerInit->FindConnectionPoint(IID_IBridgeDescriptionEventSink, &pCP);
-   ATLASSERT(SUCCEEDED(hr));
-   hr = pCP->Unadvise(m_dwBridgeDescCookie);
-   ATLASSERT(SUCCEEDED(hr));
-   pCP.Release(); // Recycle the connection point
-
-   EAF_AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;
    return S_OK;
 }
@@ -871,7 +830,7 @@ Float64 CSpecAgentImp::GetConcreteTensionStressLimit(const pgsPointOfInterest& p
    }
 }
 
-void CSpecAgentImp::ReportSegmentConcreteCompressionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const
+void CSpecAgentImp::ReportSegmentConcreteCompressionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    ATLASSERT(!poi.HasAttribute(POI_CLOSURE));
@@ -925,7 +884,33 @@ std::_tstring CSpecAgentImp::GetConcreteStressLimitParameterName(pgsTypes::Stres
    return strParamName;
 }
 
-void CSpecAgentImp::ReportSegmentConcreteTensionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const
+Float64 CSpecAgentImp::GetSlowCuringConcreteStrengthFactor(pgsTypes::LimitState limitState, pgsTypes::ConcreteType type, Float64 age) const
+{
+   // only applicable to service limit states and concrete age 90 days are greater
+   if (!IsServiceLimitState(limitState) || age <= 90.)
+      return 1.0;
+
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
+
+   bool bApplicableType = false;
+   // LRFD 10th Edition, 2024 made LWC an applicable type
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::TenthEdition2024)
+      bApplicableType = IsNWC(type) ? true : false;
+   else
+      bApplicableType = IsNWC(type) || IsLWC(type) ? true : false;
+
+   Float64 f = 1.0;
+   if (bApplicableType && limit_state_concrete_strength_criteria.bUse90DayConcreteStrength && limit_state_concrete_strength_criteria.SlowCuringConcreteStrengthFactor != 1.0 && 90 < age)
+   {
+      f = limit_state_concrete_strength_criteria.SlowCuringConcreteStrengthFactor;
+   }
+   return f;
+}
+
+void CSpecAgentImp::ReportSegmentConcreteTensionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    ATLASSERT(!poi.HasAttribute(POI_CLOSURE));
@@ -1000,8 +985,15 @@ void CSpecAgentImp::ReportSegmentConcreteTensionStressLimit(const pgsPointOfInte
 
       if (bIsStressingInterval || storageIntervalIdx <= task.intervalIdx && task.intervalIdx < haulIntervalIdx)
       {
-         (*pPara) << _T("Tension stress limit in precompressed tensile zone without bounded reinforcement = N/A") << rptNewLine;
-         (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone and without bonded reinforcement = ");
+         if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition())
+         {
+            (*pPara) << _T("Tension stress limit in areas without bonded reinforcement = ");
+         }
+         else
+         {
+            (*pPara) << _T("Tension stress limit in precompressed tensile zone without bounded reinforcement = N/A") << rptNewLine;
+            (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone and without bonded reinforcement = ");
+         }
          tension_stress_limit.Report(pPara, pDisplayUnits, concrete_symbol);
          Float64 fLimit = GetSegmentConcreteTensionStressLimit(poi, task, false/*without rebar*/);
          (*pPara) << _T(" = ") << stress_u.SetValue(fLimit) << rptNewLine;
@@ -1028,7 +1020,7 @@ void CSpecAgentImp::ReportSegmentConcreteTensionStressLimit(const pgsPointOfInte
    }
 }
 
-void CSpecAgentImp::ReportClosureJointConcreteCompressionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const
+void CSpecAgentImp::ReportClosureJointConcreteCompressionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CClosureKey& clousureKey(poi.GetSegmentKey());
    ATLASSERT(poi.HasAttribute(POI_CLOSURE));
@@ -1060,7 +1052,7 @@ void CSpecAgentImp::ReportClosureJointConcreteCompressionStressLimit(const pgsPo
    *pPara << _T(" = ") << stress_u.SetValue(fLimit) << rptNewLine;
 }
 
-void CSpecAgentImp::ReportClosureJointConcreteTensionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const
+void CSpecAgentImp::ReportClosureJointConcreteTensionStressLimit(const pgsPointOfInterest& poi, const StressCheckTask& task, const pgsSegmentArtifact* pSegmentArtifact, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CClosureKey& closureKey(poi.GetSegmentKey());
    ATLASSERT(poi.HasAttribute(POI_CLOSURE));
@@ -2358,6 +2350,20 @@ bool CSpecAgentImp::HasConcreteTensionStressLimitWithRebarOption(IntervalIndexTy
    return false;
 }
 
+Float64 CSpecAgentImp::GetMaxCoverToUseHigherTensionStressLimit() const
+{
+   if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition())
+   {
+      // Cover limit was added in 10th edition
+      const SpecLibraryEntry* pSpec = GetSpec();
+      return pSpec->GetPrestressedElementCriteria().MaxCoverToUseHigherTensionStressLimit;
+   }
+   else
+   {
+      return 0.0;
+   }
+}
+
 bool CSpecAgentImp::CheckTemporaryStresses() const
 {
    // I hate using the IDocumentType interface, but I don't
@@ -2414,7 +2420,7 @@ Float64 CSpecAgentImp::GetSegmentConcreteWebPrincipalTensionStressLimit(const CS
    }
 }
 
-void CSpecAgentImp::ReportSegmentConcreteWebPrincipalTensionStressLimit(const CSegmentKey& segmentKey, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const
+void CSpecAgentImp::ReportSegmentConcreteWebPrincipalTensionStressLimit(const CSegmentKey& segmentKey, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    Float64 fLimit = GetSegmentConcreteWebPrincipalTensionStressLimit(segmentKey);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
@@ -2465,7 +2471,7 @@ Float64 CSpecAgentImp::GetClosureJointConcreteWebPrincipalTensionStressLimit(con
    return f;
 }
 
-void CSpecAgentImp::ReportClosureJointConcreteWebPrincipalTensionStressLimit(const CClosureKey& closureKey, rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits) const
+void CSpecAgentImp::ReportClosureJointConcreteWebPrincipalTensionStressLimit(const CClosureKey& closureKey, rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    Float64 fLimit = GetClosureJointConcreteWebPrincipalTensionStressLimit(closureKey);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
@@ -2878,17 +2884,21 @@ const pgsSplittingCheckEngineer& CSpecAgentImp::GetSplittingCheckEngineer(const 
    }
 }
 
-void CSpecAgentImp::ReportSplittingChecks(IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const
+void CSpecAgentImp::ReportSplittingChecks(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const
 {
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    std::_tstring strName = pgsSplittingCheckEngineer::GetCheckName();
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   std::_tostringstream os;
+   os << strName << _T(" Resistance Check");
+   pPara->SetName(os.str().c_str());
    *pChapter << pPara;
-   (*pPara) << strName << _T(" Resistance Check") << rptNewLine;
+   (*pPara) << pPara->GetName() << rptNewLine;
+
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    std::_tstring strSegment(1 < nSegments ? _T("Segment") : _T("Girder"));
@@ -2910,11 +2920,11 @@ void CSpecAgentImp::ReportSplittingChecks(IBroker* pBroker, const pgsGirderArtif
    } // next segment
 }
 
-void CSpecAgentImp::ReportSplittingCheckDetails(IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const
+void CSpecAgentImp::ReportSplittingCheckDetails(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
@@ -2940,6 +2950,11 @@ void CSpecAgentImp::ReportSplittingCheckDetails(IBroker* pBroker, const pgsGirde
          (*pPara) << _T("Check for ") << pgsSplittingCheckEngineer::GetCheckName() << _T(" resistance is disabled in Project Criteria.") << rptNewLine;
       }
    }
+}
+
+std::_tstring CSpecAgentImp::GetSplittingCheckName() const
+{
+   return pgsSplittingCheckEngineer::GetCheckName();
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -3537,7 +3552,9 @@ Float64 CSpecAgentImp::GetRollStiffness(const CSegmentKey& segmentKey) const
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    ValidateHaulTruck(pSegment);
-   return pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollStiffness();
+   GET_IFACE(ILibrary, pLibrary);
+   auto pHaulTruckLibraryEntry = pLibrary->GetHaulTruckEntry(pSegment->HandlingData.HaulTruckName.c_str());
+   return pHaulTruckLibraryEntry->GetRollStiffness();
 }
 
 Float64 CSpecAgentImp::GetHeightOfGirderBottomAboveRoadway(const CSegmentKey& segmentKey) const
@@ -3545,7 +3562,9 @@ Float64 CSpecAgentImp::GetHeightOfGirderBottomAboveRoadway(const CSegmentKey& se
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    ValidateHaulTruck(pSegment);
-   return pSegment->HandlingData.pHaulTruckLibraryEntry->GetBottomOfGirderHeight();
+   GET_IFACE(ILibrary, pLibrary);
+   auto pHaulTruckLibraryEntry = pLibrary->GetHaulTruckEntry(pSegment->HandlingData.HaulTruckName.c_str());
+   return pHaulTruckLibraryEntry->GetBottomOfGirderHeight();
 }
 
 Float64 CSpecAgentImp::GetHeightOfTruckRollCenterAboveRoadway(const CSegmentKey& segmentKey) const
@@ -3553,7 +3572,9 @@ Float64 CSpecAgentImp::GetHeightOfTruckRollCenterAboveRoadway(const CSegmentKey&
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    ValidateHaulTruck(pSegment);
-   return pSegment->HandlingData.pHaulTruckLibraryEntry->GetRollCenterHeight();
+   GET_IFACE(ILibrary, pLibrary);
+   auto pHaulTruckLibraryEntry = pLibrary->GetHaulTruckEntry(pSegment->HandlingData.HaulTruckName.c_str());
+   return pHaulTruckLibraryEntry->GetRollCenterHeight();
 }
 
 Float64 CSpecAgentImp::GetAxleWidth(const CSegmentKey& segmentKey) const
@@ -3561,7 +3582,9 @@ Float64 CSpecAgentImp::GetAxleWidth(const CSegmentKey& segmentKey) const
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    ValidateHaulTruck(pSegment);
-   return pSegment->HandlingData.pHaulTruckLibraryEntry->GetAxleWidth();
+   GET_IFACE(ILibrary, pLibrary);
+   auto pHaulTruckLibraryEntry = pLibrary->GetHaulTruckEntry(pSegment->HandlingData.HaulTruckName.c_str());
+   return pHaulTruckLibraryEntry->GetAxleWidth();
 }
 
 Float64 CSpecAgentImp::GetAllowableDistanceBetweenSupports(const CSegmentKey& segmentKey) const
@@ -3569,7 +3592,9 @@ Float64 CSpecAgentImp::GetAllowableDistanceBetweenSupports(const CSegmentKey& se
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    ValidateHaulTruck(pSegment);
-   return pSegment->HandlingData.pHaulTruckLibraryEntry->GetMaxDistanceBetweenBunkPoints();
+   GET_IFACE(ILibrary, pLibrary);
+   auto pHaulTruckLibraryEntry = pLibrary->GetHaulTruckEntry(pSegment->HandlingData.HaulTruckName.c_str());
+   return pHaulTruckLibraryEntry->GetMaxDistanceBetweenBunkPoints();
 }
 
 Float64 CSpecAgentImp::GetAllowableLeadingOverhang(const CSegmentKey& segmentKey) const
@@ -3577,7 +3602,9 @@ Float64 CSpecAgentImp::GetAllowableLeadingOverhang(const CSegmentKey& segmentKey
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    ValidateHaulTruck(pSegment);
-   return pSegment->HandlingData.pHaulTruckLibraryEntry->GetMaximumLeadingOverhang();
+   GET_IFACE(ILibrary, pLibrary);
+   auto pHaulTruckLibraryEntry = pLibrary->GetHaulTruckEntry(pSegment->HandlingData.HaulTruckName.c_str());
+   return pHaulTruckLibraryEntry->GetMaximumLeadingOverhang();
 }
 
 Float64 CSpecAgentImp::GetMaxGirderWgt(const CSegmentKey& segmentKey) const
@@ -3585,7 +3612,9 @@ Float64 CSpecAgentImp::GetMaxGirderWgt(const CSegmentKey& segmentKey) const
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    ValidateHaulTruck(pSegment);
-   return pSegment->HandlingData.pHaulTruckLibraryEntry->GetMaxGirderWeight();
+   GET_IFACE(ILibrary, pLibrary);
+   auto pHaulTruckLibraryEntry = pLibrary->GetHaulTruckEntry(pSegment->HandlingData.HaulTruckName.c_str());
+   return pHaulTruckLibraryEntry->GetMaxGirderWeight();
 }
 
 Float64 CSpecAgentImp::GetMinimumHaulingSupportLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end) const
@@ -3857,10 +3886,10 @@ Float64 CSpecAgentImp::GetMaxDebondedStrandsPerRow(const CSegmentKey& segmentKey
    return pGirderEntry->GetMaxFractionDebondedStrandsPerRow();
 }
 
-void CSpecAgentImp::GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey, StrandIndexType* p10orLess, StrandIndexType* pNS, bool* pbCheckMax, Float64* pMaxFraction) const
+void CSpecAgentImp::GetMaxDebondedStrandsPerSection(const CSegmentKey& segmentKey, StrandIndexType* p10orLess, StrandIndexType* pn10orMore, StrandIndexType* pn10orMore_07Strand, bool* pbCheckMax, Float64* pMaxFraction) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
-   pGirderEntry->GetMaxDebondedStrandsPerSection(p10orLess,pNS,pbCheckMax,pMaxFraction);
+   pGirderEntry->GetMaxDebondedStrandsPerSection(p10orLess,pn10orMore,pn10orMore_07Strand,pbCheckMax,pMaxFraction);
 }
 
 void CSpecAgentImp::GetMaxDebondLength(const CSegmentKey& segmentKey, Float64* pLen, pgsTypes::DebondLengthControl* pControl) const
@@ -3987,8 +4016,7 @@ bool CSpecAgentImp::IsExteriorStrandBondingRequiredInRow(const CSegmentKey& segm
       // this is a single web flanged girder
 #if defined _DEBUG
       const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
-      CComPtr<IBeamFactory> factory;
-      pGirderEntry->GetBeamFactory(&factory);
+      auto factory = pGirderEntry->GetBeamFactory();
 
       auto clsid = factory->GetFamilyCLSID();
       ATLASSERT(clsid == CLSID_WFBeamFamily || clsid == CLSID_DeckBulbTeeBeamFamily || clsid == CLSID_SplicedIBeamFamily);
@@ -4177,7 +4205,7 @@ Float64 CSpecAgentImp::GetRadiusOfCurvatureLimit(pgsTypes::DuctType ductType) co
    // and the location relative to the stress anchorage; subject to the manufacturer's recommendations"...
    // This is not an enforceable requirement... we will retain the 30 ft and 20 ft limitations but could
    // expend the Project Criteria to make this user defined input
-   return WBFL::Units::ConvertToSysUnits(ductType == pgsTypes::dtPlastic ? 30.0 : 20.0, WBFL::Units::Measure::Feet);
+   return WBFL::Units::ConvertToSysUnits(ductType == pgsTypes::dtMetal ? 20.0 : 30.0, WBFL::Units::Measure::Feet);
 }
 
 Float64 CSpecAgentImp::GetSegmentTendonRadiusOfCurvatureLimit(const CSegmentKey& segmentKey) const
@@ -4229,7 +4257,18 @@ Float64 CSpecAgentImp::GetTendonAreaLimit(pgsTypes::StrandInstallationType insta
    // LRFD 5.4.6.2
    const SpecLibraryEntry* pSpecEntry = GetSpec();
    const auto& duct_size_criteria = pSpecEntry->GetDuctSizeCriteria();
-   return (installationType == pgsTypes::sitPush ? duct_size_criteria.DuctAreaPushRatio : duct_size_criteria.DuctAreaPullRatio);
+   Float64 ratio = 0.0;
+   if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition())
+   {
+      // starting with LRFD 10th Edition, ratio is no longer a function of installation method
+      // the ratio is stored in the DuctAreaPullRatio variable
+      ratio = duct_size_criteria.DuctAreaPullRatio;
+   }
+   else
+   {
+      ratio = (installationType == pgsTypes::sitPush ? duct_size_criteria.DuctAreaPushRatio : duct_size_criteria.DuctAreaPullRatio);
+   }
+   return ratio;
 }
 
 Float64 CSpecAgentImp::GetSegmentDuctDeductionFactor(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
@@ -4266,7 +4305,8 @@ const GirderLibraryEntry* CSpecAgentImp::GetGirderEntry(const CSegmentKey& segme
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
-   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+   GET_IFACE(ILibrary, pLibrary);
+   auto pGirderEntry = pLibrary->GetGirderEntry(pGirder->GetGirderName());
    return pGirderEntry;
 }
 
@@ -4281,7 +4321,9 @@ bool CSpecAgentImp::IsLoadRatingServiceIIILimitState(pgsTypes::LimitState ls) co
 
 void CSpecAgentImp::ValidateHaulTruck(const CPrecastSegmentData* pSegment) const
 {
-   if (pSegment->HandlingData.pHaulTruckLibraryEntry == nullptr)
+   GET_IFACE(ILibrary, pLibrary);
+   auto pHaulTruckLibraryEntry = pLibrary->GetHaulTruckEntry(pSegment->HandlingData.HaulTruckName.c_str());
+   if (pHaulTruckLibraryEntry == nullptr)
    {
       const CSegmentKey& segmentKey = pSegment->GetSegmentKey();
 
@@ -4296,10 +4338,8 @@ void CSpecAgentImp::ValidateHaulTruck(const CPrecastSegmentData* pSegment) const
          strMsg.Format(_T("The haul truck is not defined for Span %s Girder %s"), LABEL_SPAN(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex));
       }
 
-      pgsSegmentRelatedStatusItem* pStatusItem = new pgsHaulTruckStatusItem(m_StatusGroupID, m_scidHaulTruckError, strMsg, segmentKey);
-
       GET_IFACE(IEAFStatusCenter, pStatusCenter);
-      pStatusCenter->Add(pStatusItem);
+      pStatusCenter->Add(std::make_shared<pgsHaulTruckStatusItem>(m_StatusGroupID, m_scidHaulTruckError, strMsg, segmentKey));
 
       strMsg += "\r\nSee the Status Center for Details";
 

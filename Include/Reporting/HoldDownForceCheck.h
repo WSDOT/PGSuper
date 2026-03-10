@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class pgsGirderArtifact;
 
 /*****************************************************************************
@@ -68,8 +68,8 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual void Build(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                      IEAFDisplayUnits* pDisplayUnits) const;
+   virtual void Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

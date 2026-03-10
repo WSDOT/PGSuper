@@ -29,14 +29,14 @@
 // SpanDetailsDlg.h : header file
 //
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "SpanLayoutPage.h"
 #include "GirderLayoutPage.h"
 #include "PierConnectionsPage.h"
 #include "SpanGdrDetailsBearingsPage.h"
 #include "EditSpan.h"
 #include <IFace\ExtendUI.h>
-#include <EAF\EAFMacroTxn.h>
+#include <EAF\MacroTxn.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanDetailsDlg
@@ -75,7 +75,7 @@ public:
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
-   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
+   std::unique_ptr<WBFL::EAF::Transaction> GetExtensionPageTransaction();
 
    // Generated message map functions
 protected:
@@ -113,7 +113,7 @@ protected:
    CSpanGirderLayoutPage m_GirderLayoutPage;
    CSpanGdrDetailsBearingsPage m_SpanGdrDetailsBearingsPage;
 
-   CEAFMacroTxn m_Macro;
+   WBFL::EAF::MacroTxn m_Macro;
    std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>> m_ExtensionPages;
    std::vector<EditBridgeExtension> m_BridgeExtensionPages;
    void NotifyExtensionPages();

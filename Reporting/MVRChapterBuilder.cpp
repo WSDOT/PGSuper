@@ -59,20 +59,7 @@
 #include <psgLib/LiveLoadDeflectionCriteria.h>
 #include <psgLib/ShearCapacityCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CMVRChapterBuilder
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CMVRChapterBuilder::CMVRChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -80,8 +67,6 @@ CPGSuperChapterBuilder(bSelect)
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CMVRChapterBuilder::GetName() const
 {
    return TEXT("Moments, Shears, and Reactions");
@@ -92,17 +77,17 @@ rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reportin
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -458,9 +443,4 @@ rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reportin
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMVRChapterBuilder::Clone() const
-{
-   return std::make_unique<CMVRChapterBuilder>(m_bDesign,m_bRating);
 }

@@ -32,14 +32,11 @@
 #include "PGSuperDoc.h"
 #include <Units\Measure.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\HaunchDepthInputConversionTool.h>
+#include <PsgLib\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <IFace/Tools.h>
+#include <IFace\Project.h>
+
 
 GRID_IMPLEMENT_REGISTER(CHaunchDirectSameAsGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -267,8 +264,7 @@ void CHaunchDirectSameAsGrid::BuildGridAndHeader()
 
 void CHaunchDirectSameAsGrid::FillGrid()
 {
-   CComPtr<IBroker> pBroker;
-   ::EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    const CBridgeDescription2* pBridgeOrig = GetBridgeDesc();
 
@@ -312,13 +308,12 @@ void CHaunchDirectSameAsGrid::FillGrid()
    if (m_DoSpans)
    {
       // Convert current haunch data if needed
-      HaunchDepthInputConversionTool conversionTool(pBridgeOrig,pBroker,false);
-      auto convPair = conversionTool.ConvertToDirectHaunchInput(pgsTypes::hilSame4AllGirders, pgsTypes::hltAlongSpans, disttype);
-      const CBridgeDescription2* pBridge = &convPair.second;
+      GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+      auto bridge = pBridgeDesc->ConvertHaunchToDirectHaunchInput(*pBridgeOrig, pgsTypes::hilSame4AllGirders, pgsTypes::hltAlongSpans, disttype).second;
 
       for (SpanIndexType ispan = 0; ispan < nSpans; ispan++)
       {
-         const CSpanData2* pSpan = pBridge->GetSpan(ispan);
+         const CSpanData2* pSpan = bridge.GetSpan(ispan);
 
          std::vector<Float64> haunches = pSpan->GetDirectHaunchDepths(0); // depth is same for all girders
 
@@ -341,11 +336,10 @@ void CHaunchDirectSameAsGrid::FillGrid()
    else
    {
       // Convert current haunch data if needed
-      HaunchDepthInputConversionTool conversionTool(pBridgeOrig,pBroker,false);
-      auto convPair = conversionTool.ConvertToDirectHaunchInput(pgsTypes::hilSame4AllGirders, pgsTypes::hltAlongSegments, disttype);
-      const CBridgeDescription2* pBridge = &convPair.second;
+      GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+      auto bridge = pBridgeDesc->ConvertHaunchToDirectHaunchInput(*pBridgeOrig, pgsTypes::hilSame4AllGirders, pgsTypes::hltAlongSegments, disttype).second;
 
-      auto* pGroup = pBridge->GetGirderGroup(m_Group);
+      auto* pGroup = bridge.GetGirderGroup(m_Group);
       auto* pGirder = pGroup->GetGirder(0); // SameAs values are in girder zero
       auto nSegments = pGirder->GetSegmentCount();
       for (SegmentIndexType iseg = 0; iseg < nSegs; iseg++)

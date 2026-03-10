@@ -3,11 +3,6 @@
 #include "stdafx.h"
 #include "TxExcel.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 
@@ -13493,7 +13488,7 @@ void Range::SetRowHeight(const VARIANT& newValue)
 {
 	static BYTE parms[] =
 		VTS_VARIANT;
-	InvokeHelper(0x110, DISPATCH_PROPERTYPUT, VT_EMPTY, nullptr, parms,
+	InvokeHelper(0x112, DISPATCH_PROPERTYPUT, VT_EMPTY, nullptr, parms,
 		 &newValue);
 }
 

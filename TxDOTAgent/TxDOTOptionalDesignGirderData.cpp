@@ -35,11 +35,7 @@
 
 #include <IFace\BeamFactory.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <psgLib/LibraryManager.h>
 
 /****************************************************************************/
 // free functions
@@ -135,7 +131,7 @@ CTxDOTOptionalDesignGirderData& CTxDOTOptionalDesignGirderData::operator= (const
 //}
 
 //======================== OPERATIONS =======================================
-HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
+HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress> pProgress)
 {
    HRESULT hr = S_OK;
 
@@ -233,7 +229,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
    return hr;
 }
 
-HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
+HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress)
 {
    USES_CONVERSION;
 
@@ -715,8 +711,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
    else
    {
       // first need cg location of outer shape - this requires some work
-      CComPtr<IBeamFactory> pFactory;
-      pGdrEntry->GetBeamFactory(&pFactory);
+      auto pFactory = pGdrEntry->GetBeamFactory();
       GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
 
       CComPtr<IGirderSection> gdrSection;
@@ -836,8 +831,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeDirectFillEccentricity(const GirderL
    else
    {
       // first need cg location of outer shape - this requires some work
-      CComPtr<IBeamFactory> pFactory;
-      pGdrEntry->GetBeamFactory(&pFactory);
+      auto pFactory = pGdrEntry->GetBeamFactory();
       GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
 
       CComPtr<IGirderSection> gdrSection;

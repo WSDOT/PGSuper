@@ -23,13 +23,10 @@
 #include "stdafx.h"
 #include "PGSpliceDoc.h"
 #include "EditTemporarySupportStation.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditTemporarySupportStation::txnEditTemporarySupportStation(SupportIndexType tsIdx,Float64 oldStation,Float64 newStation)
 {
@@ -53,7 +50,7 @@ void txnEditTemporarySupportStation::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditTemporarySupportStation::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditTemporarySupportStation::CreateClone() const
 {
    return std::make_unique<txnEditTemporarySupportStation>(m_TsIdx,m_Station[0],m_Station[1]);
 }
@@ -77,8 +74,8 @@ bool txnEditTemporarySupportStation::IsRepeatable() const
 
 void txnEditTemporarySupportStation::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder to keep from fireing events until we are done

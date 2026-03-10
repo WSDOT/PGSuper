@@ -20,39 +20,20 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_HAULINGANALYSISARTIFACT_H_
-#define INCLUDED_PGSEXT_HAULINGANALYSISARTIFACT_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
-
 #include <PgsExt\LiftHaulConstants.h>
 #include <PgsExt\ReportPointOfInterest.h>
-
 #include <map>
-
 #include <Stability\Stability.h>
 
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class PGSEXTCLASS pgsHaulingAnalysisArtifact
 {
 public:
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsHaulingAnalysisArtifact()
-   {;}
+   virtual ~pgsHaulingAnalysisArtifact() = default;
 
    // GROUP: OPERATIONS
    virtual bool Passed(bool bIgnoreConfigurationLimits=false) const = 0;
@@ -60,8 +41,8 @@ public:
    virtual bool PassedStressCheck(WBFL::Stability::HaulingSlope slope) const = 0;
    virtual void GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension,Float64* pfcTensionWithRebar) const = 0;
 
-   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const = 0;
-   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
+   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
 
    virtual pgsHaulingAnalysisArtifact* Clone() const = 0;
 
@@ -69,7 +50,7 @@ public:
    virtual void Dump(WBFL::Debug::LogContext& os) const = 0;
 #endif
 
-   virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const = 0;
+   virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const = 0;
 };
 
 
@@ -90,38 +71,23 @@ LOG
 class PGSEXTCLASS pgsWsdotHaulingAnalysisArtifact : public pgsHaulingAnalysisArtifact
 {
 public:
-   // GROUP: LIFECYCLE
+   pgsWsdotHaulingAnalysisArtifact() = default;
+   pgsWsdotHaulingAnalysisArtifact(const pgsWsdotHaulingAnalysisArtifact& rOther) = default;
+   virtual ~pgsWsdotHaulingAnalysisArtifact() = default;
 
-   //------------------------------------------------------------------------
-   // Default constructor
-   pgsWsdotHaulingAnalysisArtifact();
+   pgsWsdotHaulingAnalysisArtifact& operator = (const pgsWsdotHaulingAnalysisArtifact& rOther) = default;
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsWsdotHaulingAnalysisArtifact(const pgsWsdotHaulingAnalysisArtifact& rOther);
+   bool Passed(bool bIgnoreConfigurationLimits = false) const override;
+   bool Passed(WBFL::Stability::HaulingSlope slope) const override;
+   bool PassedStressCheck(WBFL::Stability::HaulingSlope slope) const override;
+   void GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension, Float64* pfcTensionWithRebar) const override;
 
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsWsdotHaulingAnalysisArtifact();
+   void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
+   void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   pgsWsdotHaulingAnalysisArtifact& operator = (const pgsWsdotHaulingAnalysisArtifact& rOther);
+   pgsHaulingAnalysisArtifact* Clone() const override;
 
-   // GROUP: OPERATIONS
-   // virtual functions
-   virtual bool Passed(bool bIgnoreConfigurationLimits = false) const override;
-   virtual bool Passed(WBFL::Stability::HaulingSlope slope) const override;
-   virtual bool PassedStressCheck(WBFL::Stability::HaulingSlope slope) const override;
-   virtual void GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension, Float64* pfcTensionWithRebar) const override;
-
-   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
-   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
-
-   virtual pgsHaulingAnalysisArtifact* Clone() const override;
-
-   virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const override;
+   void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const override;
 
    Float64 GetMinFsForCracking(WBFL::Stability::HaulingSlope slope) const;
    Float64 GetFsRollover(WBFL::Stability::HaulingSlope slope) const;
@@ -130,35 +96,13 @@ public:
    void SetHaulingCheckArtifact(const WBFL::Stability::HaulingCheckArtifact& haulingArtifact);
    const WBFL::Stability::HaulingCheckArtifact& GetHaulingCheckArtifact() const;
 
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const pgsWsdotHaulingAnalysisArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsWsdotHaulingAnalysisArtifact& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
    WBFL::Stability::HaulingCheckArtifact m_HaulingArtifact;
 
 public:
    // GROUP: DEBUG
 #if defined _DEBUG
-   const WBFL::Stability::HaulingStabilityProblem* m_pStabilityProblem; // need this for dump
-   virtual void Dump(WBFL::Debug::LogContext& os) const override;
+   const WBFL::Stability::HaulingStabilityProblem* m_pStabilityProblem = nullptr; // need this for dump
+   void Dump(WBFL::Debug::LogContext& os) const override;
 #endif // _DEBUG
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-#endif // INCLUDED_PGSEXT_HAULINGANALYSISARTIFACT_H_

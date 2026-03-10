@@ -30,13 +30,16 @@
 // 
 #include "SplitChildFrm.h"
 #include "SectionCutDrawStrategy.h"
-#include "pgsExt\PointLoadData.h"
-#include <PgsExt/GirderGroupData.h>
-#include <DManip\ToolPalette.h>
+#include <PsgLib\PointLoadData.h>
+#include <PsgLib/GirderGroupData.h>
 #include <EAF\EAFViewControllerFactory.h>
 #include <MfcTools\WideDropDownComboBox.h>
+
+#include <IFace/Tools.h>
 #include <IFace/Project.h>
 #include <IFace/Selection.h>
+
+#include <DManip/ToolPalette.h>
 
 class CGirderModelElevationView;
 class CGirderModelSectionView;
@@ -224,8 +227,8 @@ private:
    template <class T>
    void InitLoad(T& load) const
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
       GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 

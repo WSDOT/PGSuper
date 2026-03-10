@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib\LiveLoadDistributionCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib\LiveLoadDistributionCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
 bool LiveLoadDistributionCriteria::operator==(const LiveLoadDistributionCriteria& other) const
@@ -41,20 +41,20 @@ bool LiveLoadDistributionCriteria::operator!=(const LiveLoadDistributionCriteria
       bExteriorBeamLiveLoadDistributionGTInteriorBeam != other.bExteriorBeamLiveLoadDistributionGTInteriorBeam;
 }
 
-bool LiveLoadDistributionCriteria::Compare(const LiveLoadDistributionCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool LiveLoadDistributionCriteria::Compare(const LiveLoadDistributionCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if(operator!=(other))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Live Load Distribution Factors are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Live Load Distribution Factors are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void LiveLoadDistributionCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void LiveLoadDistributionCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

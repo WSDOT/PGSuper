@@ -23,8 +23,8 @@
 #pragma once
 
 #include <Graphing/PointMapper.h>
-#include <PgsExt\SplicedGirderData.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\SplicedGirderData.h>
+#include <PsgLib\Keys.h>
 
 // CDrawTendonsControl
 class CDrawTendonsControl : public CWnd

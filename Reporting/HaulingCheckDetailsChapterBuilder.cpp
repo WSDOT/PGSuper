@@ -24,38 +24,21 @@
 #include <Reporting\HaulingCheckDetailsChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CHaulingCheckDetailsChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CHaulingCheckDetailsChapterBuilder::CHaulingCheckDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CHaulingCheckDetailsChapterBuilder::GetName() const
 {
    return TEXT("Hauling Check Details");
@@ -63,9 +46,8 @@ LPCTSTR CHaulingCheckDetailsChapterBuilder::GetName() const
 
 rptChapter* CHaulingCheckDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CComPtr<IBroker> pBroker;
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -124,7 +106,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(const std::shared_ptr<cons
             }
 
             // Artifact does heavy lifting
-            const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
+            auto pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
             pHaulArtifact->BuildHaulingDetailsReport(segmentKey, pChapter, pBroker, pDisplayUnits);
          } // next segment
       } // next group
@@ -149,29 +131,3 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(const std::shared_ptr<cons
 
    return pChapter;
 }
-
-
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CHaulingCheckDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CHaulingCheckDetailsChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

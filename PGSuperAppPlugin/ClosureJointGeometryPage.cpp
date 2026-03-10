@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "resource.h"
 #include "ClosureJointGeometryPage.h"
 
@@ -32,19 +32,15 @@
 #include "PierDetailsDlg.h"
 #include "TimelineEventDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include "PGSuperColors.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 
@@ -249,8 +245,8 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_BEARING_OFFSET_MEASURE, m_cbBearingOffsetMeasure);
    DDX_Control(pDX, IDC_END_DISTANCE_MEASURE, m_cbEndDistMeasure);
    
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -300,8 +296,8 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
          pParent->m_pPier->SetDiaphragmHeight(pgsTypes::Ahead,m_DiaphragmHeight);
          pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Back, m_DiaphragmWidth < 0 ? -1 : m_DiaphragmWidth/2);
          pParent->m_pPier->SetDiaphragmWidth(pgsTypes::Ahead, m_DiaphragmWidth < 0 ? -1 : m_DiaphragmWidth/2);
-         pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Back,ConnectionLibraryEntry::ApplyAtBearingCenterline);
-         pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Ahead,ConnectionLibraryEntry::ApplyAtBearingCenterline);
+         pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Back,ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline);
+         pParent->m_pPier->SetDiaphragmLoadType(pgsTypes::Ahead,ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline);
 
          bCheckTimeline = ::IsSegmentContinuousOverPier(pParent->m_pPier->GetSegmentConnectionType()) ? false : true;
 
@@ -673,10 +669,10 @@ void CClosureJointGeometryPage::FillBearingOffsetComboBox()
    CString strLabel;
    strLabel.Format(_T("Measured Normal to %s Line"),m_strSupportLabel);
    int idx = pCB->AddString(strLabel);
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::NormalToPier));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier));
 
    idx = pCB->AddString(_T("Measured Along Centerline Girder"));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::AlongGirder));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder));
 }
 
 void CClosureJointGeometryPage::FillEndDistanceComboBox()
@@ -685,19 +681,19 @@ void CClosureJointGeometryPage::FillEndDistanceComboBox()
    pCB->ResetContent();
 
    int idx = pCB->AddString(_T("Measured from CL Bearing, Along Girder"));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingAlongGirder));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder));
 
    idx = pCB->AddString(_T("Measured from and normal to CL Bearing"));
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromBearingNormalToPier));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier));
 
    CString strLabel;
    strLabel.Format(_T("Measured from %s Line, Along Girder"),m_strSupportLabel);
    idx = pCB->AddString(strLabel);
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierAlongGirder));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder));
 
    strLabel.Format(_T("Measured from and normal to %s Line"),m_strSupportLabel);
    idx = pCB->AddString(strLabel);
-   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::FromPierNormalToPier));
+   pCB->SetItemData(idx,DWORD(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier));
 }
 
 HBRUSH CClosureJointGeometryPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
@@ -711,49 +707,49 @@ HBRUSH CClosureJointGeometryPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor)
    return hBrush;
 }
 
-CString CClosureJointGeometryPage::GetImageName(pgsTypes::TempSupportSegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
+CString CClosureJointGeometryPage::GetImageName(pgsTypes::TempSupportSegmentConnectionType connectionType, ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType, ConnectionLibraryEntry::EndDistanceMeasurementType endType)
 {
    CString strName;
    if ( connectionType == pgsTypes::tsctClosureJoint )
    {
-      if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )
+      if ( brgOffsetType == ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder )
       {
          switch( endType )
          {
-         case ConnectionLibraryEntry::FromBearingAlongGirder:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder:
             strName = _T("TS_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG");
             break;
 
-         case ConnectionLibraryEntry::FromBearingNormalToPier:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier:
             strName = _T("TS_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG");
             break;
 
-         case ConnectionLibraryEntry::FromPierAlongGirder:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder:
             strName = _T("TS_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER");
             break;
 
-         case ConnectionLibraryEntry::FromPierNormalToPier:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier:
             strName = _T("TS_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER");
             break;
          }
       }
-      else if ( brgOffsetType == ConnectionLibraryEntry::NormalToPier )
+      else if ( brgOffsetType == ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier )
       {
          switch( endType )
          {
-         case ConnectionLibraryEntry::FromBearingAlongGirder:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder:
             strName = _T("TS_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
             break;
 
-         case ConnectionLibraryEntry::FromBearingNormalToPier:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier:
             strName = _T("TS_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
             break;
 
-         case ConnectionLibraryEntry::FromPierAlongGirder:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder:
             strName = _T("TS_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
             break;
 
-         case ConnectionLibraryEntry::FromPierNormalToPier:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier:
             strName = _T("TS_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
             break;
          }
@@ -767,50 +763,50 @@ CString CClosureJointGeometryPage::GetImageName(pgsTypes::TempSupportSegmentConn
    return strName;
 }
 
-CString CClosureJointGeometryPage::GetImageName(pgsTypes::PierSegmentConnectionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType)
+CString CClosureJointGeometryPage::GetImageName(pgsTypes::PierSegmentConnectionType connectionType, ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType, ConnectionLibraryEntry::EndDistanceMeasurementType endType)
 {
 #pragma Reminder("UPDATE: need correct image") // or re-work the images so the same images work for both forms of this dialog page
    CString strName;
    if ( connectionType == pgsTypes::psctContinousClosureJoint || connectionType == pgsTypes::psctIntegralClosureJoint )
    {
-      if ( brgOffsetType == ConnectionLibraryEntry::AlongGirder )
+      if ( brgOffsetType == ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder )
       {
          switch( endType )
          {
-         case ConnectionLibraryEntry::FromBearingAlongGirder:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder:
             strName = _T("PIER_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMBRG");
             break;
 
-         case ConnectionLibraryEntry::FromBearingNormalToPier:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier:
             strName = _T("PIER_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMBRG");
             break;
 
-         case ConnectionLibraryEntry::FromPierAlongGirder:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder:
             strName = _T("PIER_CLOSURE_BRGALONGGDR_ENDALONGGDRFROMPIER");
             break;
 
-         case ConnectionLibraryEntry::FromPierNormalToPier:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier:
             strName = _T("PIER_CLOSURE_BRGALONGGDR_ENDALONGNORMALFROMPIER");
             break;
          }
       }
-      else if ( brgOffsetType == ConnectionLibraryEntry::NormalToPier )
+      else if ( brgOffsetType == ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier )
       {
          switch( endType )
          {
-         case ConnectionLibraryEntry::FromBearingAlongGirder:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder:
             strName = _T("PIER_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMBRG");
             break;
 
-         case ConnectionLibraryEntry::FromBearingNormalToPier:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier:
             strName = _T("PIER_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMBRG");
             break;
 
-         case ConnectionLibraryEntry::FromPierAlongGirder:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder:
             strName = _T("PIER_CLOSURE_BRGALONGNORMAL_ENDALONGGDRFROMPIER");
             break;
 
-         case ConnectionLibraryEntry::FromPierNormalToPier:
+         case ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier:
             strName = _T("PIER_CLOSURE_BRGALONGNORMAL_ENDALONGNORMALFROMPIER");
             break;
          }

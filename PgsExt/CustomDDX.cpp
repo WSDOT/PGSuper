@@ -24,12 +24,6 @@
 #include <PgsExt\CustomDDX.h>
 #include <LRFD\StrandPool.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 void DDX_Strand(CDataExchange* pDX, UINT nIDC, const WBFL::Materials::PsStrand** ppStrand)
 {
    const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();

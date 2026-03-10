@@ -27,21 +27,7 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 
-interface IEAFDisplayUnits;
-
-/*****************************************************************************
-CLASS 
-   CLiveLoadDetailsChapterBuilder
-
-   Loading details chapter
-
-
-DESCRIPTION
-   Loading details chapter builder. Details loads applied to the structure.
-
-LOG
-   rab : 11.03.1998 : Created file
-*****************************************************************************/
+class IEAFDisplayUnits;
 
 class REPORTINGCLASS CLiveLoadDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
@@ -49,16 +35,9 @@ public:
    CLiveLoadDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
    virtual LPCTSTR GetName() const override;
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-protected:
 
 private:
    bool m_bDesign, m_bRating;
 
-   // Prevent accidental copying and assignment
-   CLiveLoadDetailsChapterBuilder(const CLiveLoadDetailsChapterBuilder&) = delete;
-   CLiveLoadDetailsChapterBuilder& operator=(const CLiveLoadDetailsChapterBuilder&) = delete;
-
-   static void ReportLiveLoad(IBroker* pBroker, std::_tstring& load_name, rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits);
+   static void ReportLiveLoad(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::_tstring& load_name, rptParagraph* pPara,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 };

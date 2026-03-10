@@ -23,13 +23,7 @@
 #include "stdafx.h"
 #include "TxDOTOptionalDesignUtilities.h"
 #include "TxDOTOptionalDesignDocTemplate.h"
-#include "TxDOTAppPlugin.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "TOGAPluginApp.h"
 
 // utility data structures for managing TOGA template file
 struct TemplateFile
@@ -63,7 +57,7 @@ typedef TemplateFolderCollection::const_iterator TemplateFolderConstIterator;
 IMPLEMENT_DYNAMIC(CTxDOTOptionalDesignDocTemplate,CEAFDocTemplate)
 
 CTxDOTOptionalDesignDocTemplate::CTxDOTOptionalDesignDocTemplate(UINT nIDResource,
-                                                                 IEAFCommandCallback* pCallback,
+                                                                 std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
                                                                  CRuntimeClass* pDocClass,
                                                                  CRuntimeClass* pFrameClass,
                                                                  CRuntimeClass* pViewClass,
@@ -73,9 +67,9 @@ CTxDOTOptionalDesignDocTemplate::CTxDOTOptionalDesignDocTemplate(UINT nIDResourc
 {
 }
 
-void CTxDOTOptionalDesignDocTemplate::SetPlugin(IEAFAppPlugin* pPlugin)
+void CTxDOTOptionalDesignDocTemplate::SetPluginApp(std::weak_ptr<WBFL::EAF::IPluginApp> pPlugin)
 {
-   CEAFDocTemplate::SetPlugin(pPlugin);
+   CEAFDocTemplate::SetPluginApp(pPlugin);
 
    LoadTemplateInformation();
 }
@@ -107,7 +101,7 @@ void CTxDOTOptionalDesignDocTemplate::LoadTemplateInformation()
    m_TemplateGroup.AddItem( new CEAFTemplateItem(this,strItemName,nullptr,hIcon) );
 
    // Location of template folders
-   CCatalogServerAppMixin* pAppPlugin = dynamic_cast<CCatalogServerAppMixin*>(m_pPlugin);
+   CCatalogServerAppMixin* pAppPlugin = dynamic_cast<CCatalogServerAppMixin*>(m_pPlugin.lock().get());
    CString strWorkgroupFolderName;
    pAppPlugin->GetTemplateFolders(strWorkgroupFolderName);
 
@@ -195,7 +189,7 @@ void CTxDOTOptionalDesignDocTemplate::FindTemplateFiles(LPCTSTR strPath,CEAFTemp
 
       HICON fileIcon = origIcon;
 
-      CString strIconFile = CString(strPath) + _T("\\") + rfolder.Title.c_str() + _T(".ico");
+      CString strIconFile = CString(strPath) + rfolder.Title.c_str() + _T(".ico");
       HICON hIcon = (HICON)::LoadImage(nullptr,strIconFile,IMAGE_ICON,0,0,LR_LOADFROMFILE);
       if (hIcon)
       {

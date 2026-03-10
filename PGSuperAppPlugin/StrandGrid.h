@@ -23,11 +23,11 @@
 
 #pragma once
 
-#include <PgsExt\GirderData.h>
+#include <PsgLib\GirderData.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
 class CUserData;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /////////////////////////////////////////////////////////////////////////////
 // CStrandGrid window
@@ -70,10 +70,10 @@ protected:
    // returns the number of columns used to specialize grid
    virtual CString GetRowLabelHeading() const = 0;
    virtual ROWCOL GetSpecializedColCount() const = 0;
-   virtual ROWCOL InitSpecializedColumns(ROWCOL col, IEAFDisplayUnits* pDisplayUnits) = 0;
+   virtual ROWCOL InitSpecializedColumns(ROWCOL col, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) = 0;
    virtual ROWCOL SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col) = 0;
-   virtual ROWCOL GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) = 0;
-   virtual ROWCOL AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) = 0;
+   virtual ROWCOL GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) = 0;
+   virtual ROWCOL AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) = 0;
    virtual pgsTypes::StrandDefinitionType GetStrandDefinitionType() = 0;
 
 public:
@@ -129,10 +129,10 @@ public:
 protected:
    virtual CString GetRowLabelHeading() const override { return _T("Row"); }
    virtual ROWCOL GetSpecializedColCount() const override { return 3; } // S1, S2, and # strands
-   virtual ROWCOL InitSpecializedColumns(ROWCOL col, IEAFDisplayUnits* pDisplayUnits) override;
+   virtual ROWCOL InitSpecializedColumns(ROWCOL col, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
    virtual ROWCOL SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col) override;
-   virtual ROWCOL GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) override;
-   virtual ROWCOL AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) override;
+   virtual ROWCOL GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+   virtual ROWCOL AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
    virtual pgsTypes::StrandDefinitionType GetStrandDefinitionType() override { return pgsTypes::sdtDirectRowInput;  }
 
    virtual UINT Validate(ROWCOL nRow, CStrandRow& strandRow) override;
@@ -148,10 +148,10 @@ public:
 protected:
    virtual CString GetRowLabelHeading() const override { return _T("Strand"); }
    virtual ROWCOL GetSpecializedColCount() const override { return 1; } // Z
-   virtual ROWCOL InitSpecializedColumns(ROWCOL col, IEAFDisplayUnits* pDisplayUnits) override;
+   virtual ROWCOL InitSpecializedColumns(ROWCOL col, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
    virtual ROWCOL SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col) override;
-   virtual ROWCOL GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) override;
-   virtual ROWCOL AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits) override;
+   virtual ROWCOL GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+   virtual ROWCOL AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
    virtual pgsTypes::StrandDefinitionType GetStrandDefinitionType() override { return pgsTypes::sdtDirectStrandInput; }
 
    virtual UINT Validate(ROWCOL nRow, CStrandRow& strandRow) override;

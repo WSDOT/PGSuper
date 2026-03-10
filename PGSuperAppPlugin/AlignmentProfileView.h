@@ -76,6 +76,6 @@ protected:
    void BuildBridgeDisplayObjects();
    void BuildLabelDisplayObjects();
 
-   void CreateStationLabel(iDisplayList* pDisplayList,Float64 station,LPCTSTR strBaseLabel=nullptr,UINT textAlign=TA_BASELINE | TA_RIGHT);
-   void CreateStationLabel(iDisplayList* pDisplayList,Float64 station,Float64 elevation,LPCTSTR strBaseLabel=nullptr,UINT textAlign=TA_BASELINE | TA_RIGHT);
+   void CreateStationLabel(std::shared_ptr<WBFL::DManip::iDisplayList> pDisplayList,Float64 station,LPCTSTR strBaseLabel=nullptr,UINT textAlign=TA_BASELINE | TA_RIGHT);
+   void CreateStationLabel(std::shared_ptr<WBFL::DManip::iDisplayList> pDisplayList,Float64 station,Float64 elevation,LPCTSTR strBaseLabel=nullptr,UINT textAlign=TA_BASELINE | TA_RIGHT);
 };

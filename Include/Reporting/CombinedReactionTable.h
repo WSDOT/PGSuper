@@ -20,13 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_COMBINEDREACTIONTABLE_H_
-#define INCLUDED_COMBINEDREACTIONTABLE_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -45,98 +44,41 @@ LOG
 class REPORTINGCLASS CCombinedReactionTable
 {
 public:
-   // This class serves dual duty. It can report pier reactions or girder bearing reactions.
-   // The two are identical except for the title and the interfaces they use to get responses
+   CCombinedReactionTable() = default;
 
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
-   CCombinedReactionTable();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CCombinedReactionTable(const CCombinedReactionTable& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CCombinedReactionTable();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CCombinedReactionTable& operator = (const CCombinedReactionTable& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    // Builds the combined results table
    // bDesign and bRating are only considered for intervalIdx = live load interval index
-   void Build(IBroker* pBroker, rptChapter* pChapter,
+   void Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
               const CGirderKey& girderKey,
-              IEAFDisplayUnits* pDisplayUnits,
+              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
               IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
               bool bDesign,bool bRating) const;
 
-   //------------------------------------------------------------------------
    // Builds the live load results table
    // bDesign and bRating are only considered from stage = pgsTypes::BridgeSite3
-   void BuildLiveLoad(IBroker* pBroker, rptChapter* pChapter,
+   void BuildLiveLoad(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
               const CGirderKey& girderKey,
-              IEAFDisplayUnits* pDisplayUnits,
+              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
               pgsTypes::AnalysisType analysisType, 
               bool bIncludeImpact, bool bDesign,bool bRating) const;
 
-
-   //------------------------------------------------------------------------
    // Builds tables for bearing design
-   void BuildForBearingDesign(IBroker* pBroker, rptChapter* pChapter,
+   void BuildForBearingDesign(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
               const CGirderKey& girderKey,
-              IEAFDisplayUnits* pDisplayUnits,
+              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
               IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,bool bIncludeImpact) const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+   void BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
               const CGirderKey& girderKey,
-              IEAFDisplayUnits* pDisplayUnits,
+              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
               IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
               bool bDesign=true,bool bRating=true) const;
 
-   void BuildBearingLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+   void BuildBearingLimitStateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
               const CGirderKey& girderKey,bool bIncludeImpact,
-              IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
+              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IntervalIndexType intervalIdx,
               pgsTypes::AnalysisType analysisType,
               bool bDesign=true,bool bRating=true) const;
-
-   //------------------------------------------------------------------------
-   void MakeCopy(const CCombinedReactionTable& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CCombinedReactionTable& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_COMBINEDREACTIONTABLE_H_

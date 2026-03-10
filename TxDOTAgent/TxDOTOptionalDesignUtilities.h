@@ -35,13 +35,13 @@
 #include <System\FileStream.h>
 
 #include <PGSuperTypes.h>
-#include <pgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
-#include "TxDOTAppPlugin.h"
+#include "TOGAPluginApp.h"
 
 // LOCAL INCLUDES
 //
@@ -71,9 +71,8 @@ LOG
 inline CString GetTOGAFolder()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)EAFGetDocument()->GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CTxDOTAppPlugin* pAppP = dynamic_cast<CTxDOTAppPlugin*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pAppP = std::dynamic_pointer_cast<CTOGAPluginApp>(pluginApp);
 
    CString tfolder;
    pAppP->GetTemplateFolders(tfolder);
@@ -137,10 +136,10 @@ public:
       return label;
    }
 
-   static StrandRowSet GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+   static StrandRowSet GetStrandRowSet(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi);
 };
 
-OptionalDesignHarpedFillUtil::StrandRowSet GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+OptionalDesignHarpedFillUtil::StrandRowSet GetStrandRowSet(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi);
 
 //
 // Take a girder entry with harped and straight strands and its clone. Make clone have strands converted to all
@@ -158,18 +157,18 @@ static const int MAX_TBL_COLS=8; // Maximum columns in multi-girder table
 std::list<ColumnIndexType> ComputeTableCols(const std::vector<CGirderKey>& girderKeys);
 
 // Function to return number of raised straight strands as defined by top kern point
-StrandIndexType GetNumRaisedStraightStrands(IBroker* pBroker, const CSegmentKey& segmentKey);
+StrandIndexType GetNumRaisedStraightStrands(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey);
 
 // Clasify the type of strand layout we have.
 enum txcwStrandLayoutType { tslStraight, tslHarped, tslDebondedStraight, tslRaisedStraight, tslMixedHarpedRaised, tslMixedHarpedDebonded };
 
-txcwStrandLayoutType GetStrandLayoutType(IBroker* pBroker, const CGirderKey& girderKey);
+txcwStrandLayoutType GetStrandLayoutType(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey);
 
 // Treatment of I Beams is unique for TxDOT
-bool IsIBeam(IBroker* pBroker, const CGirderKey& girderKey);
+bool IsIBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey);
 
 // Criteria for TxDOT Non/Standard design
-bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, pgsTypes::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker);
+bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, pgsTypes::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, std::shared_ptr<WBFL::EAF::Broker> pBroker);
 
 
 

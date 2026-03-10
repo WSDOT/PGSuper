@@ -22,14 +22,10 @@
 
 // StrandMoverImpl.cpp : Implementation of CStrandMoverImpl
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include "StrandMoverImpl.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CStrandMoverImpl

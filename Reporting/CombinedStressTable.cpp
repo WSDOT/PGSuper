@@ -25,7 +25,7 @@
 #include <Reporting\CombinedMomentsTable.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 #include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
@@ -35,11 +35,6 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -74,9 +69,9 @@ CCombinedStressTable& CCombinedStressTable::operator= (const CCombinedStressTabl
 }
 
 //======================== OPERATIONS =======================================
-void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating,bool bGirderStresses) const
 {
@@ -118,9 +113,9 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
    }
 }
 
-void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedStressTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,
                                          pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating,bool bGirderStresses) const
@@ -341,9 +336,9 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    } // next group
 }
 
-void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedStressTable::BuildCombinedLiveTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,
                                          pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating,bool bGirderStresses) const
@@ -619,9 +614,9 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    }
 }
 
-void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedStressTable::BuildLimitStateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IntervalIndexType intervalIdx,
                                          pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating,bool bGirderStresses) const
 {

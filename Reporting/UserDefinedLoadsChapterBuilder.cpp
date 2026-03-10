@@ -24,30 +24,15 @@
 #include <Reporting\UserDefinedLoadsChapterBuilder.h>
 
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 
-#include <PgsExt\PointLoadData.h>
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\MomentLoadData.h>
+#include <PsgLib\PointLoadData.h>
+#include <PsgLib\DistributedLoadData.h>
+#include <PsgLib\MomentLoadData.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/****************************************************************************
-CLASS
-   CUserDefinedLoadsChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 
 CUserDefinedLoadsChapterBuilder::CUserDefinedLoadsChapterBuilder(bool bSelect, bool SimplifiedVersion) :
 CPGSuperChapterBuilder(bSelect),
@@ -55,9 +40,6 @@ m_bSimplifiedVersion(SimplifiedVersion)
 {
 }
 
-
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CUserDefinedLoadsChapterBuilder::GetName() const
 {
    return TEXT("User Defined Loads");
@@ -68,17 +50,17 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(const std::shared_ptr<const W
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -139,33 +121,9 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(const std::shared_ptr<const W
 }
 
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CUserDefinedLoadsChapterBuilder::Clone() const
-{
-   return std::make_unique<CUserDefinedLoadsChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBroker,
+rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            const CSpanKey& spanKey,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion)
 {
    USES_CONVERSION;
@@ -243,9 +201,9 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(IBroker* pBr
    return pParagraph;
 }
 
-rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroker* pBroker,
+rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            const CSpanKey& spanKey,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion)
 {
    rptParagraph* pParagraph = new rptParagraph();
@@ -355,9 +313,9 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(IBroke
 }
 
 
-rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(IBroker* pBroker,
+rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            const CSpanKey& spanKey,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion)
 {
    rptParagraph* pParagraph = new rptParagraph();

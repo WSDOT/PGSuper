@@ -9,6 +9,7 @@ Tension stress check failed for Service I Limit State in Interval 2 Prestress Re
 Compression stress check failed for Service I Limit State in Interval 24 Cast Deck, Install Intermediate Diaphragms
 Compression stress check failed for Service I Limit State in Interval 34 Time Step
 Tension stress check failed for Service III Limit State in Interval 34 Time Step
+Minimum deck reinforcement in negative moment region failed.
 Lifting checks failed
 Hauling checks failed
 
@@ -24,6 +25,7 @@ Tension stress check failed for Service I Limit State in Interval 2 Prestress Re
 Compression stress check failed for Service I Limit State in Interval 24 Cast Deck, Install Intermediate Diaphragms
 Compression stress check failed for Service I Limit State in Interval 34 Time Step
 Tension stress check failed for Service III Limit State in Interval 34 Time Step
+Minimum deck reinforcement in negative moment region failed.
 Lifting checks failed
 Hauling checks failed
 

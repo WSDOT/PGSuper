@@ -21,11 +21,3 @@
 ///////////////////////////////////////////////////////////////////////
 
 // dllmain.h : Declaration of module class.
-
-class CWSDOTAgentModule : public CAtlDllModuleT< CWSDOTAgentModule >
-{
-public :
-	DECLARE_REGISTRY_APPID_RESOURCEID(IDR_WSDOTAGENT, "{671419F3-CBF4-42B4-B7EA-D071FFA2E12E}")
-};
-
-extern class CWSDOTAgentModule _AtlModule;

@@ -20,41 +20,28 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PSGLIB_LIBRARYMANAGER_H_
-#define INCLUDED_PSGLIB_LIBRARYMANAGER_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-#include <psgLib\psgLibLib.h>
 #include <LibraryFw\Library.h>
 #include <LibraryFw\LibraryManager.h>
-#include <psgLib\ConcreteLibraryEntry.h>
-#include <psgLib\ConnectionLibraryEntry.h>
-#include <psgLib\GirderLibraryEntry.h>
-#include <psgLib\DiaphragmLayoutEntry.h>
-#include <psgLib\TrafficBarrierEntry.h>
-#include <psgLib\SpecLibraryEntry.h>
-#include <psgLib\RatingLibraryEntry.h>
-#include <psgLib\LiveLoadLibraryEntry.h>
-#include <psgLib\DuctLibraryEntry.h>
-#include <psgLib\HaulTruckLibraryEntry.h>
+#include <PsgLib\ConcreteLibraryEntry.h>
+#include <PsgLib\ConnectionLibraryEntry.h>
+#include <PsgLib\GirderLibraryEntry.h>
+#include <PsgLib\DiaphragmLayoutEntry.h>
+#include <PsgLib\TrafficBarrierEntry.h>
+#include <PsgLib\SpecLibraryEntry.h>
+#include <PsgLib\RatingLibraryEntry.h>
+#include <PsgLib\LiveLoadLibraryEntry.h>
+#include <PsgLib\DuctLibraryEntry.h>
+#include <PsgLib\HaulTruckLibraryEntry.h>
 
-// LOCAL INCLUDES
-//
 
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 // the available library types
-
 #define DECLARE_LIBRARY(name,entry_type,min_count) \
    PSGLIBTPL WBFL::Library::Library<entry_type,min_count>; \
-   using name = WBFL::Library::Library<entry_type,min_count>;
+   using Base##name = WBFL::Library::Library<entry_type,min_count>; \
+   class name : public Base##name \
+   {public: using Base##name::Base##name;};
 
 DECLARE_LIBRARY( ConcreteLibrary,        ConcreteLibraryEntry,   0 )
 DECLARE_LIBRARY( ConnectionLibrary,      ConnectionLibraryEntry, 1 )
@@ -67,11 +54,12 @@ DECLARE_LIBRARY( LiveLoadLibrary,        LiveLoadLibraryEntry,   0 )
 DECLARE_LIBRARY( DuctLibrary,            DuctLibraryEntry,       1 )
 DECLARE_LIBRARY( HaulTruckLibrary,       HaulTruckLibraryEntry,  1 )
 
+
 class GirderLibrary : public GirderLibraryBase
 {
 public:
    GirderLibrary(LPCTSTR idName, LPCTSTR displayName, bool bIsDepreciated = false);
-   virtual bool NewEntry(LPCTSTR key);
+   bool NewEntry(LPCTSTR key) override;
 };
 
 
@@ -92,21 +80,12 @@ LOG
 class PSGLIBCLASS psgLibraryManager : public WBFL::Library::LibraryManager
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    psgLibraryManager();
-
-   //------------------------------------------------------------------------
-   // Destructor
+   psgLibraryManager(const psgLibraryManager&) = delete;
    virtual ~psgLibraryManager();
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
+   psgLibraryManager& operator=(const psgLibraryManager&) = delete;
 
-   //------------------------------------------------------------------------
    // access to the different types of libraries in the manager
    ConcreteLibrary&        GetConcreteLibrary();
    const ConcreteLibrary&        GetConcreteLibrary() const;
@@ -134,19 +113,10 @@ public:
    void SetMasterLibraryInfo(LPCTSTR strPublisher,LPCTSTR strConfiguration,LPCTSTR strLibFile);
    void GetMasterLibraryInfo(std::_tstring& strServer,std::_tstring& strConfiguration,std::_tstring& strLibFile) const;
 
-   // GROUP: INQUIRY
-
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
    void UpdateLibraryNames();
 
 private:
-   // GROUP: DATA MEMBERS
    IndexType m_ConcLibIdx;
    IndexType m_ConnLibIdx;
    IndexType m_GirdLibIdx;
@@ -161,23 +131,4 @@ private:
    std::_tstring m_strServer;
    std::_tstring m_strConfiguration;
    std::_tstring m_strLibFile;
-
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   psgLibraryManager(const psgLibraryManager&) = delete;
-   psgLibraryManager& operator=(const psgLibraryManager&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_PSGLIB_LIBRARYMANAGER_H_

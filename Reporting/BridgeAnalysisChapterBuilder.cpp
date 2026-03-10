@@ -60,21 +60,6 @@
 #include <IFace/Limits.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CBridgeAnalysisChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CBridgeAnalysisChapterBuilder::CBridgeAnalysisChapterBuilder(LPCTSTR strTitle,pgsTypes::AnalysisType analysisType,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -82,8 +67,6 @@ CPGSuperChapterBuilder(bSelect)
    m_AnalysisType = analysisType;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CBridgeAnalysisChapterBuilder::GetName() const
 {
    return m_strTitle.c_str();
@@ -92,8 +75,7 @@ LPCTSTR CBridgeAnalysisChapterBuilder::GetName() const
 rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBridgeAnalysisRptSpec = std::dynamic_pointer_cast<const CBridgeAnalysisReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pBridgeAnalysisRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBridgeAnalysisRptSpec->GetBroker();
 
    CGirderKey girderKey(pBridgeAnalysisRptSpec->GetGirderKey());
 
@@ -476,9 +458,4 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBF
       }
    } // next interval
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBridgeAnalysisChapterBuilder::Clone() const
-{
-   return std::make_unique<CBridgeAnalysisChapterBuilder>(m_strTitle.c_str(),m_AnalysisType);
 }

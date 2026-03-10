@@ -22,14 +22,16 @@
 
 #pragma once
 
-#include "psgLibLib.h"
-#include <psgLib\ISupportIcon.h>
+#include "PsgLibLib.h"
+#include <PGSuperTypes.h>
+#include <PsgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 #include <System\SubjectT.h>
 
-class pgsLibraryEntryDifferenceItem;
 class ConnectionLibraryEntry;
 class ConnectionLibraryEntryObserver;
+namespace PGS {namespace Library{class DifferenceItem;};};
+
 #pragma warning(disable:4231)
 PSGLIBTPL WBFL::System::SubjectT<ConnectionLibraryEntryObserver, ConnectionLibraryEntry>;
 
@@ -74,7 +76,7 @@ class PSGLIBCLASS ConnectionLibraryEntry : public WBFL::Library::LibraryEntry, p
 {
 public:
    // diaphragm loading types
-   enum DiaphragmLoadType
+   enum class DiaphragmLoadType
    {
       ApplyAtBearingCenterline,
       ApplyAtSpecifiedLocation, // measured from C.L. pier 
@@ -82,7 +84,7 @@ public:
    };
 
    // defines how girder end distances and bearing offsets are measured
-   enum EndDistanceMeasurementType
+   enum class EndDistanceMeasurementType
    {
       FromBearingAlongGirder = 0,
       FromBearingNormalToPier = 1, // this is really From and Normal to CL Bearing (don't want to change it because too many things depend on this name)
@@ -90,11 +92,12 @@ public:
       FromPierNormalToPier = 3
    };
 
-   enum BearingOffsetMeasurementType // always measured from CL pier
+   enum class BearingOffsetMeasurementType // always measured from CL pier
    {
-      AlongGirder = 0, 
+      AlongGirder = 0,
       NormalToPier = 1
    };
+
    static CString GetBearingOffsetMeasurementType(ConnectionLibraryEntry::BearingOffsetMeasurementType measurementType);
    static CString GetEndDistanceMeasurementType(ConnectionLibraryEntry::EndDistanceMeasurementType measurementType);
    static CString GetDiaphragmLoadType(ConnectionLibraryEntry::DiaphragmLoadType loadType);
@@ -105,58 +108,35 @@ public:
    static std::_tstring StringForBearingOffsetMeasurementType(BearingOffsetMeasurementType type);
    static ConnectionLibraryEntry::BearingOffsetMeasurementType BearingOffsetMeasurementTypeFromString(LPCTSTR strType);
 
-
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    ConnectionLibraryEntry();
 
-   //------------------------------------------------------------------------
-   // Copy constructor
    ConnectionLibraryEntry(const ConnectionLibraryEntry&) = default;
 
-   //------------------------------------------------------------------------
-   // Destructor
    virtual ~ConnectionLibraryEntry();
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
    ConnectionLibraryEntry& operator=(const ConnectionLibraryEntry&) = default;
 
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    // Edit the entry
    virtual bool Edit(bool allowEditing,int nPage=0);
 
-   //------------------------------------------------------------------------
    // Get the icon for this entry
    virtual HICON GetIcon() const;
 
-   //------------------------------------------------------------------------
    // Save to structured storage
    virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
-   //------------------------------------------------------------------------
    // Load from structured storage
    virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
-    // GROUP: ACCESS
-   //------------------------------------------------------------------------
    // SetGirderEndDistance - set girder end distance
    void SetGirderEndDistance(Float64 d);
 
-   //------------------------------------------------------------------------
    // GetGirderEndDistance - get girder end distance
    Float64 GetGirderEndDistance() const;
 
-   //------------------------------------------------------------------------
    // SetGirderBearingOffset - set girder bearing offset
    void SetGirderBearingOffset(Float64 d);
 
-   //------------------------------------------------------------------------
    // GetGirderBearingOffset - get girder bearing offset
    Float64 GetGirderBearingOffset() const;
 
@@ -168,63 +148,40 @@ public:
 
    Float64 GetSupportWidth() const;
 
-   //------------------------------------------------------------------------
    // SetDiaphragmHeight - set diaphragm height
    void SetDiaphragmHeight(Float64 d);
 
-   //------------------------------------------------------------------------
    // GetDiaphragmHeight - get diaphragm height
    Float64 GetDiaphragmHeight() const;
 
-   //------------------------------------------------------------------------
    // SetDiaphragmWidth - set diaphragm width
    void SetDiaphragmWidth(Float64 s);
 
-   //------------------------------------------------------------------------
    // GetDiaphragmWidth - get diaphragm width
    Float64 GetDiaphragmWidth()const;
 
-   //------------------------------------------------------------------------
    // Get how diaphragm loads are applied
    DiaphragmLoadType GetDiaphragmLoadType() const;
 
-   //------------------------------------------------------------------------
    // Set how diaphragm loads are applied
    // Also sets DiaphragmLoadLocation = 0.0
    void SetDiaphragmLoadType(DiaphragmLoadType type);
 
-   //------------------------------------------------------------------------
-   // Get diaphgram load location measure from C.L. pier
+   // Get diaphragm load location measure from C.L. pier
    // Note: This call only valid if DiaphragmLoadType==ApplyAtSpecifiedLocation 
    Float64 GetDiaphragmLoadLocation() const;
 
-   //------------------------------------------------------------------------
    // Set Diaphragm load location measure from C.L. pier
    // Note: This call only valid if DiaphragmLoadType==ApplyAtSpecifiedLocation 
    void SetDiaphragmLoadLocation(Float64 loc);
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const ConnectionLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false, bool considerName=false) const;
+   bool Compare(const ConnectionLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false, bool considerName=false) const;
 
    bool IsEqual(const ConnectionLibraryEntry& rOther,bool bConsiderName=false) const;
 
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   void MakeCopy(const ConnectionLibraryEntry& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const ConnectionLibraryEntry& rOther);
-  // GROUP: ACCESS
-  // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
    Float64 m_GirderEndDistance;
    Float64 m_GirderBearingOffset;
    EndDistanceMeasurementType m_EndDistanceMeasure;
@@ -235,11 +192,5 @@ private:
    Float64 m_DiaphragmWidth;
    DiaphragmLoadType m_DiaphragmLoadType;
    Float64 m_DiaphragmLoadLocation;
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
 

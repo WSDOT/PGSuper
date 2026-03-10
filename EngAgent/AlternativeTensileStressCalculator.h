@@ -23,13 +23,13 @@
 #pragma once
 #include <PgsExt\PgsExt.h>
 
-interface IBridge;
-interface IGirder;
-interface IShapes;
-interface ISectionProperties;
-interface ILongRebarGeometry;
-interface IMaterials;
-interface IPointOfInterest;
+class IBridge;
+class IGirder;
+class IShapes;
+class ISectionProperties;
+class ILongRebarGeometry;
+class IMaterials;
+class IPointOfInterest;
 
 /*****************************************************************************
 CLASS 
@@ -48,9 +48,9 @@ public:
    // GROUP: LIFECYCLE
    //------------------------------------------------------------------------
    // Constructor
-   pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,IBridge* pBridge,IGirder* pGirder,
-                                         IShapes* pShapes,ISectionProperties* pSectProps, ILongRebarGeometry* pRebarGeom,
-                                         IMaterials* pMaterials,IPointOfInterest* pPoi,bool bLimitBarStress,Float64 fsMax,
+   pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IGirder> pGirder,
+                                         std::shared_ptr<IShapes> pShapes,std::shared_ptr<ISectionProperties> pSectProps, std::shared_ptr<ILongRebarGeometry> pRebarGeom,
+                                         std::shared_ptr<IMaterials> pMaterials,std::shared_ptr<IPointOfInterest> pPoi,bool bLimitBarStress,Float64 fsMax,
                                          bool bGirderStresses);
 
    //------------------------------------------------------------------------
@@ -82,13 +82,13 @@ private:
    // GROUP: DATA MEMBERS
 
    // these are weak references
-   IBridge* m_pBridge;
-   IGirder* m_pGirder;
-   IShapes* m_pShapes;
-   ISectionProperties* m_pSectProps;
-   ILongRebarGeometry* m_pRebarGeom;
-   IMaterials* m_pMaterials;
-   IPointOfInterest* m_pPoi;
+   std::shared_ptr<IBridge> m_pBridge;
+   std::shared_ptr<IGirder> m_pGirder;
+   std::shared_ptr<IShapes> m_pShapes;
+   std::shared_ptr<ISectionProperties> m_pSectProps;
+   std::shared_ptr<ILongRebarGeometry> m_pRebarGeom;
+   std::shared_ptr<IMaterials> m_pMaterials;
+   std::shared_ptr<IPointOfInterest> m_pPoi;
 
    bool m_bLimitBarStress;
    Float64 m_fsMax;

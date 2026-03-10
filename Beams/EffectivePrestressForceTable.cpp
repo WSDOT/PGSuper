@@ -22,6 +22,7 @@
 
 // EffectivePrestressForceTable.cpp : Implementation of CEffectivePrestressForceTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "EffectivePrestressForceTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -29,20 +30,15 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\GirderData.h>
-#include <PgsExt\LoadFactors.h>
-#include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderData.h>
+#include <PsgLib\LoadFactors.h>
+#include <PsgLib\PrecastSegmentData.h>
+#include <PsgLib\GirderLabel.h>
 #include <IFace\PrestressForce.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CEffectivePrestressForceTable::CEffectivePrestressForceTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CEffectivePrestressForceTable::CEffectivePrestressForceTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( force,       pDisplayUnits->GetGeneralForceUnit(),    false );
@@ -55,7 +51,7 @@ rptRcTable(NumColumns,0)
    scalar.SetTolerance(1.0e-6);
 }
 
-CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptChapter* pChapter, IBroker* pBroker, const CSegmentKey& segmentKey, IEAFDisplayUnits* pDisplayUnits, Uint16 level)
+CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 13; // location, (xfer, Aps)*2, fpe, Ppe, fpe_ServiceI, Ppe_ServiceI, fpe_ServiceIII, Ppe_ServiceIII, fpe_FatigueI, Ppe_FatigueI
@@ -74,8 +70,8 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
    *pParagraph << _T("In determining the resistance of pretensioned concrete components in their end zones, the gradual buildup of the strand force in the transfer and development lengths shall be taken into account. (5.9.4.3.1)") << rptNewLine;
-   *pParagraph << Sub2(_T("P"), _T("pe")) << _T(" = ") << RPT_FPE << _T("[") << symbol(SUM) << _T("(") << symbol(zeta) << RPT_APS << _T(")]") << rptNewLine;
-   *pParagraph << symbol(zeta) << _T(" = Prestress Transfer Length Reduction Factor");
+   *pParagraph << Sub2(_T("P"), _T("pe")) << _T(" = ") << RPT_FPE << _T("[") << symbol(SUM) << _T("(") << Sub2(_T("K"), _T("dt")) << RPT_APS << _T(")]") << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("dt")) << _T(" = Prestress Transfer Length Reduction Factor");
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
@@ -93,7 +89,7 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
 
    table->SetColumnSpan(0, col, 2);
    (*table)(0, col) << _T("Straight") << rptNewLine << _T("Strands");
-   (*table)(1, col++) << symbol(zeta);
+   (*table)(1, col++) << Sub2(_T("K"), _T("dt"));
    (*table)(1, col++) << COLHDR(RPT_APS, rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
@@ -102,7 +98,7 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    std::_tstring strAdj(pgsTypes::asHarped == adj_type ? _T("Harped") : _T("Adj. Straight"));
    table->SetColumnSpan(0, col, 2);
    (*table)(0, col) << strAdj << rptNewLine << _T("Strands");
-   (*table)(1, col++) << symbol(zeta);
+   (*table)(1, col++) << Sub2(_T("K"), _T("dt"));
    (*table)(1, col++) << COLHDR(RPT_APS, rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
 
    table->SetColumnSpan(0, col, 2);
@@ -131,7 +127,7 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    return table;
 }
 
-void CEffectivePrestressForceTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CEffectivePrestressForceTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;

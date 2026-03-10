@@ -38,8 +38,9 @@ DESCRIPTION
 // {FC41CE74-7B33-4f9d-8DF4-2DC16FA8E68D}
 DEFINE_GUID(IID_IIntervals, 
 0xfc41ce74, 0x7b33, 0x4f9d, 0x8d, 0xf4, 0x2d, 0xc1, 0x6f, 0xa8, 0xe6, 0x8d);
-interface IIntervals : IUnknown
+class IIntervals
 {
+public:
    // returns the number of time-step intervals
    virtual IntervalIndexType GetIntervalCount() const = 0;
 

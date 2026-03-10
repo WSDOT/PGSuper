@@ -10,6 +10,7 @@ Compression stress check failed for Service I Limit State in Interval 9 Cast Dec
 Compression stress check failed for Service I Limit State in Interval 12 Time Step
 Compression stress check failed for Service I Limit State in Interval 12 Time Step
 Tension stress check failed for Service III Limit State in Interval 12 Time Step
+Minimum deck reinforcement in negative moment region failed.
 Lifting checks failed
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed
@@ -27,6 +28,7 @@ Compression stress check failed for Service I Limit State in Interval 9 Cast Dec
 Compression stress check failed for Service I Limit State in Interval 12 Time Step
 Compression stress check failed for Service I Limit State in Interval 12 Time Step
 Tension stress check failed for Service III Limit State in Interval 12 Time Step
+Minimum deck reinforcement in negative moment region failed.
 Lifting checks failed
 Hauling checks failed
 Slab Offset ("A" Dimension) check failed

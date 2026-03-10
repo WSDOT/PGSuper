@@ -20,75 +20,16 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_TEXASCAMBERANDDEFLECTIONCHAPTERBUILDER_H_
-#define INCLUDED_TEXASCAMBERANDDEFLECTIONCHAPTERBUILDER_H_
-
-interface IEAFDisplayUnits;
+#pragma once
 
 #include <ReportManager\ReportManager.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-/*****************************************************************************
-CLASS 
-   CTexasCamberAndDeflectionChapterBuilder
-
-   Texas Girder Summary Chapter Builder.
-
-
-DESCRIPTION
-   Reports the IBNS and other girder data for TxDOT
-
-LOG
-   rdp : 06.13.2006 : Created file
-*****************************************************************************/
-
 class CTexasCamberAndDeflectionChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CTexasCamberAndDeflectionChapterBuilder(bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CTexasCamberAndDeflectionChapterBuilder(const CTexasCamberAndDeflectionChapterBuilder&) = delete;
-   CTexasCamberAndDeflectionChapterBuilder& operator=(const CTexasCamberAndDeflectionChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_TEXASCAMBERANDDEFLECTIONCHAPTERBUILDER_H_

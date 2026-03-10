@@ -34,15 +34,11 @@
 
 #include <GenericBridge\Helpers.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define ERROR_SUCCESS                                 0
 #define ERROR_Y_MUST_BE_POSITIVE                      1
@@ -89,8 +85,8 @@ int CStrandGrid::GetColWidth(ROWCOL nCol)
 
 void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // we need the segment length for validating debond lengths (can't debond more
@@ -297,8 +293,8 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
 
 void CStrandGrid::SetRowStyle(ROWCOL nRow)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    ROWCOL col = 0;
 
@@ -405,8 +401,8 @@ CStrandRow CStrandGrid::GetStrandRow(ROWCOL nRow)
 {
    CStrandRow strandRow;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL col = 1;
@@ -455,8 +451,8 @@ void CStrandGrid::AppendRow(const CStrandRow& strandRow)
    // DOES NOT APPEND A STRAND ROW TO THE STRAND DATA OBJECT
    ROWCOL nRow = AppendRow();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL col = 1;
@@ -879,7 +875,7 @@ void CStrandGrid::ShowValidationError(ROWCOL nRow,UINT iError)
 
 /////////////////////////////////////////////////////////////////////////////
 // CRowStrandGrid
-ROWCOL CRowStrandGrid::InitSpecializedColumns(ROWCOL col,IEAFDisplayUnits* pDisplayUnits)
+ROWCOL CRowStrandGrid::InitSpecializedColumns(ROWCOL col,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    SetStyleRange(CGXRange(0, col, 0, col + 1), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
@@ -934,7 +930,7 @@ ROWCOL CRowStrandGrid::SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col)
    return col;
 }
 
-ROWCOL CRowStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
+ROWCOL CRowStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    Float64 value = _tstof(GetCellValue(nRow, col++));
    strandRow.m_Z = WBFL::Units::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
@@ -947,7 +943,7 @@ ROWCOL CRowStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStra
    return col;
 }
 
-ROWCOL CRowStrandGrid::AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
+ROWCOL CRowStrandGrid::AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CString strValue;
    strValue.Format(_T("%s"), ::FormatDimension(strandRow.m_Z, pDisplayUnits->GetComponentDimUnit(), false));
@@ -1022,7 +1018,7 @@ void CRowStrandGrid::ShowValidationError(ROWCOL nRow, UINT iError)
 
 /////////////////////////////////////////////////////////////////////////////
 // CPointStrandGrid
-ROWCOL CPointStrandGrid::InitSpecializedColumns(ROWCOL col, IEAFDisplayUnits* pDisplayUnits)
+ROWCOL CPointStrandGrid::InitSpecializedColumns(ROWCOL col, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CString strLabel;
    strLabel.Format(_T("Z (%s)"), pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
@@ -1045,7 +1041,7 @@ ROWCOL CPointStrandGrid::SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col)
    return col;
 }
 
-ROWCOL CPointStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
+ROWCOL CPointStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    Float64 value = _tstof(GetCellValue(nRow, col++));
    strandRow.m_Z = WBFL::Units::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
@@ -1055,7 +1051,7 @@ ROWCOL CPointStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CSt
    return col;
 }
 
-ROWCOL CPointStrandGrid::AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
+ROWCOL CPointStrandGrid::AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CString strValue;
    strValue.Format(_T("%s"), ::FormatDimension(strandRow.m_Z, pDisplayUnits->GetComponentDimUnit(), false));

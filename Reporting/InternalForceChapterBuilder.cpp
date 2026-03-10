@@ -30,19 +30,12 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CInternalForceChapterBuilder::CInternalForceChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CInternalForceChapterBuilder::GetName() const
 {
    return TEXT("Internal Time-Dependent Forces");
@@ -53,17 +46,17 @@ rptChapter* CInternalForceChapterBuilder::Build(const std::shared_ptr<const WBFL
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -183,9 +176,4 @@ rptChapter* CInternalForceChapterBuilder::Build(const std::shared_ptr<const WBFL
    } // next interval
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CInternalForceChapterBuilder::Clone() const
-{
-   return std::make_unique<CInternalForceChapterBuilder>();
 }

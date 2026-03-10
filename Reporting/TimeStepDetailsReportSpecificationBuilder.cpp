@@ -25,17 +25,14 @@
 #include <Reporting\TimeStepDetailsReportSpecification.h>
 #include "TimeStepDetailsDlg.h"
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CTimeStepDetailsReportSpecificationBuilder::CTimeStepDetailsReportSpecificationBuilder(IBroker* pBroker) :
+CTimeStepDetailsReportSpecificationBuilder::CTimeStepDetailsReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -59,7 +56,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CTimeStepDetailsReportSpec
    }
    else
    {
-      GET_IFACE(ISelection,pSelection);
+      GET_IFACE2(GetBroker(),ISelection,pSelection);
       CSelection selection = pSelection->GetSelection();
       CGirderKey girderKey;
       if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
@@ -73,14 +70,14 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CTimeStepDetailsReportSpec
          girderKey.girderIndex  = 0;
       }
 
-      GET_IFACE(IPointOfInterest,pPoi);
+      GET_IFACE2(GetBroker(),IPointOfInterest,pPoi);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_5L | POI_SPAN, &vPoi);
       ATLASSERT(0 < vPoi.size());
       initial_poi = vPoi.front().get();
    }
 
-   CTimeStepDetailsDlg dlg(m_pBroker,pInitRptSpec,initial_poi,INVALID_INDEX);
+   CTimeStepDetailsDlg dlg(GetBroker(), pInitRptSpec, initial_poi, INVALID_INDEX);
 
    if ( dlg.DoModal() == IDOK )
    {

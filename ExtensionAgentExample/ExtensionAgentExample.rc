@@ -44,12 +44,6 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE 
-BEGIN
-    "1 TYPELIB ""ExtensionAgentExample.tlb""\r\n"
-    "\0"
-END
-
 #endif    // APSTUDIO_INVOKED
 
 
@@ -161,15 +155,6 @@ BEGIN
     END
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// REGISTRY
-//
-
-IDR_EXTENSIONAGENTEXAMPLE REGISTRY                "ExtensionAgentExample.rgs"
-IDR_EXAMPLEEXTENSIONAGENT REGISTRY                "ExampleExtensionAgent.rgs"
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Bitmap
@@ -231,16 +216,4 @@ END
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
-
-
-
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-1 TYPELIB "ExtensionAgentExample.tlb"
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
 

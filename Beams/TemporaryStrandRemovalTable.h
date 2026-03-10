@@ -20,28 +20,22 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// TemporaryStrandRemovalTable.h : Declaration of the CTemporaryStrandRemovalTable
+#pragma once
 
-#ifndef __TEMPORARYSTRANDREMOVALTABLE_H_
-#define __TEMPORARYSTRANDREMOVALTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 
-/////////////////////////////////////////////////////////////////////////////
-// CTemporaryStrandRemovalTable
 class CTemporaryStrandRemovalTable : public rptRcTable
 {
 public:
-	static CTemporaryStrandRemovalTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-	void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CTemporaryStrandRemovalTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+	void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CTemporaryStrandRemovalTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CTemporaryStrandRemovalTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );
@@ -57,5 +51,3 @@ private:
    bool m_bIsPrismatic;
    bool m_bIsAsymmetric;
 };
-
-#endif //__TEMPORARYSTRANDREMOVALTABLE_H_

@@ -26,37 +26,11 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CSegmentTendonGeometryChapterBuilder
-
-   Chapter builder for reporting PT tendon geometry
-
-
-DESCRIPTION
-   Chapter builder for reporting PT tendon geometry
-*****************************************************************************/
-
 class REPORTINGCLASS CSegmentTendonGeometryChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CSegmentTendonGeometryChapterBuilder(bool bSelect = true);
 
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-protected:
-
-private:
-   // Prevent accidental copying and assignment
-   CSegmentTendonGeometryChapterBuilder(const CSegmentTendonGeometryChapterBuilder&) = delete;
-   CSegmentTendonGeometryChapterBuilder& operator=(const CSegmentTendonGeometryChapterBuilder&) = delete;
 };

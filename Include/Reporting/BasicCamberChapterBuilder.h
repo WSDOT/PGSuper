@@ -27,24 +27,19 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class REPORTINGCLASS CBasicCamberChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CBasicCamberChapterBuilder(bool bSelect = true);
 
-   virtual LPCTSTR GetName() const override;
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
+   LPCTSTR GetName() const override;
+   rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
 private:
-   void Build_Deck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTempStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-   void Build_NoDeck(            rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTempStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-
-   // Prevent accidental copying and assignment
-   CBasicCamberChapterBuilder(const CBasicCamberChapterBuilder&) = delete;
-   CBasicCamberChapterBuilder& operator=(const CBasicCamberChapterBuilder&) = delete;
+   void Build_Deck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bTempStrands,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const;
+   void Build_NoDeck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bTempStrands,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const;
 
    mutable rptRcScalar scalar;
 };

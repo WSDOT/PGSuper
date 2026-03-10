@@ -24,13 +24,15 @@
 #include <Reporting\StrandEccentricities.h>
 #include <Reporting\StrandEccTable.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\Limits.h>
 
-void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                IEAFDisplayUnits* pDisplayUnits) const
+void CStrandEccentricities::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true );
 

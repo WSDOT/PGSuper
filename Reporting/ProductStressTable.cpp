@@ -31,16 +31,11 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\ReportOptions.h>
-
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\PrestressForce.h>
+#include <IFace/PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -76,8 +71,8 @@ CProductStressTable& CProductStressTable::operator= (const CProductStressTable& 
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                                       bool bDesign,bool bRating,IEAFDisplayUnits* pDisplayUnits,bool bGirderStresses) const
+rptRcTable* CProductStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+                                       bool bDesign,bool bRating,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bGirderStresses) const
 {
    pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
    pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);

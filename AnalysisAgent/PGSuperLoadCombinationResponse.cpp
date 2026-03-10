@@ -22,17 +22,12 @@
 
 // EngAgentImp.cpp : Implementation of CEngAgentImp
 #include "stdafx.h"
+#include "AnalysisAgent.h"
 #include "PGSuperLoadCombinationResponse.h"
 
 #include "GirderModelManager.h"
 
 #include <EAF\EAFUtilities.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperLoadCombinationResponse
@@ -46,12 +41,6 @@ void CPGSuperLoadCombinationResponse::Initialize(ILoadCombinationResponse* pLCRe
    m_pGirderModelManager = pModelManager;
 
    m_Model->get_POIs(&m_POIs);
-
-   // Get these interfaces once so we don't have to do it over and over
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   pBroker->GetInterface(IID_ILibrary,(IUnknown**)&m_pLibrary);
-   pBroker->GetInterface(IID_IRatingSpecification,(IUnknown**)&m_pRatingSpec);
 }
 
 HRESULT CPGSuperLoadCombinationResponse::FinalConstruct()
@@ -481,7 +470,10 @@ void CPGSuperLoadCombinationResponse::GetNewLiveLoadFactors(BSTR bstrLoadCombina
    }
 
    // compute the new load factor
-   const RatingLibraryEntry* pRatingEntry = m_pLibrary->GetRatingEntry( m_pRatingSpec->GetRatingSpecification().c_str() );
+   auto broker = EAFGetBroker();
+   GET_IFACE2(broker, ILibrary, pLibrary);
+   GET_IFACE2(broker, IRatingSpecification, pRatingSpec);
+   const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
    const CLiveLoadFactorModel* pLFModel;
 
    // need to back out rating type from load combination name (need another back door into the agent)
@@ -494,14 +486,14 @@ void CPGSuperLoadCombinationResponse::GetNewLiveLoadFactors(BSTR bstrLoadCombina
    }
    else if ( ratingType == pgsTypes::lrPermit_Special )
    {
-      pLFModel = &pRatingEntry->GetLiveLoadFactorModel(m_pRatingSpec->GetSpecialPermitType());
+      pLFModel = &pRatingEntry->GetLiveLoadFactorModel(pRatingSpec->GetSpecialPermitType());
    }
    else
    {
       pLFModel = &pRatingEntry->GetLiveLoadFactorModel(ratingType);
    }
 
-   Int16 adtt = m_pRatingSpec->GetADTT();
+   Int16 adtt = pRatingSpec->GetADTT();
 
    Float64 gLL_left  = pLFModel->GetStrengthLiveLoadFactor(adtt,Wleft);
    Float64 gLL_right = pLFModel->GetStrengthLiveLoadFactor(adtt,Wright);

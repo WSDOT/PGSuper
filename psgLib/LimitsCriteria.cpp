@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib/LimitsCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/LimitsCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include "SpecLibraryEntryImpl.h"
 #include <EAF/EAFDisplayUnits.h>
 
@@ -73,7 +73,7 @@ LimitsCriteria::LimitsCriteria()
    //MaxConcreteAggSize[pgsTypes::UHPC] = WBFL::Units::ConvertToSysUnits(1.5, WBFL::Units::Measure::Inch);
 }
 
-bool LimitsCriteria::Compare(const LimitsCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool LimitsCriteria::Compare(const LimitsCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
 
@@ -81,7 +81,7 @@ bool LimitsCriteria::Compare(const LimitsCriteria& other, const SpecLibraryEntry
       (bCheckSag != other.bCheckSag || (bCheckSag == true && SagCamber != other.SagCamber)))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("General Warnings are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("General Warnings are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -111,14 +111,14 @@ bool LimitsCriteria::Compare(const LimitsCriteria& other, const SpecLibraryEntry
    if (!bConcreteLimits)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Concrete Limits are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Concrete Limits are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    return bSame;
 }
 
-void LimitsCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void LimitsCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
 }
 

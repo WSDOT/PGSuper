@@ -27,21 +27,18 @@
 #include "PGSuperApp.h"
 #include "SelectGirderDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+
+#include <PsgLib\BridgeDescription2.h>
 #include "PGSuperDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSelectGirderDlg dialog
 
 
-CSelectGirderDlg::CSelectGirderDlg(IBroker* pBroker, CWnd* pParent /*=nullptr*/)
+CSelectGirderDlg::CSelectGirderDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectGirderDlg::IDD, pParent),
    m_pBroker(pBroker)
 {

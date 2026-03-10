@@ -24,43 +24,37 @@
 #include <PgsExt\MacroTxn.h>
 
 #include <EAF\EAFUtilities.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 bool pgsMacroTxn::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEvents, pEvents);
 
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   bool bResult = CEAFMacroTxn::Execute();
+   bool bResult = WBFL::EAF::MacroTxn::Execute();
 
    return bResult;
 }
 
 void pgsMacroTxn::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
 
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   CEAFMacroTxn::Undo();
+   WBFL::EAF::MacroTxn::Undo();
 }
 
-std::unique_ptr<CEAFTransaction> pgsMacroTxn::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> pgsMacroTxn::CreateClone() const
 {
    std::unique_ptr<pgsMacroTxn> clone(std::make_unique<pgsMacroTxn>());
    clone->Name(m_Name);

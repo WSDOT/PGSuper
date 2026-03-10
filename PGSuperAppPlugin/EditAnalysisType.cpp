@@ -23,13 +23,10 @@
 #include "stdafx.h"
 #include "EditAnalysisType.h"
 #include "PGSuperDoc.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditAnalysisType::txnEditAnalysisType(pgsTypes::AnalysisType oldAnalysisType,pgsTypes::AnalysisType newAnalysisType)
 {
@@ -54,8 +51,8 @@ void txnEditAnalysisType::Undo()
 
 void txnEditAnalysisType::Execute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    GET_IFACE2(pBroker, ISpecification, pSpec );
@@ -66,7 +63,7 @@ void txnEditAnalysisType::Execute(int i)
    pSpec->SetAnalysisType(m_AnalysisType[i]);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditAnalysisType::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditAnalysisType::CreateClone() const
 {
    return std::make_unique<txnEditAnalysisType>(m_AnalysisType[0],m_AnalysisType[1]);
 }

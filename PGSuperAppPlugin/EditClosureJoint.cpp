@@ -24,14 +24,10 @@
 #include "EditClosureJoint.h"
 #include "PGSpliceDoc.h"
 
+#include <IFace/Tools.h>
 #include <IFACE\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 txnEditClosureJoint::txnEditClosureJoint(const CSegmentKey& closureKey,const txnEditClosureJointData& newData)
@@ -46,8 +42,8 @@ txnEditClosureJoint::~txnEditClosureJoint()
 
 bool txnEditClosureJoint::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
@@ -84,8 +80,8 @@ bool txnEditClosureJoint::Execute()
 
 void txnEditClosureJoint::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
@@ -100,7 +96,7 @@ void txnEditClosureJoint::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction>txnEditClosureJoint::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction>txnEditClosureJoint::CreateClone() const
 {
    return std::make_unique<txnEditClosureJoint>(m_ClosureKey,m_NewData);
 }
@@ -132,8 +128,8 @@ bool txnEditClosureJoint::IsRepeatable() const
 
 void txnEditClosureJoint::SetClosureJointData(const CSegmentKey& closureKey,const txnEditClosureJointData& data)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker, IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done

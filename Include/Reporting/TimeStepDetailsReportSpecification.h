@@ -30,7 +30,7 @@ class REPORTINGCLASS CTimeStepDetailsReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-	CTimeStepDetailsReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
+	CTimeStepDetailsReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
    ~CTimeStepDetailsReportSpecification(void);
 
    void SetOptions(bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);

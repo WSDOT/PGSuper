@@ -23,7 +23,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "GeometryControlDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
@@ -31,11 +31,6 @@
 #include <IFace\Bridge.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CGeometryControlDlg dialog

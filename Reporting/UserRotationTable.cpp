@@ -25,53 +25,17 @@
 #include <Reporting\UserMomentsTable.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CUserRotationTable
-****************************************************************************/
+#include <IFace/PointOfInterest.h>
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
 
-//======================== LIFECYCLE  =======================================
-CUserRotationTable::CUserRotationTable()
-{
-}
-
-CUserRotationTable::CUserRotationTable(const CUserRotationTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CUserRotationTable::~CUserRotationTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CUserRotationTable& CUserRotationTable::operator= (const CUserRotationTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
-                                      IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CUserRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
+                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false );
@@ -101,6 +65,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
    pBridge->GetGirderline(girderKey.girderIndex, startGroupIdx, endGroupIdx, &vGirderKeys);
    for (const auto& thisGirderKey : vGirderKeys)
    {
+
        PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
        PierIndexType endPierIdx = pBridge->GetGirderGroupEndPier(thisGirderKey.groupIndex);
        for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
@@ -128,6 +93,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
                vPoi.push_back(poi);
            }
        }
+
    }
 
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
@@ -135,7 +101,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
    // Fill up the table
 
-   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPOI);
    iter.First();
    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
@@ -199,32 +165,3 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
    return p_table;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CUserRotationTable::MakeCopy(const CUserRotationTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CUserRotationTable::MakeAssignment(const CUserRotationTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

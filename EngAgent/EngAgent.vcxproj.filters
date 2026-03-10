@@ -7,7 +7,7 @@
     <ClCompile Include="Designer2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EngAgent.cpp">
+    <ClCompile Include="dllmain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EngAgentImp.cpp">
@@ -62,6 +62,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DevelopmentLengthEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingDesignEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HorizTieForceEng.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -159,12 +165,21 @@
     <ClInclude Include="DevelopmentLengthEngineer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\IFace\BearingDesignParameters.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="BearingDesignEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HorizTieForceEng.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\IFace\HorizontalTensionTieChecks.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="EngAgent.def" />
-    <None Include="EngAgent.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IFace">

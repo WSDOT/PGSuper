@@ -22,15 +22,12 @@
 
 #include "stdafx.h"
 #include "EditRatingCriteria.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h> // for IEvents
 #include <IFace\RatingSpecification.h>
 #include "PGSuperDoc.h" // for EAFGetBroker
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnGeneralRatingData::txnGeneralRatingData()
 {
@@ -494,8 +491,8 @@ void txnEditRatingCriteria::Undo()
 
 void txnEditRatingCriteria::Execute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec );
@@ -764,7 +761,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetSpecialPermitType(m_Data[i].m_Permit.SpecialPermitType);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditRatingCriteria::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditRatingCriteria::CreateClone() const
 {
    return std::make_unique<txnEditRatingCriteria>(m_Data[0],m_Data[1]);
 }

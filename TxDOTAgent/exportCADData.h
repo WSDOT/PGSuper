@@ -39,7 +39,7 @@ class exportCADData : public CDialog
 {
 // Construction
 public:
-    exportCADData(IBroker* pBroker,CWnd* pParent = nullptr);
+    exportCADData(std::shared_ptr<WBFL::EAF::Broker> pBroker,CWnd* pParent = nullptr);
 	~exportCADData(); 
 
 // Dialog Data
@@ -66,7 +66,7 @@ public:
 // Implementation
 protected:
 
-	CComPtr<IBroker> m_pBroker;
+	std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
 	// Generated message map functions
 	//{{AFX_MSG(exportCADData)

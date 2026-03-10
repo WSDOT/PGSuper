@@ -30,11 +30,23 @@
 
 #include <MFCTools\VersionInfo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include "CLSID.h"
+#include "TxDOTCADExporter.h"
+#include "TxDOTAppPluginComponentInfo.h"
+#include "TxDOTComponentInfo.h"
+#include "TOGAPluginApp.h"
+#include "TxDOTAgentImp.h"
+#include <EAF\ComponentModule.h>
+
+WBFL::EAF::ComponentModule Module_;
+
+EAF_BEGIN_OBJECT_MAP(ObjectMap)
+   EAF_OBJECT_ENTRY(CLSID_TxDOTCadExporter, CTxDOTCadExporter)
+   EAF_OBJECT_ENTRY(CLSID_TxDOTPGSuperComponentInfo, CTxDOTComponentInfo)
+   EAF_OBJECT_ENTRY(CLSID_TOGAPluginAppComponentInfo, CTxDOTAppPluginComponentInfo)
+   EAF_OBJECT_ENTRY(CLSID_TOGAPluginApp, CTOGAPluginApp)
+   EAF_OBJECT_ENTRY(CLSID_TxDOTAgent, CTxDOTAgentImp)
+EAF_END_OBJECT_MAP()
 
 
 
@@ -49,6 +61,8 @@ void CTxDOTAgentApp::OnHelp()
 
 BOOL CTxDOTAgentApp::InitInstance()
 {
+   Module_.Init(ObjectMap);
+
    GXInit();
 
    // Set up the root of the registry keys
@@ -62,6 +76,7 @@ BOOL CTxDOTAgentApp::InitInstance()
 int CTxDOTAgentApp::ExitInstance()
 {
    GXForceTerminate();
+   Module_.Term();
 	return CWinApp::ExitInstance();
 }
 

@@ -23,23 +23,17 @@
 // SpecLossPage.cpp : implementation file
 //
 
-#include "stdafx.h"
-#include <psgLib\psglib.h>
+#include "StdAfx.h"
 #include "SpecLossPage.h"
 #include "SpecMainSheet.h"
-#include <psgLib/SectionPropertiesCriteria.h>
-#include <psgLib/PrestressLossCriteria.h>
-#include <psgLib/SpecificationCriteria.h>
-#include <psgLib/HaulingCriteria.h>
+#include <PsgLib/SectionPropertiesCriteria.h>
+#include <PsgLib/PrestressLossCriteria.h>
+#include <PsgLib/SpecificationCriteria.h>
+#include <PsgLib/HaulingCriteria.h>
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecLossPage property page

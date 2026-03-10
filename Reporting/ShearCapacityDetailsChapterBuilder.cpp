@@ -27,18 +27,19 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PsgLib\ShearData.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\Project.h>
-#include <IFace\Bridge.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
 #include <Reporter\ReportingUtils.h>
 
@@ -48,163 +49,151 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CShearCapacityDetailsChapterBuilder
-****************************************************************************/
-
-void write_shear_dimensions_table(IBroker* pBroker,
-                                IEAFDisplayUnits* pDisplayUnits,
+void write_shear_dimensions_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                 const PoiList& vPoi,
                                 rptChapter* pChapter,
                                 IntervalIndexType intervalIdx,
                                 const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_shear_stress_table(  IBroker* pBroker,
-                                IEAFDisplayUnits* pDisplayUnits,
+void write_shear_stress_table(  std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                 const PoiList& vPoi,
                                 rptChapter* pChapter,
                                 IntervalIndexType intervalIdx,
                                 const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_fpo_table(IBroker* pBroker,
-                       IEAFDisplayUnits* pDisplayUnits,
+void write_fpo_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                        const PoiList& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_fpc_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_fpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_fpce_table(IBroker* pBroker,
-                      IEAFDisplayUnits* pDisplayUnits,
+void write_fpce_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       const PoiList& vPoi,
                       rptChapter* pChapter,
                       IntervalIndexType intervalIdx,
                       const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_Fe_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Fe_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_btsummary_table(IBroker* pBroker,
-                       IEAFDisplayUnits* pDisplayUnits,
+void write_btsummary_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                        const PoiList& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bUHPC);
 
-void write_theta_fv_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_theta_fv_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
    const std::_tstring& strStageName, pgsTypes::LimitState ls);
 
-void write_ex_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_es_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_es_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
    const std::_tstring& strStageName, pgsTypes::LimitState ls);
 
 
-void write_Vs_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vs_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bDuctAdjustment,bool bUHPC);
 
-void write_theta_table(IBroker* pBroker,
-                       IEAFDisplayUnits* pDisplayUnits,
+void write_theta_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                        const PoiList& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_Vc_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_Vuhpc_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_Vuhpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
    const std::_tstring& strStageName, pgsTypes::LimitState ls);
 
-void write_Vcf_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_Vcf_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
    const std::_tstring& strStageName, pgsTypes::LimitState ls);
 
-void write_Vci_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_Vci_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_Vcw_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vcw_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_Vn_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vn_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls,pgsTypes::ConcreteType concreteType);
 
-void write_Avs_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_Avs_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls, pgsTypes::ConcreteType concreteType);
 
-void write_bar_spacing_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_bar_spacing_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
 
 bool CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois = false;
 
-//======================== LIFECYCLE  =======================================
 CShearCapacityDetailsChapterBuilder::CShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -212,8 +201,6 @@ CPGSuperChapterBuilder(bSelect)
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CShearCapacityDetailsChapterBuilder::GetName() const
 {
    return TEXT("Shear Capacity Details");
@@ -224,17 +211,17 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -413,32 +400,9 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CShearCapacityDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CShearCapacityDetailsChapterBuilder>(m_bDesign,m_bRating);
-}
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-void write_shear_dimensions_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_shear_dimensions_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
@@ -460,8 +424,7 @@ void write_shear_dimensions_table(IBroker* pBroker,
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
 
-   CComPtr<IBeamFactory> pFactory;
-   pGdrEntry->GetBeamFactory(&pFactory);
+   auto pFactory = pGdrEntry->GetBeamFactory();
 
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 
@@ -549,8 +512,8 @@ void write_shear_dimensions_table(IBroker* pBroker,
    }
 }
 
-void write_shear_stress_table(IBroker* pBroker,
-                              IEAFDisplayUnits* pDisplayUnits,
+void write_shear_stress_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                               const PoiList& vPoi,
                               rptChapter* pChapter,
                               IntervalIndexType intervalIdx,
@@ -734,8 +697,8 @@ void write_shear_stress_table(IBroker* pBroker,
    }
 }
 
-void write_fpc_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_fpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
@@ -909,8 +872,8 @@ void write_fpc_table(IBroker* pBroker,
    }
 }
 
-void write_fpce_table(IBroker* pBroker,
-                      IEAFDisplayUnits* pDisplayUnits,
+void write_fpce_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       const PoiList& vPoi,
                       rptChapter* pChapter,
                       IntervalIndexType intervalIdx,
@@ -1029,8 +992,8 @@ void write_fpce_table(IBroker* pBroker,
    *pParagraph << Sub2(_T("M"),_T("dnc")) << _T(" = total unfactored dead load moment acting on the monolithic or noncomposite section") << rptNewLine;
 }
 
-void write_fpo_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_fpo_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
@@ -1302,8 +1265,8 @@ void write_fpo_table(IBroker* pBroker,
    } // end if
 }
 
-void write_Fe_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Fe_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
@@ -1474,8 +1437,8 @@ void write_Fe_table(IBroker* pBroker,
    }
 }
 
-void write_ex_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
@@ -1597,7 +1560,7 @@ void write_ex_table(IBroker* pBroker,
       *pParagraph << rptNewLine;
    }
 
-   Int16 nCol = (bAfter1999 && shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables ? 14 : 12);
+   Int16 nCol = (bAfter1999 && shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTTables ? 16 : 14);
    if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2001 ||
       shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007 ||
       shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTEquations
@@ -1625,6 +1588,12 @@ void write_ex_table(IBroker* pBroker,
    {
       nCol += 3;
    }
+
+   *pParagraph << rptNewLine;
+   *pParagraph << _T("where:") << rptNewLine;
+   *pParagraph << _T("All areas and corresponding adjustment factors used in this equation are based on the tension side of the girder section") << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("db")) << _T(" = factor that accounts for lack of full bar development ") << rptNewLine;
+   *pParagraph << Sub2(_T("K"), _T("ds")) << _T(" = factor that accounts for lack of full strand development ") << rptNewLine;
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(nCol);
 
@@ -1695,9 +1664,11 @@ void write_ex_table(IBroker* pBroker,
    }
 
    (*table)(0,col++) << COLHDR( Sub2(_T("d"),_T("v")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("s")) << _T("*"), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,col++) << Sub2(_T("K"),_T("db"));
+   (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("s")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
    (*table)(0,col++) << COLHDR( Sub2(_T("E"),_T("s")), rptStressUnitTag, pDisplayUnits->GetModEUnit() );
-   (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("ps")) << _T("*"), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
+   (*table)(0,col++) << Sub2(_T("K"),_T("ds"));
+   (*table)(0,col++) << COLHDR( Sub2(_T("A"),_T("ps")), rptLength2UnitTag, pDisplayUnits->GetAreaUnit() );
    (*table)(0,col++) << COLHDR( Sub2(_T("E"),_T("ps")), rptStressUnitTag, pDisplayUnits->GetModEUnit() );
 
    if (0 < nMaxSegmentDucts)
@@ -1815,8 +1786,10 @@ void write_ex_table(IBroker* pBroker,
       }
 
       (*table)(row,col++) << dim.SetValue( scd.dv );
+      (*table)(row,col++) << scalar.SetValue( scd.Kdb );
       (*table)(row,col++) << area.SetValue( scd.As );
       (*table)(row,col++) << mod_e.SetValue( scd.Es );
+      (*table)(row,col++) << scalar.SetValue( scd.Kds );
       (*table)(row,col++) << area.SetValue( scd.Aps );
       (*table)(row,col++) << mod_e.SetValue( scd.Eps );
 
@@ -1867,7 +1840,6 @@ void write_ex_table(IBroker* pBroker,
 
    pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("* In calculating ") << RPT_AS << _T(" and ") << RPT_APS << _T(" the area of bars or tendons terminated less than their development length from the section under consideration are reduced in proportion to their lack of full development. (") << WBFL::LRFD::LrfdCw8th(_T("5.8.3.4.2"), _T("5.7.3.4.2")) << _T(")") << rptNewLine;
 
    // print footnote if any values could not be calculated
    if (print_footnote1 || print_footnote2)
@@ -1901,8 +1873,8 @@ void write_ex_table(IBroker* pBroker,
 
 }
 
-void write_es_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_es_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
@@ -2026,8 +1998,8 @@ void write_es_table(IBroker* pBroker,
    }
 }
 
-void write_btsummary_table(IBroker* pBroker,
-                       IEAFDisplayUnits* pDisplayUnits,
+void write_btsummary_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                        const PoiList& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
@@ -2282,8 +2254,8 @@ void write_btsummary_table(IBroker* pBroker,
    }
 }
 
-void write_theta_fv_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_theta_fv_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
@@ -2377,8 +2349,8 @@ void write_theta_fv_table(IBroker* pBroker,
    }
 }
 
-void write_Vs_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vs_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
@@ -2546,8 +2518,8 @@ void write_Vs_table(IBroker* pBroker,
 
 }
 
-void write_Vc_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
@@ -2742,8 +2714,8 @@ void write_Vc_table(IBroker* pBroker,
    }
 }
 
-void write_Vuhpc_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_Vuhpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
@@ -2850,8 +2822,8 @@ void write_Vuhpc_table(IBroker* pBroker,
    }
 }
 
-void write_Vcf_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_Vcf_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
@@ -2961,8 +2933,8 @@ void write_Vcf_table(IBroker* pBroker,
 }
 
 
-void write_Vci_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vci_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
@@ -3104,8 +3076,8 @@ void write_Vci_table(IBroker* pBroker,
    }
 }
 
-void write_Vcw_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vcw_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
@@ -3245,8 +3217,8 @@ void write_Vcw_table(IBroker* pBroker,
    }
 }
 
-void write_theta_table(IBroker* pBroker,
-                       IEAFDisplayUnits* pDisplayUnits,
+void write_theta_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                        const PoiList& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
@@ -3390,8 +3362,8 @@ void write_theta_table(IBroker* pBroker,
    }
 }
 
-void write_Vn_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vn_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
@@ -3613,8 +3585,8 @@ void write_Vn_table(IBroker* pBroker,
    }
 }
 
-void write_Avs_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_Avs_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
@@ -3790,8 +3762,8 @@ void write_Avs_table(IBroker* pBroker,
    }
 }
 
-void write_bar_spacing_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_bar_spacing_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,

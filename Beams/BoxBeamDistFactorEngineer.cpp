@@ -20,42 +20,31 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// BoxBeamDistFactorEngineer.cpp : Implementation of CBoxBeamDistFactorEngineer
+// BoxBeamDistFactorEngineer.cpp : Implementation of BoxBeamDistFactorEngineer
 #include "stdafx.h"
+#include "Beams.h"
 #include "BoxBeamDistFactorEngineer.h"
-#include <WBFLCore.h>
 #include <Units\Convert.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\Intervals.h>
 #include <WBFLCogo.h>
 #include <LRFD\LldfTypeG.h>
 #include <Beams\Helper.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+using namespace PGS::Beams;
 
-/////////////////////////////////////////////////////////////////////////////
-// CBoxBeamDistFactorEngineer
-HRESULT CBoxBeamDistFactorEngineer::FinalConstruct()
-{
-   return S_OK;
-}
-
-void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void BoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Grab the interfaces that are needed
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE2(GetBroker(), IBridge,pBridge);
 
    // Do some initial se
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
@@ -70,7 +59,7 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
    INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),           true );
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -141,7 +130,7 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
       (*pPara) << _T("Lane Width: wLane = ") << xdim.SetValue(span_lldf.wLane) << rptNewLine;
       (*pPara) << _T("Number of Girders: N") << Sub(_T("b")) << _T(" = ") << span_lldf.Nb << rptNewLine;
       (*pPara) << _T("Girder Spacing: ") << Sub2(_T("S"),_T("avg")) << _T(" = ") << xdim.SetValue(span_lldf.Savg) << rptNewLine;
-      Float64 de = span_lldf.Side==dfLeft ? span_lldf.leftDe:span_lldf.rightDe;
+      Float64 de = span_lldf.Side==DfSide::Left ? span_lldf.leftDe:span_lldf.rightDe;
       (*pPara) << _T("Distance from exterior web of exterior girder to curb line: d") << Sub(_T("e")) << _T(" = ") << xdim.SetValue(de) << rptNewLine;
       (*pPara) << _T("Moment of Inertia: I = ") << inertia.SetValue(span_lldf.I) << rptNewLine;
       (*pPara) << _T("Beam Width: b = ") << xdim2.SetValue(span_lldf.b) << rptNewLine;
@@ -150,8 +139,8 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
       (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
       (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
 
-      GET_IFACE(ISpecification, pSpec);
-      GET_IFACE(ILibrary, pLibrary);
+      GET_IFACE2(GetBroker(), ISpecification, pSpec);
+      GET_IFACE2(GetBroker(), ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       if (live_load_distribution_criteria.bIgnoreSkewReductionForMoment)
@@ -362,15 +351,15 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
    } // next span
 }
 
-void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void BoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
    if ( lldf.bExteriorGirder )
@@ -410,14 +399,14 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
          REPORT_LLDF_INTOVERRIDE(gM1);
-         ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
+         ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,GetBroker(),pDisplayUnits);
       }
 
       if ( gM1.LanesBeamsData.bWasUsed )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
          (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-         ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
+         ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,GetBroker(),pDisplayUnits);
       }
 
 
@@ -458,20 +447,20 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
          if (gM2.LeverRuleData.bWasUsed)
          {
             (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
-            ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
+            ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,GetBroker(),pDisplayUnits);
          }
 
          if ( gM2.RigidData.bWasUsed )
          {
             (*pPara) << Bold(_T("2+ Loaded Lanes: Rigid Method")) << rptNewLine;
-            ReportRigidMethod(pPara,gM2.RigidData,m_pBroker,pDisplayUnits);
+            ReportRigidMethod(pPara,gM2.RigidData,GetBroker(),pDisplayUnits);
          }
 
          if ( gM2.LanesBeamsData.bWasUsed )
          {
             (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
             (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-            ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
+            ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,GetBroker(),pDisplayUnits);
          }
       }
 
@@ -528,14 +517,14 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
       if (gM1.LeverRuleData.bWasUsed)
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
-         ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
+         ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,GetBroker(),pDisplayUnits);
       }
 
       if ( gM1.LanesBeamsData.bWasUsed )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
          (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-         ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
+         ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,GetBroker(),pDisplayUnits);
       }
 
       if ( 2 <= lldf.Nl )
@@ -565,14 +554,14 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
          if (gM2.LeverRuleData.bWasUsed)
          {
             (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
-            ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
+            ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,GetBroker(),pDisplayUnits);
          }
 
          if ( gM2.LanesBeamsData.bWasUsed )
          {
             (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
             (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-            ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
+            ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,GetBroker(),pDisplayUnits);
          }
       }
 
@@ -604,14 +593,14 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
    }
 }
 
-void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void BoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    
    if ( lldf.bExteriorGirder ) 
@@ -622,7 +611,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
       if ( gV1.LeverRuleData.bWasUsed )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
-         ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
+         ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,GetBroker(),pDisplayUnits);
       }
 
       if ( gV1.EqnData.bWasUsed  )
@@ -652,7 +641,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
          (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-         ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
+         ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,GetBroker(),pDisplayUnits);
       }
 
       if ( 2 <= lldf.Nl )
@@ -662,7 +651,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
          if ( gV1.LeverRuleData.bWasUsed )
          {
             (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
-            ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
+            ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,GetBroker(),pDisplayUnits);
          }
 
          if ( gV2.EqnData.bWasUsed )
@@ -702,7 +691,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
          {
             (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
             (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-            ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData,m_pBroker,pDisplayUnits);
+            ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData,GetBroker(),pDisplayUnits);
          }
       }
 
@@ -748,7 +737,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
          if ( gV1.LeverRuleData.bWasUsed )
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
-            ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
+            ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,GetBroker(),pDisplayUnits);
          }
 
          if ( gV1.EqnData.bWasUsed )
@@ -766,7 +755,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
                (*pPara) << Bold(_T("Lever Rule")) << rptNewLine;
-               ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
+               ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,GetBroker(),pDisplayUnits);
             }
 
             if ( gV2.EqnData.bWasUsed )
@@ -780,7 +769,7 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
                (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-               ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
+               ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,GetBroker(),pDisplayUnits);
             }
          }
       }
@@ -804,14 +793,14 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
    }
 }
 
-WBFL::LRFD::LiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,BOXBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
+WBFL::LRFD::LiveLoadDistributionFactorBase* BoxBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,BOXBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
-   GET_IFACE(ISectionProperties, pSectProp);
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IGirder,pGirder);
-   GET_IFACE(ILiveLoads,pLiveLoads);
+   GET_IFACE2(GetBroker(), ISectionProperties, pSectProp);
+   GET_IFACE2(GetBroker(), IBridge,pBridge);
+   GET_IFACE2(GetBroker(), IGirder,pGirder);
+   GET_IFACE2(GetBroker(), ILiveLoads,pLiveLoads);
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -848,7 +837,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFP
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
-   GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
+   GET_IFACE2(GetBroker(), ILiveLoadDistributionFactors, pDistFactors);
    Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    // Get some controlling dimensions
@@ -898,7 +887,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFP
    // thickness of exterior vertical elements
    Float64 t_ext = web_thk;
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(), IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
    if (is_composite)
@@ -1010,8 +999,8 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFP
    }
    else
    {
-      GET_IFACE(ISpecification, pSpec);
-      GET_IFACE(ILibrary, pLibrary);
+      GET_IFACE2(GetBroker(), ISpecification, pSpec);
+      GET_IFACE2(GetBroker(), ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) );
@@ -1024,7 +1013,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFP
          // the obtuse corner to mid-span of exterior and first interior girders.
          // Use the IsObtuseCorner method to determine if there is an obtuse corner for
          // this girder. If so, apply the skew correction
-         if ( dfType == dfReaction )
+         if ( dfType == DFParam::Reaction )
          {
             bool bObtuseLeft = false;
             if ( prev_span != INVALID_INDEX )
@@ -1107,10 +1096,10 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFP
    return pLLDF;
 }
 
-std::_tstring CBoxBeamDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
+std::_tstring BoxBeamDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 

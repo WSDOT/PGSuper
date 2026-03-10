@@ -24,16 +24,11 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "SpecPSLimitPage.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecStrandPage property page
@@ -83,6 +78,12 @@ BOOL CSpecStrandPage::OnInitDialog()
    OnPsChecked();
    OnPtChecked();
    OnCheckPsAfterTransfer();
+
+   // Capture the window rectangle for the Pull Method ratio
+   // so we can restore the control to it's original position
+   // if it gets moved for the 10th Edition of LRFD
+   GetDlgItem(IDC_PULL_METHOD)->GetWindowRect(&ratio_rect);
+   ScreenToClient(ratio_rect);
 
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -135,6 +136,24 @@ BOOL CSpecStrandPage::OnSetActive()
    else
    {
       GetDlgItem(IDC_DUCT_SIZE_LABEL)->SetWindowText(_T("Outside diameter of duct shall not exceed "));
+   }
+
+   int nCmdShow = WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= pDad->GetSpecVersion() ? SW_HIDE : SW_SHOW;
+   GetDlgItem(IDC_PUSH_METHOD)->ShowWindow(nCmdShow);
+   GetDlgItem(IDC_PUSH_METHOD_DESC)->ShowWindow(nCmdShow);
+   //GetDlgItem(IDC_PULL_METHOD)->ShowWindow(nCmdShow); // Always show this control
+   GetDlgItem(IDC_PULL_METHOD_DESC)->ShowWindow(nCmdShow);
+
+   if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= pDad->GetSpecVersion())
+   {
+	  CRect rect;
+	  GetDlgItem(IDC_DUCT_AREA_RATIO_DESC)->GetWindowRect(&rect);
+	  ScreenToClient(rect);
+	  GetDlgItem(IDC_PULL_METHOD)->SetWindowPos(nullptr, rect.right + 5, rect.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+   }
+   else
+   {
+	  GetDlgItem(IDC_PULL_METHOD)->SetWindowPos(nullptr, ratio_rect.left, ratio_rect.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
    }
 
    return CPropertyPage::OnSetActive();

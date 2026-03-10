@@ -20,33 +20,21 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_BRIDGEDESCPRESTRESSPAGE_H__8118E252_586C_11D2_8ED3_006097DF3C68__INCLUDED_)
-#define AFX_BRIDGEDESCPRESTRESSPAGE_H__8118E252_586C_11D2_8ED3_006097DF3C68__INCLUDED_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
-// BridgeDescPrestressPage.h : header file
-//
 
 #include "resource.h"
-#include <PgsExt\GirderData.h>
+#include <PsgLib\GirderData.h>
 
-#if !defined INCLUDED_MATERIAL_PSSTRAND_H_
 #include <Materials/PsStrand.h>
-#endif
-
-#if !defined INCLUDED_PSGLIB_GIRDERLIBRARYENTRY_H_
 #include <PsgLib\GirderLibraryEntry.h>
-#endif
-
 #include <WBFLGenericBridgeTools.h>
 
 #include <MfcTools\WideDropDownComboBox.h>
 
+class IStrandGeometry;
+class IEAFDisplayUnits;
+
 class CGirderDescDlg;
-struct IStrandGeometry;
-struct IEAFDisplayUnits;
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescPrestressPage dialog
@@ -121,8 +109,8 @@ protected:
    void UpdatePjackEdits();
    void UpdatePjackEdit( UINT nCheckBox  );
    void UpdatePjackEditEx(StrandIndexType nStrands, UINT nCheckBox  );
-   void ConvertPJackFromNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits);
-   void ConvertPJackToNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits);
+   void ConvertPJackFromNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ConvertPJackToNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    void UpdateEndRangeLength(HarpedStrandOffsetType measureType, StrandIndexType Nh);
    void UpdateHpRangeLength(HarpedStrandOffsetType measureType, StrandIndexType Nh);
@@ -141,8 +129,8 @@ protected:
    void UpdateAdjustableStrandControls();
    void ShowOffsetControlGroup(BOOL show);
 
-   StrandIndexType StrandSpinnerInc(IStrandGeometry* pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd );
-   StrandIndexType PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd );
+   StrandIndexType StrandSpinnerInc(std::shared_ptr<IStrandGeometry> pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd );
+   StrandIndexType PermStrandSpinnerInc(std::shared_ptr<IStrandGeometry> pStrands, StrandIndexType currNum, bool bAdd );
 
    void GetStrandCount(StrandIndexType* pNs, StrandIndexType* pNh, StrandIndexType* pNt, StrandIndexType* pNp);
 
@@ -174,8 +162,3 @@ public:
    afx_msg void OnCbnSelchangeAdjustableCombo();
    afx_msg void OnEpoxyChanged();
 };
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_BRIDGEDESCPRESTRESSPAGE_H__8118E252_586C_11D2_8ED3_006097DF3C68__INCLUDED_)

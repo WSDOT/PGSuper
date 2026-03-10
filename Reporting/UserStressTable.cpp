@@ -27,16 +27,13 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -72,8 +69,8 @@ CUserStressTable& CUserStressTable::operator= (const CUserStressTable& rOther)
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
-                                      IEAFDisplayUnits* pDisplayUnits,bool bGirderStresses) const
+rptRcTable* CUserStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
+                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bGirderStresses) const
 {
    pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
    pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);

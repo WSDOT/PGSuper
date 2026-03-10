@@ -23,17 +23,15 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\EditBridge.h>
 #include <EAF\EAFUtilities.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <IFace/Tools.h>
+#include <IFace\Project.h>
 
 txnEditBridge::txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
    pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
-                             Float64 oldRelHumidity, Float64 newRelHumidity)
+   pgsTypes::ClimateCondition oldClimateCondition, pgsTypes::ClimateCondition newClimateCondition,
+   Float64 oldRelHumidity, Float64 newRelHumidity)
 {
    m_bBridgeDescOnly = false;
    m_BridgeDesc[0] = oldBridgeDesc;
@@ -41,6 +39,9 @@ txnEditBridge::txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBri
 
    m_ExposureCondition[0] = oldExposureCondition;
    m_ExposureCondition[1] = newExposureCondition;
+
+   m_ClimateCondition[0] = oldClimateCondition;
+   m_ClimateCondition[1] = newClimateCondition;
 
    m_RelHumidity[0] = oldRelHumidity;
    m_RelHumidity[1] = newRelHumidity;
@@ -70,8 +71,7 @@ void txnEditBridge::Undo()
 
 void txnEditBridge::Execute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    GET_IFACE2(pBroker,IEnvironment, pEnvironment );
@@ -82,6 +82,7 @@ void txnEditBridge::Execute(int i)
    if ( !m_bBridgeDescOnly )
    {
       pEnvironment->SetExposureCondition( m_ExposureCondition[i] );
+      pEnvironment->SetClimateCondition(m_ClimateCondition[i]);
       pEnvironment->SetRelHumidity( m_RelHumidity[i] );
    }
 
@@ -93,7 +94,7 @@ void txnEditBridge::Execute(int i)
    pEvents->FirePendingEvents();
 }
 
-std::unique_ptr<CEAFTransaction> txnEditBridge::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditBridge::CreateClone() const
 {
    if ( m_bBridgeDescOnly )
    {
@@ -103,6 +104,7 @@ std::unique_ptr<CEAFTransaction> txnEditBridge::CreateClone() const
    {
       return std::make_unique<txnEditBridge>(m_BridgeDesc[0],        m_BridgeDesc[1],
                                m_ExposureCondition[0], m_ExposureCondition[1],
+                               m_ClimateCondition[0],  m_ClimateCondition[1],
                                m_RelHumidity[0],       m_RelHumidity[1] );
    }
 }

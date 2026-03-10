@@ -29,7 +29,7 @@
 // GirderNameGrid.h : header file
 //
 
-#include <PgsExt\GirderGroupData.h>
+#include <PsgLib\GirderGroupData.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderNameGrid window

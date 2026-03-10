@@ -20,30 +20,16 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSLIB_HORIZONTALINTERFACEZONEDATA_H_
-#define INCLUDED_PGSLIB_HORIZONTALINTERFACEZONEDATA_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#include <WBFLCore.h>
-
-
-// PROJECT INCLUDES
-//
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 #include <StrData.h>
 #include <Materials/Rebar.h>
 
-// LOCAL INCLUDES
-//
 
-// FORWARD DECLARATIONS
-//
-   class WBFL::System::IStructuredLoad;
-   class WBFL::System::IStructuredSave;
-// MISCELLANEOUS
-//
+class WBFL::System::IStructuredLoad;
+class WBFL::System::IStructuredSave;
 
 /*****************************************************************************
 CLASS 
@@ -69,71 +55,14 @@ public:
    WBFL::Materials::Rebar::Size BarSize;
    Float64 nBars;
 
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    CHorizontalInterfaceZoneData();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CHorizontalInterfaceZoneData(const CHorizontalInterfaceZoneData& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
+   CHorizontalInterfaceZoneData(const CHorizontalInterfaceZoneData& rOther) = default;
    ~CHorizontalInterfaceZoneData();
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CHorizontalInterfaceZoneData& operator = (const CHorizontalInterfaceZoneData& rOther);
+   CHorizontalInterfaceZoneData& operator = (const CHorizontalInterfaceZoneData& rOther) = default;
    bool operator == (const CHorizontalInterfaceZoneData& rOther) const;
    bool operator != (const CHorizontalInterfaceZoneData& rOther) const;
 
-   // GROUP: OPERATIONS
-
-	HRESULT Load(WBFL::System::IStructuredLoad* pStrLoad);
-	HRESULT Save(WBFL::System::IStructuredSave* pStrSave);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CHorizontalInterfaceZoneData& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CHorizontalInterfaceZoneData& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+	  HRESULT Load(WBFL::System::IStructuredLoad* pStrLoad);
+	  HRESULT Save(WBFL::System::IStructuredSave* pStrSave);
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-class PSGLIBCLASS HorizontalInterfaceZoneDataLess
-{
-public:
-   bool operator()(const CHorizontalInterfaceZoneData& a, const CHorizontalInterfaceZoneData& b)
-   {
-      return a.ZoneNum < b.ZoneNum;
-   }
-};
-
-
-#endif // INCLUDED_PGSLIB_HorizontalInterfaceZoneDATA_H_

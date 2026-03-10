@@ -24,23 +24,19 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "LongSteelPage.h"
 #include "GirderMainSheet.h"
-#include <psglib\LibraryEditorDoc.h>
+#include <PsgLib\LibraryEditorDoc.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CLongSteelPage property page
 
 IMPLEMENT_DYNCREATE(CLongSteelPage, CPropertyPage)
 
-CLongSteelPage::CLongSteelPage() : CPropertyPage(CLongSteelPage::IDD,IDS_GIRDER_LONG)
+CLongSteelPage::CLongSteelPage() : CPropertyPage(CLongSteelPage::IDD,IDS_GIRDER_LONG),
+   m_bWarnLongReinfLibraryEquality(true)
 {
 	//{{AFX_DATA_INIT(CLongSteelPage)
 		// NOTE: the ClassWizard will add member initialization here
@@ -62,6 +58,8 @@ void CLongSteelPage::DoDataExchange(CDataExchange* pDX)
 	DDV_GXGridWnd(pDX, &m_Grid);
 
    DDX_Control(pDX,IDC_MILD_STEEL_SELECTOR,m_cbRebar);
+
+   DDX_Check_Bool(pDX, IDC_LONG_REINF_EQUALITY_CHECK, m_bWarnLongReinfLibraryEquality);
 
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    if ( pDX->m_bSaveAndValidate )

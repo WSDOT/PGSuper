@@ -25,28 +25,16 @@
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ConstructabilityCheckTable.h>
 #include <Reporting\MultiGirderHaunchGeometryChapterBuilder.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CMultiGirderHaunchGeometryChapterBuilder
-****************************************************************************/
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CMultiGirderHaunchGeometryChapterBuilder::CMultiGirderHaunchGeometryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CMultiGirderHaunchGeometryChapterBuilder::GetName() const
 {
    return TEXT("Haunch Geometry");
@@ -59,18 +47,18 @@ rptChapter* CMultiGirderHaunchGeometryChapterBuilder::Build(const std::shared_pt
    // This can be called for multi or single girders
    std::vector<CGirderKey> girder_list;
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
 
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if (pGirderRptSpec!=nullptr)
    {
-      pGirderRptSpec->GetBroker(&pBroker);
+      pBroker = pGirderRptSpec->GetBroker();
       girder_list.push_back( pGirderRptSpec->GetGirderKey() );
    }
    else
    {
       auto pReportSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
-      pReportSpec->GetBroker(&pBroker);
+      pBroker = pReportSpec->GetBroker();
 
       girder_list = pReportSpec->GetGirderKeys();
    }
@@ -92,27 +80,3 @@ rptChapter* CMultiGirderHaunchGeometryChapterBuilder::Build(const std::shared_pt
 
    return pChapter;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMultiGirderHaunchGeometryChapterBuilder::Clone() const
-{
-   return std::make_unique<CMultiGirderHaunchGeometryChapterBuilder>();
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

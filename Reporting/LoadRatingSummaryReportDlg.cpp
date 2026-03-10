@@ -28,28 +28,22 @@
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include "..\Documentation\PGSuper.hh"
 
-#include <initguid.h>
 #include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <EAF\EAFDocument.h>
 
 #include <MFCTools\AutoRegistry.h>
-#include "..\PGSuperAppPlugin\PGSuperBaseAppPlugin.h"
+#include "..\PGSuperAppPlugin\PGSPluginAppBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CLoadRatingSummaryReportDlg dialog
 
 IMPLEMENT_DYNAMIC(CLoadRatingSummaryReportDlg, CDialog)
 
-CLoadRatingSummaryReportDlg::CLoadRatingSummaryReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CLoadRatingSummaryReportDlg::CLoadRatingSummaryReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
    m_Girder = 0;
@@ -111,8 +105,7 @@ void CLoadRatingSummaryReportDlg::DoDataExchange(CDataExchange* pDX)
       if (m_RadioNum == 0)
       {
          // make list of all girders along girder line
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         auto pBroker = EAFGetBroker();
          GET_IFACE2(pBroker, IBridge, pBridge);
          GroupIndexType ngrps = pBridge->GetGirderGroupCount();
          for (GroupIndexType igrp = 0; igrp < ngrps; igrp++)
@@ -362,9 +355,8 @@ void CLoadRatingSummaryReportDlg::LoadSettings()
    // loads last settings from the registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
@@ -385,9 +377,8 @@ void CLoadRatingSummaryReportDlg::SaveSettings()
    // save settings to registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);

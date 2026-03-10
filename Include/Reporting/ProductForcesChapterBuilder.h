@@ -25,16 +25,6 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CProductForcesChapterBuilder
-
-
-DESCRIPTION
-   Reports product forces along a girder line
-*****************************************************************************/
-
 class REPORTINGCLASS CProductForcesChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
@@ -42,11 +32,5 @@ public:
 
    virtual LPCTSTR GetName() const override;
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-private:
-   // Prevent accidental copying and assignment
-   CProductForcesChapterBuilder(const CProductForcesChapterBuilder&) = delete;
-   CProductForcesChapterBuilder& operator=(const CProductForcesChapterBuilder&) = delete;
 };
 

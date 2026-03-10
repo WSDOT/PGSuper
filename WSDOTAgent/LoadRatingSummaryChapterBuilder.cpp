@@ -28,6 +28,7 @@
 
 #include <PgsExt\CapacityToDemand.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\RatingSpecification.h>
@@ -35,16 +36,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CLoadRatingSummaryChapterBuilder
-****************************************************************************/
 
 CLoadRatingSummaryChapterBuilder::CLoadRatingSummaryChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -59,8 +51,7 @@ LPCTSTR CLoadRatingSummaryChapterBuilder::GetName() const
 rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrRptSpec->GetBroker();
    GirderIndexType gdrIdx = pGdrRptSpec->GetGirderIndex();
    CGirderKey girderKey(ALL_GROUPS,gdrIdx);
 
@@ -474,12 +465,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CLoadRatingSummaryChapterBuilder>();
-}
-
-void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRcTable* pTable,RowIndexType& row,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const
+void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType& row,const pgsRatingArtifact* pRatingArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptParagraph* pRemarks) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
@@ -666,7 +652,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
    }
 }
 
-void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const
+void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptParagraph* pRemarks) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);

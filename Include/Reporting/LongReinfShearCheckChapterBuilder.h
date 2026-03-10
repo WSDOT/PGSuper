@@ -20,83 +20,24 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_LONGREINFSHEARCHECKCHAPTERBUILDER_H_
-#define INCLUDED_LONGREINFSHEARCHECKCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CLongReinfShearCheckChapterBuilder
-
-   Longitudinal reforcement for shear Check Details Chapter Builder.
-
-
-DESCRIPTION
-   Reports the details of the minimum longitudinal reinf for shear check
-   calculation.
-
-LOG
-   rdp : 06.01.1999 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CLongReinfShearCheckChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CLongReinfShearCheckChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
    bool m_bDesign;
    bool m_bRating;
 
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CLongReinfShearCheckChapterBuilder(const CLongReinfShearCheckChapterBuilder&) = delete;
-   CLongReinfShearCheckChapterBuilder& operator=(const CLongReinfShearCheckChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
    void BuildForDesign(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,bool bUHPC,Uint16 level) const;
    void BuildForRating(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, bool bUHPC, Uint16 level) const;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_LongReinfShearCHECKCHAPTERBUILDER_H_

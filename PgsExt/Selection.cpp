@@ -23,11 +23,6 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\Selection.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CSelection::CSelection() :
 Type(None),
@@ -47,6 +42,7 @@ PierIdx(other.PierIdx),
 GroupIdx(other.GroupIdx),
 GirderIdx(other.GirderIdx),
 SegmentIdx(other.SegmentIdx),
+Face(other.Face),
 tsID(other.tsID)
 {
 }
@@ -63,6 +59,7 @@ CSelection& CSelection::operator=(const CSelection& other)
    GroupIdx   = other.GroupIdx;
    GirderIdx  = other.GirderIdx;
    SegmentIdx = other.SegmentIdx;
+   Face       = other.Face;
    tsID       = other.tsID;
    return *this;
 }
@@ -95,6 +92,11 @@ bool CSelection::operator==(const CSelection& other) const
    }
 
    if (SegmentIdx != other.SegmentIdx )
+   {
+      return false;
+   }
+
+   if (Face != other.Face )
    {
       return false;
    }

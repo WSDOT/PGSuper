@@ -30,17 +30,13 @@
 #include "BridgeDescDeckReinforcementPage.h"
 #include <Units\Measure.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <algorithm>
 
 #include <LRFD\RebarPool.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDeckRebarGrid
@@ -164,8 +160,7 @@ void CBridgeDescDeckRebarGrid::CustomInit()
    // in OnInitialUpdate.
 	Initialize( );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	GetParam( )->EnableUndo(FALSE);
@@ -397,8 +392,7 @@ CString CBridgeDescDeckRebarGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 
 bool CBridgeDescDeckRebarGrid::GetRowData(ROWCOL nRow, CDeckRebarData::NegMomentRebarData* pRebarData)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescDeckReinforcementPage* pParent = (CBridgeDescDeckReinforcementPage*)GetParent();
@@ -500,8 +494,7 @@ void CBridgeDescDeckRebarGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 
 void CBridgeDescDeckRebarGrid::PutRowData(ROWCOL nRow, const CDeckRebarData::NegMomentRebarData& rebarData)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	GetParam()->EnableUndo(FALSE);

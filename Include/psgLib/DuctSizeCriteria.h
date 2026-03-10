@@ -23,25 +23,28 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
-interface IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
+class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
+namespace PGS {namespace Library{class DifferenceItem;};};
 
 struct PSGLIBCLASS DuctSizeCriteria
 {
    // see LRFD 5.4.6.2
-   Float64 DuctAreaPushRatio = 2.0;
-   Float64 DuctAreaPullRatio = 2.5;
+   // Installation method not a parameter in determining factor starting with LRFD 10th Edition.
+   // For LRFD 10th Edition and later, the DuctAreaRatio us stored in DuctAreaPullRatio variable
+   Float64 DuctAreaPushRatio = 2.0; 
+   Float64 DuctAreaPullRatio = 2.5; // This value is used for DuctAreaRatio for LRFD 10th Edition or later
+
    Float64 DuctDiameterRatio = 0.4;
 
    bool operator==(const DuctSizeCriteria& other) const;
    bool operator!=(const DuctSizeCriteria& other) const;
-   bool Compare(const DuctSizeCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const DuctSizeCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);

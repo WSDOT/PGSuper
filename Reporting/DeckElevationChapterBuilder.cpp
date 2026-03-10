@@ -23,41 +23,27 @@
 #include "StdAfx.h"
 #include <Reporting\DeckElevationChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\BridgeDescription2.h>
-
+#include <PsgLib\BridgeDescription2.h>
 #include <psgLib/SlabOffsetCriteria.h>
-
+#include <psgLib/SpecLibraryEntry.h>
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CDeckElevationChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CDeckElevationChapterBuilder::CDeckElevationChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CDeckElevationChapterBuilder::GetName() const
 {
    return TEXT("Roadway Elevations");
@@ -66,8 +52,7 @@ LPCTSTR CDeckElevationChapterBuilder::GetName() const
 rptChapter* CDeckElevationChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridge = pIBridgeDesc->GetBridgeDescription();
@@ -82,17 +67,10 @@ rptChapter* CDeckElevationChapterBuilder::Build(const std::shared_ptr<const WBFL
 
 }
 
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDeckElevationChapterBuilder::Clone() const
-{
-   return std::make_unique<CDeckElevationChapterBuilder>();
-}
-
 rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
 
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
@@ -247,8 +225,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(const std::shared_ptr<cons
 void CDeckElevationChapterBuilder::BuildNoDeckElevationContent(rptChapter * pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    auto pSGRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);

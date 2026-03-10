@@ -4,7 +4,6 @@
 //
 #define IDS_PROJNAME                    100
 #define IDS_E_NOGIRDERS                 102
-#define IDR_PGSUPERDATAEXPORTER         105
 #define IDD_EXPORT_DLG                  201
 #define IDI_BSICON                      202
 #define IDI_CP_ICON                     203
@@ -13,10 +12,7 @@
 #define IDC_BEARING_HEIGHT              207
 #define IDC_BEARING_HEIGHT_UNIT         208
 #define IDD_DIALOG1                     209
-#define IDC_EDIT1                       210
 #define IDC_HELPBTN                     211
-#define IDR_KDOTCOMPONENTINFO           212
-#define IDR_REGISTRY1                   213
 #define IDI_ICON1                       214
 #define IDI_KDOT                        215
 #define IDC_HELP                        216

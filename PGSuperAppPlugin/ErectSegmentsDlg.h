@@ -1,7 +1,7 @@
 #pragma once
 
-#include <PgsExt\SegmentActivity.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\SegmentActivity.h>
+#include <PsgLib\TimelineManager.h>
 #include <PgsExt\TimelineItemListBox.h>
 
 // CErectSegmentsDlg dialog

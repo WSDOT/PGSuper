@@ -19,22 +19,16 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
 #include "StdAfx.h"
 #include <PsgLib\ShearZoneData.h>
 #include <Units\Convert.h>
-#include <LRFD\RebarPool.h>
 #include <StdIo.h>
 #include <StrData.cpp>
 #include <comdef.h> // for _variant_t
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-
-CShearZoneData2::CShearZoneData2():
+CShearZoneData::CShearZoneData():
 ZoneNum(0),
 BarSpacing(0),
 ZoneLength(0),
@@ -48,7 +42,7 @@ legacy_nHorzBars(2)
 
 }
 
-bool CShearZoneData2::operator == (const CShearZoneData2& rOther) const
+bool CShearZoneData::operator == (const CShearZoneData& rOther) const
 {
    if ( ZoneNum != rOther.ZoneNum )
    {
@@ -98,12 +92,12 @@ bool CShearZoneData2::operator == (const CShearZoneData2& rOther) const
    return true;
 }
 
-bool CShearZoneData2::operator != (const CShearZoneData2& rOther) const
+bool CShearZoneData::operator != (const CShearZoneData& rOther) const
 {
    return !operator==( rOther );
 }
 
-HRESULT CShearZoneData2::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
+HRESULT CShearZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bConvertToShearDataVersion9, 
                 WBFL::Materials::Rebar::Size confinementBarSize,Uint32 NumConfinementZones, 
                 bool bDoStirrupsEngageDeck)
 {
@@ -245,7 +239,7 @@ HRESULT CShearZoneData2::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bCon
             nHorzInterfaceBars = (Float64)val;
          }
 
-         if (3 < version)
+         if (version > 3)
          {
             if (version < 9)
             {
@@ -286,7 +280,7 @@ HRESULT CShearZoneData2::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bCon
       // Convert old data if need be
       if (bConvertToShearDataVersion9)
       {
-         ATLASSERT(version < 4); // should only happen if
+         assert(version < 4); // should only happen if
 
          // Confinement as part of zone was added in version 4
          if (ZoneNum <= NumConfinementZones)
@@ -311,7 +305,7 @@ HRESULT CShearZoneData2::Load(WBFL::System::IStructuredLoad* pStrLoad, bool bCon
    return hr;
 }
 
-HRESULT CShearZoneData2::Save(WBFL::System::IStructuredSave* pStrSave)
+HRESULT CShearZoneData::Save(WBFL::System::IStructuredSave* pStrSave)
 {
    HRESULT hr = S_OK;
 
@@ -326,4 +320,18 @@ HRESULT CShearZoneData2::Save(WBFL::System::IStructuredSave* pStrSave)
    pStrSave->EndUnit();
 
    return hr;
+}
+
+CShearZoneData2 CShearZoneData::Convert() const
+{
+   CShearZoneData2 shearZoneData;
+   shearZoneData.ZoneNum            = ZoneNum;
+   shearZoneData.VertBarSize        = VertBarSize;
+   shearZoneData.BarSpacing         = BarSpacing;
+   shearZoneData.ZoneLength         = ZoneLength;
+   shearZoneData.nVertBars          = nVertBars;
+   shearZoneData.nHorzInterfaceBars = nHorzInterfaceBars;
+   shearZoneData.ConfinementBarSize = ConfinementBarSize;
+
+   return shearZoneData;
 }

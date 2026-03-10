@@ -23,11 +23,6 @@
 #include "TxCSVDataExporter.h"
 #include <fstream>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CTxCSVDataExporter::CTxCSVDataExporter(void):
    m_Separator(_T(","))

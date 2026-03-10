@@ -41,9 +41,10 @@
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include "PGSuperTypes.h"
 #include "SectionCutDlg.h"
@@ -55,13 +56,8 @@
 
 #include <PgsExt\InsertDeleteLoad.h>
 
-#include <WBFLDManip.h>
+//#include <WBFLDManip.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // NOTES:
 // The girder model elevation view uses one of two coordinate systems depending on what is being displayed.
@@ -538,26 +534,24 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 
       // point load tool
-      CComPtr<iTool> point_load_tool;
-      ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&point_load_tool);
+      auto point_load_tool = WBFL::DManip::Tool::Create();
       point_load_tool->SetID(IDC_POINT_LOAD_DRAG);
       point_load_tool->SetToolTipText(_T("Drag me onto girder to create a point load"));
 
-      CComQIPtr<iToolIcon, &IID_iToolIcon> pti(point_load_tool);
+      auto pti = std::dynamic_pointer_cast<WBFL::DManip::iToolIcon>(point_load_tool);
       HRESULT hr = pti->SetIcon(::AfxGetInstanceHandle(), IDI_POINT_LOAD);
       ATLASSERT(SUCCEEDED(hr));
 
       m_SettingsBar.AddTool(point_load_tool);
 
       // distributed load tool
-      CComPtr<iTool> distributed_load_tool;
-      ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&distributed_load_tool);
+      auto distributed_load_tool = WBFL::DManip::Tool::Create();
       distributed_load_tool->SetID(IDC_DISTRIBUTED_LOAD_DRAG);
       distributed_load_tool->SetToolTipText(_T("Drag me onto girder to create a distributed load"));
 
       HINSTANCE hInstance = AfxGetInstanceHandle();
 
-      CComQIPtr<iToolIcon, &IID_iToolIcon> dti(distributed_load_tool);
+      auto dti = std::dynamic_pointer_cast<WBFL::DManip::iToolIcon>(distributed_load_tool);
       hr = dti->SetIcon(hInstance, IDI_DISTRIBUTED_LOAD);
       ATLASSERT(SUCCEEDED(hr));
 
@@ -567,12 +561,11 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
       // Used only with PGSuper (not used for PGSplice)
       if ( EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
       {
-         CComPtr<iTool> moment_load_tool;
-         ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&moment_load_tool);
+         auto moment_load_tool = WBFL::DManip::Tool::Create();
          moment_load_tool->SetID(IDC_MOMENT_LOAD_DRAG);
          moment_load_tool->SetToolTipText(_T("Drag me onto girder to create a moment load"));
       
-         CComQIPtr<iToolIcon, &IID_iToolIcon> mti(moment_load_tool);
+         auto mti = std::dynamic_pointer_cast<WBFL::DManip::iToolIcon>(moment_load_tool);
          hr = mti->SetIcon(hInstance, IDI_MOMENT_LOAD);
          ATLASSERT(SUCCEEDED(hr));
 
@@ -673,8 +666,8 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
    }
    else if (lHint == 0 || lHint == HINT_BRIDGECHANGED || lHint == HINT_GIRDERCHANGED || lHint == HINT_UNITSCHANGED )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       if (lHint == HINT_BRIDGECHANGED)
       {
          // If the bridge changed, make sure the girder key is still valid
@@ -750,8 +743,8 @@ Float64 CGirderModelChildFrame::ConvertFromGirderlineCoordinate(Float64 Xgl) con
    // we aren't actually working in girder line coordinates
    // we need X as a distance along the girder line measured relative to the first support
    // this method makes the conversion
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridge, pBridge);
    GirderIndexType nGirders = pBridge->GetGirderCount(0);
    CSegmentKey segmentKey(0, Min(m_GirderKey.girderIndex, nGirders - 1), 0);
@@ -767,8 +760,8 @@ Float64 CGirderModelChildFrame::ConvertToGirderlineCoordinate(Float64 Xgl) const
    // we aren't actually working in girder line coordinates
    // we need X as a distance along the girder line measured relative to the first support
    // this method makes the conversion
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridge, pBridge);
    GirderIndexType nGirders = pBridge->GetGirderCount(0);
    CSegmentKey segmentKey(0, Min(m_GirderKey.girderIndex, nGirders - 1), 0);
@@ -781,8 +774,8 @@ Float64 CGirderModelChildFrame::ConvertToGirderlineCoordinate(Float64 Xgl) const
 
 void CGirderModelChildFrame::UpdateCutRange()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS), &vPoi);
@@ -850,8 +843,8 @@ void CGirderModelChildFrame::UpdateBar()
    BOOL bIsPGSuper = pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));
    CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group") );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -976,8 +969,8 @@ void CGirderModelChildFrame::OnGroupChanged()
    CComboBox* pcbGroup = (CComboBox*)m_SettingsBar.GetDlgItem(IDC_SPAN);
    m_GirderKey.groupIndex = (GroupIndexType)pcbGroup->GetItemData(pcbGroup->GetCurSel());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -1022,8 +1015,8 @@ void CGirderModelChildFrame::ShowCutDlg()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    CSectionCutDlgEx dlg(pBroker,m_GirderKey,GetCutLocation());
    if ( dlg.DoModal() == IDOK )
@@ -1034,8 +1027,8 @@ void CGirderModelChildFrame::ShowCutDlg()
 
 void CGirderModelChildFrame::GetCutRange(Float64* pMin, Float64* pMax)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    if (m_GirderKey.groupIndex == ALL_GROUPS)
@@ -1055,8 +1048,8 @@ void CGirderModelChildFrame::GetCutRange(Float64* pMin, Float64* pMax)
 
 Float64 CGirderModelChildFrame::GetCurrentCutLocation() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    Float64 cut;
@@ -1075,8 +1068,8 @@ Float64 CGirderModelChildFrame::GetCurrentCutLocation()
 
 pgsPointOfInterest CGirderModelChildFrame::GetCutPointOfInterest(Float64 X)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    pgsPointOfInterest poi;
    if (m_GirderKey.groupIndex == ALL_GROUPS)
@@ -1110,8 +1103,8 @@ void CGirderModelChildFrame::CutAt(Float64 X)
 
 void CGirderModelChildFrame::CutAtNext()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    pgsPointOfInterest currentPoi = GetCutLocation();
    pgsPointOfInterest poi = pPoi->GetNextPointOfInterest(currentPoi.GetID(),POI_ERECTED_SEGMENT);
@@ -1123,8 +1116,8 @@ void CGirderModelChildFrame::CutAtNext()
 
 void CGirderModelChildFrame::CutAtPrev()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    pgsPointOfInterest currentPoi = GetCutLocation();
    pgsPointOfInterest poi = pPoi->GetPrevPointOfInterest(currentPoi.GetID(),POI_ERECTED_SEGMENT);
@@ -1167,8 +1160,8 @@ void CGirderModelChildFrame::DoFilePrint(bool direct)
    CGirderModelElevationView* pElevationView = GetGirderModelElevationView();
    CGirderModelSectionView*   pSectionView   = GetGirderModelSectionView();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    
    // create a print job and do it
    CGirderViewPrintJob pj(pElevationView, pSectionView, this, pBroker);
@@ -1199,8 +1192,8 @@ void CGirderModelChildFrame::OnAddPointload()
    CPointLoadData load;
    InitLoad(load);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEditByUI, pEdit);
    pEdit->AddPointLoad(load);
 }
@@ -1210,8 +1203,8 @@ void CGirderModelChildFrame::OnAddDistributedLoad()
    CDistributedLoadData load;
    InitLoad(load);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEditByUI, pEdit);
    pEdit->AddDistributedLoad(load);
 }
@@ -1221,8 +1214,8 @@ void CGirderModelChildFrame::OnAddMoment()
    CMomentLoadData load;
    InitLoad(load);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEditByUI, pEdit);
    pEdit->AddMomentLoad(load);
 }
@@ -1246,8 +1239,8 @@ void CGirderModelChildFrame::OnUpdateDesignGirderDirect(CCmdUI* pCmdUI)
 
 void CGirderModelChildFrame::OnUpdateDesignGirderDirectHoldSlabOffset(CCmdUI* pCmdUI)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,ISpecification,pSpecification);
    bool bDesignSlabOffset = pSpecification->DesignSlabHaunch();
    pCmdUI->Enable( m_GirderKey.groupIndex != ALL_GROUPS && m_GirderKey.girderIndex != ALL_GIRDERS && bDesignSlabOffset );
@@ -1285,8 +1278,8 @@ void CGirderModelChildFrame::FillEventComboBox()
    EventIndexType currentEvent = (sel == CB_ERR ? INVALID_INDEX : (EventIndexType)(pcbEvents->GetItemData(sel)));
    pcbEvents->ResetContent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 

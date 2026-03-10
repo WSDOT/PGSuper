@@ -52,27 +52,27 @@ public:
    //------------------------------------------------------------------------
    // Builds the combined results table
    // bDesign and bRating are only considered for intervalIdx = live load interval index
-   virtual void Build(IBroker* pBroker, rptChapter* pChapter,
+   virtual void Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating) const;
 protected:
-   void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+   void BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating) const;
 
-   void BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+   void BuildCombinedLiveTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating) const;
 
-   void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+   void BuildLimitStateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IntervalIndexType intervalIdx,
                       pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating) const;
 

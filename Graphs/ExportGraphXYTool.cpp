@@ -29,11 +29,6 @@
 #include <Graphing\GraphXY.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // utility functions
 static bool DoesFileExist(const CString& filename)
@@ -379,7 +374,7 @@ bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
                      if (iterc2->X() == iterc->X())
                      {
                         iterc++;
-                     }
+               }
 
                      auto iterrw = rawSeriesGraphPoints[idx1].end();
                      iterrw--; iterrw--; // iterate to before last item
@@ -421,7 +416,7 @@ bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
                   {
                      auto iterc = cleanPoints.begin();
                      if (endxval == cleanPoints.front().X())
-                     {
+                  {
                         // start of current series exactly at end. See if it can jump
                         auto found = xValueSet.find(endxval);
                         bool isdup = found != xValueSet.end() && found->bIsDouble; // is dual value at end of previous series
@@ -431,7 +426,7 @@ bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
                            auto iterc2 = iterc;
                            iterc2++;
                            if (iterc2->X() == iterc->X())
-                           {
+                     {
                               iterc++;
                            }
 

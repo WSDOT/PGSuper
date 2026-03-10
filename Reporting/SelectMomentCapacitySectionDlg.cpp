@@ -27,26 +27,25 @@
 
 #include "stdafx.h"
 #include "SelectMomentCapacitySectionDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
+#include <IFace/PointOfInterest.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <MFCTools\CustomDDX.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <PGSuperUnits.h>
 #include <EAF\EAFDocument.h>
 #include "..\Documentation\PGSuper.hh"
 
 // CSelectMomentCapacitySectionDlg dialog
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNAMIC(CSelectMomentCapacitySectionDlg, CDialog)
 
-CSelectMomentCapacitySectionDlg::CSelectMomentCapacitySectionDlg(IBroker* pBroker,std::shared_ptr<CMomentCapacityReportSpecification>& pRptSpec,CWnd* pParent /*=nullptr*/)
+CSelectMomentCapacitySectionDlg::CSelectMomentCapacitySectionDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CMomentCapacityReportSpecification>& pRptSpec,CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectMomentCapacitySectionDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pRptSpec(pRptSpec)

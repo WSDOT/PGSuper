@@ -29,11 +29,6 @@
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNAMIC(CAboutDlg, CDialog)
@@ -157,8 +152,7 @@ BOOL CAboutDlg::OnInitDialog()
       // for each plugin
       for ( IndexType pluginIdx = 0; pluginIdx < nPlugins; pluginIdx++ )
       {
-         CComPtr<IPGSuperComponentInfo> plugin;
-         pComponentInfoMgr->GetPlugin(pluginIdx,&plugin);
+         auto plugin = pComponentInfoMgr->GetPlugin(pluginIdx);
          UINT idx = m_AppList.AddString(plugin->GetName());
          m_AppList.SetItemData(idx,pluginIdx);
       }
@@ -172,8 +166,7 @@ BOOL CAboutDlg::OnInitDialog()
       // for each plugin
       for ( IndexType pluginIdx = 0; pluginIdx < nPlugins; pluginIdx++ )
       {
-         CComPtr<IPGSpliceComponentInfo> plugin;
-         pComponentInfoMgr->GetPlugin(pluginIdx,&plugin);
+         auto plugin = pComponentInfoMgr->GetPlugin(pluginIdx);
          UINT idx = m_AppList.AddString(plugin->GetName());
          m_AppList.SetItemData(idx,pluginIdx);
       }
@@ -198,9 +191,8 @@ void CAboutDlg::OnAppListSelChanged()
       {
          CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
          CPGSuperComponentInfoManager* pComponentInfoMgr = pDoc->GetComponentInfoManager();
-         CComPtr<IPGSuperComponentInfo> component;
          DWORD_PTR pluginIdx = m_AppList.GetItemData(idx);
-         pComponentInfoMgr->GetPlugin(pluginIdx,&component);
+         auto component = pComponentInfoMgr->GetPlugin(pluginIdx);
          m_Description.SetWindowText(component->GetDescription());
          if ( component->HasMoreInfo() )
          {
@@ -215,9 +207,8 @@ void CAboutDlg::OnAppListSelChanged()
       {
          CPGSpliceDoc* pDoc = (CPGSpliceDoc*)pEAFDoc;
          CPGSpliceComponentInfoManager* pComponentInfoMgr = pDoc->GetComponentInfoManager();
-         CComPtr<IPGSpliceComponentInfo> component;
          DWORD_PTR pluginIdx = m_AppList.GetItemData(idx);
-         pComponentInfoMgr->GetPlugin(pluginIdx,&component);
+         auto component = pComponentInfoMgr->GetPlugin(pluginIdx);
          m_Description.SetWindowText(component->GetDescription());
          if ( component->HasMoreInfo() )
          {
@@ -248,8 +239,7 @@ void CAboutDlg::OnMoreInfo()
          CPGSuperComponentInfoManager* pComponentInfoMgr = pDoc->GetComponentInfoManager();
 
          DWORD_PTR pluginIdx = m_AppList.GetItemData(idx);
-         CComPtr<IPGSuperComponentInfo> component;
-         pComponentInfoMgr->GetPlugin(pluginIdx,&component);
+         auto component = pComponentInfoMgr->GetPlugin(pluginIdx);
 
          component->OnMoreInfo();
       }
@@ -259,8 +249,7 @@ void CAboutDlg::OnMoreInfo()
          CPGSpliceComponentInfoManager* pComponentInfoMgr = pDoc->GetComponentInfoManager();
 
          DWORD_PTR pluginIdx = m_AppList.GetItemData(idx);
-         CComPtr<IPGSpliceComponentInfo> component;
-         pComponentInfoMgr->GetPlugin(pluginIdx,&component);
+         auto component = pComponentInfoMgr->GetPlugin(pluginIdx);
 
          component->OnMoreInfo();
       }

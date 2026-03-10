@@ -25,13 +25,7 @@
 #include <Reporting\BrokerReportSpecification.h>
 #include <Reporting\SpanGirderReportDlg.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CBrokerReportSpecificationBuilder::CBrokerReportSpecificationBuilder(IBroker* pBroker)
+CBrokerReportSpecificationBuilder::CBrokerReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker)
 {
    m_pBroker = pBroker;
 }
@@ -44,7 +38,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBrokerReportSpecification
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,CSpanGirderReportDlg::Mode::ChaptersOnly,pOldRptSpec);
+   CSpanGirderReportDlg dlg(GetBroker(), rptDesc, CSpanGirderReportDlg::Mode::ChaptersOnly, pOldRptSpec);
 
    if ( dlg.DoModal() == IDOK )
    {

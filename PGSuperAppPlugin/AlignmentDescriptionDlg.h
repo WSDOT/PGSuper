@@ -42,8 +42,8 @@ class CAlignmentDescriptionDlg : public CPropertySheet
 
 // Construction
 public:
-	CAlignmentDescriptionDlg(UINT nIDCaption, IBroker* pBroker,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
-	CAlignmentDescriptionDlg(LPCTSTR pszCaption, IBroker* pBroker,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
+	CAlignmentDescriptionDlg(UINT nIDCaption, std::shared_ptr<WBFL::EAF::Broker> pBroker,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
+	CAlignmentDescriptionDlg(LPCTSTR pszCaption, std::shared_ptr<WBFL::EAF::Broker> pBroker,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 
 // Attributes
 public:
@@ -68,7 +68,7 @@ public:
 
 	// Generated message map functions
 protected:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 	void Init();
 	//{{AFX_MSG(CAlignmentDescriptionDlg)
 		// NOTE - the ClassWizard will add and remove member functions here.

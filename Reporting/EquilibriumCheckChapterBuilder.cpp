@@ -23,6 +23,9 @@
 #include "StdAfx.h"
 #include <Reporting\EquilibriumCheckChapterBuilder.h>
 #include <Reporting\EquilibriumCheckReportSpecification.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -31,19 +34,12 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CEquilibriumCheckChapterBuilder::CEquilibriumCheckChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CEquilibriumCheckChapterBuilder::GetName() const
 {
    return TEXT("Equilibrium Check");
@@ -52,8 +48,7 @@ LPCTSTR CEquilibriumCheckChapterBuilder::GetName() const
 rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CEquilibriumCheckReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrRptSpec->GetBroker();
 
    pgsPointOfInterest poi(pGdrRptSpec->GetPOI());
    IntervalIndexType intervalIdx = pGdrRptSpec->GetInterval();
@@ -470,9 +465,4 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const W
    }
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CEquilibriumCheckChapterBuilder::Clone() const
-{
-   return std::make_unique<CEquilibriumCheckChapterBuilder>();
 }

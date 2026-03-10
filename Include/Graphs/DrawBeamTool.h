@@ -24,12 +24,12 @@
 
 #include <Graphs/GraphsExp.h>
 #include <Graphing/PointMapper.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <Units\UnitValueNumericalFormatTools.h>
 
-interface IGirder;
-interface IPointOfInterest;
-interface IIntervals;
+class IGirder;
+class IPointOfInterest;
+class IIntervals;
 
 #define DBS_ERECTED_SEGMENTS_ONLY 0x0001 // draw only erected segments
 #define DBS_HAULED_SEGMENTS_ONLY  0x0002 // in hauling intervals, draw only those segments that are being hauled
@@ -60,10 +60,10 @@ public:
    // GET_IFACE(IPointOfInterest,pPoi);
    // Float64 beamShift = -1*pPoi->ConvertPoiToGirderlineCoordinate(pgsPointOfInterest(segmentKey,0.0));
 
-   void DrawBeam(IBroker* pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper, WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift);
+   void DrawBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper, WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift);
 
    // Just draw one segment
-   void DrawBeamSegment(IBroker* pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper, WBFL::Units::PhysicalConverter* pUnitConverter, IntervalIndexType firstPlottingIntervalIdx, IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift);
+   void DrawBeamSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper, WBFL::Units::PhysicalConverter* pUnitConverter, IntervalIndexType firstPlottingIntervalIdx, IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift);
 
    // Support size in device coord's
    CSize GetSupportSize(CDC* pDC) const;
@@ -71,7 +71,7 @@ public:
    WBFL::Graphing::PointMapper CreatePointMapperAtGraphZero(const WBFL::Graphing::PointMapper& graphMapper) const;
 
 protected:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    WBFL::Units::PhysicalConverter* m_pUnitConverter;
    
    CSize m_SupportSize;
@@ -81,9 +81,9 @@ protected:
 
    Float64 m_YScaleFac; // Scale Y values so we fit within the given min aspect ratio
 
-   void DrawSegment(Float64 beamShift, IntervalIndexType intervalIdx, bool bIsHaulingInterval,const CSegmentKey& segmentKey, IIntervals* pIntervals, IGirder* pIGirder, IPointOfInterest* pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC);
-   void DrawClosureJoint(Float64 beamShift, IntervalIndexType intervalIdx, const CClosureKey& closureKey, IIntervals* pIntervals, IGirder* pIGirder, IPointOfInterest* pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC);
-   void DrawSegmentEndSupport(Float64 beamShift,IntervalIndexType intervalIdx, bool bIsHaulingInterval, const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType, IIntervals* pIntervals, IPointOfInterest* pPoi,const WBFL::Graphing::PointMapper& mapper,CDC* pDC);
+   void DrawSegment(Float64 beamShift, IntervalIndexType intervalIdx, bool bIsHaulingInterval,const CSegmentKey& segmentKey, std::shared_ptr<IIntervals> pIntervals, std::shared_ptr<IGirder> pIGirder, std::shared_ptr<IPointOfInterest> pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC);
+   void DrawClosureJoint(Float64 beamShift, IntervalIndexType intervalIdx, const CClosureKey& closureKey, std::shared_ptr<IIntervals> pIntervals, std::shared_ptr<IGirder> pIGirder, std::shared_ptr<IPointOfInterest> pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC);
+   void DrawSegmentEndSupport(Float64 beamShift,IntervalIndexType intervalIdx, bool bIsHaulingInterval, const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType, std::shared_ptr<IIntervals> pIntervals, std::shared_ptr<IPointOfInterest> pPoi,const WBFL::Graphing::PointMapper& mapper,CDC* pDC);
 
    void DrawPier(Float64 beamShift, IntervalIndexType intervalIdx, const CGirderKey& girderKey, PierIndexType pierIdx, const WBFL::Graphing::PointMapper& mapper, CDC* pDC);
    CPoint GetPierPoint(Float64 beamShift, IntervalIndexType intervalIdx, const CGirderKey& girderKey, PierIndexType pierIdx, const WBFL::Graphing::PointMapper& mapper);

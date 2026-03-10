@@ -189,6 +189,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="HaunchDepthInputConversionTool.cpp" />
     <ClCompile Include="LibraryEntryObserver.cpp" />
     <ClCompile Include="ProjectAgent.cpp" />
     <ClCompile Include="ProjectAgentImp.cpp" />
@@ -202,7 +203,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ProjectAgent.def" />
-    <None Include="ProjectAgent.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ProjectAgent.rc" />
@@ -213,6 +213,7 @@
     <ClInclude Include="..\Include\IFace\RatingSpecification.h" />
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="CPProjectAgent.h" />
+    <ClInclude Include="HaunchDepthInputConversionTool.h" />
     <ClInclude Include="LibraryEntryObserver.h" />
     <ClInclude Include="ProjectAgent.h" />
     <ClInclude Include="ProjectAgentImp.h" />

@@ -36,8 +36,9 @@ INTERFACE
 // {7555754F-0F6D-4ba8-8049-8E111A008427}
 DEFINE_GUID(IID_IInterfaceShearRequirements, 
 0x7555754f, 0xf6d, 0x4ba8, 0x80, 0x49, 0x8e, 0x11, 0x1a, 0x0, 0x84, 0x27);
-interface IInterfaceShearRequirements : IUnknown
+class IInterfaceShearRequirements
 {
+public:
    //------------------------------------------------------------------------
    // returns the method for computing shear flow
    virtual pgsTypes::ShearFlowMethod GetShearFlowMethod() const = 0;

@@ -25,8 +25,8 @@
 // BridgeDescFramingGrid.h : header file
 //
 
-#include <PgsExt\BridgeDescription2.h>
-#include <EAF\EAFMacroTxn.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <EAF\MacroTxn.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescFramingGrid window
@@ -97,7 +97,7 @@ public:
    void OnRemoveTemporarySupport();
    bool EnableRemoveTemporarySupportBtn();
 
-   void GetTransactions(CEAFMacroTxn& macro);
+   void GetTransactions(WBFL::EAF::MacroTxn& macro);
 
    // Tricky workaround here to avoid cell validation if user hits the dailog Cancel button or "X". Value
    // below will be set in OnKillFocus (for Cancel button) and CBridgeDescFramingPage::OnCancel() (for "X" menu item)
@@ -125,14 +125,14 @@ private:
    ROWCOL GetTemporarySupportRow(SupportIndexType tsIdx);
    SupportIndexType GetTemporarySupportIndex(ROWCOL nRow);
 
-   void SavePierTransaction(PierIndexType pierIdx,std::unique_ptr<CEAFTransaction>&& pTxn);
-   std::map<PierIndexType,std::vector<std::unique_ptr<CEAFTransaction>>> m_PierTransactions;
+   void SavePierTransaction(PierIndexType pierIdx,std::unique_ptr<WBFL::EAF::Transaction>&& pTxn);
+   std::map<PierIndexType,std::vector<std::unique_ptr<WBFL::EAF::Transaction>>> m_PierTransactions;
 
-   void SaveSpanTransaction(SpanIndexType spanIdx, std::unique_ptr<CEAFTransaction>&& pTxn);
-   std::map<SpanIndexType, std::vector<std::unique_ptr<CEAFTransaction>>> m_SpanTransactions;
+   void SaveSpanTransaction(SpanIndexType spanIdx, std::unique_ptr<WBFL::EAF::Transaction>&& pTxn);
+   std::map<SpanIndexType, std::vector<std::unique_ptr<WBFL::EAF::Transaction>>> m_SpanTransactions;
 
-   void SaveTemporarySupportTransaction(SupportIndexType tsIdx, std::unique_ptr<CEAFTransaction>&&  pTxn);
-   std::map<SupportIndexType, std::vector<std::unique_ptr<CEAFTransaction>>> m_TempSupportTransactions;
+   void SaveTemporarySupportTransaction(SupportIndexType tsIdx, std::unique_ptr<WBFL::EAF::Transaction>&&  pTxn);
+   std::map<SupportIndexType, std::vector<std::unique_ptr<WBFL::EAF::Transaction>>> m_TempSupportTransactions;
 
    bool m_bDoValidate;
 

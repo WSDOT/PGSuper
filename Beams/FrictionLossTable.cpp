@@ -22,18 +22,14 @@
 
 // FrictionLossTable.cpp : Implementation of CFrictionLossTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "FrictionLossTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CFrictionLossTable::CFrictionLossTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CFrictionLossTable::CFrictionLossTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -50,7 +46,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE(angle, pDisplayUnits->GetRadAngleUnit(), false);
 }
 
-CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 5;
@@ -102,7 +98,7 @@ CFrictionLossTable* CFrictionLossTable::PrepareTable(rptChapter* pChapter,IBroke
    return table;
 }
 
-void CFrictionLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CFrictionLossTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;

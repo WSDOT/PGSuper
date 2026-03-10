@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include "resource.h"
 #include "ConcreteEntryDlg.h"
 #include "ConcreteEntryGeneralPage.h"
 #include <MfcTools\CustomDDX.h>
@@ -32,11 +32,6 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CAASHTOConcretePage dialog

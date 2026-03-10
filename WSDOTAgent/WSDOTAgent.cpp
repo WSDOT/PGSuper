@@ -37,133 +37,25 @@
 #include "PGSComponentInfo.h"
 
 // interfaces used in this DLL.... resolves symbols for the linker
-#include <WBFLCore_i.c>
+
 #include <WBFLTools_i.c>
 #include <WBFLUnitServer_i.c>
-#include <IReportManager.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFReportManager.h>
+#include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <IFace\AnalysisResults.h>
-#include <IFace\Bridge.h>
-#include <IFace\Artifact.h>
-#include <IFace\Project.h>
-#include <IFace\PrestressForce.h>
-#include <IFace\GirderHandling.h>
-#include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\RatingSpecification.h>
-#include <IFace\Intervals.h>
-#include <IFace\DocumentType.h>
-#include <IFace\Selection.h>
+#include <IFace/AnalysisResults.h>
+#include <IFace/Bridge.h>
+#include <IFace/Artifact.h>
+#include <IFace/Project.h>
+#include <IFace/PrestressForce.h>
+#include <IFace/GirderHandling.h>
+#include <IFace/GirderHandlingSpecCriteria.h>
+#include <IFace/RatingSpecification.h>
+#include <IFace/Intervals.h>
+#include <IFace/DocumentType.h>
+#include <IFace/Selection.h>
 #include <IFace/Limits.h>
+#include <IFace/PointOfInterest.h>
 
 #include <Plugins\BeamFamilyCLSID.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-// Used to determine whether the DLL can be unloaded by OLE
-STDAPI DllCanUnloadNow(void)
-{
-    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-    return (AfxDllCanUnloadNow()==S_OK && _AtlModule.GetLockCount()==0) ? S_OK : S_FALSE;
-}
-
-
-// Returns a class factory to create an object of the requested type
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-    return _AtlModule.DllGetClassObject(rclsid, riid, ppv);
-}
-
-HRESULT RegisterAgent(bool bRegister)
-{
-   HRESULT hr = S_OK;
-
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSuperExtensionAgent,bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_WSDOTAgent,CATID_PGSpliceExtensionAgent,bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_PGSuperComponentInfo,bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSpliceComponentInfo,CATID_PGSpliceComponentInfo,bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   return S_OK;
-}
-
-// DllRegisterServer - Adds entries to the system registry
-STDAPI DllRegisterServer(void)
-{
-    // registers object, typelib and all interfaces in typelib
-    HRESULT hr = _AtlModule.DllRegisterServer(FALSE);
-    if ( FAILED(hr) )
-    {
-       return hr;
-    }
-
-    return RegisterAgent(true);
-}
-
-
-// DllUnregisterServer - Removes entries from the system registry
-STDAPI DllUnregisterServer(void)
-{
-   HRESULT hr = RegisterAgent(false);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-	return _AtlModule.DllUnregisterServer();
-}
-
-//// DllInstall - Adds/Removes entries to the system registry per user
-////              per machine.	
-//STDAPI DllInstall(BOOL bInstall, LPCWSTR pszCmdLine)
-//{
-//    HRESULT hr = E_FAIL;
-//    static const wchar_t szUserSwitch[] = _T("user");
-//
-//    if (pszCmdLine != nullptr)
-//    {
-//    	if (_wcsnicmp(pszCmdLine, szUserSwitch, _countof(szUserSwitch)) == 0)
-//    	{
-//    		AtlSetPerUserRegistration(true);
-//    	}
-//    }
-//
-//    if (bInstall)
-//    {	
-//    	hr = DllRegisterServer();
-//    	if (FAILED(hr))
-//    	{	
-//    		DllUnregisterServer();
-//    	}
-//    }
-//    else
-//    {
-//    	hr = DllUnregisterServer();
-//    }
-//
-//    return hr;
-//}
-//
-//

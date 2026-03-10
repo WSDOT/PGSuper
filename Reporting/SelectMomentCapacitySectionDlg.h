@@ -26,7 +26,7 @@
 #include "resource.h"
 #include "afxwin.h"
 #include "afxcmn.h"
-#include <WBFLCore.h>
+
 #include <PgsExt\ReportPointOfInterest.h>
 
 #include <Reporting\MomentCapacityReportSpecification.h>
@@ -38,7 +38,7 @@ class CSelectMomentCapacitySectionDlg : public CDialog
 	DECLARE_DYNAMIC(CSelectMomentCapacitySectionDlg)
 
 public:
-   CSelectMomentCapacitySectionDlg(IBroker* pBroker,std::shared_ptr<CMomentCapacityReportSpecification>& pRptSpec,CWnd* pParent = nullptr);   // standard constructor
+   CSelectMomentCapacitySectionDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CMomentCapacityReportSpecification>& pRptSpec,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CSelectMomentCapacitySectionDlg();
 
 // Dialog Data
@@ -59,7 +59,7 @@ public:
    pgsPointOfInterest GetPOI();
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    std::shared_ptr<CMomentCapacityReportSpecification> m_pRptSpec;
 
    PoiList m_vPOI;

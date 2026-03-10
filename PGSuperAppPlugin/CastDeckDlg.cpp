@@ -23,19 +23,15 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "CastDeckDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 #include <IFace\Bridge.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 
@@ -218,8 +214,8 @@ BOOL CCastDeckDlg::OnInitDialog()
    // data with IBridge and the broker. However we can't get what
    // we needed from m_TimelineManager.GetBridgeDescription(). The determination
    // of cantilevers is not part of the basic bridge description
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridge, pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    if (nSpans == 1)

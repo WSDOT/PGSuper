@@ -27,6 +27,8 @@
 #include "PGSuperApp.h"
 #include "resource.h"
 #include "RatingOptionsDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 
@@ -34,11 +36,6 @@
 
 // CRatingOptionsDlg
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNAMIC(CRatingOptionsDlg, CPropertySheet)
@@ -89,8 +86,7 @@ void CRatingOptionsDlg::GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitStat
 
 void CRatingOptionsDlg::GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType)
 {
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
+   auto broker = EAFGetBroker();
    GET_IFACE2(broker,IRatingSpecification,pRatingSpec);
    GET_IFACE2(broker,ILibrary,pLibrary);
    const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry(m_GeneralPage.m_Data.CriteriaName.c_str());
@@ -187,7 +183,7 @@ void CRatingOptionsDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-std::unique_ptr<CEAFTransaction> CRatingOptionsDlg::GetExtensionPageTransaction()
+std::unique_ptr<WBFL::EAF::Transaction> CRatingOptionsDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
    {

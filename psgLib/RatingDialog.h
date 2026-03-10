@@ -24,7 +24,7 @@
 
 // RatingMainSheet.h : header file
 //
-#include "psgLib\RatingLibraryEntry.h"
+#include "PsgLib\RatingLibraryEntry.h"
 
 #include <units\Measure.h>
 #include "RatingDescriptionPage.h"

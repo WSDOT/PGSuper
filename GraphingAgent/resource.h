@@ -25,8 +25,6 @@
 // Used by GraphingAgent.rc
 //
 #define IDS_PROJNAME                    100
-#define IDR_PGSUPER_GRAPHER            101
-#define IDR_PGSPLICE_GRAPHER           102
 #define IDR_ENUMREPORTS                 103
 #define IDR_REPORT                      104
 #define IDR_REPORTDESC                  105

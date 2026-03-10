@@ -52,7 +52,7 @@ public:
 	//}}AFX_DATA
 
    AlignmentData2 m_AlignmentData;
-   IBroker* GetBroker();
+   std::shared_ptr<WBFL::EAF::Broker> GetBroker();
 
 // Overrides
 	// ClassWizard generate virtual function overrides

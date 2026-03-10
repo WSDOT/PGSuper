@@ -22,15 +22,15 @@
 
 #include "StdAfx.h"
 #include "resource.h"
-#include <psgLib\GirderLibraryEntry.h>
+#include <PsgLib\GirderLibraryEntry.h>
 #include <System\IStructuredSave.h>
 #include <System\IStructuredLoad.h>
 #include <System\XStructuredLoad.h>
 
 #include <IFace\BeamFactory.h>
 
-#include <psgLib\BeamFamilyManager.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\BeamFamilyManager.h>
+#include <PsgLib\GirderLabel.h>
 
 #include <GeomModel\PrecastBeam.h>
 
@@ -54,13 +54,8 @@
 #include <LRFD\RebarPool.h>
 
 #include <EAF\EAFApp.h>
-#include <psgLib\LibraryEntryDifferenceItem.h>
+#include <PsgLib\DifferenceItem.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define DUMMY_AGENT_ID INVALID_ID
 
@@ -92,13 +87,14 @@ static char THIS_FILE[] = __FILE__;
 // from 26   to 27   Added drag coefficient
 // from 27 to 28, added precamber limit
 // from 28 to 29, added option to print bearing elevations at girder edges
-#define CURRENT_VERSION 29.0
+// from 29 to 30, made long. and trans. reinforcement equality check warnings optional
+#define CURRENT_VERSION 30.0
 
 
 // Initialize static class members
 bool GirderLibraryEntry::m_bsInitCLSIDMap = true;
 std::map<std::_tstring, std::_tstring> GirderLibraryEntry::m_CLSIDMap;
-std::vector<CComPtr<IBeamFactoryCLSIDTranslator>> GirderLibraryEntry::ms_ExternalCLSIDTranslators;
+std::vector<std::shared_ptr<PGS::Beams::BeamFactoryCLSIDTranslator>> GirderLibraryEntry::ms_ExternalCLSIDTranslators;
 
 // predicate function for comparing doubles
 inline bool EqualDoublePred(Float64 i, Float64 j) 
@@ -113,14 +109,6 @@ inline bool CompareDimensions(const GirderLibraryEntry::Dimension& d1,const Gird
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
-
-// NOTE: This collection must be emptied before the DLL is unloaded. In order to
-// do this we have to purposely call gs_ClassFactores.clear(). Since an individual
-// GirderLibraryEntry has no way of knowing it is the last one to be released,
-// we turn to the library manager. If the library manager is going out of scope, then
-// there shouldn't be any library entires left. ms_ClassFactories is cleared
-// in psgLibraryManager's destructor.
-GirderLibraryEntry::ClassFactoryCollection GirderLibraryEntry::ms_ClassFactories;
 
 CString GirderLibraryEntry::GetAdjustableStrandType(pgsTypes::AdjustableStrandType strandType)
 {
@@ -167,6 +155,7 @@ m_MaxDebondStrands(0.25),
 m_MaxDebondStrandsPerRow(0.45), // changed from 40% to 45% in LRFD 9th Edition
 m_MaxNumDebondedStrandsPerSection10orLess(4),
 m_MaxNumDebondedStrandsPerSection(6),
+m_MaxNumDebondedStrandsPerSectionFor07(4),
 m_bCheckMaxNumDebondedStrandsPerSection(false),
 m_MaxDebondedStrandsPerSection(0.40),
 m_MinDebondLengthDB(60),
@@ -184,7 +173,9 @@ m_ExcessiveSlabOffsetWarningTolerance(WBFL::Units::ConvertToSysUnits(0.25,WBFL::
 m_DragCoefficient(2.2),
 m_PrecamberLimit(80),
 m_DoReportBearingElevationsAtGirderEdges(false),
-m_pCompatibilityData(nullptr)
+m_pCompatibilityData(nullptr),
+m_bWarnTransReinfLibraryEquality(true),
+m_bWarnLongReinfLibraryEquality(true)
 {
 	CWaitCursor cursor;
 
@@ -196,14 +187,14 @@ m_pCompatibilityData(nullptr)
    // is defined by the beam factory this object holds. Therefore we need to create a
    // beam factory. Since we don't what kind of beam the user wants, use the first 
    // one registered as a default
-   CComPtr<IBeamFactory> beam_factory;
+   std::shared_ptr<PGS::Beams::BeamFactory> beam_factory;
    if ( createType == DEFAULT || createType == PRECAST )
    {
-      beam_factory.CoCreateInstance(CLSID_WFBeamFactory);
+      beam_factory = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(CLSID_WFBeamFactory);
    }
    else if ( createType == SPLICED )
    {
-      beam_factory.CoCreateInstance(CLSID_SplicedIBeamFactory);
+      beam_factory = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(CLSID_SplicedIBeamFactory);
    }
    else
    {
@@ -215,31 +206,30 @@ m_pCompatibilityData(nullptr)
 	   std::vector<CString> familyNames;
 	   if ( createType == DEFAULT )
 	   {
-	      familyNames = CBeamFamilyManager::GetBeamFamilyNames();
+	      familyNames = PGS::Library::BeamFamilyManager::GetBeamFamilyNames();
 	   }
 	   else if ( createType == PRECAST )
 	   {
-	      familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSuperBeamFamily);
+	      familyNames = PGS::Library::BeamFamilyManager::GetBeamFamilyNames(CATID_PGSuperBeamFamily);
 	   }
 	   else if ( createType == SPLICED )
 	   {
-	      familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSpliceBeamFamily);
+	      familyNames = PGS::Library::BeamFamilyManager::GetBeamFamilyNames(CATID_PGSpliceBeamFamily);
 	   }
 	   else
 	   {
 	      ATLASSERT(false); // is there a new create type?
 	   }
 	   ATLASSERT(0 < familyNames.size());
-	   CComPtr<IBeamFamily> beamFamily;
-	   HRESULT hr = CBeamFamilyManager::GetBeamFamily(familyNames.front(),&beamFamily);
-	   if ( FAILED(hr) )
+	   auto beamFamily = PGS::Library::BeamFamilyManager::GetBeamFamily(familyNames.front());
+	   if ( beamFamily == nullptr )
 	   {
 	      return;
 	   }
 	
 	   std::vector<CString> factoryNames = beamFamily->GetFactoryNames();
 	   ATLASSERT(0 < factoryNames.size());
-	   beamFamily->CreateFactory(factoryNames.front(),&beam_factory);
+	   beam_factory = beamFamily->CreateFactory(factoryNames.front());
    }
 
    SetBeamFactory(beam_factory);
@@ -286,7 +276,7 @@ WBFL::Library::LibraryEntry(rOther)
    m_pCompatibilityData = nullptr;
    if (rOther.m_pCompatibilityData != nullptr)
    {
-      m_pCompatibilityData = new pgsCompatibilityData(rOther.m_pCompatibilityData);
+      m_pCompatibilityData = std::make_shared<PGS::Beams::CompatibilityData>(*rOther.m_pCompatibilityData);
    }
    InitCLSIDMap();
    CopyValuesAndAttributes(rOther);
@@ -294,11 +284,6 @@ WBFL::Library::LibraryEntry(rOther)
 
 GirderLibraryEntry::~GirderLibraryEntry()
 {
-   if (m_pCompatibilityData)
-   {
-      delete m_pCompatibilityData;
-      m_pCompatibilityData = nullptr;
-   }
 }
 
 void GirderLibraryEntry::InitCLSIDMap()
@@ -326,38 +311,12 @@ void GirderLibraryEntry::InitCLSIDMap()
       m_CLSIDMap.emplace_hint(m_CLSIDMap.end(),_T("{9C219793-A1F1-402A-B865-0AA6BD22B0A6}"), _T("{DEFA27AD-3D22-481B-9006-627C65D2648F}"));
 
       // Create external beam factory publisher CLSID translators
-      CComPtr<ICatRegister> pICatReg = 0;
-      HRESULT hr;
-      hr = ::CoCreateInstance(CLSID_StdComponentCategoriesMgr,
-         nullptr,
-         CLSCTX_INPROC_SERVER,
-         IID_ICatRegister,
-         (void**)&pICatReg);
-      if (FAILED(hr))
+      auto components = WBFL::EAF::ComponentManager::GetInstance().GetComponents(CATID_BeamFactoryCLSIDTranslator);
+      for (auto& component : components)
       {
-         CString msg;
-         msg.Format(_T("Failed to create Component Category Manager. hr = %d\nIs the correct version of Internet Explorer installed"), hr);
-         AfxMessageBox(msg, MB_OK | MB_ICONWARNING);
-         return;
-      }
-
-      CComPtr<ICatInformation> pICatInfo;
-      pICatReg->QueryInterface(IID_ICatInformation, (void**)&pICatInfo);
-      CComPtr<IEnumCLSID> pIEnumCLSID;
-
-      const CATID catid[1]{ (CATID)CATID_BeamFactoryCLSIDTranslator };
-      hr = pICatInfo->EnumClassesOfCategories(1, catid, 0, nullptr, &pIEnumCLSID);
-
-      CLSID clsid;
-      ULONG nFetched;
-      while (pIEnumCLSID->Next(1, &clsid, &nFetched) != S_FALSE)
-      {
-         CComPtr<IBeamFactoryCLSIDTranslator> translator;
-         hr = ::CoCreateInstance(clsid, nullptr, CLSCTX_ALL, IID_IBeamFactoryCLSIDTranslator, (void**)&translator);
-         if (SUCCEEDED(hr))
-         {
+         auto translator = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactoryCLSIDTranslator>(component);
+         if(translator)
             ms_ExternalCLSIDTranslators.push_back(translator);
-         }
       }
 
       m_bsInitCLSIDMap = false; // false = it is initialized
@@ -391,9 +350,8 @@ bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("Publisher"),m_pBeamFactory->GetPublisher().c_str());
    pSave->Property(_T("ContactInfo"),m_pBeamFactory->GetPublisherContactInformation().c_str()); // added in version 25
 
-   LPOLESTR pszUserType;
-   OleRegGetUserType(m_pBeamFactory->GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-   pSave->Property(_T("SectionName"),CString(pszUserType));
+   const auto& component = WBFL::EAF::ComponentManager::GetInstance().GetComponent(m_pBeamFactory->GetCLSID());
+   pSave->Property(_T("SectionName"),CString(component.name.c_str()));
 
    // added in version 24
    pSave->BeginUnit(_T("SectionDimensions"),1.0);
@@ -453,12 +411,13 @@ bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    //pSave->Property(_T("TopFlangeShearBarSpacing"), m_TopFlangeShearBarSpacing);
 
    // debond criteria - added in version 13
-   pSave->BeginUnit(_T("DebondingCritia"), 2.0);
+   pSave->BeginUnit(_T("DebondingCritia"), 3.0);
    pSave->Property(_T("CheckMaxDebondedStrands"), m_bCheckMaxDebondStrands); // added in version 2 of this data block
    pSave->Property(_T("MaxDebondStrands"),               m_MaxDebondStrands);
    pSave->Property(_T("MaxDebondStrandsPerRow"),         m_MaxDebondStrandsPerRow);
    pSave->Property(_T("MaxNumDebondedStrandsPerSection10orLess"), m_MaxNumDebondedStrandsPerSection10orLess); // added in version 2
    pSave->Property(_T("MaxNumDebondedStrandsPerSection"),m_MaxNumDebondedStrandsPerSection);
+   pSave->Property(_T("MaxNumDebondedStrandsPerSectionFor07"), m_MaxNumDebondedStrandsPerSectionFor07); // added in version 3
    pSave->Property(_T("CheckMaxDebondedStrandsPerSection"), m_bCheckMaxNumDebondedStrandsPerSection); // added in version 2
    pSave->Property(_T("MaxDebondedStrandsPerSection"),   m_MaxDebondedStrandsPerSection);
    pSave->Property(_T("MinDebondLengthDB"), m_MinDebondLengthDB); // added in version 2
@@ -471,7 +430,7 @@ bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("MaxDebondLengthBySpanFraction"),  m_MaxDebondLengthBySpanFraction);
    pSave->Property(_T("MaxDebondLengthByHardDistance"),  m_MaxDebondLengthByHardDistance);
 
-   pSave->EndUnit(); // DebondingCritia
+   pSave->EndUnit(); // DebondingCriteria
 
    // Added start and end strand grids in version 15 of parent unit
    pSave->BeginUnit(_T("StraightStrands"),1.0);
@@ -717,6 +676,9 @@ bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("PrecamberLimit"), m_PrecamberLimit); // added version 28
    pSave->Property(_T("DoReportBearingElevationsAtGirderEdges"), m_DoReportBearingElevationsAtGirderEdges); // added version 29
 
+   pSave->Property(_T("WarnTransReinfLibraryEquality"), m_bWarnTransReinfLibraryEquality); // added version 30
+   pSave->Property(_T("WarnLongReinfLibraryEquality"), m_bWarnLongReinfLibraryEquality); // added version 30
+
    pSave->EndUnit();
 
    return false;
@@ -817,9 +779,12 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
          std::_tstring strNewCLSID = TranslateCLSID(strCLSID);
 
-         HRESULT hr = CreateBeamFactory(strNewCLSID);
-         if ( FAILED(hr))
+         if (!CreateBeamFactory(strNewCLSID))
          {
+            // NOTE: When COM/Component Categories was removed, we lost the error code from CoCreateInstance
+            // We now have the default E_FAIL.
+            HRESULT hr = E_FAIL;
+
             LPTSTR errorMsgBuffer = nullptr;
             size_t size = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                                           NULL, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&errorMsgBuffer, 0, NULL);
@@ -838,7 +803,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          ATLASSERT(m_pBeamFactory != nullptr);
 
 
-         CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
+         auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(m_pBeamFactory);
          if ( splicedBeamFactory )
          {
             m_bSupportsVariableDepthSection = splicedBeamFactory->SupportsVariableDepthSection();
@@ -1463,6 +1428,15 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          if ( !pLoad->Property(_T("MaxNumDebondedStrandsPerSection"),&m_MaxNumDebondedStrandsPerSection))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
+         }
+
+         if (2 < local_vers)
+         {
+            // added in version 3
+            if (!pLoad->Property(_T("MaxNumDebondedStrandsPerSectionFor07"), &m_MaxNumDebondedStrandsPerSectionFor07))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
          }
 
          if (1 < local_vers)
@@ -2901,6 +2875,19 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          }
       }
 
+      if (29 < version)
+      {
+         if (!pLoad->Property(_T("WarnTransReinfLibraryEquality"), &m_bWarnTransReinfLibraryEquality))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
+         if (!pLoad->Property(_T("WarnLongReinfLibraryEquality"), &m_bWarnLongReinfLibraryEquality))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+
 
       if(!pLoad->EndUnit())
       {
@@ -2913,7 +2900,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
    }
 
    ATLASSERT(m_pBeamFactory != nullptr);
-   CComQIPtr<IBeamFactoryCompatibility> compatibility(m_pBeamFactory);
+   auto compatibility = std::dynamic_pointer_cast<PGS::Beams::BeamFactoryCompatibility>(m_pBeamFactory);
    if (compatibility)
    {
       // Beam Factories are singletons, so we must capture the compatibility data here, otherwise the current
@@ -2925,52 +2912,26 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
    return true;
 }
 
-HRESULT GirderLibraryEntry::CreateBeamFactory(const std::_tstring& strCLSID)
+bool GirderLibraryEntry::CreateBeamFactory(const std::_tstring& strCLSID)
 {
    USES_CONVERSION;
 
-   m_pBeamFactory.Release();
+   m_pBeamFactory = nullptr;
    
-   // Get the class factory for this type
-   CClassFactoryHolder* pClassFactory;
-   ClassFactoryCollection::iterator found = ms_ClassFactories.find(strCLSID);
-   if ( found != ms_ClassFactories.end() )
-   {
-      pClassFactory = &(*found).second;
-   }
-   else
-   {
-      // Class factory was not found... create it
-      CLSID clsid;
-      ::CLSIDFromString(CT2OLE(strCLSID.c_str()),&clsid);
+   CLSID clsid;
+   ::CLSIDFromString(CT2OLE(strCLSID.c_str()), &clsid);
 
-      CComPtr<IClassFactory> classFactory;
-      HRESULT hr = ::CoGetClassObject(clsid,CLSCTX_ALL,nullptr,IID_IClassFactory,(void**)&classFactory);
-      if ( FAILED(hr) )
-      {
-         return hr;
-      }
+   m_pBeamFactory = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(clsid);
 
-      CClassFactoryHolder cfh(classFactory);
-
-      // Save it for next time
-      std::pair<ClassFactoryCollection::iterator,bool> result;
-      result = ms_ClassFactories.insert(std::make_pair(strCLSID,cfh));
-      ClassFactoryCollection::iterator iter = result.first;
-      pClassFactory = &(*iter).second;
-   }
-
-   // Using the class factory, create the beam factory
-   HRESULT hr = pClassFactory->CreateInstance(nullptr,IID_IBeamFactory,(void**)&m_pBeamFactory);
-   return hr;
+   return m_pBeamFactory != nullptr;
 }
 
 void GirderLibraryEntry::LoadIBeamDimensions(WBFL::System::IStructuredLoad* pLoad)
 {
    CLSID clsid;
    ::CLSIDFromString(_T("{EF144A97-4C75-4234-AF3C-71DC89B1C8F8}"),&clsid);
-   m_pBeamFactory.Release();
-   HRESULT hr = ::CoCreateInstance(clsid,nullptr,CLSCTX_ALL,IID_IBeamFactory,(void**)&m_pBeamFactory);
+   m_pBeamFactory = nullptr;
+   m_pBeamFactory = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(clsid);
 
    m_Dimensions.clear();
 
@@ -3095,30 +3056,30 @@ void GirderLibraryEntry::LoadIBeamDimensions(WBFL::System::IStructuredLoad* pLoa
 
    std::sort(std::begin(m_Dimensions), std::end(m_Dimensions) - 3, [](const auto& a, const auto& b) {return a.first < b.first; });
 
-   m_Dimensions = ConvertIBeamDimensions<GirderLibraryEntry::Dimensions>(m_Dimensions);
+   m_Dimensions = PGS::Beams::ConvertIBeamDimensions<GirderLibraryEntry::Dimensions>(m_Dimensions);
 }
 
 bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
+   std::vector<std::unique_ptr<PGS::Library::DifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName,bool bCompareSeedValues) const
+bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName,bool bCompareSeedValues) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(m_pBeamFactory);
    bool bSplicedGirder = (splicedBeamFactory == nullptr ? false : true);
 
    bMustRename = false;
 
-   if (!const_cast<CComPtr<IBeamFactory>*>(&m_pBeamFactory)->IsEqualObject(rOther.m_pBeamFactory))
+   if (m_pBeamFactory != rOther.m_pBeamFactory)
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Girder are different type."), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Girder are different type."), _T(""), _T("")));
       bMustRename = true;
    }
 
@@ -3132,7 +3093,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
        )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Girder dimensions are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Girder dimensions are different"),_T(""),_T("")));
    }
 
    //
@@ -3143,53 +3104,53 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
       if ( m_AdjustableStrandType != rOther.m_AdjustableStrandType )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Adjustable Strand Type"),GetAdjustableStrandType(m_AdjustableStrandType),GetAdjustableStrandType(rOther.m_AdjustableStrandType)));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Adjustable Strand Type"),GetAdjustableStrandType(m_AdjustableStrandType),GetAdjustableStrandType(rOther.m_AdjustableStrandType)));
       }
 
       if ( m_bOddNumberOfHarpedStrands != rOther.m_bOddNumberOfHarpedStrands )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Coerce Odd Number of Harped Strands"),m_bOddNumberOfHarpedStrands,rOther.m_bOddNumberOfHarpedStrands,_T("Checked"),_T("Unchecked")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceBooleanItem>(_T("Coerce Odd Number of Harped Strands"),m_bOddNumberOfHarpedStrands,rOther.m_bOddNumberOfHarpedStrands,_T("Checked"),_T("Unchecked")));
       }
 
       if ( m_bUseDifferentHarpedGridAtEnds != rOther.m_bUseDifferentHarpedGridAtEnds )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Use Different Harped Strand Locations at Girder Ends"),m_bUseDifferentHarpedGridAtEnds,rOther.m_bUseDifferentHarpedGridAtEnds,_T("Checked"),_T("Unchecked")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceBooleanItem>(_T("Use Different Harped Strand Locations at Girder Ends"),m_bUseDifferentHarpedGridAtEnds,rOther.m_bUseDifferentHarpedGridAtEnds,_T("Checked"),_T("Unchecked")));
       }
 
       if ( m_StraightStrands != rOther.m_StraightStrands )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Straight Strands Positions are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Straight Strands Positions are different"),_T(""),_T("")));
       }
       if ( m_HarpedStrands != rOther.m_HarpedStrands  )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Harped Strands Positions are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Harped Strands Positions are different"),_T(""),_T("")));
       }
       if ( m_PermanentStrands != rOther.m_PermanentStrands )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Permanent Strands Positions are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Permanent Strands Positions are different"),_T(""),_T("")));
       }
 
       if ( m_HPAdjustment != rOther.m_HPAdjustment )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Harped strand adjustment at harping points are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Harped strand adjustment at harping points are different"),_T(""),_T("")));
       }
 
       if ( m_EndAdjustment != rOther.m_EndAdjustment )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Harped strand adjustment at girder ends are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Harped strand adjustment at girder ends are different"),_T(""),_T("")));
       }
 
       if ( m_StraightAdjustment != rOther.m_StraightAdjustment )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Adjustable straight strand adjustment are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Adjustable straight strand adjustment are different"),_T(""),_T("")));
       }
    }
 
@@ -3201,7 +3162,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
       if ( m_TemporaryStrands != rOther.m_TemporaryStrands )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Temporary Strands Positions are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Temporary Strands Positions are different"),_T(""),_T("")));
       }
    }
 
@@ -3213,6 +3174,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
         !::IsEqual(m_MaxDebondStrandsPerRow,rOther.m_MaxDebondStrandsPerRow)          ||
       m_MaxNumDebondedStrandsPerSection10orLess != rOther.m_MaxNumDebondedStrandsPerSection10orLess ||
         m_MaxNumDebondedStrandsPerSection != rOther.m_MaxNumDebondedStrandsPerSection ||
+      m_MaxNumDebondedStrandsPerSectionFor07 != rOther.m_MaxNumDebondedStrandsPerSectionFor07 ||
       m_bCheckMaxNumDebondedStrandsPerSection != rOther.m_bCheckMaxNumDebondedStrandsPerSection ||
         (m_bCheckMaxNumDebondedStrandsPerSection && !::IsEqual(m_MaxDebondedStrandsPerSection,rOther.m_MaxDebondedStrandsPerSection))  ||
       !::IsEqual(m_MinDebondLengthDB, rOther.m_MinDebondLengthDB) ||
@@ -3226,7 +3188,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
       )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Debonding Strand Limits are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Debonding Strand Limits are different"),_T(""),_T("")));
    }
 
    if ( !bSplicedGirder )
@@ -3234,7 +3196,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
       if ( m_PrestressDesignStrategies != rOther.m_PrestressDesignStrategies )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Prestress Design Stratigies are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Prestress Design Stratigies are different"),_T(""),_T("")));
       }
    }
 
@@ -3257,7 +3219,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
          )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Shear Design Parameters are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Shear Design Parameters are different"),_T(""),_T("")));
       }
    }
 
@@ -3272,7 +3234,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
            m_HarpPointMeasure != rOther.m_HarpPointMeasure )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Harping Point locations are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Harping Point locations are different"),_T(""),_T("")));
       }
    }
 
@@ -3286,7 +3248,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
            m_LongSteelInfo != rOther.m_LongSteelInfo )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Long. Reinforcement seed values are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Long. Reinforcement seed values are different"),_T(""),_T("")));
       }
    }
 
@@ -3298,7 +3260,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
       if (m_ShearData != rOther.m_ShearData)
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Transv. Reinforcement seed values are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Transv. Reinforcement seed values are different"),_T(""),_T("")));
       }
    }
 
@@ -3311,7 +3273,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
         )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Haunch Design Parameters are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Haunch Design Parameters are different"),_T(""),_T("")));
    }
 
    if ( !bSplicedGirder )
@@ -3319,26 +3281,38 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
       if ( m_CamberMultipliers != rOther.m_CamberMultipliers )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Camber Multipliers are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Camber Multipliers are different"),_T(""),_T("")));
       }
    }
 
    if ( !::IsEqual(m_DragCoefficient,rOther.m_DragCoefficient) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Drag Coefficients are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Drag Coefficients are different"),_T(""),_T("")));
    }
 
    if (!::IsEqual(m_PrecamberLimit, rOther.m_PrecamberLimit))
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Precamber limits are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Precamber limits are different"), _T(""), _T("")));
    }
 
    if (m_DoReportBearingElevationsAtGirderEdges != rOther.m_DoReportBearingElevationsAtGirderEdges)
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Options to Report Bearing Elevations at Girder Edges are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Options to Report Bearing Elevations at Girder Edges are different"), _T(""), _T("")));
+   }
+
+   if (m_bWarnTransReinfLibraryEquality != rOther.m_bWarnTransReinfLibraryEquality)
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Option to warn about difference between transverse reinforcement are different"), _T(""), _T("")));
+   }
+
+   if (m_bWarnLongReinfLibraryEquality != rOther.m_bWarnLongReinfLibraryEquality)
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Option to warn about difference between longitudinal reinforcement are different"), _T(""), _T("")));
    }
 
    //
@@ -3347,13 +3321,13 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
    if ( m_DiaphragmLayoutRules != rOther.m_DiaphragmLayoutRules )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Diaphragm Layout Rules are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Diaphragm Layout Rules are different"),_T(""),_T("")));
    }
 
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;
@@ -3363,7 +3337,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
 {
    pvec->clear();
 
-  CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(m_pBeamFactory);
 
   if ( splicedBeamFactory )
   {
@@ -3382,15 +3356,15 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    Float64 endTopLimit, endBottomLimit;
    this->GetEndAdjustmentLimits(&endTopFace, &endTopLimit, &endBottomFace, &endBottomLimit);
 
-   IBeamFactory::BeamFace etf = endTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-   IBeamFactory::BeamFace ebf = endBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   PGS::Beams::BeamFactory::BeamFace etf = endTopFace==pgsTypes::BottomFace ? PGS::Beams::BeamFactory::BeamFace::Bottom : PGS::Beams::BeamFactory::BeamFace::Top;
+   PGS::Beams::BeamFactory::BeamFace ebf = endBottomFace==pgsTypes::BottomFace ? PGS::Beams::BeamFactory::BeamFace::Bottom : PGS::Beams::BeamFactory::BeamFace::Top;
 
    pgsTypes::FaceType hpTopFace, hpBottomFace;
    Float64 hpTopLimit, hpBottomLimit;
    this->GetHPAdjustmentLimits(&hpTopFace, &hpTopLimit, &hpBottomFace, &hpBottomLimit);
  
-   IBeamFactory::BeamFace htf = hpTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-   IBeamFactory::BeamFace hbf = hpBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   PGS::Beams::BeamFactory::BeamFace htf = hpTopFace==pgsTypes::BottomFace ? PGS::Beams::BeamFactory::BeamFace::Bottom : PGS::Beams::BeamFactory::BeamFace::Top;
+   PGS::Beams::BeamFactory::BeamFace hbf = hpBottomFace==pgsTypes::BottomFace ? PGS::Beams::BeamFactory::BeamFace::Bottom : PGS::Beams::BeamFactory::BeamFace::Top;
 
    CComPtr<IStrandMover> strand_mover;
    m_pBeamFactory->CreateStrandMover(m_Dimensions, -1,
@@ -3410,8 +3384,8 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       Float64 straightTopLimit, straightBottomLimit;
       this->GetStraightAdjustmentLimits(&straightTopFace, &straightTopLimit, &straightBottomFace, &straightBottomLimit);
 
-      IBeamFactory::BeamFace strtf = straightTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-      IBeamFactory::BeamFace strbf = straightBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+      PGS::Beams::BeamFactory::BeamFace strtf = straightTopFace==pgsTypes::BottomFace ? PGS::Beams::BeamFactory::BeamFace::Bottom : PGS::Beams::BeamFactory::BeamFace::Top;
+      PGS::Beams::BeamFactory::BeamFace strbf = straightBottomFace==pgsTypes::BottomFace ? PGS::Beams::BeamFactory::BeamFace::Bottom : PGS::Beams::BeamFactory::BeamFace::Top;
 
       m_pBeamFactory->CreateStrandMover(m_Dimensions, -1,
                                         strtf, straightTopLimit, strbf, straightBottomLimit,
@@ -3911,7 +3885,7 @@ void GirderLibraryEntry::SetAdjustableStrandType(pgsTypes::AdjustableStrandType 
 }
 
 //======================== ACCESS     =======================================
-void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
+void GirderLibraryEntry::SetBeamFactory(std::shared_ptr<PGS::Beams::BeamFactory> pFactory)
 {
    if ( pFactory == nullptr )
    {
@@ -3941,7 +3915,7 @@ void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
       AddDimension(name,value);
    }
 
-   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(m_pBeamFactory);
    if ( splicedBeamFactory && splicedBeamFactory->SupportsVariableDepthSection() )
    {
       m_bSupportsVariableDepthSection = true;
@@ -3952,10 +3926,9 @@ void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
    }
 }
 
-void GirderLibraryEntry::GetBeamFactory(IBeamFactory** ppFactory) const
+std::shared_ptr<PGS::Beams::BeamFactory> GirderLibraryEntry::GetBeamFactory() const
 {
-   (*ppFactory) = m_pBeamFactory;
-   (*ppFactory)->AddRef();
+   return m_pBeamFactory;
 }
 
 std::_tstring GirderLibraryEntry::GetGirderName() const
@@ -4676,6 +4649,26 @@ void GirderLibraryEntry::GetLongSteelMaterial(WBFL::Materials::Rebar::Type& type
    grade = m_LongitudinalBarGrade;
 }
 
+bool GirderLibraryEntry::DoWarnForTransReinfEquality() const
+{
+   return m_bWarnTransReinfLibraryEquality;
+}
+
+void GirderLibraryEntry::SetDoWarnForTransReinfEquality(bool doCheck)
+{
+   m_bWarnTransReinfLibraryEquality = doCheck;
+}
+
+bool GirderLibraryEntry::DoWarnForLongReinfEquality() const
+{
+   return m_bWarnLongReinfLibraryEquality;
+}
+
+void GirderLibraryEntry::SetDoWarnForLongReinfEquality(bool doCheck)
+{
+   m_bWarnLongReinfLibraryEquality = doCheck;
+}
+
 void GirderLibraryEntry::SetHarpingPointLocation(Float64 d)
 {
    m_HarpingPointLocation = d;
@@ -4772,12 +4765,16 @@ bool GirderLibraryEntry::Edit(bool allowEditing,int nPage)
    GirderLibraryEntry tmp(*this);
 
    CGirderMainSheet dlg(tmp, allowEditing, GetRefCount());
+   dlg.m_ShearSteelPage.m_bWarnTransReinfLibraryEquality = this->DoWarnForTransReinfEquality();
+   dlg.m_LongSteelPage.m_bWarnLongReinfLibraryEquality = this->DoWarnForLongReinfEquality();
    dlg.SetActivePage(nPage);
    INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {
       *this = tmp;
       this->SetShearData(dlg.m_ShearSteelPage.m_ShearData);
+      this->SetDoWarnForTransReinfEquality(dlg.m_ShearSteelPage.m_bWarnTransReinfLibraryEquality);
+      this->SetDoWarnForLongReinfEquality(dlg.m_LongSteelPage.m_bWarnLongReinfLibraryEquality);
       return true;
    }
 
@@ -4805,6 +4802,7 @@ void GirderLibraryEntry::CopyValuesAndAttributes(const GirderLibraryEntry& rOthe
    m_MaxDebondStrandsPerRow                 = rOther.m_MaxDebondStrandsPerRow;
    m_MaxNumDebondedStrandsPerSection10orLess = rOther.m_MaxNumDebondedStrandsPerSection10orLess;
    m_MaxNumDebondedStrandsPerSection        = rOther.m_MaxNumDebondedStrandsPerSection;
+   m_MaxNumDebondedStrandsPerSectionFor07 = rOther.m_MaxNumDebondedStrandsPerSectionFor07;
    m_bCheckMaxNumDebondedStrandsPerSection = rOther.m_bCheckMaxNumDebondedStrandsPerSection;
    m_MaxDebondedStrandsPerSection           = rOther.m_MaxDebondedStrandsPerSection;
    m_MinDebondLengthDB = rOther.m_MinDebondLengthDB;
@@ -4830,7 +4828,6 @@ void GirderLibraryEntry::CopyValuesAndAttributes(const GirderLibraryEntry& rOthe
    m_bSupportsVariableDepthSection = rOther.m_bSupportsVariableDepthSection;
    m_bIsVariableDepthSectionEnabled = rOther.m_bIsVariableDepthSectionEnabled;
 
-   m_pBeamFactory.Release();
    m_pBeamFactory = rOther.m_pBeamFactory;
 
    m_bOddNumberOfHarpedStrands     = rOther.m_bOddNumberOfHarpedStrands;
@@ -4862,6 +4859,9 @@ void GirderLibraryEntry::CopyValuesAndAttributes(const GirderLibraryEntry& rOthe
    m_DragCoefficient = rOther.m_DragCoefficient;
    m_PrecamberLimit = rOther.m_PrecamberLimit;
    m_DoReportBearingElevationsAtGirderEdges = rOther.m_DoReportBearingElevationsAtGirderEdges;
+
+   m_bWarnTransReinfLibraryEquality = rOther.m_bWarnTransReinfLibraryEquality;
+   m_bWarnLongReinfLibraryEquality = rOther.m_bWarnLongReinfLibraryEquality;
 }
 
 HICON  GirderLibraryEntry::GetIcon() const
@@ -5068,20 +5068,22 @@ void GirderLibraryEntry::SetMaxFractionDebondedStrandsPerRow(Float64 fraction)
    m_MaxDebondStrandsPerRow = fraction;
 }
 
-void  GirderLibraryEntry::GetMaxDebondedStrandsPerSection(StrandIndexType* p10orLess, StrandIndexType* pNumber, bool* pbCheck, Float64* pFraction) const
+void  GirderLibraryEntry::GetMaxDebondedStrandsPerSection(StrandIndexType* p10orLess, StrandIndexType* pn10orMore,StrandIndexType* pn10orMore_07Strand, bool* pbCheck, Float64* pFraction) const
 {
    *p10orLess = m_MaxNumDebondedStrandsPerSection10orLess;
-   *pNumber = m_MaxNumDebondedStrandsPerSection;
+   *pn10orMore = m_MaxNumDebondedStrandsPerSection;
+   *pn10orMore_07Strand = m_MaxNumDebondedStrandsPerSectionFor07;
    *pbCheck = m_bCheckMaxNumDebondedStrandsPerSection;
    *pFraction = m_MaxDebondedStrandsPerSection;
 }
 
-void GirderLibraryEntry::SetMaxDebondedStrandsPerSection(StrandIndexType n10orLess, StrandIndexType number, bool bCheck,Float64 fraction)
+void GirderLibraryEntry::SetMaxDebondedStrandsPerSection(StrandIndexType n10orLess, StrandIndexType n10orMore,StrandIndexType n10orMore_07Strand, bool bCheck,Float64 fraction)
 {
    ATLASSERT(0.0 <= fraction && fraction <= 1.0);
 
    m_MaxNumDebondedStrandsPerSection10orLess = n10orLess;
-   m_MaxNumDebondedStrandsPerSection = number;
+   m_MaxNumDebondedStrandsPerSection = n10orMore;
+   m_MaxNumDebondedStrandsPerSectionFor07 = n10orMore_07Strand;
    m_bCheckMaxNumDebondedStrandsPerSection = bCheck;
    m_MaxDebondedStrandsPerSection    = fraction;
 }
@@ -5198,9 +5200,8 @@ std::_tstring GirderLibraryEntry::GetSectionName() const
    std::_tstring name;
    if (m_pBeamFactory)
    {
-      LPOLESTR pszUserType;
-      OleRegGetUserType(m_pBeamFactory->GetCLSID(),USERCLASSTYPE_SHORT,&pszUserType);
-      return std::_tstring( CString(pszUserType) );
+      auto& component = WBFL::EAF::ComponentManager::GetInstance().GetComponent(m_pBeamFactory->GetCLSID());
+      return component.name;
    }
    else
    {
@@ -5514,13 +5515,10 @@ bool GirderLibraryEntry::GetDoReportBearingElevationsAtGirderEdges() const
    return m_DoReportBearingElevationsAtGirderEdges;
 }
 
-pgsCompatibilityData* GirderLibraryEntry::GetCompatibilityData() const
+std::shared_ptr<PGS::Beams::CompatibilityData> GirderLibraryEntry::GetCompatibilityData() const
 {
    return m_pCompatibilityData;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 static const Float64 TwoInches = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
 

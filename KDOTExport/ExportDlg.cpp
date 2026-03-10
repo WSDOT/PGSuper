@@ -33,17 +33,12 @@
 
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CExportDlg dialog
 
 /*--------------------------------------------------------------------*/
-CExportDlg::CExportDlg(IBroker* pBroker,CWnd* pParent /*=nullptr*/)
+CExportDlg::CExportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,CWnd* pParent /*=nullptr*/)
 	: CDialog(CExportDlg::IDD, pParent)
 {
    m_pBroker  = pBroker;

@@ -26,6 +26,8 @@
 #include <Reporting\LiftingCheck.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
@@ -43,11 +45,6 @@
 
 #include <EAF/EAFApp.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -77,8 +74,8 @@ CLiftingCheck& CLiftingCheck::operator= (const CLiftingCheck& rOther)
 }
 
 void CLiftingCheck::Build(rptChapter* pChapter,
-                          IBroker* pBroker,const CGirderKey& girderKey,
-                          IEAFDisplayUnits* pDisplayUnits) const
+                          std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                          std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, ISegmentLiftingSpecCriteria, pSegmentLiftingSpecCriteria);
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
@@ -109,8 +106,8 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 }
 
 void CLiftingCheck::Build(rptChapter* pChapter,
-   IBroker* pBroker, const CSegmentKey& segmentKey,
-   IEAFDisplayUnits* pDisplayUnits) const
+   std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    GET_IFACE2(pBroker, ISegmentLiftingSpecCriteria, pSegmentLiftingSpecCriteria);
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
@@ -131,14 +128,14 @@ void CLiftingCheck::Build(rptChapter* pChapter,
          rptParagraph* p = new rptParagraph;
          *pChapter << p;
       }
-      const WBFL::Stability::LiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(segmentKey);
+      auto pArtifact = pArtifacts->GetLiftingCheckArtifact(segmentKey);
       const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
       const WBFL::Stability::ILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
       Float64 Ll, Lr;
       pStabilityProblem->GetSupportLocations(&Ll, &Lr);
       WBFL::Stability::LiftingStabilityReporter reporter;
       auto* pApp = EAFGetApp();
-      reporter.BuildSpecCheckChapter(pStabilityModel, pStabilityProblem, pArtifact, pChapter, pApp->GetDisplayUnits(), _T("Location from<BR/>Left Pick Point"), Ll);
+      reporter.BuildSpecCheckChapter(pStabilityModel, pStabilityProblem, pArtifact.get(), pChapter, pApp->GetDisplayUnits(), _T("Location from<BR/>Left Pick Point"), Ll);
    }
    else
    {

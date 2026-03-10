@@ -2,8 +2,8 @@ HKCR
 {
 	NoRemove AppID
 	{
-		'%APPID%' = s 'PGSuperAppPlugin'
-		'PGSuperAppPlugin.DLL'
+		'%APPID%' = s 'PGSuperPluginApp'
+		'PGSuperPluginApp.DLL'
 		{
 			val AppID = s '%APPID%'
 		}

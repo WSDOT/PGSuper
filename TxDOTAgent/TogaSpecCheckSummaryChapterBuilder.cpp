@@ -22,11 +22,6 @@
 
 #include "StdAfx.h"
 
-/****************************************************************************
-CLASS
-   CTogaSpecCheckSummaryChapterBuilder
-****************************************************************************/
-
 #include "TogaSpecCheckSummaryChapterBuilder.h"
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
@@ -38,6 +33,7 @@ CLASS
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderArtifactTool.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
@@ -46,24 +42,13 @@ CLASS
 
 #include <Lrfd/BDSManager.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTogaSpecCheckSummaryChapterBuilder::CTogaSpecCheckSummaryChapterBuilder(bool referToDetailsReport):
 CPGSuperChapterBuilder(true),
 m_ReferToDetailsReport(referToDetailsReport)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTogaSpecCheckSummaryChapterBuilder::GetName() const
 {
    return TEXT("Specification Check Summary");
@@ -72,8 +57,7 @@ LPCTSTR CTogaSpecCheckSummaryChapterBuilder::GetName() const
 rptChapter* CTogaSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    // We need the artifact that we've doctored for txdot reasons
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
@@ -91,27 +75,3 @@ rptChapter* CTogaSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<con
 
    return pChap;
 }
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaSpecCheckSummaryChapterBuilder::Clone() const
-{
-   return std::make_unique<CTogaSpecCheckSummaryChapterBuilder>(m_ReferToDetailsReport);
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

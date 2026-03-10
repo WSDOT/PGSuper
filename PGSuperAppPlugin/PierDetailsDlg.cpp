@@ -26,16 +26,11 @@
 #include "stdafx.h"
 #include "PGSuperApp.h"
 #include "PierDetailsDlg.h"
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include "PGSuperDocBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierDetailsDlg
@@ -274,7 +269,7 @@ void CPierDetailsDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-std::unique_ptr<CEAFTransaction> CPierDetailsDlg::GetExtensionPageTransaction()
+std::unique_ptr<WBFL::EAF::Transaction> CPierDetailsDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
    {

@@ -24,20 +24,20 @@
 //
 
 #include "stdafx.h"
-#include <psglib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include <fstream>
 
 #include <PsgLib\StructuredLoad.h>
 #include <PsgLib\StructuredSave.h>
-#include <psglib\LibraryEditorDoc.h>
-#include <psgLib\BeamFamilyManager.h>
+#include <PsgLib\LibraryEditorDoc.h>
+#include <PsgLib\BeamFamilyManager.h>
 
 #include <System\FileStream.h>
 #include <System\StructuredLoadXml.h>
 #include <System\StructuredSaveXml.h>
 
 
-#include <WBFLCore.h>
+
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFMainFrame.h>
@@ -51,11 +51,6 @@
 
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // cause the resource control values to be defined
 #define APSTUDIO_INVOKED
@@ -88,10 +83,9 @@ END_MESSAGE_MAP()
 CLibraryEditorDoc::CLibraryEditorDoc()
 {
    m_LibraryManager.SetName(_T("Master Libraries"));
-   m_pMyToolBar = nullptr;
 
    // library editor doesn't use the status center
-   CEAFStatusCenter& status_center = GetStatusCenter();
+   auto& status_center = GetStatusCenter();
    status_center.Enable(false);
 
    // Reserve command IDs for document plug ins
@@ -147,12 +141,12 @@ BOOL CLibraryEditorDoc::Init()
       return FALSE;
    }
 
-   if ( FAILED(CBeamFamilyManager::Init(CATID_PGSuperBeamFamily)) )
+   if ( FAILED(PGS::Library::BeamFamilyManager::Init(CATID_PGSuperBeamFamily)) )
    {
       return FALSE;
    }
 
-   if ( FAILED(CBeamFamilyManager::Init(CATID_PGSpliceBeamFamily)) )
+   if ( FAILED(PGS::Library::BeamFamilyManager::Init(CATID_PGSpliceBeamFamily)) )
    {
       return FALSE;
    }
@@ -172,9 +166,9 @@ void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
       {
          AFX_MANAGE_STATE(AfxGetStaticModuleState());
          UINT tbID = pFrame->CreateToolBar(_T("Library"), GetPluginCommandManager());
-         m_pMyToolBar = pFrame->GetToolBar(tbID);
-         m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR, nullptr);
-         m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN, nullptr, BTNS_DROPDOWN);
+         m_MyToolBar = pFrame->GetToolBar(tbID);
+         m_MyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR, nullptr);
+         m_MyToolBar->CreateDropDownButton(ID_FILE_OPEN, nullptr, BTNS_DROPDOWN);
       }
 
       // use our status bar
@@ -185,8 +179,8 @@ void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
    else
    {
       // remove toolbar here
-      pFrame->DestroyToolBar(m_pMyToolBar);
-      m_pMyToolBar = nullptr;
+      pFrame->DestroyToolBar(m_MyToolBar->GetToolBarID());
+      m_MyToolBar = nullptr;
 
       // reset the status bar
       pFrame->SetStatusBar(nullptr);
@@ -202,7 +196,7 @@ HRESULT CLibraryEditorDoc::WriteTheDocument(IStructuredSave* pStrSave)
       // save editor-specific information
       CEAFApp* pApp = EAFGetApp();
       mysave.BeginUnit(_T("LIBRARY_EDITOR"), 1.0);
-      if (pApp->GetUnitsMode() == eafTypes::umUS)
+      if (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::US)
       {
          mysave.Property(_T("EDIT_UNITS"), _T("US"));
       }
@@ -231,7 +225,7 @@ HRESULT CLibraryEditorDoc::WriteTheDocument(IStructuredSave* pStrSave)
 
 HRESULT CLibraryEditorDoc::LoadTheDocument(IStructuredLoad* pStrLoad)
 {
-   eafTypes::UnitMode unitMode;
+   WBFL::EAF::UnitMode unitMode;
    HRESULT hr = pgslibLoadLibrary(pStrLoad,&m_LibraryManager,&unitMode);
    if ( FAILED(hr) )
    {

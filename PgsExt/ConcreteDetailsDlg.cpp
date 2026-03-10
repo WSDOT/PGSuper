@@ -40,13 +40,9 @@
 #include <System\Tokenizer.h>
 #include <LRFD\ConcreteUtil.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <IFace/Tools.h>
+#include <IFace\Project.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CConcreteDetailsDlg dialog
@@ -96,13 +92,11 @@ void CConcreteDetailsDlg::Init()
 
    AddPage( &m_General );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   CComPtr<ILossParameters> pLossParameters;
-   HRESULT hr = pBroker->GetInterface(IID_ILossParameters,(IUnknown**)&pLossParameters);
+   auto pBroker = EAFGetBroker();
+   auto pLossParameters = pBroker->GetInterface<ILossParameters>(IID_ILossParameters);
    
    PrestressLossCriteria::LossMethodType loss_method = PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005;
-   if ( SUCCEEDED(hr) )
+   if (pLossParameters)
    {
       loss_method = pLossParameters->GetLossMethod();
    }
@@ -153,9 +147,8 @@ CString CConcreteDetailsDlg::UpdateEc(pgsTypes::ConcreteType type, const CString
        0 <= density && 0 <= fc && 0 <= k1 && 0 <= k2
        )
    {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      auto broker = EAFGetBroker();
+      GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
          const WBFL::Units::Pressure& stress_unit = pDisplayUnits->GetStressUnit().UnitOfMeasure;
          const WBFL::Units::Density& density_unit = pDisplayUnits->GetDensityUnit().UnitOfMeasure;

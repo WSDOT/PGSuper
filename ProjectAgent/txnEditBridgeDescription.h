@@ -20,19 +20,19 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #pragma once
-#include <PgsExt\BridgeDescription2.h>
-#include <EAF\EAFTransaction.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <EAF\Transaction.h>
 
 class txnEditBridgeDescription :
-   public CEAFTransaction
+   public WBFL::EAF::Transaction
 {
 public:
-   txnEditBridgeDescription(IBroker* pBroker,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
+   txnEditBridgeDescription(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
    ~txnEditBridgeDescription(void);
 
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual std::unique_ptr<CEAFTransaction>CreateClone() const override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction>CreateClone() const override;
    virtual std::_tstring Name() const override;
    virtual bool IsUndoable() const override;
    virtual bool IsRepeatable() const override;
@@ -40,6 +40,5 @@ public:
 private:
    void Execute(int i);
 
-   IBroker* m_pBroker;
 	CBridgeDescription2 m_BridgeDesc[2];
 };

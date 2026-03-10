@@ -28,7 +28,7 @@
 #endif // _MSC_VER >= 1000
 // ShearBarsLegsGRID.h : header file
 //
-#include <psgLib\GirderLibraryEntry.h>
+#include <PsgLib\GirderLibraryEntry.h>
 #include "ShearDesignPage.h"
 #include "resource.h"
 

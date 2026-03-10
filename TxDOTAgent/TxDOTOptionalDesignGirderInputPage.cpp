@@ -27,15 +27,14 @@
 #include "TxDOTOptionalDesignUtilities.h"
 
 #include <MfcTools\CustomDDX.h>
+
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 #include <LRFD\StrandPool.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PsgLib/LibraryManager.h>
 
 
 
@@ -167,7 +166,7 @@ void CTxDOTOptionalDesignGirderInputPage::DoDataExchange(CDataExchange* pDX)
 {
    CPropertyPage::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
+   auto pBroker = m_pBrokerRetriever->GetClassicBroker();
    if (pBroker==nullptr)
       return;
 

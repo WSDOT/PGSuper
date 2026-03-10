@@ -20,29 +20,25 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// FinalPrestressLossTable.h : Declaration of the CFinalPrestressLossTable
+#pragma once
 
-#ifndef __FinalPrestressLossTable_H_
-#define __FinalPrestressLossTable_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
-#include <PgsExt\StrandData.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
+class CStrandData;
 
 /////////////////////////////////////////////////////////////////////////////
 // CFinalPrestressLossTable
 class CFinalPrestressLossTable : public rptRcTable
 {
 public:
-	static CFinalPrestressLossTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CFinalPrestressLossTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CFinalPrestressLossTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CFinalPrestressLossTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );
@@ -55,9 +51,7 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
 
-   const CStrandData* m_pStrands;
+   const CStrandData* m_pStrands = nullptr;
    StrandIndexType m_NtMax;
    bool m_bIgnoreElasticGain;
 };
-
-#endif //__FinalPrestressLossTable_H_

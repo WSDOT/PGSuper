@@ -59,9 +59,6 @@
 #include <grid\gxall.h>
 #endif
 
-#include <atlbase.h>
-#include <atlcom.h>
-
 #include <EAF\EAFResources.h> // so all files have EAF resource identifiers
 #include <MFCTools\MFCTools.h>
 
@@ -70,11 +67,13 @@
 #include <afxwin.h>
 
 #include <EAF\EAFUtilities.h>
-#include <EAF\EAFHelp.h>
+#include <EAF\Help.h>
 
 #include "..\Documentation\PGSuper.hh"
 
 #include <Reporter/Reporter.h>
+
+#include <AgentTools.h>
 
 
 //{{AFX_INSERT_LOCATION}}

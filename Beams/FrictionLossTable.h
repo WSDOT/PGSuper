@@ -20,15 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// FrictionLossTable.h : Declaration of the CFrictionLossTable
+#pragma once
 
-#ifndef __FRICTIONLOSSTABLE_H_
-#define __FRICTIONLOSSTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 
@@ -37,11 +33,11 @@ class WBFL::LRFD::Losses;
 class CFrictionLossTable : public rptRcTable
 {
 public:
-	static CFrictionLossTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CFrictionLossTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CFrictionLossTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CFrictionLossTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );
@@ -56,5 +52,3 @@ private:
    DECLARE_UV_PROTOTYPE( rptPerLengthUnitValue, wobble);
    DECLARE_UV_PROTOTYPE( rptAngleUnitValue, angle);
 };
-
-#endif //__FRICTIONLOSSTABLE_H_

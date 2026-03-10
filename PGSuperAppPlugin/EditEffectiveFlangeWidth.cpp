@@ -22,13 +22,10 @@
 
 #include "stdafx.h"
 #include "EditEffectiveFlangeWidth.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditEffectiveFlangeWidth::txnEditEffectiveFlangeWidth(bool bOldSetting,bool bNewSetting)
 {
@@ -53,8 +50,8 @@ void txnEditEffectiveFlangeWidth::Undo()
 
 void txnEditEffectiveFlangeWidth::Execute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEffectiveFlangeWidth, pEFW );
    GET_IFACE2(pBroker,IEvents, pEvents);
@@ -65,7 +62,7 @@ void txnEditEffectiveFlangeWidth::Execute(int i)
    pEFW->IgnoreEffectiveFlangeWidthLimits(m_bIgnore[i]);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditEffectiveFlangeWidth::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditEffectiveFlangeWidth::CreateClone() const
 {
    return std::make_unique<txnEditEffectiveFlangeWidth>(m_bIgnore[0],m_bIgnore[1]);
 }

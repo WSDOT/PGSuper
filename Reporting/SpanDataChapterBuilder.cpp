@@ -23,31 +23,15 @@
 #include "StdAfx.h"
 #include <Reporting\SpanDataChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CSpanDataChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CSpanDataChapterBuilder::CSpanDataChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CSpanDataChapterBuilder::GetName() const
 {
    return TEXT("Span Lengths");
@@ -57,8 +41,7 @@ rptChapter* CSpanDataChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrRptSpec->GetBroker();
    const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -97,10 +80,6 @@ rptChapter* CSpanDataChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    scalar.SetWidth(7);
    scalar.SetPrecision(4);
    scalar.SetTolerance(1.0e-6);
-
-   CComPtr<IDirectionDisplayUnitFormatter> direction_formatter;
-   direction_formatter.CoCreateInstance(CLSID_DirectionDisplayUnitFormatter);
-   direction_formatter->put_BearingFormat(VARIANT_TRUE);
 
    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
@@ -202,9 +181,4 @@ rptChapter* CSpanDataChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    } // next group
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSpanDataChapterBuilder::Clone() const
-{
-   return std::make_unique<CSpanDataChapterBuilder>();
 }

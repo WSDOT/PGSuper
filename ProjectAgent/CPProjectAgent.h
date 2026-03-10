@@ -20,11 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 
 #define EVT_PROJECTPROPERTIES    0x0001
 //#define EVT_UNITS                0x0002
 #define EVT_EXPOSURECONDITION    0x0004
+#define EVT_CLIMATECONDITION     0x0004
 #define EVT_RELHUMIDITY          0x0008
 #define EVT_BRIDGE               0x0010
 #define EVT_SPECIFICATION        0x0020
@@ -44,7 +45,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIProjectPropertiesEventSink
 template <class T>
-class CProxyIProjectPropertiesEventSink : public IConnectionPointImpl<T, &IID_IProjectPropertiesEventSink, CComDynamicUnkArray>
+class CProxyIProjectPropertiesEventSink : public WBFL::EAF::EventSinkManager<IProjectPropertiesEventSink>
 {
 public:
 
@@ -60,19 +61,14 @@ public:
          return S_OK;
       }
 
-		pT->Lock();
+		//pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IProjectPropertiesEventSink* pIProjectPropertiesEventSink = reinterpret_cast<IProjectPropertiesEventSink*>(*pp);
-				ret = pIProjectPropertiesEventSink->OnProjectPropertiesChanged();
-			}
-			pp++;
+		   auto callback = sink.lock();
+           callback->OnProjectPropertiesChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -80,7 +76,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIEnvironmentEventSink
 template <class T>
-class CProxyIEnvironmentEventSink : public IConnectionPointImpl<T, &IID_IEnvironmentEventSink, CComDynamicUnkArray>
+class CProxyIEnvironmentEventSink : public WBFL::EAF::EventSinkManager<IEnvironmentEventSink>
 {
 public:
 
@@ -96,21 +92,38 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for(auto& [id,sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IEnvironmentEventSink* pIEnvironmentEventSink = reinterpret_cast<IEnvironmentEventSink*>(*pp);
-				ret = pIEnvironmentEventSink->OnExposureConditionChanged();
-			}
-			pp++;
-		}
-		pT->Unlock();
+		   auto callback = sink.lock();
+		   ret = callback->OnExposureConditionChanged();
+        }
+		//pT->Unlock();
 		return ret;
 	}
+
+	HRESULT Fire_ClimateConditionChanged()
+	{
+		T* pT = (T*)this;
+
+		if (0 < pT->m_EventHoldCount)
+		{
+			WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents, EVT_CLIMATECONDITION);
+			return S_OK;
+		}
+
+		//pT->Lock();
+		HRESULT ret = S_OK;
+		for(auto& [id,sink] : this->m_EventSinks)
+		{
+		   auto callback = sink.lock();
+		   callback->OnClimateConditionChanged();
+		}
+		//pT->Unlock();
+		return ret;
+	}
+
 	HRESULT Fire_RelHumidityChanged()
 	{
 		T* pT = (T*)this;
@@ -121,19 +134,14 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for(auto& [id,sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IEnvironmentEventSink* pIEnvironmentEventSink = reinterpret_cast<IEnvironmentEventSink*>(*pp);
-				ret = pIEnvironmentEventSink->OnRelHumidityChanged();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnRelHumidityChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -142,7 +150,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIBridgeDescriptionEventSink
 template <class T>
-class CProxyIBridgeDescriptionEventSink : public IConnectionPointImpl<T, &IID_IBridgeDescriptionEventSink, CComDynamicUnkArray>
+class CProxyIBridgeDescriptionEventSink : public WBFL::EAF::EventSinkManager<IBridgeDescriptionEventSink>
 {
 public:
 
@@ -165,17 +173,12 @@ public:
 
       pT->ValidateBridgeModel();
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for(auto& [id,sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnBridgeChanged(pHint);
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnBridgeChanged(pHint);
 		}
       if ( pHint )
       {
@@ -183,7 +186,7 @@ public:
          pHint = nullptr;
       }
 
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -197,19 +200,14 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnGirderFamilyChanged();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnGirderFamilyChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -235,19 +233,14 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnGirderChanged(girderKey,lHint);
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnGirderChanged(girderKey,lHint);
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -261,19 +254,14 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnConstructionLoadChanged();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnConstructionLoadChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
    }
 
@@ -287,19 +275,14 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnLiveLoadChanged();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnLiveLoadChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -314,19 +297,14 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnLiveLoadNameChanged(strOldName,strNewName);
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnLiveLoadNameChanged(strOldName,strNewName);
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -335,7 +313,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyISpecificationEventSink
 template <class T>
-class CProxyISpecificationEventSink : public IConnectionPointImpl<T, &IID_ISpecificationEventSink, CComDynamicUnkArray>
+class CProxyISpecificationEventSink : public WBFL::EAF::EventSinkManager<ISpecificationEventSink>
 {
 public:
 
@@ -351,19 +329,14 @@ public:
          return S_OK;
       }
 
-		pT->Lock();
+		//pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				ISpecificationEventSink* pISpecificationEventSink = reinterpret_cast<ISpecificationEventSink*>(*pp);
-				ret = pISpecificationEventSink->OnSpecificationChanged();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnSpecificationChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -377,19 +350,14 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				ISpecificationEventSink* pISpecificationEventSink = reinterpret_cast<ISpecificationEventSink*>(*pp);
-				ret = pISpecificationEventSink->OnAnalysisTypeChanged();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnAnalysisTypeChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -398,7 +366,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIRatingSpecificationEventSink
 template <class T>
-class CProxyIRatingSpecificationEventSink : public IConnectionPointImpl<T, &IID_IRatingSpecificationEventSink, CComDynamicUnkArray>
+class CProxyIRatingSpecificationEventSink : public WBFL::EAF::EventSinkManager<IRatingSpecificationEventSink>
 {
 public:
 
@@ -415,19 +383,14 @@ public:
          return S_OK;
       }
 
-		pT->Lock();
+		//pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IRatingSpecificationEventSink* pEventSink = reinterpret_cast<IRatingSpecificationEventSink*>(*pp);
-				ret = pEventSink->OnRatingSpecificationChanged();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnRatingSpecificationChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -435,7 +398,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyILibraryConflictEventSink
 template <class T>
-class CProxyILibraryConflictEventSink : public IConnectionPointImpl<T, &IID_ILibraryConflictEventSink, CComDynamicUnkArray>
+class CProxyILibraryConflictEventSink : public WBFL::EAF::EventSinkManager<ILibraryConflictEventSink>
 {
 public:
 
@@ -451,19 +414,14 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				ILibraryConflictEventSink* pILibraryConflictEventSink = reinterpret_cast<ILibraryConflictEventSink*>(*pp);
-				ret = pILibraryConflictEventSink->OnLibraryConflictResolved();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnLibraryConflictResolved();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -471,7 +429,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyILoadModifiersEventSink
 template <class T>
-class CProxyILoadModifiersEventSink : public IConnectionPointImpl<T, &IID_ILoadModifiersEventSink, CComDynamicUnkArray>
+class CProxyILoadModifiersEventSink : public WBFL::EAF::EventSinkManager<ILoadModifiersEventSink>
 {
 public:
 
@@ -487,19 +445,14 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				ILoadModifiersEventSink* pEventSink = reinterpret_cast<ILoadModifiersEventSink*>(*pp);
-				ret = pEventSink->OnLoadModifiersChanged();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnLoadModifiersChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -507,7 +460,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIEventsEventSink
 template <class T>
-class CProxyIEventsEventSink : public IConnectionPointImpl<T, &IID_IEventsSink, CComDynamicUnkArray>
+class CProxyIEventsEventSink : public WBFL::EAF::EventSinkManager<IEventsSink>
 {
 public:
 
@@ -517,19 +470,14 @@ public:
 	{
 		T* pT = (T*)this;
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
-				ret = pEventSink->OnHoldEvents();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnHoldEvents();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -537,19 +485,14 @@ public:
 	{
 		T* pT = (T*)this;
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
-				ret = pEventSink->OnFirePendingEvents();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnFirePendingEvents();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -557,19 +500,14 @@ public:
 	{
 		T* pT = (T*)this;
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
-				ret = pEventSink->OnCancelPendingEvents();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnCancelPendingEvents();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -578,7 +516,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyILossParametersEventSink
 template <class T>
-class CProxyILossParametersEventSink : public IConnectionPointImpl<T, &IID_ILossParametersEventSink, CComDynamicUnkArray>
+class CProxyILossParametersEventSink : public WBFL::EAF::EventSinkManager<ILossParametersEventSink>
 {
 public:
 
@@ -594,19 +532,14 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, sink] : this->m_EventSinks)
 		{
-			if (*pp != nullptr)
-			{
-				ILossParametersEventSink* pEventSink = reinterpret_cast<ILossParametersEventSink*>(*pp);
-				ret = pEventSink->OnLossParametersChanged();
-			}
-			pp++;
+		   auto callback = sink.lock();
+		   callback->OnLossParametersChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };

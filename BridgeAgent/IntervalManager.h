@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include <PgsExt\TimelineManager.h>
-#include <PgsExt\PointLoadData.h> // for UserLoads
+#include <PsgLib\TimelineManager.h>
+#include <PsgLib\PointLoadData.h> // for UserLoads
 
 #include <IFace\BeamFactory.h>
 
@@ -36,7 +36,7 @@ class CIntervalManager
 public:
    CIntervalManager();
 
-   void Init(IBroker* pBroker, StatusGroupIDType statusGroupID);
+   void Init(StatusGroupIDType statusGroupID);
 
    // creates the time step intervals from the event model
    void BuildIntervals(const CTimelineManager* pTimelineMgr);
@@ -211,7 +211,6 @@ public:
 
 
 protected:
-   IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidTimelineError;
 

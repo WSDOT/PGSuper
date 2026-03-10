@@ -22,22 +22,18 @@
 
 // TotalPrestressLossTable.cpp : Implementation of CTotalPrestressLossTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "TotalPrestressLossTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\InterfaceShearRequirements.h>
-#include <PsgLib\SpecLibraryEntry.h>
 #include <IFace\Intervals.h>
-#include <IFace\PrestressForce.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PsgLib\SpecLibraryEntry.h>
+#include <psgLib/StrandData.h>
 
-CTotalPrestressLossTable::CTotalPrestressLossTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CTotalPrestressLossTable::CTotalPrestressLossTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -57,7 +53,7 @@ rptRcTable(NumColumns,0)
    scalar.SetTolerance(1.0e-6);
 }
 
-CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
@@ -152,7 +148,7 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
    return table;
 }
 
-void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;

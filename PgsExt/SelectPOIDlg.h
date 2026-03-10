@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 // CSelectPOIDlg dialog
 

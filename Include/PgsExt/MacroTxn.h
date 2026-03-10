@@ -22,11 +22,8 @@
 
 #pragma once
 
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
-
-#include <EAF\EAFMacroTxn.h>
+#include <EAF\MacroTxn.h>
 
 /*****************************************************************************
 CLASS 
@@ -39,10 +36,10 @@ DESCRIPTION
    A macro transaction is a collection of other transactions.
 
 KEYWORDS
-   CEAFTransaction, CEAFTxnManager
+   WBFL::EAF::Transaction, WBFL::EAF::TxnManager
 *****************************************************************************/
 
-class PGSEXTCLASS pgsMacroTxn : public CEAFMacroTxn
+class PGSEXTCLASS pgsMacroTxn : public WBFL::EAF::MacroTxn
 {
 public:
    pgsMacroTxn() = default;
@@ -53,5 +50,5 @@ public:
    virtual bool Execute() override;
    virtual void Undo() override;
 
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const override;
 };

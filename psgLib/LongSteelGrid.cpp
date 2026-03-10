@@ -24,8 +24,8 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
-#include <psgLib\ShearSteelPage.h>
+#include <PsgLib\PsgLib.h>
+#include <PsgLib\ShearSteelPage.h>
 #include "LongSteelGrid.h"
 #include "LongSteelPage.h"
 #include <system\tokenizer.h>
@@ -33,11 +33,6 @@
 #include <EAF\EAFApp.h>
 #include <LRFD\RebarPool.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CLongSteelGrid, CS_DBLCLKS, 0, 0, 0);
 

@@ -25,11 +25,6 @@
 #include "PGSProjectImporterMgrBase.h"
 #include <EAF\EAFApp.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CPGSProjectImporterMgrBase::CPGSProjectImporterMgrBase()
 {
@@ -41,65 +36,35 @@ CPGSProjectImporterMgrBase::~CPGSProjectImporterMgrBase()
 
 bool CPGSProjectImporterMgrBase::LoadImporters()
 {
-   USES_CONVERSION;
-
    // Loads all of the registered project importers
-
-   CComPtr<ICatRegister> pICatReg;
-   HRESULT hr = pICatReg.CoCreateInstance(CLSID_StdComponentCategoriesMgr);
-   if ( FAILED(hr) )
-   {
-      AfxMessageBox(_T("Failed to create the component category manager"));
-      return false;
-   }
-
-   CComQIPtr<ICatInformation> pICatInfo(pICatReg);
-   CComPtr<IEnumCLSID> pIEnumCLSID;
-
-   const int nID = 1;
-   CATID ID[nID];
-   ID[0] = GetProjectImporterCATID();
-
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
-
-   // load all importers
    CEAFApp* pApp = EAFGetApp();
    CString strAppName = GetAppName();
 
-   const int nCLSID = 5;
-   CLSID clsid[nCLSID]; 
-   ULONG nFetched = 0;
-   while ( SUCCEEDED(pIEnumCLSID->Next(nCLSID,clsid,&nFetched)) && 0 < nFetched)
+   auto components = WBFL::EAF::ComponentManager::GetInstance().GetComponents(GetProjectImporterCATID());
+   for (const auto& component : components)
    {
-      for ( ULONG i = 0; i < nFetched; i++ )
+      LPOLESTR pszCLSID;
+      ::StringFromCLSID(component.clsid, &pszCLSID);
+      CString strState = pApp->GetProfileString(_T("Plugins"), OLE2T(pszCLSID), _T("Enabled"));
+
+      if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         LPOLESTR pszCLSID;
-         ::StringFromCLSID(clsid[i],&pszCLSID);
-         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Enabled"));
-
-         if ( strState.CompareNoCase(_T("Enabled")) == 0 )
+         auto importer = WBFL::EAF::ComponentManager::GetInstance().CreateComponent<PGS::IProjectImporter>(component);
+         if (importer)
          {
-            CComPtr<IPGSProjectImporter> importer;
-            importer.CoCreateInstance(clsid[i]);
+            Record record;
+            record.clsid = component.clsid;
+            record.importer = importer;
 
-            if ( !importer )
+            m_ImporterRecords.insert(record);
+         }
+         else
+         {
+            CString strMsg;
+            strMsg.Format(_T("Failed to load %s %s Project Importer plug in.\n\nWould you like to disable this plug-in?"), strAppName, component.name.c_str());
+            if (AfxMessageBox(strMsg, MB_YESNO | MB_ICONQUESTION) == IDYES)
             {
-               LPOLESTR pszUserType;
-               OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
-               CString strMsg;
-               strMsg.Format(_T("Failed to load %s %s Project Importer plug in.\n\nWould you like to disable this plug-in?"),strAppName,OLE2T(pszUserType));
-               if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
-               {
-                  pApp->WriteProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Disabled"));
-               }
-            }
-            else
-            {
-               Record record;
-               record.clsid    = clsid[i];
-               record.Importer = importer;
-
-               m_ImporterRecords.insert( record );
+               pApp->WriteProfileString(_T("Plugins"), OLE2T(pszCLSID), _T("Disabled"));
             }
          }
          ::CoTaskMemFree((void*)pszCLSID);
@@ -119,38 +84,37 @@ IndexType CPGSProjectImporterMgrBase::GetImporterCount() const
    return m_ImporterRecords.size();
 }
 
-void CPGSProjectImporterMgrBase::GetImporter(IndexType idx,IPGSProjectImporter** ppImporter)
+std::shared_ptr<PGS::IProjectImporter> CPGSProjectImporterMgrBase::GetImporter(IndexType idx) const
 {
-   std::set<Record>::iterator iter;
    IndexType count = 0;
-   for ( iter = m_ImporterRecords.begin(); iter != m_ImporterRecords.end(); iter++, count++ )
+   for(const auto& record : m_ImporterRecords)
    {
       if ( count == idx )
       {
-         (*ppImporter) = iter->Importer;
-         (*ppImporter)->AddRef();
-         break;
+         return record.importer;
       }
+      count++;
    }
+   return nullptr;
 }
 
-void CPGSProjectImporterMgrBase::GetImporter(const CLSID& clsid,IPGSProjectImporter** ppImporter)
+std::shared_ptr<PGS::IProjectImporter> CPGSProjectImporterMgrBase::GetImporter(const CLSID& clsid) const
 {
    Record record;
    record.clsid = clsid;
-   std::set<Record>::iterator found = m_ImporterRecords.find(record);
+   auto found = m_ImporterRecords.find(record);
    if ( found != m_ImporterRecords.end() )
    {
-      (*ppImporter) = found->Importer;
-      (*ppImporter)->AddRef();
+      return found->importer;
    }
+   return nullptr;
 }
 
-void CPGSProjectImporterMgrBase::AddImporter(const CLSID& clsid,IPGSProjectImporter* pImporter)
+void CPGSProjectImporterMgrBase::AddImporter(const CLSID& clsid,std::shared_ptr<PGS::IProjectImporter>& pImporter)
 {
    Record record;
    record.clsid    = clsid;
-   record.Importer = pImporter;
+   record.importer = pImporter;
    m_ImporterRecords.insert(record);
 }
 
@@ -158,7 +122,7 @@ void CPGSProjectImporterMgrBase::RemoveImporter(const CLSID& clsid)
 {
    Record record;
    record.clsid = clsid;
-   std::set<Record>::iterator found = m_ImporterRecords.find(record);
+   auto found = m_ImporterRecords.find(record);
    if( found != m_ImporterRecords.end() )
    {
       m_ImporterRecords.erase(found);

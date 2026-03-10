@@ -23,12 +23,12 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
-interface IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
+class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
+namespace PGS {namespace Library{class DifferenceItem;};};
 
 /// @brief Create for girder end zones at prestress release.
 /// This is the splitting and confinement criteria of LRFD 5.9.4 (pre2017: 5.10.10)
@@ -38,14 +38,15 @@ struct PSGLIBCLASS EndZoneCriteria
    bool bCheckConfinement = true;
    bool bDesignSplitting = true;
    bool bDesignConfinement = true;
+   bool bCheckHorizTensionTie = true; // new criteria for LRFD 10th Edition, 5.9.4.4.3
 
    Float64 SplittingZoneLengthFactor = 4.0; ///< Splitting zone length h/n (h/4 or h/5) per LRFD 5.9.4.4.1 (pre2017: 5.10.10.1)
 
    bool operator==(const EndZoneCriteria& other) const;
    bool operator!=(const EndZoneCriteria& other) const;
-   bool Compare(const EndZoneCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+   bool Compare(const EndZoneCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);

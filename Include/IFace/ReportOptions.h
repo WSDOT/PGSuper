@@ -35,9 +35,10 @@ DESCRIPTION
 // {F840E147-8C06-402B-A02E-EBC0C577EA76}
 DEFINE_GUID(IID_IReportOptions,
    0xf840e147,0x8c06,0x402b,0xa0,0x2e,0xeb,0xc0,0xc5,0x77,0xea,0x76);
-struct __declspec(uuid("{F840E147-8C06-402B-A02E-EBC0C577EA76}")) IReportOptions;
-interface IReportOptions : IUnknown
+class __declspec(uuid("{F840E147-8C06-402B-A02E-EBC0C577EA76}")) IReportOptions;
+class IReportOptions
 {
+public:
    // global option to include span and girder information when reporting POI locations
    virtual bool IncludeSpanAndGirder4Pois(const CGirderKey& rKey) = 0;
 };

@@ -29,7 +29,7 @@
 // BridgeDescDeckRebarGrid.h : header file
 //
 
-#include <PgsExt\DeckRebarData.h>
+#include <PsgLib\DeckRebarData.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDeckRebarGrid window

@@ -25,6 +25,7 @@ Tension stress check failed for Service I Limit State in Interval 10 Erect Segme
 Tension stress check failed for Service I Limit State in Interval 14 Cast closure joint and Cast Deck for Segment 4
 Tension stress check failed for Service III Limit State in Interval 27 Load Rating for Deck
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
+Minimum deck reinforcement in negative moment region failed.
 Hauling checks failed for Segment 2.
 Hauling checks failed for Segment 3.
 Hauling checks failed for Segment 4.
@@ -53,12 +54,14 @@ Compression stress check failed for Service I Limit State in Interval 17 Stress 
 Compression stress check failed for Service I Limit State in Interval 20 Install Railing System and Overlay for Segment 1
 Compression stress check failed for Service I Limit State in Interval 27 Load Rating for Segment 1
 Principal tension stress in webs stress check failed for Segment 1
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 2
 Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 2
 Tension stress check failed for Service I Limit State in Interval 10 Erect Segments for Segment 2
 Tension stress check failed for Service I Limit State in Interval 14 Cast closure joint and Cast Deck for Segment 2
 Compression stress check failed for Service I Limit State in Interval 17 Stress Tendons, Remove Temporary Support for Segment 2
 Compression stress check failed for Service I Limit State in Interval 20 Install Railing System and Overlay for Segment 2
 Compression stress check failed for Service I Limit State in Interval 27 Load Rating for Segment 2
+Tension stress check failed for Service I Limit State in Interval 2 Prestress Release for Segment 3
 Tension stress check failed for Service I Limit State in Interval 4 Place segments into storage for Segment 3
 Tension stress check failed for Service I Limit State in Interval 10 Erect Segments for Segment 3
 Tension stress check failed for Service I Limit State in Interval 14 Cast closure joint and Cast Deck for Segment 3
@@ -74,9 +77,20 @@ Principal tension stress in webs stress check failed for Segment 4
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Stirrup detailing checks failed for the Strength I Limit State.
+Minimum deck reinforcement in negative moment region failed.
 Hauling checks failed for Segment 2.
 Hauling checks failed for Segment 3.
 Hauling checks failed for Segment 4.
 Bottom flange clearance check failed
+Duct Size check failed for Duct 1.
+Duct Size check failed for Duct 2.
+Duct Size check failed for Duct 3.
+Duct Size check failed for Duct 4.
+Duct Size check failed for Duct 5.
+Duct Size check failed for Duct 6.
+Duct Size check failed for Duct 7.
+Duct Size check failed for Duct 8.
+Duct Size check failed for Duct 9.
+Duct Size check failed for Duct 10.
 
 

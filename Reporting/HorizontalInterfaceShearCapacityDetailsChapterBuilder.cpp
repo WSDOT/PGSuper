@@ -27,17 +27,18 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PsgLib\ShearData.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\Project.h>
-#include <IFace\Bridge.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
+#include <IFace/PointOfInterest.h>
 
 #include <Reporter\ReportingUtils.h>
 
@@ -45,20 +46,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CHorizontalInterfaceShearCapacityDetailsChapterBuilder
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CHorizontalInterfaceShearCapacityDetailsChapterBuilder::CHorizontalInterfaceShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -66,8 +53,6 @@ CPGSuperChapterBuilder(bSelect)
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CHorizontalInterfaceShearCapacityDetailsChapterBuilder::GetName() const
 {
    return TEXT("Horizontal Interface Shear Capacity Details");
@@ -78,17 +63,17 @@ rptChapter* CHorizontalInterfaceShearCapacityDetailsChapterBuilder::Build(const 
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -198,9 +183,4 @@ rptChapter* CHorizontalInterfaceShearCapacityDetailsChapterBuilder::Build(const 
    } // next group
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CHorizontalInterfaceShearCapacityDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CHorizontalInterfaceShearCapacityDetailsChapterBuilder>(m_bDesign,m_bRating);
 }

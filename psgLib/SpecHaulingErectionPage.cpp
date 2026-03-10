@@ -24,19 +24,12 @@
 //
 
 #include "stdafx.h"
-#include "psgLib\psglib.h"
 #include "SpecHaulingErectionPage.h"
 #include "SpecMainSheet.h"
+#include <PsgLib/HaulingCriteria.h>
 #include <EAF\EAFDocument.h>
-#include <psgLib/HaulingCriteria.h>
-
 #include <MFCTools\MFCTools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecHaulingErectionPage property page

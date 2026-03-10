@@ -23,13 +23,10 @@
 #include "stdafx.h"
 #include "EditSpanLength.h"
 #include "PGSuperDoc.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditSpanLength::txnEditSpanLength(SpanIndexType spanIdx,Float64 oldSpanLength,Float64 newSpanLength)
 {
@@ -53,7 +50,7 @@ void txnEditSpanLength::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditSpanLength::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditSpanLength::CreateClone() const
 {
    return std::make_unique<txnEditSpanLength>(m_SpanIdx,m_SpanLength[0],m_SpanLength[1]);
 }
@@ -77,8 +74,8 @@ bool txnEditSpanLength::IsRepeatable() const
 
 void txnEditSpanLength::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done

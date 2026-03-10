@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -67,9 +67,9 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual void Build(IBroker* pBroker, rptChapter* pChapter,
+   virtual void Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating,bool bGirderStresses) const;
    // GROUP: ACCESS
@@ -81,23 +81,23 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
-   virtual void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+   virtual void BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating,bool bGirderStresses) const;
 
    //------------------------------------------------------------------------
-   virtual void BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+   virtual void BuildCombinedLiveTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       IntervalIndexType intervalIdx, pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating,bool bGirderStresses) const;
 
    //------------------------------------------------------------------------
-   virtual void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+   virtual void BuildLimitStateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IntervalIndexType intervalIdx,
                       pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating,bool bGirderStresses) const;
 

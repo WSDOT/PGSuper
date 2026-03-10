@@ -28,7 +28,7 @@ class CPGSpliceDocTemplate : public CPGSuperDocTemplateBase
 {
 public:
    CPGSpliceDocTemplate(UINT nIDResource,
-                       IEAFCommandCallback* pCallback,
+                       std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
                        CRuntimeClass* pDocClass,
                        CRuntimeClass* pFrameClass,
                        CRuntimeClass* pViewClass,

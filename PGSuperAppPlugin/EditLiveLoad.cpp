@@ -24,13 +24,9 @@
 #include "EditLiveLoad.h"
 #include "PGSuperDoc.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditLiveLoad::txnEditLiveLoad(const txnEditLiveLoadData& oldDesign,const txnEditLiveLoadData& newDesign,
                                  const txnEditLiveLoadData& oldFatigue,const txnEditLiveLoadData& newFatigue,
@@ -62,7 +58,7 @@ void txnEditLiveLoad::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditLiveLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditLiveLoad::CreateClone() const
 {
    return std::make_unique<txnEditLiveLoad>(m_Design[0],m_Design[1],m_Fatigue[0],m_Fatigue[1],m_Permit[0],m_Permit[1],m_EventIndex[0],m_EventIndex[1]);
 }
@@ -84,8 +80,8 @@ bool txnEditLiveLoad::IsRepeatable() const
 
 void txnEditLiveLoad::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2( pBroker, ILiveLoads, pLiveLoad );
    GET_IFACE2( pBroker, IEvents,    pEvents   );

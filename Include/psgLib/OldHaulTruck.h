@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class HaulTruckLibraryEntry;
 

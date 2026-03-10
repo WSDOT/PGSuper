@@ -30,7 +30,7 @@ class REPORTINGCLASS CCopyPierPropertiesReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CCopyPierPropertiesReportSpecificationBuilder(IBroker* pBroker);
+   CCopyPierPropertiesReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CCopyPierPropertiesReportSpecificationBuilder(void);
    
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;

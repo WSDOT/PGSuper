@@ -20,14 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// ElasticShorteningTable.h : Declaration of the CElasticShorteningTable
+#pragma once
 
-#ifndef __ELASTICSHORTENINGTABLE_H_
-#define __ELASTICSHORTENINGTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 
 class WBFL::LRFD::Losses;
@@ -37,11 +34,11 @@ class WBFL::LRFD::Losses;
 class CElasticShorteningTable : public rptRcTable
 {
 public:
-   static CElasticShorteningTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands, const LOSSDETAILS* pDetails, IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   static CElasticShorteningTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands, const LOSSDETAILS* pDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CElasticShorteningTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CElasticShorteningTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    bool m_bTemporaryStrands;
    bool m_bIsPrismatic;
@@ -57,5 +54,3 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
 };
-
-#endif //__ELASTICSHORTENINGTABLE_H_

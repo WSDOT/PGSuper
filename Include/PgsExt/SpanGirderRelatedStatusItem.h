@@ -26,13 +26,13 @@
 // SYSTEM INCLUDES
 //
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\Keys.h>
-#include <EAF\EAFStatusItem.h>
+#include <PsgLIb\Keys.h>
+#include <EAF\StatusItem.h>
 
-// Special CEAFStatusItem that is directly related to a given span(s)/girders(s)
-// This class allows reporting and messaging routines to filter CEAFStatusItem's
+// Special WBFL::EAF::StatusItem that is directly related to a given span(s)/girders(s)
+// This class allows reporting and messaging routines to filter WBFL::EAF::StatusItem's
 //
-class PGSEXTCLASS pgsSpanGirderRelatedStatusItem : public CEAFStatusItem
+class PGSEXTCLASS pgsSpanGirderRelatedStatusItem : public WBFL::EAF::StatusItem
 {
 public:
    pgsSpanGirderRelatedStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,

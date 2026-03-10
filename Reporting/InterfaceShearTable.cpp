@@ -28,6 +28,8 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -38,11 +40,6 @@
 
 #include <LRFD\ConcreteUtil.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -57,9 +54,9 @@ CInterfaceShearTable::~CInterfaceShearTable()
 {
 }
 
-void CInterfaceShearTable::Build( IBroker* pBroker, rptChapter* pChapter,
+void CInterfaceShearTable::Build( std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                   const pgsGirderArtifact* pGirderArtifact,
-                                  IEAFDisplayUnits* pDisplayUnits,
+                                  std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                   IntervalIndexType intervalIdx,
                                   pgsTypes::LimitState ls) const
 {

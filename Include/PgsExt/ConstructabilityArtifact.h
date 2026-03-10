@@ -20,28 +20,10 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_CONSTRUCTABILITYARTIFACT_H_
-#define INCLUDED_PGSEXT_CONSTRUCTABILITYARTIFACT_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
-#endif
-
-#include <PgsExt\PointOfInterest.h>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
+#include <PsgLib\PointOfInterest.h>
 
 /*****************************************************************************
 CLASS 
@@ -74,34 +56,18 @@ public:
    // Status for Haunch geometry check 
    enum HaunchGeometryStatusType { hgNA, hgNAPrintOnly, hgPass, hgInsufficient, hgExcessive };
 
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    pgsSegmentConstructabilityArtifact(const CSegmentKey& segmentKey);
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsSegmentConstructabilityArtifact(const pgsSegmentConstructabilityArtifact& rOther);
+   pgsSegmentConstructabilityArtifact(const pgsSegmentConstructabilityArtifact& rOther) = default;
+   ~pgsSegmentConstructabilityArtifact() = default;
 
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsSegmentConstructabilityArtifact();
+   pgsSegmentConstructabilityArtifact& operator = (const pgsSegmentConstructabilityArtifact& rOther) = default;
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   pgsSegmentConstructabilityArtifact& operator = (const pgsSegmentConstructabilityArtifact& rOther);
-
-   // GROUP: OPERATIONS
-
-   // GROUP: ACCESS
    SegmentIndexType GetSegment() const
    {
       return m_SegmentKey.segmentIndex;
    }
 
-   //------------------------------------------------------------------------
    // Slab offset check along girder
    void SetSlabOffsetApplicability(bool bSet);
    bool IsSlabOffsetApplicable() const;
@@ -187,24 +153,7 @@ public:
 
    bool Passed() const;
 
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const pgsSegmentConstructabilityArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsSegmentConstructabilityArtifact& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
    CSegmentKey m_SegmentKey;
    Float64 m_ProvidedStart; // The actual slab offsets
    Float64 m_ProvidedEnd;
@@ -248,12 +197,6 @@ private:
    Float64 m_MinimumHaunchStation;
    Float64 m_MinimumHaunchOffset;
    Float64 m_MinimumHaunchDepth; // minimum haunch depth along girder 
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
 
 
@@ -264,24 +207,11 @@ public:
    // Applicability for haunch check at CL bearing
    enum HaunchBearingCLApplicabilityType { hbcAppYes,hbcAppNA,hbcAppNAPrintOnly };
 
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    pgsConstructabilityArtifact();
+   pgsConstructabilityArtifact(const pgsConstructabilityArtifact& rOther) = default;
+   ~pgsConstructabilityArtifact() = default;
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsConstructabilityArtifact(const pgsConstructabilityArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsConstructabilityArtifact();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   pgsConstructabilityArtifact& operator = (const pgsConstructabilityArtifact& rOther);
+   pgsConstructabilityArtifact& operator = (const pgsConstructabilityArtifact& rOther) = default;
 
    // Segment artifacts we own
    void ClearArtifacts();
@@ -321,35 +251,10 @@ public:
 
    bool Passed() const;
 
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const pgsConstructabilityArtifact& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsConstructabilityArtifact& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
    std::vector<pgsSegmentConstructabilityArtifact> m_SegmentArtifacts;
 
    std::vector<Float64> m_ProvidedAtBearingCLs{ 0.0,0.0 }; // The haunch depth at start and end of group
    Float64 m_RequiredAtBearingCLs; // The required haunch depth
    HaunchBearingCLApplicabilityType m_HaunchBearingCLApplicability;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_PGSEXT_CONSTRUCTABILITYARTIFACT_H_

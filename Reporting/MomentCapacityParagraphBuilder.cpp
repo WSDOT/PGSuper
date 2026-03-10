@@ -29,7 +29,8 @@
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
-
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
@@ -38,11 +39,6 @@
 #include <IFace\DistributionFactors.h>
 #include <IFace\Intervals.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CMomentCapacityParagraphBuilder::CMomentCapacityParagraphBuilder()
 {
@@ -58,8 +54,7 @@ CMomentCapacityParagraphBuilder::CMomentCapacityParagraphBuilder()
 rptParagraph* CMomentCapacityParagraphBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey = pGirderRptSpec->GetGirderKey();
 
    // Interfaces

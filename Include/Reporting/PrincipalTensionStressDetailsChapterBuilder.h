@@ -26,21 +26,10 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-interface IEAFDisplayUnits;
-
 class REPORTINGCLASS CPrincipalTensionStressDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
    CPrincipalTensionStressDetailsChapterBuilder(bool bSelect = true);
    virtual LPCTSTR GetName() const override;
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-protected:
-
-private:
-   // Prevent accidental copying and assignment
-   CPrincipalTensionStressDetailsChapterBuilder(const CPrincipalTensionStressDetailsChapterBuilder&) = delete;
-   CPrincipalTensionStressDetailsChapterBuilder& operator=(const CPrincipalTensionStressDetailsChapterBuilder&) = delete;
 };

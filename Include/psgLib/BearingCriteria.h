@@ -23,26 +23,42 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
+#include <PsgLib\SpecLibraryEntry.h>
+#include <EngTools/BearingDesignCriteria.h>
+
 
 class rptChapter;
-interface IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
+class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
 
-struct PSGLIBCLASS BearingCriteria
+struct PSGLIBCLASS BearingCriteria : public WBFL::EngTools::BearingProjectCriteria
 {
-   bool bAlertTaperedSolePlateRequirement = true; ///< Option to enable/disable tapered sole plat check
-   Float64 TaperedSolePlateInclinationThreshold = 0.01; ///< Inclination threshold per LRFD 14.8.2 (radian)
-   bool bUseImpactForBearingReactions = false; ///< See LRFD 14.4.1
+    BearingCriteria()
+    {
+        bRequiredIntermediateElastomerThickness = true;
+        bMinimumTotalBearingHeight = true;
+        bMinimumBearingEdgeToGirderEdgeDistance = true;
+        bMaximumBearingEdgeToGirderEdgeDistance = true;
+        bRequiredBearingEdgeToGirderEdgeDistance = false;
+        bMaximumTotalLoad = true;
+    }
 
-   bool operator==(const BearingCriteria& other) const;
-   bool operator!=(const BearingCriteria& other) const;
-   bool Compare(const BearingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+    bool bCheck = true;
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+    bool bAlertTaperedSolePlateRequirement = true; ///< Option to enable/disable tapered sole plate check
+    Float64 TaperedSolePlateInclinationThreshold = 0.01; ///< Inclination threshold per LRFD 14.8.2 (radian)
+    bool bUseImpactForBearingReactions = false; ///< See LRFD 14.4.1
 
-   void Save(WBFL::System::IStructuredSave* pSave) const;
-   void Load(WBFL::System::IStructuredLoad* pLoad);
+
+
+    bool operator==(const BearingCriteria& other) const;
+    bool operator!=(const BearingCriteria& other) const;
+    bool Compare(const BearingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+
+    void Save(WBFL::System::IStructuredSave* pSave) const;
+    void Load(WBFL::System::IStructuredLoad* pLoad);
 };
 

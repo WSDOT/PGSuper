@@ -27,77 +27,50 @@
 #include "TogaDisplayObjectFactory.h"
 #include "TxDOTOptionalDesignDoc.h"
 
-#include "mfcdual.h"
 #include "TogaSectionCutDisplayImpl.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CTogaDisplayObjectFactory
+#include <DManip/DisplayObjectFactoryImpl.h>
+#include <DManip/PointDisplayObjectImpl.h>
+#include <DManip/DragDataImpl.h>
 
 CTogaDisplayObjectFactory::CTogaDisplayObjectFactory(CTxDOTOptionalDesignDoc* pDoc)
 {
    m_pDoc = pDoc;
-   ::CoCreateInstance(CLSID_DisplayObjectFactory,nullptr,CLSCTX_ALL,IID_iDisplayObjectFactory,(void**)&m_Factory);
+   m_Factory = WBFL::DManip::DisplayObjectFactory::Create();
 }
-
-CTogaDisplayObjectFactory::~CTogaDisplayObjectFactory()
-{
-}
-
-BEGIN_INTERFACE_MAP(CTogaDisplayObjectFactory,CCmdTarget)
-   INTERFACE_PART(CTogaDisplayObjectFactory,IID_iDisplayObjectFactory,Factory)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CTogaDisplayObjectFactory,Factory);
-
 
 /////////////////////////////////////////////////////////////////////////////
 // CTogaDisplayObjectFactory message handlers
-STDMETHODIMP_(void) CTogaDisplayObjectFactory::XFactory::Create(CLIPFORMAT cfFormat,COleDataObject* pDataObject,iDisplayObject** dispObj)
+std::shared_ptr<WBFL::DManip::iDisplayObject> CTogaDisplayObjectFactory::Create(CLIPFORMAT cfFormat,COleDataObject* pDataObject) const
 {
-   METHOD_PROLOGUE(CTogaDisplayObjectFactory,Factory);
-
    if ( cfFormat == CTogaSectionCutDisplayImpl::ms_Format )
    {
-      CComPtr<iPointDisplayObject> doSectionCut;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doSectionCut);
+      auto doSectionCut = WBFL::DManip::PointDisplayObject::Create();
+      doSectionCut->SetSelectionType(WBFL::DManip::SelectionType::All);
 
-      doSectionCut->SetSelectionType(stAll);
+      auto pDisplayImpl = std::make_shared<CTogaSectionCutDisplayImpl>();
+      auto strategy = std::dynamic_pointer_cast<WBFL::DManip::iDrawPointStrategy>(pDisplayImpl);
+      doSectionCut->SetDrawingStrategy(strategy);
 
-      CTogaSectionCutDisplayImpl* pDisplayImpl = new CTogaSectionCutDisplayImpl();
-      IUnknown* unk = pDisplayImpl->GetInterface(&IID_iDrawPointStrategy);
-      doSectionCut->SetDrawingStrategy((iDrawPointStrategy*)unk);
+      auto events = std::dynamic_pointer_cast<WBFL::DManip::iDisplayObjectEvents>(pDisplayImpl);
+      doSectionCut->RegisterEventSink(events);
 
-      unk = pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents);
-      doSectionCut->RegisterEventSink((iDisplayObjectEvents*)unk);
-
-      unk = pDisplayImpl->GetInterface(&IID_IUnknown);
-      CComQIPtr<iDragData,&IID_iDragData> dd(unk);
-      CComQIPtr<iDraggable,&IID_iDraggable> draggable(doSectionCut);
+      auto dd = std::dynamic_pointer_cast<WBFL::DManip::iDragData>(pDisplayImpl);
+      auto draggable = std::dynamic_pointer_cast<WBFL::DManip::iDraggable>(doSectionCut);
       draggable->SetDragData(dd);
 
       if ( pDataObject )
       {
          // Initialize from data object
-         CComPtr<iDragDataSource> source;
-         ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+         auto source = WBFL::DManip::DragDataSource::Create();
          source->SetDataObject(pDataObject);
 
          // rebuild the display object from the data source
          draggable->OnDrop(source);
       }
 
-      (*dispObj) = doSectionCut;
-      (*dispObj)->AddRef();
-   }
-   else
-   {
-      pThis->m_Factory->Create(cfFormat,pDataObject,dispObj);
+      return doSectionCut;
    }
 
+   return m_Factory->Create(cfFormat,pDataObject);
 }

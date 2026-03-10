@@ -20,34 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_EFFFLANGERENGINEER_H_
-#define INCLUDED_IFACE_EFFFLANGERENGINEER_H_
+#pragma once
 
-/*****************************************************************************
-COPYRIGHT
-   Copyright © 1999-2002
-   Washington State Department Of Transportation
-   All Rights Reserved
-*****************************************************************************/
-
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
 #include <Reporter\Reporter.h>
 
-// FORWARD DECLARATIONS
-//
-struct IBroker;
-struct IDisplayUnits;
-
-// MISCELLANEOUS
-//
-
+class IDisplayUnits;
 
 /*****************************************************************************
 INTERFACE
@@ -61,12 +38,13 @@ DESCRIPTION
 // {2E33078E-94F8-4655-8FFD-A18FFEEE7192}
 DEFINE_GUID(IID_IEffFlangeEngineer, 
 0x2e33078e, 0x94f8, 0x4655, 0x8f, 0xfd, 0xa1, 0x8f, 0xfe, 0xee, 0x71, 0x92);
-interface IEffFlangeEngineer : IUnknown
+class IEffFlangeEngineer
 {
+public:
    //---------------------------------------------------------------------
    // Associated a broker object with this object. Call only from
    // IBeamFactory at create time.
-   virtual void SetBroker(IBroker* pBroker,long agentID) = 0;
+   virtual void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker,long agentID) = 0;
 
    //---------------------------------------------------------------------
    // Returns the effective flange width
@@ -76,6 +54,4 @@ interface IEffFlangeEngineer : IUnknown
    // Creates a detailed report of the effective flange width computation
    virtual void BuildReport(Uint16 span,Uint16 gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit) = 0;
 };
-
-#endif // INCLUDED_IFACE_EFFFLANGERENGINEER_H_
 

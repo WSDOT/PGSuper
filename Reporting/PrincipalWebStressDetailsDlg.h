@@ -33,7 +33,7 @@ class CPrincipalWebStressDetailsDlg : public CDialog
 	DECLARE_DYNAMIC(CPrincipalWebStressDetailsDlg)
 
 public:
-	CPrincipalWebStressDetailsDlg(IBroker* pBroker,std::shared_ptr<CPrincipalWebStressDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,
+	CPrincipalWebStressDetailsDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CPrincipalWebStressDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,
                                  IntervalIndexType intervalIdx, bool bReportAxial, bool bReportShear, CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CPrincipalWebStressDetailsDlg();
 
@@ -52,7 +52,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    std::shared_ptr<CPrincipalWebStressDetailsReportSpecification> m_pPwsRptSpec;
 
    pgsPointOfInterest m_InitialPOI;

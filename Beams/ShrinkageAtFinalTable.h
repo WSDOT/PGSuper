@@ -20,29 +20,23 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// ShrinkageAtFinalTable.h : Declaration of the CShrinkageAtFinalTable
+#pragma once
 
-#ifndef __SHRINKAGEATFINALTABLE_H_
-#define __SHRINKAGEATFINALTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <Reporting\CreepCoefficientChapterBuilder.h>
-
+#include <PgsExt\ReportCreepCoefficient.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 
-/////////////////////////////////////////////////////////////////////////////
-// CShrinkageAtFinalTable
 class CShrinkageAtFinalTable : public rptRcTable
 {
 public:
-	static CShrinkageAtFinalTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-	void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CShrinkageAtFinalTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+	void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CShrinkageAtFinalTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CShrinkageAtFinalTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );
@@ -59,5 +53,3 @@ private:
    rptRcScalar strain;
    rptCreepCoefficient creep;
 };
-
-#endif //__SHRINKAGEATFINALTABLE_H_

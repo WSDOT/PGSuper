@@ -26,6 +26,7 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TxDataExporter.h"
 
+#include <IFace\Tools.h>
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
@@ -36,6 +37,7 @@
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <IFace\RatingSpecification.h>
 #include <PgsExt\RatingArtifact.h>
@@ -46,20 +48,15 @@
 #endif
 
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\GirderArtifactTool.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 //
 // Utility functions
 //
-static std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi, bool isIBeam, const pgsPointOfInterest& pmid);
+static std::_tstring MakeNonStandardStrandString(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi, bool isIBeam, const pgsPointOfInterest& pmid);
 static std::_tstring FractionalStrandSize(Float64 realSize); // Return fractional string for strand size
 
 //
@@ -70,7 +67,7 @@ class TxDOTDebondWriter : public TxDOTDebondTool
 {
 public:
 
-   TxDOTDebondWriter(const CSegmentKey& segmentKey, Float64 girderLength, IStrandGeometry* pStrandGeometry):
+   TxDOTDebondWriter(const CSegmentKey& segmentKey, Float64 girderLength, std::shared_ptr<IStrandGeometry> pStrandGeometry):
    TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry)
    {;}
 
@@ -86,7 +83,7 @@ private:
    void WriteRowData(CTxDataExporter& rDataExporter, const RowData& row,Float64 Hg, Uint32 currRowNum);
 };
 
-int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker* pBroker, const CGirderKey& girderKey, txcwStrandLayoutType strandLayout, txcwNsTableLayout tableLayout, bool isIBeam)
+int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, txcwStrandLayoutType strandLayout, txcwNsTableLayout tableLayout, bool isIBeam)
 {
 #if defined _DEBUG
    GET_IFACE2(pBroker,IDocumentType,pDocType);
@@ -393,18 +390,17 @@ Uint32 TxDOTDebondWriter::WriteDebondDataData(CTxDataExporter& rDataExporter, Ui
       }
       else if (m_Rows.empty())
       {
-         // row height, srands in row, and debonds in row are zero. Just write zeros to all fields
+         // row height, strands in row, and debonds in row are zero. Just write zeros to all fields
          WriteZeroDebondInfo(rDataExporter, currRow);
       }
       else
       {
          // A little checking
          pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
-         RowIndexType nrs = m_pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
+         RowIndexType nrs = m_pStrandGeometry.lock()->GetNumRowsWithStrand(poi, pgsTypes::Straight);
          ATLASSERT((RowIndexType)m_Rows.size() == nrs); // could have more rows than rows with debonded strands
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         auto pBroker = EAFGetBroker();
       
          GET_IFACE2(pBroker, IIntervals, pIntervals);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
@@ -531,7 +527,7 @@ void  TxDOTDebondWriter::WriteZeroDebondInfo(CTxDataExporter& rDataExporter, Uin
    rDataExporter.WriteIntToCell(1, _T("DB_15"), currRow, 0);
 }
 
-std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi, bool isIBeam, const pgsPointOfInterest& pmid)
+std::_tstring MakeNonStandardStrandString(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi, bool isIBeam, const pgsPointOfInterest& pmid)
 {
    std::_tostringstream os;
 

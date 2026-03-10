@@ -24,30 +24,15 @@
 #include <Reporting\CreepCoefficientChapterBuilder.h>
 #include <Reporting\LRFDCreepCoefficientChapterBuilder.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CCreepCoefficientChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CCreepCoefficientChapterBuilder::CCreepCoefficientChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CCreepCoefficientChapterBuilder::GetName() const
 {
    return TEXT("Creep Coefficient Details");
@@ -56,8 +41,7 @@ LPCTSTR CCreepCoefficientChapterBuilder::GetName() const
 rptChapter* CCreepCoefficientChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    //rptChapter* pChapter;
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
@@ -74,9 +58,4 @@ rptChapter* CCreepCoefficientChapterBuilder::Build(const std::shared_ptr<const W
       pChapter = CLRFDCreepCoefficientChapterBuilder().Build(pRptSpec,level);
    }
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCreepCoefficientChapterBuilder::Clone() const
-{
-   return std::make_unique<CCreepCoefficientChapterBuilder>();
 }

@@ -2,20 +2,15 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "TemporarySupportDlg.h"
 
 #include "PGSuperDocBase.h"
 
 #include <IFace\Project.h>
 
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CTemporarySupportDlg
@@ -197,7 +192,7 @@ void CTemporarySupportDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-std::unique_ptr<CEAFTransaction> CTemporarySupportDlg::GetExtensionPageTransaction()
+std::unique_ptr<WBFL::EAF::Transaction> CTemporarySupportDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
       return m_Macro.CreateClone();

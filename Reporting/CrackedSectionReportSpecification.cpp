@@ -24,15 +24,11 @@
 
 #include "StdAfx.h"
 #include <Reporting\CrackedSectionReportSpecification.h>
+
+#include <IFace/Tools.h>
 #include <IFace\PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CCrackedSectionReportSpecification::CCrackedSectionReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment) :
+CCrackedSectionReportSpecification::CCrackedSectionReportSpecification(const std::_tstring& strReportName, std::weak_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi, bool bPositiveMoment) :
    CPoiReportSpecification(strReportName,pBroker,poi)
 {
    m_bPositiveMoment = bPositiveMoment;
@@ -64,7 +60,7 @@ bool CCrackedSectionReportSpecification::IsValid() const
    {
       // next check if POI is in a valid range 
       // Note that this range needs to match the segments listed in CSelectCrackedSectionDlg::UpdatePOI
-      GET_IFACE(IPointOfInterest, pPoi);
+      GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
       const CSegmentKey& segmentKey = m_Poi.GetSegmentKey();
 
       PoiList vPoi = GetCrackedSectionPois(pPoi, segmentKey);
@@ -80,7 +76,7 @@ bool CCrackedSectionReportSpecification::IsValid() const
    }
 }
 
-PoiList CCrackedSectionReportSpecification::GetCrackedSectionPois(IPointOfInterest* pPois, const CSegmentKey& segmentKey)
+PoiList CCrackedSectionReportSpecification::GetCrackedSectionPois(std::shared_ptr<IPointOfInterest> pPois, const CSegmentKey& segmentKey)
 {
    PoiList vPoi;
    CSegmentKey segAsDialog(segmentKey.groupIndex, segmentKey.girderIndex, ALL_SEGMENTS);

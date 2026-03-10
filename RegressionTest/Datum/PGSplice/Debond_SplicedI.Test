@@ -23,6 +23,7 @@ Tension stress check failed for Service I Limit State in Interval 4 Place segmen
 Tension stress check failed for Service I Limit State in Interval 10 Erect Segments for Segment 2
 Compression stress check failed for Service I Limit State in Interval 14 Cast closure joint and Cast Deck for Segment 2
 Tension stress check failed for Service I Limit State in Interval 14 Cast closure joint and Cast Deck for Segment 2
+Tension stress check failed for Service I Limit State in Interval 17 Stress Tendons, Remove Temporary Support for Segment 2
 Tension stress check failed for Service I Limit State in Interval 20 Install Railing System for Segment 2
 Tension stress check failed for Service III Limit State in Interval 27 Load Rating for Segment 2
 Tension stress check failed for Service III Limit State in Interval 27 Load Rating for Deck
@@ -37,6 +38,7 @@ Debond arrangement checks failed for Segment 1.
 Splitting check failed for Segment 1.
 Confinement zone check failed for Segment 1.
 Confinement zone check failed for Segment 2.
+Minimum deck reinforcement in negative moment region failed.
 Lifting checks failed for Segment 1.
 Hauling checks failed for Segment 1.
 Lifting checks failed for Segment 2.
@@ -81,6 +83,7 @@ Horizontal Interface Shear check failed for Strength I Limit State.
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed for Segment 1.
 Confinement zone check failed for Segment 2.
+Minimum deck reinforcement in negative moment region failed.
 Lifting checks failed for Segment 1.
 Hauling checks failed for Segment 1.
 Lifting checks failed for Segment 2.

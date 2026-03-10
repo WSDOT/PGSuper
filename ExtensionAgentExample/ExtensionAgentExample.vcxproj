@@ -85,7 +85,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(ARPDIR)\PGSuper\Include\;$(ARPDIR)\PGSuper\Include\$(Platform);$(ARPDIR)\PGSuper\Include\Plugins;$(ARPDIR)\WBFL\Include;$(ARPDIR)\WBFL\Include\$(Platform);%(AdditionalIncludeDirectories);$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -176,14 +176,6 @@
     <ClCompile Include="EditPierPage.cpp" />
     <ClCompile Include="ExampleExtensionAgent.cpp" />
     <ClCompile Include="ExtensionAgentExample.cpp" />
-    <ClCompile Include="ExtensionAgentExample_i.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
-    </ClCompile>
     <ClCompile Include="MyChapterBuilder.cpp" />
     <ClCompile Include="MyReportSpecification.cpp" />
     <ClCompile Include="MyReportSpecificationBuilder.cpp" />
@@ -196,18 +188,14 @@
     <ClCompile Include="TestGraphBuilder.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ExampleExtensionAgent.rgs" />
     <None Include="ExtensionAgentExample.def" />
-    <None Include="ExtensionAgentExample.rgs" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="ExtensionAgentExample.idl" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClInclude Include="CLSID.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="EditPierPage.h" />
     <ClInclude Include="ExampleExtensionAgent.h" />
-    <ClInclude Include="ExtensionAgentExample_i.h" />
+    <ClInclude Include="ExtensionAgent.h" />
     <ClInclude Include="MyChapterBuilder.h" />
     <ClInclude Include="MyReportSpecification.h" />
     <ClInclude Include="MyReportSpecificationBuilder.h" />
@@ -228,12 +216,8 @@
     <Image Include="toolbar.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\Reporting\Reporting.vcxproj">
       <Project>{4a38b3b0-7c87-40e8-bf6a-9d1b4051ff71}</Project>

@@ -340,9 +340,6 @@
     <ClCompile Include="SectPropTable2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SelectPointOfInterestDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ShearCapacityDetailsChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -577,6 +574,106 @@
     <ClCompile Include="LRFDCreepCoefficientChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BearingDesignSummaryChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingRotationTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingDesignDetailsChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingReactionTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingShearDeformationTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingDesignPropertiesTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingTimestepDetailsChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingTimeStepDetailsReportSpecificationBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingTimeStepDetailsReportSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingTimeStepDetailsDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingTimeStepShearDeformationTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ReportNotes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MinDeckReinforcementCheck.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyBearingPropertiesReportSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RMultiBearingSelectDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyBearingPropertiesChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingSpecCheckChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingSpecCheckSummaryChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedCtrls\MultiBearingSelectGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SharedCtrls\MultiSelectGrid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GirderMultiViewReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BearingMultiViewReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpanGirderBearingReportSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpanGirderBearingReportSpecificationBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiBearingReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CopyBearingPropertiesReportSpecificationBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpanGirderBearingReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpanItemReportDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HorizontalTensionTieCheckDetailsChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SectionPropertiesChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SectionPropertiesReportSpecification.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SectionPropertiesReportSpecificationBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SelectSectionDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SelectPointOfInterestDlg.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h">
@@ -927,9 +1024,6 @@
     <ClInclude Include="..\Include\Reporting\SectPropTable2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SelectPointOfInterestDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\Reporting\ShearCapacityDetailsChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -942,7 +1036,7 @@
     <ClInclude Include="..\Include\Reporting\SpanDataChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Reporting\SpanGirderReportDlg.h">
+    <ClInclude Include="..\Include\Reporting\SpanItemReportDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\SpanGirderReportSpecification.h">
@@ -1149,9 +1243,6 @@
     <ClInclude Include="..\Include\Reporting\MomentCapacityChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CrackedSectionReportSpecification.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PoiReportSpecification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1165,6 +1256,105 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\LRFDCreepCoefficientChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingDesignSummaryChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingRotationTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingDesignDetailsChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingReactionTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingShearDeformationTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingDesignPropertiesTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsReportSpecificationBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsReportSpecification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BearingTimeStepDetailsDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingTimeStepShearDeformationTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CrackedSectionReportSpecification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\MinDeckReinforcementCheck.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyBearingPropertiesReportSpecification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RMultiBearingSelectDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyBearingPropertiesChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingSpecCheckChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingSpecCheckSummaryChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\SharedCtrls\MultiBearingSelectGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\SharedCtrls\MultiSelectGrid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GirderMultiViewReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BearingMultiViewReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportSpecification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportSpecificationBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\MultiBearingReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CopyBearingPropertiesReportSpecificationBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SpanGirderBearingReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SpanGirderReportDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\HorizontalTensionTieCheckDetailsChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SectionPropertiesChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SectionPropertiesReportSpecification.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\SectionPropertiesReportSpecificationBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SelectSectionDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

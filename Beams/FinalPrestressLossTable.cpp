@@ -22,19 +22,16 @@
 
 // FinalPrestressLossTable.cpp : Implementation of CFinalPrestressLossTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "FinalPrestressLossTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+
 #include <PsgLib\SpecLibraryEntry.h>
 #include <psgLib/SpecificationCriteria.h>
+#include <PsgLib\StrandData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CFinalPrestressLossTable::CFinalPrestressLossTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CFinalPrestressLossTable::CFinalPrestressLossTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -49,7 +46,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
@@ -147,7 +144,7 @@ CFinalPrestressLossTable* CFinalPrestressLossTable::PrepareTable(rptChapter* pCh
    return table;
 }
 
-void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CFinalPrestressLossTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;

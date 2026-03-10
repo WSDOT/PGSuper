@@ -24,12 +24,13 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "GirderSegmentStrandsPage.h"
 #include "GirderSegmentDlg.h"
 
 #include <GenericBridge\Helpers.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>
@@ -47,11 +48,6 @@
 
 #include "GirderDescDlg.h" // for ReconcileDebonding
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CGirderSegmentStrandsPage dialog
 
@@ -179,8 +175,8 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
    }
 
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    if (pDX->m_bSaveAndValidate && m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped))
@@ -327,8 +323,8 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    UpdateStrandList(IDC_HARPED_STRAND_SIZE);
    UpdateStrandList(IDC_TEMP_STRAND_SIZE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IDocumentType,pDocType);
@@ -385,8 +381,8 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
 
 void CGirderSegmentStrandsPage::UpdateSectionDepth()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IBridge, pBridge);
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    Float64 L = pBridge->GetSegmentLength(m_pSegment->GetSegmentKey());
@@ -413,8 +409,8 @@ void CGirderSegmentStrandsPage::UpdateSectionDepth()
 
 Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2( pBroker, IPretensionForce, pPrestress );
 
    // TRICKY CODE
@@ -481,8 +477,8 @@ void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit
 
    StrandIndexType nStrands = m_Strands.GetStrandCount(strandType);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    BOOL bEnable = IsDlgButtonChecked( nCheck ) ? TRUE : FALSE; // user defined value if checked
@@ -669,8 +665,8 @@ void CGirderSegmentStrandsPage::InitPjackEdits(UINT nCalcPjack,UINT nPjackEdit,U
    // only update dialog values if they are auto-computed
    if (!bEnable)
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       CDataExchange dx(this,FALSE);
 
@@ -791,8 +787,8 @@ void CGirderSegmentStrandsPage::ExchangeHarpPointLocations(CDataExchange* pDX,CS
    if (pDX->m_bSaveAndValidate && pStrands->GetStrandCount(pgsTypes::Harped) == 0)
       return;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    Float64 Xstart, Xlhp, Xrhp, Xend;
@@ -828,8 +824,8 @@ void CGirderSegmentStrandsPage::GetHarpPointLocations(CStrandData* pStrands)
 
 void CGirderSegmentStrandsPage::GetHarpPointLocations(Float64* pXstart, Float64* pXlhp, Float64* pXrhp, Float64* pXend)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    CDataExchange dx(this, TRUE);

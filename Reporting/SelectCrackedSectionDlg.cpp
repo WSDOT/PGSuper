@@ -27,25 +27,24 @@
 
 #include "stdafx.h"
 #include "SelectCrackedSectionDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
+#include <IFace/PointOfInterest.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <MFCTools\CustomDDX.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <PGSuperUnits.h>
 #include <EAF\EAFDocument.h>
 #include "..\Documentation\PGSuper.hh"
 
 // CSelectCrackedSectionDlg dialog
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNAMIC(CSelectCrackedSectionDlg, CDialog)
 
-CSelectCrackedSectionDlg::CSelectCrackedSectionDlg(IBroker* pBroker,std::shared_ptr<CCrackedSectionReportSpecification>& pRptSpec,CWnd* pParent /*=nullptr*/)
+CSelectCrackedSectionDlg::CSelectCrackedSectionDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CCrackedSectionReportSpecification>& pRptSpec,CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectCrackedSectionDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pRptSpec(pRptSpec)

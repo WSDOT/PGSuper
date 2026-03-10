@@ -24,18 +24,14 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "LoadFactorsDlg.h"
 #include <Lrfd/BDSManager.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CLoadFactorsDlg dialog
@@ -232,8 +228,8 @@ BOOL CLoadFactorsDlg::OnInitDialog()
    GetDlgItem(IDC_FATIGUE_I_PS)->ShowWindow(swFatigueI);
    GetDlgItem(IDC_FATIGUE_I_PS_LABEL)->ShowWindow(swFatigueI);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {

@@ -26,6 +26,8 @@
 
 #include <WBFLTools.h> // not sure why, but this is needed to compile
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -33,36 +35,20 @@
 
 #include <PsgLib\SpecLibraryEntry.h>
 
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 #define YCR(_details_) symbol(psi) << _T("(") << time1.SetValue(_details_.t) << _T(",") << time2.SetValue(_details_.ti) << _T(")")
 #define DEFL(_f_) Sub2(symbol(DELTA),_f_)
 #define SCL(_s_) scalar.SetValue(_s_)
 
-/****************************************************************************
-CLASS
-   CBasicCamberChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CBasicCamberChapterBuilder::CBasicCamberChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CBasicCamberChapterBuilder::GetName() const
 {
    return TEXT("Camber Details");
@@ -71,8 +57,7 @@ LPCTSTR CBasicCamberChapterBuilder::GetName() const
 rptChapter* CBasicCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -113,12 +98,7 @@ rptChapter* CBasicCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBasicCamberChapterBuilder::Clone() const
-{
-   return std::make_unique<CBasicCamberChapterBuilder>();
-}
-
-void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey, bool bTempStrands, IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey, bool bTempStrands, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const
 {
    GET_IFACE2(pBroker,ICamber,pCamber);
 
@@ -348,7 +328,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter, const std::sha
    }
 }
 
-void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTempStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bTempStrands,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const
 {
    GET_IFACE2(pBroker,ICamber,pCamber);
 

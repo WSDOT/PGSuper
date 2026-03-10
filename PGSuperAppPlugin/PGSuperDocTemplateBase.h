@@ -28,16 +28,16 @@ class CPGSuperDocTemplateBase : public CEAFDocTemplate
 {
 public:
    CPGSuperDocTemplateBase(UINT nIDResource,
-                       IEAFCommandCallback* pCallback,
+                       std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
                        CRuntimeClass* pDocClass,
                        CRuntimeClass* pFrameClass,
                        CRuntimeClass* pViewClass,
                        HMENU hSharedMenu = nullptr,
                        int maxViewCount = -1);
 
-   virtual void SetPlugin(IEAFAppPlugin* pPlugin) override;
+   void SetPluginApp(std::weak_ptr<WBFL::EAF::IPluginApp> plugin) override;
 
-   virtual CString GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const override;
+   CString GetTemplateGroupItemDescription(const CEAFTemplateItem* pItem) const override;
 
    void LoadTemplateInformation();
 

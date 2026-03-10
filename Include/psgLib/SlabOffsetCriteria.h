@@ -22,13 +22,12 @@
 
 #pragma once
 
-
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
-interface IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
+class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
+namespace PGS {namespace Library{class DifferenceItem;};};
 
 struct PSGLIBCLASS SlabOffsetCriteria
 {
@@ -40,13 +39,12 @@ struct PSGLIBCLASS SlabOffsetCriteria
 
    Float64 FinishedElevationTolerance = WBFL::Units::ConvertToSysUnits(1.00, WBFL::Units::Measure::Inch); // tolerance between finished and design roadway surface elevation for no-deck bridges
 
-   bool Compare(const SlabOffsetCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+   bool Compare(const SlabOffsetCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);
 
    Float64 RoundSlabOffset(Float64 slabOffset) const;
 };
-

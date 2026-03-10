@@ -26,22 +26,6 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CLiftingCheckChapterBuilder
-
-   Lifting Check Details Chapter Builder.
-
-
-DESCRIPTION
-   Reports the details of the lifting stability check
-   calculation.
-
-LOG
-   rab : 11.03.1998 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CLiftingCheckChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
@@ -49,12 +33,4 @@ public:
 
    virtual LPCTSTR GetName() const override;
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-protected:
-
-private:
-   // Prevent accidental copying and assignment
-   CLiftingCheckChapterBuilder(const CLiftingCheckChapterBuilder&) = delete;
-   CLiftingCheckChapterBuilder& operator=(const CLiftingCheckChapterBuilder&) = delete;
 };

@@ -26,14 +26,16 @@
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\ISummaryRatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 
-rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,CRatingSummaryTable::RatingTableType ratingTableType)
+rptRcTable* CRatingSummaryTable::BuildByLimitState(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,CRatingSummaryTable::RatingTableType ratingTableType)
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
@@ -629,7 +631,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const std::v
    return table;
 }
 
-rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType)
+rptRcTable* CRatingSummaryTable::BuildByVehicle(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType)
 {
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
@@ -742,7 +744,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker, const std::vec
    return pTable;
 }
 
-rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge)
+rptRcTable* CRatingSummaryTable::BuildLoadPosting(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge)
 {
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -841,7 +843,7 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const std::ve
    return table;
 }
 
-rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys)
+rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys)
 {
    GET_IFACE2(pBroker, IArtifact, pArtifact);
 
@@ -946,7 +948,7 @@ rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBrok
    return table;
 }
 
-rptRcTable* CRatingSummaryTable::BuildYieldStressRatio(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType)
+rptRcTable* CRatingSummaryTable::BuildYieldStressRatio(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType)
 {
    PRECONDITION(::IsPermitRatingType(ratingType));
 

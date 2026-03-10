@@ -25,7 +25,7 @@
 #include <WBFLGenericBridge.h>
 
 interface IStages;
-interface IMaterials;
+class IMaterials;
 
 /*****************************************************************************
 INTERFACE
@@ -41,7 +41,7 @@ DESCRIPTION
    needs the creep coefficient which depends on the V/S ratio which depends
    on the generic bridge model. This object enables us to define the
    concrete material as age adjusted but delays the need to get V/S until
-   long after the generic bridge model is valided.
+   long after the generic bridge model is validated.
 *****************************************************************************/
 // {6E0E1094-075A-4cad-80C1-0D423B6162BD}
 DEFINE_GUID(CLSID_AgeAdjustedMaterial, 
@@ -53,9 +53,9 @@ DEFINE_GUID(IID_IAgeAdjustedMaterial,
 struct __declspec(uuid("{4D1CA7C0-1991-421c-91FA-0BA7E22E1563}")) IAgeAdjustedMaterial;
 interface IAgeAdjustedMaterial : IMaterial
 {
-   STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,IMaterials* pMaterials) = 0;
-   STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,IMaterials* pMaterials) = 0;
-   STDMETHOD(InitDeck)(IndexType deckCastingRegionIdx,IMaterials* pMaterials) = 0;
-   STDMETHOD(InitLongitudinalJoint)(const CSegmentKey& segmentKey, IMaterials* pMaterials) = 0;
+   STDMETHOD(InitSegment)(const CSegmentKey& segmentKey,std::weak_ptr<IMaterials> pMaterials) = 0;
+   STDMETHOD(InitClosureJoint)(const CClosureKey& closureKey,std::weak_ptr<IMaterials> pMaterials) = 0;
+   STDMETHOD(InitDeck)(IndexType deckCastingRegionIdx,std::weak_ptr<IMaterials> pMaterials) = 0;
+   STDMETHOD(InitLongitudinalJoint)(const CSegmentKey& segmentKey, std::weak_ptr<IMaterials> pMaterials) = 0;
 };
 

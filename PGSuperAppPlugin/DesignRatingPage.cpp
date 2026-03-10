@@ -27,19 +27,15 @@
 #include "DesignRatingPage.h"
 #include "RatingOptionsDlg.h"
 
-#include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 
 // CDesignRatingPage dialog
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 IMPLEMENT_DYNAMIC(CDesignRatingPage, CPropertyPage)
 
 CDesignRatingPage::CDesignRatingPage()
@@ -70,18 +66,17 @@ void CDesignRatingPage::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX,IDC_SERVICE_III_SH,m_Data.ServiceIII_SH);
    DDX_Text(pDX,IDC_SERVICE_III_PS,m_Data.ServiceIII_PS);
 
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
+   auto broker = EAFGetBroker();
    GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+      tag = pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
    else
    {
-      tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+      tag = pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
    DDX_Text(pDX,IDC_ALLOWABLE_TENSION_UNIT,tag);
 
@@ -182,8 +177,7 @@ BOOL CDesignRatingPage::OnSetActive()
    OnMaxTensionStressChanged();
 
    CRatingOptionsDlg* pParent = (CRatingOptionsDlg*)GetParent();
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
+   auto broker = EAFGetBroker();
    GET_IFACE2( broker, ILibrary, pLib );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 

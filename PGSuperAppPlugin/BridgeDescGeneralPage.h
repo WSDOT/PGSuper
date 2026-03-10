@@ -31,7 +31,7 @@
 
 #include "resource.h"
 #include <IFace\BeamFactory.h>
-#include <PgsExt\DeckDescription2.h>
+#include <PsgLib\DeckDescription2.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescGeneralPage dialog
@@ -132,7 +132,7 @@ protected:
    void UpdateConcreteTypeLabel();
    void UpdateEc();
 
-   CComPtr<IBeamFactory> m_Factory;
+   std::shared_ptr<PGS::Beams::BeamFactory> m_Factory;
    GirderIndexType m_MinGirderCount;
 
    bool m_bSameNumberOfGirders;

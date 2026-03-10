@@ -20,14 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// EffectOfPostTensionedTemporaryStrandsTable.h : Declaration of the CEffectOfPostTensionedTemporaryStrandsTable
+#pragma once
 
-#ifndef __EFFECTOFPTSTRANDSTABLE_H_
-#define __EFFECTOFPTSTRANDSTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 
 class WBFL::LRFD::Losses;
@@ -37,11 +34,11 @@ class WBFL::LRFD::Losses;
 class CEffectOfPostTensionedTemporaryStrandsTable : public rptRcTable
 {
 public:
-	static CEffectOfPostTensionedTemporaryStrandsTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CEffectOfPostTensionedTemporaryStrandsTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+   void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CEffectOfPostTensionedTemporaryStrandsTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CEffectOfPostTensionedTemporaryStrandsTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  spanloc );
    DECLARE_UV_PROTOTYPE( rptPointOfInterest,  gdrloc );
@@ -57,5 +54,3 @@ private:
    bool m_bIsPrismatic;
    bool m_bIsAsymmetric;
 };
-
-#endif //__EFFECTOFPTSTRANDSTABLE_H_

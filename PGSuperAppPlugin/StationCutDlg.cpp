@@ -30,11 +30,6 @@
 #include <CoordGeom/Station.h>
 #include <ostream>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CStationCutDlg dialog
@@ -104,7 +99,7 @@ BOOL CStationCutDlg::OnInitDialog()
    WBFL::COGO::Station upper_station(m_UpperBound);
    auto strLower = lower_station.AsString(m_bSIUnits ? WBFL::Units::StationFormats::SI : WBFL::Units::StationFormats::US);
    auto strUpper = upper_station.AsString(m_bSIUnits ? WBFL::Units::StationFormats::SI : WBFL::Units::StationFormats::US);
-
+   
    CString strLabel;
    strLabel.Format(_T("Enter a station between %s and %s"), strLower.c_str(), strUpper.c_str());
    pprompt->SetWindowText(strLabel);

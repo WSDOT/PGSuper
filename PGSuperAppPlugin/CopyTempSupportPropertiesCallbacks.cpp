@@ -25,21 +25,17 @@
 
 #include <EAF\EAFUtilities.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
 #include <IFace\DocumentType.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <Reporter\ReportingUtils.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////// reporting utilities
 inline void ColorFromRow(rptRcTable* p_table, RowIndexType row, ColumnIndexType nCols)
@@ -84,8 +80,7 @@ static TempSupportConnectionData MakeTempSupportConnectionData(const CTemporaryS
 
 static bool CanCopyConnectionData(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -111,7 +106,7 @@ static bool CanCopyConnectionData(PierIndexType fromTempSupportIdx,const std::ve
 }
 
 // Declaration of comparison reports
-static void TempSupportConnectionPropertiesComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);
+static void TempSupportConnectionPropertiesComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);
 
 ////////////////////////////////////////////////////
 //////////////////// Transaction Classes ////////////
@@ -138,8 +133,7 @@ bool txnCopyTempSupportConnectionProperties::Execute()
    {
       m_DidDoCopy = true;
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
 
       GET_IFACE2(pBroker, IEvents, pEvents);
       pEvents->HoldEvents(); // Large bridges can take a long time. Don't fire any changed events until all changes are done
@@ -186,8 +180,7 @@ void txnCopyTempSupportConnectionProperties::Undo()
 {
    if (m_DidDoCopy)  
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
       std::vector<TempSupportConnectionData>::iterator iterPCD = m_TempSupportConnectionData.begin();
@@ -207,7 +200,7 @@ void txnCopyTempSupportConnectionProperties::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyTempSupportConnectionProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyTempSupportConnectionProperties::CreateClone() const
 {
    return std::make_unique<txnCopyTempSupportConnectionProperties>(m_FromTempSupportIdx,m_ToTempSupports);
 }
@@ -237,7 +230,7 @@ BOOL CCopyTempSupportConnectionProperties::CanCopy(PierIndexType fromTempSupport
    return CanCopyConnectionData(fromTempSupportIdx, toTempSupports);
 }
 
-std::unique_ptr<CEAFTransaction> CCopyTempSupportConnectionProperties::CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyTempSupportConnectionProperties::CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
 {
    return std::make_unique<txnCopyTempSupportConnectionProperties>(fromTempSupportIdx, toTempSupports);
 }
@@ -250,8 +243,7 @@ UINT CCopyTempSupportConnectionProperties::GetTempSupportEditorTabIndex()
 rptParagraph* CCopyTempSupportConnectionProperties::BuildComparisonReportParagraph(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
 {
    rptParagraph* pPara = new rptParagraph;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    TempSupportConnectionPropertiesComparison(pPara, pBroker, fromTempSupportIdx, toTempSupports);
 
@@ -265,7 +257,7 @@ rptParagraph* CCopyTempSupportConnectionProperties::BuildComparisonReportParagra
 //////////////////// Reporting functions /////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void TempSupportConnectionPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
+void TempSupportConnectionPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
 {
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -346,14 +338,14 @@ void TempSupportConnectionPropertiesComparison(rptParagraph * pPara, CComPtr<IBr
    *pPara << rptNewLine;
    *pPara << Underline(Bold(_T("Legend:"))) << rptNewLine;
    *pPara << Bold(_T("Bearing Offset Measure")) << rptNewLine;
-   *pPara << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, true) << _T(" = ") << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, false) << rptNewLine;
-   *pPara << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true) << _T(" = ") << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false) << rptNewLine;
+   *pPara << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder, true) << _T(" = ") << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder, false) << rptNewLine;
+   *pPara << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier, true) << _T(" = ") << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier, false) << rptNewLine;
    *pPara << rptNewLine;
    *pPara << Bold(_T("End Distance Measure")) << rptNewLine;
-   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder, false) << rptNewLine;
-   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false) << rptNewLine;
-   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, false) << rptNewLine;
-   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false) << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder, false) << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier, false) << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder, false) << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier, false) << rptNewLine;
    *pPara << rptNewLine;
 }
 

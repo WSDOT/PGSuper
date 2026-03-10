@@ -13,7 +13,7 @@ Tendon Grid | Define individual tendons in the grid. See below for details.
 [Remove] | Remove tendon in the selected row
 Duct Material | Select the duct material. Used for evaluation of the provisions of LRFD 5.4.6.1. This setting does not effect the duct friction factor or wobble coefficient. Select *Project > Losses* to edit duct friction factors.
 Strand Size | Select the tendon strand size
-Installation Method | Select the strand installation method. Used to evalute the provisions of LRFD 5.4.6.2.
+Installation Method | Select the strand installation method. Used to evalute the provisions of LRFD 5.4.6.2. (Starting with LRFD 10th Edition, the requirements of LRFD 5.4.6.2 are no longer contingent upon the strand installation method)
 Time of Installation | Select the time when the tendons are tensioned and grouted. Tendons can be installed after prestress release (before initial lifting), after moving the segment into storage (before time elapses during storage), or before hauling (at the end of storage).
 
 Tendon Grid

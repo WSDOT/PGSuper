@@ -25,15 +25,11 @@
 
 #include "stdafx.h"
 #include "TimelineReportDlg.h"
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <EAF\EAFDocument.h>
 #include <EAF\EAFCustSiteVars.h>
+#include <IFace/Tools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CTimelineReportDlg dialog
@@ -66,14 +62,7 @@ END_MESSAGE_MAP()
 void CTimelineReportDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialog::OnSize(nType, cx, cy);
-
-   CRect hiddenRect;
-   GetDlgItem(IDC_BROWSER)->GetWindowRect(&hiddenRect);
-   ScreenToClient(hiddenRect);
-   m_pBrowser->Move(hiddenRect.TopLeft());
-   m_pBrowser->Size( hiddenRect.Size() );
-
-   Invalidate();
+   m_pBrowser->FitToParent();
 }
 
 void CTimelineReportDlg::OnPrint()
@@ -91,14 +80,15 @@ BOOL CTimelineReportDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-   CComPtr<IBroker> pBroker;
-   m_pRptSpec->GetBroker(&pBroker);
+   
+   auto pBroker = m_pRptSpec->GetBroker();
 
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBrokerReportSpecification, CTimelineManagerReportSpecification>(m_pRptSpec);
 
-   GET_IFACE2(pBroker,IReportManager,pRptMgr);
+   GET_IFACE2(pBroker,IEAFReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
-   m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
+   CWnd* pWnd = GetDlgItem(IDC_BROWSER);
+   m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(),0,pRptSpec,nullSpecBuilder);
 
    // restore the size of the window
    {

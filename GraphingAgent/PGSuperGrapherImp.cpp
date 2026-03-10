@@ -22,13 +22,9 @@
 
 // PGSuperGrapherImp.cpp : Implementation of CPGSuperGrapherImp
 #include "stdafx.h"
+#include <IFace\Tools.h>
 #include "PGSuperGrapherImp.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 //CPGSuperGrapherImp::InitGraphBuilders
 //
@@ -41,59 +37,19 @@ static char THIS_FILE[] = __FILE__;
 //Returns S_OK if successful; otherwise appropriate HRESULT value
 //is returned.
 
-HRESULT CPGSuperGrapherImp::InitGraphBuilders()
+bool CPGSuperGrapherImp::InitGraphBuilders()
 {
-   CGrapherBase::InitCommonGraphBuilders();
-   return S_OK;
+   return InitCommonGraphBuilders(m_pBroker);
 }
 
-STDMETHODIMP CPGSuperGrapherImp::SetBroker(IBroker* pBroker)
+bool CPGSuperGrapherImp::Init()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
-   CGrapherBase::SetBroker(pBroker);
-   return S_OK;
-}
-
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSuperGrapherImp::RegInterfaces()
-{
-   //CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-
-   // this agent doesn't implement any interfaces... it just provides graphs
-
-   return S_OK;
-}
-
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSuperGrapherImp::Init()
-{
-   /* Gets done at project load time */
    EAF_AGENT_INIT;
 
-   return AGENT_S_SECONDPASSINIT;
-}
-
-STDMETHODIMP CPGSuperGrapherImp::Init2()
-{
    return InitGraphBuilders();
 }
 
-STDMETHODIMP CPGSuperGrapherImp::GetClassID(CLSID* pCLSID)
+CLSID CPGSuperGrapherImp::GetCLSID() const
 {
-   *pCLSID = CLSID_PGSuperGraphingAgent;
-   return S_OK;
-}
-
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSuperGrapherImp::Reset()
-{
-   return S_OK;
-}
-
-/*--------------------------------------------------------------------*/
-STDMETHODIMP CPGSuperGrapherImp::ShutDown()
-{
-   EAF_AGENT_CLEAR_INTERFACE_CACHE;
-
-   return S_OK;
+   return CLSID_PGSuperGraphingAgent;
 }

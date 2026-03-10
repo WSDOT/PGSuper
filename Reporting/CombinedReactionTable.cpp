@@ -32,20 +32,10 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 
-#include <PgsExt\PierData2.h>
-#include <PgsExt\GirderGroupData.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PsgLib\PierData2.h>
+#include <PsgLib\GirderGroupData.h>
 
 
-/****************************************************************************
-CLASS
-   CCombinedReactionTable
-****************************************************************************/
 
 // Function to report rows for combined pedestrian result
 inline void CombineReportPedResult(ILiveLoads::PedestrianLoadApplicationType appType,
@@ -77,37 +67,10 @@ inline void CombineReportPedResult(ILiveLoads::PedestrianLoadApplicationType app
    }
 }
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
 
-//======================== LIFECYCLE  =======================================
-CCombinedReactionTable::CCombinedReactionTable()
-{
-}
-
-CCombinedReactionTable::CCombinedReactionTable(const CCombinedReactionTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CCombinedReactionTable::~CCombinedReactionTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CCombinedReactionTable& CCombinedReactionTable::operator= (const CCombinedReactionTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                           const CGirderKey& girderKey, 
-                                          IEAFDisplayUnits* pDisplayUnits,
+                                          std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                           IntervalIndexType intervalIdx, pgsTypes::AnalysisType analysisType,ReactionTableType tableType,
                                           bool bDesign,bool bRating) const
 {
@@ -140,9 +103,9 @@ void CCombinedReactionTable::Build(IBroker* pBroker, rptChapter* pChapter,
    }
 }
 
-void CCombinedReactionTable::BuildForBearingDesign(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedReactionTable::BuildForBearingDesign(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                           const CGirderKey& girderKey, 
-                                          IEAFDisplayUnits* pDisplayUnits,
+                                          std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                           IntervalIndexType intervalIdx, pgsTypes::AnalysisType analysisType,bool bIncludeImpact) const
 {
    ReactionTableType tableType = BearingReactionsTable;
@@ -158,9 +121,9 @@ void CCombinedReactionTable::BuildForBearingDesign(IBroker* pBroker, rptChapter*
    }
 }
 
-void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedReactionTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                           const CGirderKey& girderKey, 
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType, ReactionTableType tableType,
                                          bool bDesign,bool bRating) const
 {
@@ -173,6 +136,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -199,7 +163,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
    }
 
    // Use iterator to walk locations
-   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge,pPoi);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -343,9 +307,9 @@ void CCombinedReactionTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter
    }
 }
 
-void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedReactionTable::BuildLiveLoad(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                           const CGirderKey& girderKey, 
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          pgsTypes::AnalysisType analysisType, 
                                          bool bIncludeImpact, bool bDesign,bool bRating) const
 {
@@ -365,6 +329,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
 
@@ -374,7 +339,7 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
    std::unique_ptr<ICmbLsReactionAdapter> pForces =  std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, intervalIdx, girderKey);
 
    // Use iterator to walk locations
-   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
 
    // Use first location to determine if ped load is applied
    iter.First();
@@ -704,9 +669,9 @@ void CCombinedReactionTable::BuildLiveLoad(IBroker* pBroker, rptChapter* pChapte
    }
 }
 
-void CCombinedReactionTable::BuildBearingLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedReactionTable::BuildBearingLimitStateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey, bool bIncludeImpact,
-                                         IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IntervalIndexType intervalIdx,
                                          pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating) const
 {
@@ -720,6 +685,7 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(IBroker* pBroker, rptCh
    ReactionUnitValueTool reaction(BearingReactionsTable, reactu);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
@@ -749,7 +715,7 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(IBroker* pBroker, rptCh
 
    Float64 min, max;
    // use adapter's static function to get locations
-   ReactionLocationContainer Locations = CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(intervalIdx, girderKey, pBridge, pBearingDesign);
+   ReactionLocationContainer Locations = CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(intervalIdx, girderKey, pBridge, pPoi, pBearingDesign);
    ReactionLocationIter iter(Locations);
    for (iter.First(); !iter.IsDone(); iter.Next())
    {
@@ -994,32 +960,3 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(IBroker* pBroker, rptCh
       row++;
    }
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CCombinedReactionTable::MakeCopy(const CCombinedReactionTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CCombinedReactionTable::MakeAssignment(const CCombinedReactionTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

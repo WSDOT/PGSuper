@@ -28,7 +28,7 @@
 #include "resource.h"
 #include "SegmentSpacingGrid.h"
 #include <PsgLib\ConnectionLibraryEntry.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 
 /////////////////////////////////////////////////////////////////////////////

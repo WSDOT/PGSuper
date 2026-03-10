@@ -32,20 +32,19 @@
 // the angle point and will violate the original layout rules (N nearest)
 
 #include "StdAfx.h"
+#include "AnalysisAgent.h"
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include "BarrierSidewalkLoadDistributionTool.h"
-#include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\TemporarySupportData.h>
+#include <PsgLib\PrecastSegmentData.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\TemporarySupportData.h>
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#pragma Reminder("Rewrite pgsBarrierSidewalkLoadDistributionTool so it does not depend on interfaces internally")
+// 1. create an input data structure and fill it up with all the data it gets from the agent interfaces
+// 2. with dependency on interfaces, this object will be testable with Unit Test tools in isolation of the rest of the system
 
 // utility struct used to store distances between sw/b's and girders
 struct SwBDist
@@ -88,12 +87,7 @@ struct SwBDistComparer
   {;}
 };
 
-/****************************************************************************
-CLASS
-   pgsBarrierSidewalkLoadDistributionTool
-****************************************************************************/
-//////////////////////
-pgsBarrierSidewalkLoadDistributionTool::pgsBarrierSidewalkLoadDistributionTool(SHARED_LOGFILE lf, IBridgeDescription* pIBridgeDesc, IBridge* pBridge, IGirder* pGirder, IBarriers* pBarriers):
+pgsBarrierSidewalkLoadDistributionTool::pgsBarrierSidewalkLoadDistributionTool(SHARED_LOGFILE lf, std::weak_ptr<IBridgeDescription> pIBridgeDesc, std::weak_ptr<IBridge> pBridge, std::weak_ptr<IGirder> pGirder, std::weak_ptr<IBarriers> pBarriers):
 LOGFILE(lf),
 m_pIBridgeDesc(pIBridgeDesc),
 m_pIBridge(pBridge),
@@ -185,25 +179,28 @@ void pgsBarrierSidewalkLoadDistributionTool::Compute()
    // First build geometry model
    BuildGeometryModel();
 
+   auto bridge = m_pIBridge.lock();
+   auto barriers = m_pIBarriers.lock();
+
    // Fill GlfData with zeros
-   GirderIndexType nGirders = m_pIBridge->GetGirderCount(m_GroupIdx);
+   GirderIndexType nGirders = bridge->GetGirderCount(m_GroupIdx);
    m_SegmentLoadFractionData.m_GirderLoadFractions.assign(nGirders, GlfData());
 
    // Get total GMSWs From geometry model
    m_SegmentLoadFractionData.m_TotalGMSWs = m_GMSWInterSectionPoints.size();
 
    // Some needed logicals
-   bool hasLeftSw   = m_pIBarriers->HasSidewalk(pgsTypes::tboLeft);
-   bool hasRightSw  = m_pIBarriers->HasSidewalk(pgsTypes::tboRight);
-   bool hasLeftInt  = m_pIBarriers->HasInteriorBarrier(pgsTypes::tboLeft);
-   bool hasRightInt = m_pIBarriers->HasInteriorBarrier(pgsTypes::tboRight);
+   bool hasLeftSw   = barriers->HasSidewalk(pgsTypes::tboLeft);
+   bool hasRightSw  = barriers->HasSidewalk(pgsTypes::tboRight);
+   bool hasLeftInt  = barriers->HasInteriorBarrier(pgsTypes::tboLeft);
+   bool hasRightInt = barriers->HasInteriorBarrier(pgsTypes::tboRight);
 
    // Compute load fractions for each barrier element
    // Left exterior barrier
-   Float64 weight = m_pIBarriers->GetExteriorBarrierWeight(pgsTypes::tboLeft);
+   Float64 weight = barriers->GetExteriorBarrierWeight(pgsTypes::tboLeft);
    if (0.0 < weight)
    {
-      Float64 cgOffset = m_pIBarriers->GetExteriorBarrierCgToDeckEdge(pgsTypes::tboLeft);
+      Float64 cgOffset = barriers->GetExteriorBarrierCgToDeckEdge(pgsTypes::tboLeft);
 
       ComputeBarrierLoadDistribution(pgsTypes::tboLeft, cgOffset, LeftExteriorBarrier, true);
    }
@@ -213,7 +210,7 @@ void pgsBarrierSidewalkLoadDistributionTool::Compute()
    {
       // centerline sidewalk is between dead load edges
       Float64 intEdge, extEdge;
-      m_pIBarriers->GetSidewalkDeadLoadEdges(pgsTypes::tboLeft, &intEdge, &extEdge);
+      barriers->GetSidewalkDeadLoadEdges(pgsTypes::tboLeft, &intEdge, &extEdge);
 
       ComputeSidewalkLoadDistribution(pgsTypes::tboLeft, extEdge, intEdge, LeftSidewalk, hasRightSw);
    }
@@ -221,16 +218,16 @@ void pgsBarrierSidewalkLoadDistributionTool::Compute()
    // Left interior barrier
    if (hasLeftInt)
    {
-      Float64 cgOffset = m_pIBarriers->GetInteriorBarrierCgToDeckEdge(pgsTypes::tboLeft);
+      Float64 cgOffset = barriers->GetInteriorBarrierCgToDeckEdge(pgsTypes::tboLeft);
 
       ComputeBarrierLoadDistribution(pgsTypes::tboLeft, cgOffset, LeftInteriorBarrier, hasRightInt);
    }
 
    // Right exterior barrier
-   weight = m_pIBarriers->GetExteriorBarrierWeight(pgsTypes::tboRight);
+   weight = barriers->GetExteriorBarrierWeight(pgsTypes::tboRight);
    if (0.0 < weight)
    {
-      Float64 cgOffset = m_pIBarriers->GetExteriorBarrierCgToDeckEdge(pgsTypes::tboRight);
+      Float64 cgOffset = barriers->GetExteriorBarrierCgToDeckEdge(pgsTypes::tboRight);
 
       ComputeBarrierLoadDistribution(pgsTypes::tboRight, cgOffset, RightExteriorBarrier, true);
    }
@@ -240,7 +237,7 @@ void pgsBarrierSidewalkLoadDistributionTool::Compute()
    {
       // centerline sidewalk is between dead load edges
       Float64 intEdge, extEdge;
-      m_pIBarriers->GetSidewalkDeadLoadEdges(pgsTypes::tboRight, &intEdge, &extEdge);
+      barriers->GetSidewalkDeadLoadEdges(pgsTypes::tboRight, &intEdge, &extEdge);
 
       ComputeSidewalkLoadDistribution(pgsTypes::tboRight, extEdge, intEdge, RightSidewalk, hasLeftSw);
    }
@@ -248,7 +245,7 @@ void pgsBarrierSidewalkLoadDistributionTool::Compute()
    // Right interior barrier
    if (hasRightInt)
    {
-      Float64 cgOffset = m_pIBarriers->GetInteriorBarrierCgToDeckEdge(pgsTypes::tboRight);
+      Float64 cgOffset = barriers->GetInteriorBarrierCgToDeckEdge(pgsTypes::tboRight);
 
       ComputeBarrierLoadDistribution(pgsTypes::tboRight, cgOffset, RightInteriorBarrier, hasLeftInt);
    }
@@ -432,10 +429,14 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
    // clear out any old data
    m_GMSWInterSectionPoints.clear();
 
+   auto bridge_desc = m_pIBridgeDesc.lock();
+   auto bridge = m_pIBridge.lock();
+   auto girder = m_pIGirder.lock();
+
    // Build geometry model data for current span so we can compute distances from sidewalks/barriers to girders
    // First build reference line at mid-span.
    // Use points intersecting the left and right edges of pier at mid-span
-   const CPrecastSegmentData* pSegment = m_pIBridgeDesc->GetPrecastSegmentData(CSegmentKey(m_GroupIdx,0,m_SegmentIdx));
+   const CPrecastSegmentData* pSegment = bridge_desc->GetPrecastSegmentData(CSegmentKey(m_GroupIdx,0,m_SegmentIdx));
    const CPierData2* pStartPier;
    const CPierData2* pEndPier;
    const CTemporarySupportData* pStartTS;
@@ -451,20 +452,20 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
    CComPtr<IDirection> startDirection, endDirection; 
    if ( pStartPier )
    {
-      m_pIBridge->GetPierDirection(pStartPier->GetIndex(),&startDirection);
+      bridge->GetPierDirection(pStartPier->GetIndex(),&startDirection);
    }
    else
    {
-      m_pIBridge->GetTemporarySupportDirection(pStartTS->GetIndex(),&startDirection);
+      bridge->GetTemporarySupportDirection(pStartTS->GetIndex(),&startDirection);
    }
 
    if ( pEndPier )
    {
-      m_pIBridge->GetPierDirection(pEndPier->GetIndex(),&endDirection);
+      bridge->GetPierDirection(pEndPier->GetIndex(),&endDirection);
    }
    else
    {
-      m_pIBridge->GetTemporarySupportDirection(pEndTS->GetIndex(),&endDirection);
+      bridge->GetTemporarySupportDirection(pEndTS->GetIndex(),&endDirection);
    }
 
 
@@ -479,8 +480,8 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
    midDirection->put_Value(midDirVal);
 
    CComPtr<IPoint2d> leftSlabEdgePoint, rightSlabEdgePoint;
-   m_pIBridge->GetLeftSlabEdgePoint( midStation, midDirection, pgsTypes::pcLocal, &leftSlabEdgePoint);
-   m_pIBridge->GetRightSlabEdgePoint(midStation, midDirection, pgsTypes::pcLocal, &rightSlabEdgePoint);
+   bridge->GetLeftSlabEdgePoint( midStation, midDirection, pgsTypes::pcLocal, &leftSlabEdgePoint);
+   bridge->GetRightSlabEdgePoint(midStation, midDirection, pgsTypes::pcLocal, &rightSlabEdgePoint);
 
    m_RefLine->ThroughPoints(rightSlabEdgePoint, leftSlabEdgePoint);
 
@@ -488,8 +489,8 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
    Float64 nextStation = midStation + WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet);
 
    CComPtr<IPoint2d> leftSlabEdgePoint1, rightSlabEdgePoint1;
-   m_pIBridge->GetLeftSlabEdgePoint( nextStation, midDirection, pgsTypes::pcLocal, &leftSlabEdgePoint1);
-   m_pIBridge->GetRightSlabEdgePoint(nextStation, midDirection, pgsTypes::pcLocal, &rightSlabEdgePoint1);
+   bridge->GetLeftSlabEdgePoint( nextStation, midDirection, pgsTypes::pcLocal, &leftSlabEdgePoint1);
+   bridge->GetRightSlabEdgePoint(nextStation, midDirection, pgsTypes::pcLocal, &rightSlabEdgePoint1);
 
    m_LeftSlabEdgeLine->ThroughPoints( leftSlabEdgePoint,  leftSlabEdgePoint1);
    m_RightSlabEdgeLine->ThroughPoints(rightSlabEdgePoint, rightSlabEdgePoint1);
@@ -499,13 +500,13 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
    CComPtr<ILine2d> constrLine; // a reusable construction line
    constrLine.CoCreateInstance(CLSID_Line2d);
 
-   GirderIndexType nGirders = m_pIBridge->GetGirderCount(m_GroupIdx);
+   GirderIndexType nGirders = bridge->GetGirderCount(m_GroupIdx);
    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
    {
       CSegmentKey segmentKey(m_GroupIdx,gdrIdx,m_SegmentIdx);
       // Create line along girder CL
       CComPtr<IPoint2d> pntPier1, pntEnd1, pntBrg1, pntBrg2, pntEnd2, pntPier2;
-      m_pIGirder->GetSegmentEndPoints(segmentKey, pgsTypes::pcLocal, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
+      girder->GetSegmentEndPoints(segmentKey, pgsTypes::pcLocal, &pntPier1, &pntEnd1, &pntBrg1, &pntBrg2, &pntEnd2, &pntPier2);
 
       constrLine->ThroughPoints(pntPier1, pntPier2);
 
@@ -519,16 +520,16 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
       else 
       {
          // need poi at mid girder
-         Float64 gl = m_pIBridge->GetSegmentLength(segmentKey);
+         Float64 gl = bridge->GetSegmentLength(segmentKey);
          const pgsPointOfInterest mid_poi(segmentKey, gl/2);
 
          if ( m_DistType == pgsTypes::tbdMatingSurface )
          {
             // get intersections for each mating surface
-            MatingSurfaceIndexType nMatingSurfaces = m_pIGirder->GetMatingSurfaceCount(segmentKey); 
+            MatingSurfaceIndexType nMatingSurfaces = girder->GetMatingSurfaceCount(segmentKey);
             for (MatingSurfaceIndexType msIdx = 0; msIdx < nMatingSurfaces; msIdx++)
             {
-               Float64 offset = -1.0 * m_pIGirder->GetMatingSurfaceLocation(mid_poi, msIdx);
+               Float64 offset = -1.0 * girder->GetMatingSurfaceLocation(mid_poi, msIdx);
 
                constrLine->Offset(offset); // move from cl of gider to ms location
 
@@ -542,10 +543,10 @@ void pgsBarrierSidewalkLoadDistributionTool::BuildGeometryModel()
          else if ( m_DistType == pgsTypes::tbdWebs )
          {
             // get intersections for each web
-            WebIndexType nWebs = m_pIGirder->GetWebCount(segmentKey);
+            WebIndexType nWebs = girder->GetWebCount(segmentKey);
             for (MatingSurfaceIndexType webIdx = 0; webIdx < nWebs; webIdx++)
             {
-               Float64 offset = -1.0 * m_pIGirder->GetWebLocation(mid_poi, webIdx);
+               Float64 offset = -1.0 * girder->GetWebLocation(mid_poi, webIdx);
 
                constrLine->Offset(offset); // move from cl of gider to ms location
 

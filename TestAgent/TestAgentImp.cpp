@@ -25,10 +25,12 @@
 #include "TestAgent.h"
 #include "TestAgentImp.h"
 
+
 #include <IFace\Alignment.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
+#include <IFace\BearingDesignParameters.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\ShearCapacity.h>
@@ -36,7 +38,7 @@
 #include <IFace\Constructability.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\RatingSpecification.h>
 #include <EAF\EAFUIIntegration.h>
 #include <IFace\Intervals.h>
@@ -47,19 +49,19 @@
 #include <psgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
-#include <PgsExt\DeckDescription2.h>
-#include <PgsExt\GirderGroupData.h>
-#include <PgsExt\SplicedGirderData.h>
-#include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\PierData2.h>
+#include <PsgLib\DeckDescription2.h>
+#include <PsgLib\GirderGroupData.h>
+#include <PsgLib\SplicedGirderData.h>
+#include <PsgLib\PrecastSegmentData.h>
+#include <PsgLib\PierData2.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderDesignArtifact.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\RatingArtifact.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFApp.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\Helpers.h>
 
 #include <psgLib/CreepCriteria.h>
 #include <psgLib/SlabOffsetCriteria.h>
@@ -74,12 +76,6 @@
 #include <MfcTools\XUnwind.h>
 
 #include <System\AutoVariable.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 //#define QUIET(_x_) (IsZero(_x_,0.00005) ? 0 : _x_)
 #define QUIET(_x_) RoundOff(_x_,0.01)
@@ -109,52 +105,37 @@ int GetBarSize(WBFL::Materials::Rebar::Size size)
    return -1;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// IAgent
-//
-STDMETHODIMP CTestAgentImp::SetBroker(IBroker* pBroker)
+bool CTestAgentImp::RegisterInterfaces()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
-   return S_OK;
-}
+   EAF_AGENT_REGISTER_INTERFACES;
 
-STDMETHODIMP CTestAgentImp::RegInterfaces()
-{
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
+   REGISTER_INTERFACE(ITest1250);
+   REGISTER_INTERFACE(ITestFileExport);
 
-   pBrokerInit->RegInterface( IID_ITest1250,     this );
-   pBrokerInit->RegInterface( IID_ITestFileExport, this );
-
-   return S_OK;
+   return true;
 };
 
-STDMETHODIMP CTestAgentImp::Init()
+bool CTestAgentImp::Init()
 {
    EAF_AGENT_INIT;
-
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CTestAgentImp::Init2()
+CLSID CTestAgentImp::GetCLSID() const
 {
-   return S_OK;
+   return CLSID_TestAgent;
 }
 
-STDMETHODIMP CTestAgentImp::GetClassID(CLSID* pCLSID)
+bool CTestAgentImp::Reset()
 {
-   *pCLSID = CLSID_TestAgent;
-   return S_OK;
+   EAF_AGENT_RESET;
+   return true;
 }
 
-STDMETHODIMP CTestAgentImp::Reset()
+bool CTestAgentImp::ShutDown()
 {
-   return S_OK;
-}
-
-STDMETHODIMP CTestAgentImp::ShutDown()
-{
-   EAF_AGENT_CLEAR_INTERFACE_CACHE;
-   return S_OK;
+   EAF_AGENT_SHUTDOWN;
+   return true;
 }
 
 // ITest1250
@@ -183,8 +164,8 @@ bool CTestAgentImp::RunTest(long type,
    }
 
    // create progress window
-   GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    if (type == RUN_REGRESSION)
    {
@@ -287,6 +268,18 @@ bool CTestAgentImp::RunTest(long type,
                return false;
             }
             break;
+          
+         case 70:
+             if (RunBearingTest(resf, poif, extSegmentKey))
+             {
+                 return RunBearingTest(resf, poif, intSegmentKey);
+             }
+             else
+             {
+                 return false;
+             }
+             break;
+
          case 499:
             if ( RunCamberTest(resf, poif, extSegmentKey) )
             {
@@ -333,6 +326,8 @@ bool CTestAgentImp::RunTest(long type,
             VERIFY( RunWsdotGirderScheduleTest(resf, poif, intSegmentKey) );
             VERIFY( RunHaunchTest(resf, poif, extSegmentKey) );
             VERIFY( RunHaunchTest(resf, poif, intSegmentKey) );
+            VERIFY(RunBearingTest(resf, poif, extSegmentKey));
+            VERIFY(RunBearingTest(resf, poif, intSegmentKey));
 
             if (type==RUN_REGRESSION && pDocType->IsPGSuperDocument()) // only do design for regression - cad test should have already run design
             { // design only applies to PGSuper documents (not spliced girders)
@@ -358,13 +353,10 @@ bool CTestAgentImp::RunTest(long type,
 			      return S_OK;
 		      }
 
-            GET_IFACE(ITestFileExport,pTxDOTExport);
-            if ( pTxDOTExport )
-            {
-               pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, extSegmentKey, true);
-               pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, intSegmentKey, true);
-            }
-		      fclose (fp);
+            WriteCADDataToFile(fp, extSegmentKey, true);
+            WriteCADDataToFile(fp, intSegmentKey, true);
+
+		    fclose (fp);
 
             return true;
             break;
@@ -398,8 +390,8 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
    }
 
    // create progress window
-   GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    if (type == RUN_REGRESSION || type == RUN_CADTEST)
    {
@@ -472,6 +464,12 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
             return false;
          }
          break;
+      case 70:
+          if (!RunBearingTest(resf, poif, segmentKey))
+          {
+              return false;
+          }
+          break;
       case 499:
          if ( !RunCamberTest(resf, poif, segmentKey) )
          {
@@ -545,6 +543,10 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
          {
             return false;
          }
+         if (!RunBearingTest(resf, poif, segmentKey))
+         {
+             return false;
+         }
 
          if (type==RUN_REGRESSION) // only do design for regression - cad test should have already run design if requested
          {
@@ -604,14 +606,14 @@ BOOL CTestAgentImp::ProcessCommandLineOptions(CEAFCommandLineInfo & cmdInfo)
 
 /////////////////////////////////////////////////////////////////////////////
 // ITestFileExport
-int CTestAgentImp::WriteCADDataToFile(FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey, bool designSucceeded)
+int CTestAgentImp::WriteCADDataToFile(FILE *fp, const CSegmentKey& segmentKey, bool designSucceeded)
 {
-   return Test_WriteCADDataToFile(fp,pBroker,segmentKey, designSucceeded);
+   return Test_WriteCADDataToFile(fp,m_pBroker,segmentKey, designSucceeded);
 }
 
-int CTestAgentImp::WriteDistributionFactorsToFile(FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey)
+int CTestAgentImp::WriteDistributionFactorsToFile(FILE *fp, const CSegmentKey& segmentKey)
 {
-   return Test_WriteDistributionFactorsToFile(fp,pBroker,segmentKey);
+   return Test_WriteDistributionFactorsToFile(fp,m_pBroker,segmentKey);
 }
 
 
@@ -664,6 +666,54 @@ std::_tstring CTestAgentImp::GetProcessID()
    // now using a "generic" number for the process id
    return std::_tstring(_T("0.0.0.0"));
 }
+
+
+
+bool CTestAgentImp::RunBearingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey)
+{
+
+    // Generate data
+    std::_tstring pid = GetProcessID();
+    std::_tstring bridgeId = GetBridgeID();
+
+    GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+
+    SHEARDEFORMATIONDETAILS sfDetails;
+    pBearingDesignParameters->GetTimeDependentShearDeformation(segmentKey, &sfDetails);
+
+    for (auto& brg : sfDetails.brg_details)
+    {
+        PierIndexType pierID = brg.reactionLocation.PierIdx;
+        PierReactionFaceType pierFace = brg.reactionLocation.Face;
+
+        REACTIONDETAILS reactionDetails;
+        pBearingDesignParameters->GetBearingReactionDetails(brg.reactionLocation, segmentKey, pgsTypes::AnalysisType::Continuous, false, true, &reactionDetails);
+
+        Float64 total_dl_reaction = WBFL::Units::ConvertFromSysUnits(reactionDetails.totalDLreaction, WBFL::Units::Measure::Kip);
+        Float64 total_ll_reaction = WBFL::Units::ConvertFromSysUnits(reactionDetails.maxComboDesignLLReaction, WBFL::Units::Measure::Kip);
+
+        ROTATIONDETAILS rotationDetails;
+        pBearingDesignParameters->GetBearingRotationDetails(pgsTypes::AnalysisType::Continuous, brg.rPoi, brg.reactionLocation, segmentKey, 
+            false, true, true, &rotationDetails);
+
+        Float64 static_rotation = rotationDetails.staticRotation;
+        Float64 cyclic_rotation = rotationDetails.cyclicRotation;
+
+        pBearingDesignParameters->GetThermalExpansionDetails(&brg);
+        Float64 total_shear_deformation_cold = WBFL::Units::ConvertFromSysUnits(brg.total_shear_deformation_cold, WBFL::Units::Measure::Inch);
+
+        resultsFile << bridgeId << _T(", ") << pid << _T(", 70000, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(total_shear_deformation_cold) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
+        resultsFile << bridgeId << _T(", ") << pid << _T(", 70001, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(total_dl_reaction) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
+        resultsFile << bridgeId << _T(", ") << pid << _T(", 70002, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(total_ll_reaction) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
+        resultsFile << bridgeId << _T(", ") << pid << _T(", 70003, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(static_rotation) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
+        resultsFile << bridgeId << _T(", ") << pid << _T(", 70004, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(cyclic_rotation) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
+
+    }
+
+    return true;
+
+}
+
 
 bool CTestAgentImp::RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey)
 {
@@ -1764,6 +1814,27 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    CGirderKey girderKey(segmentKey);
    const pgsGirderArtifact* pGdrArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
+   auto nHorizTensionTieArtifacts = pGdrArtifact->GetHorizontalTensionTieArtifactCount();
+   for (auto i = 0; i < nHorizTensionTieArtifacts; i++)
+   {
+      auto* pHorizTensionTieArtifact = pGdrArtifact->GetHorizontalTensionTieArtifact(i);
+      if(pHorizTensionTieArtifact->IsApplicable())
+      {
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100100, ")<<-1<<_T(", ")<<(int)(pHorizTensionTieArtifact->Passed()?1:0)<<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
+         resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100101, ")<<-1<<_T(", ")<< QUIET(pHorizTensionTieArtifact->GetTieForce()) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100102, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetTieResistance()) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100103, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetHorizDistance(pgsTypes::stLeft)) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100104, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetHorizDistance(pgsTypes::stRight)) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100105, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetVertDistance(pgsTypes::stLeft)) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl; 
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100106, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetVertDistance(pgsTypes::stRight)) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100107, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetBearingReactionLocation(pgsTypes::stLeft)) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100108, ") << -1 << _T(", ") << QUIET(pHorizTensionTieArtifact->GetBearingReactionLocation(pgsTypes::stRight)) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100109, ") << -1 << _T(", ") << pHorizTensionTieArtifact->GetNumBondedStrandsInFlange(pgsTypes::stLeft) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100110, ") << -1 << _T(", ") << pHorizTensionTieArtifact->GetNumBondedStrandsInFlange(pgsTypes::stRight) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+         resultsFile << bridgeId << _T(", ") << pid << _T(", 100111, ") << -1 << _T(", ") << pHorizTensionTieArtifact->GetTotalNumBondedStrands() << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+      }
+   }
+
    const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
    const pgsStirrupCheckArtifact* pstirrup_artifact= pSegmentArtifact->GetStirrupCheckArtifact();
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 100200 , ")<<-1<<_T(", ")<<(int)(pSegmentArtifact->Passed()?1:0) <<_T(", 15, ")<<SEGMENT(segmentKey)<<std::endl;
@@ -2026,7 +2097,9 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
       SHEARCAPACITYDETAILS scd;
       pShearCapacity->GetShearCapacityDetails(pgsTypes::StrengthI, liveLoadIntervalIdx, poi, nullptr, &scd);
       resultsFile<<bridgeId<<", "<<pid<<", 50031, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.Aps , WBFL::Units::Measure::Millimeter2)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50031a, "<<loc<<", "<< QUIET(scd.Kds) << ", 15, " << SEGMENT(segmentKey) << std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50032, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.As , WBFL::Units::Measure::Millimeter2)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
+      resultsFile<<bridgeId<<", "<<pid<<", 50032a, "<<loc<<", "<< QUIET(scd.Kdb) << ", 15, " << SEGMENT(segmentKey) << std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50033, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,erectSegmentIntervalIdx,pgsTypes::End), WBFL::Units::Measure::MPa)) <<", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50042, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.pVn , WBFL::Units::Measure::Newton)) <<    ", 15, "<<SEGMENT(segmentKey)<<std::endl;
       resultsFile<<bridgeId<<", "<<pid<<", 50043, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(scd.Vn , WBFL::Units::Measure::Newton)) <<     ", 15, "<<SEGMENT(segmentKey)<<std::endl;
@@ -2249,6 +2322,16 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
 
    }
 
+   //Debond tests
+   const pgsDebondArtifact* pDebondArtifact = pSegmentArtifact->GetDebondArtifact();
+
+   if (pDebondArtifact && pDebondArtifact->GetNumDebondedStrands() > 0)
+   {
+       resultsFile << bridgeId << _T(", ") << pid << _T(", 100400, ") << -1 << _T(", ") << pDebondArtifact->GetNumDebondedStrands() << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+       resultsFile << bridgeId << _T(", ") << pid << _T(", 100401, ") << -1 << _T(", ") << pDebondArtifact->GetNumDebondSections() << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+       resultsFile << bridgeId << _T(", ") << pid << _T(", 100402, ") << -1 << _T(", ") << (int)(pDebondArtifact->Passed() ? 1 : 0) << _T(", 15, ") << SEGMENT(segmentKey) << std::endl;
+   }
+
    return true;
 }
 
@@ -2264,7 +2347,7 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
    const pgsSegmentArtifact* pArtifact = pArtifacts->GetSegmentArtifact(segmentKey);
 
    // lifting
-   const WBFL::Stability::LiftingCheckArtifact* pLiftArtifact = pArtifact->GetLiftingCheckArtifact();
+   auto pLiftArtifact = pArtifact->GetLiftingCheckArtifact();
    if ( pLiftArtifact != nullptr )
    {
       const WBFL::Stability::LiftingResults& liftingResults = pLiftArtifact->GetLiftingResults();
@@ -2308,7 +2391,7 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
    }
 
    // hauling
-   const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifact->GetHaulingAnalysisArtifact();
+   auto pHaulArtifact = pArtifact->GetHaulingAnalysisArtifact();
    if (pHaulArtifact != nullptr)
    {
       // Artifact writes its own data
@@ -3210,8 +3293,8 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
       }
    }
 
-   GET_IFACE(IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    if (txInfo.m_TxRunType == CTestCommandLineInfo::txrGeometry)
    {
@@ -3306,21 +3389,14 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
             }
          }
 
-         GET_IFACE(ITestFileExport, pTxDOTCadExport);
-         if (!pTxDOTCadExport)
-         {
-            AfxMessageBox(_T("The Test File Exporter is not currently installed"));
-            return false;
-         }
-
          if (txInfo.m_TxRunType == CTestCommandLineInfo::TxrDistributionFactors)
          {
             // Write distribution factor data to file
             try
             {
-               if (CAD_SUCCESS != pTxDOTCadExport->WriteDistributionFactorsToFile(fp, this->m_pBroker, segmentKey))
+               if (CAD_SUCCESS != WriteDistributionFactorsToFile(fp, segmentKey))
                {
-                  err_file << _T("Warning: An error occured while writing to File") << std::endl;
+                  err_file << _T("Warning: An error occurred while writing to File") << std::endl;
                   return false;
                }
             }
@@ -3337,9 +3413,9 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
          else
          {
             /* Write CAD data to text file */
-            if (CAD_SUCCESS != pTxDOTCadExport->WriteCADDataToFile(fp, this->m_pBroker, segmentKey, designSucceeded))
+            if (CAD_SUCCESS != WriteCADDataToFile(fp, segmentKey, designSucceeded))
             {
-               err_file << _T("Warning: An error occured while writing to File") << std::endl;
+               err_file << _T("Warning: An error occurred while writing to File") << std::endl;
                return false;
             }
          }

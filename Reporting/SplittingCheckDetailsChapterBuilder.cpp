@@ -27,32 +27,17 @@
 
 #include <PgsExt\GirderArtifact.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 #include <IFace\SplittingChecks.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CSplittingCheckDetailsChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CSplittingCheckDetailsChapterBuilder::CSplittingCheckDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CSplittingCheckDetailsChapterBuilder::GetKey() const
 {
    return TEXT("Splitting Resistance Details");
@@ -73,8 +58,7 @@ LPCTSTR CSplittingCheckDetailsChapterBuilder::GetName() const
 rptChapter* CSplittingCheckDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker, IArtifact, pIArtifact);
@@ -84,12 +68,7 @@ rptChapter* CSplittingCheckDetailsChapterBuilder::Build(const std::shared_ptr<co
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
    GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
-   pSplittingChecks->ReportSplittingCheckDetails(pBroker, pGirderArtifact, pChapter);
+   pSplittingChecks->ReportSplittingCheckDetails(pGirderArtifact, pChapter);
 
    return pChapter;
-}
-
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSplittingCheckDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CSplittingCheckDetailsChapterBuilder>();
 }

@@ -27,9 +27,6 @@
 #include <IFace\Bridge.h>
 #include "ProductLoadMap.h"
 
-interface ILibrary;
-interface ILiveLoads;
-
 class CPierData2;
 class CTemporarySupportData;
 class CTimelineManager;
@@ -37,6 +34,9 @@ class CPrecastSegmentData;
 class CParabolicDuctGeometry;
 class CLinearDuctGeometry;
 class COffsetDuctGeometry;
+
+class ILibrary;
+class ILiveLoads;
 
 class COverhangLoadData
 {
@@ -57,12 +57,12 @@ public:
 // CGirderModelManager
 //
 // Manages the creation, access, and storage of analysis models of spliced girder.
-// This are the models of the assempeld girder and are modeled with the LBAM.
+// This are the models of the assembled girder and are modeled with the LBAM.
 
 class CGirderModelManager
 {
 public:
-   CGirderModelManager(SHARED_LOGFILE lf,IBroker* pBroker,StatusGroupIDType statusGroupID);
+   CGirderModelManager(SHARED_LOGFILE lf,std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
 
    void Clear();
    void DumpAnalysisModels(GirderIndexType gdrLineIdx) const;
@@ -289,7 +289,8 @@ public:
 
 private:
 	DECLARE_SHARED_LOGFILE;
-   IBroker* m_pBroker; // must be a weak reference (this is the agent's pointer and it is a weak refernece)
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker; // must be a weak reference to break circular reference with agent
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); } // for use within function scope
    StatusGroupIDType m_StatusGroupID;
    mutable CComPtr<IIDArray> m_LBAMPoi;   // array for LBAM poi (this will be a problem for concurrency)
    CComPtr<ILBAMLRFDFactory3> m_LBAMUtility;
@@ -320,7 +321,7 @@ private:
    void ValidateGirderModels(const CGirderKey& girderKey) const;
    GirderIndexType GetGirderLineIndex(const CGirderKey& girderKey) const;
 
-   void CheckGirderEndGeometry(IBridge* pBridge,const CGirderKey& girderKey) const;
+   void CheckGirderEndGeometry(std::shared_ptr<IBridge> pBridge,const CGirderKey& girderKey) const;
    void BuildModel(GirderIndexType gdrLineIdx) const;
    void BuildModel(GirderIndexType gdrLineIdx,pgsTypes::BridgeAnalysisType bat) const;
    void BuildLBAM(GirderIndexType gdr,bool bContinuousModel,IContraflexureResponse* pContraflexureResponse,IContraflexureResponse* pDeflContraflexureResponse,ILBAMModel* pModel) const;
@@ -342,7 +343,7 @@ private:
    void ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdr,bool bContinuousModel) const;
    void ComputeSidewalksBarriersLoadFractions() const;
    void ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gdrLineIdx) const;
-   void AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdrLineIdx,pgsTypes::LiveLoadType llType,std::vector<std::_tstring>& libraryLoads,ILibrary* pLibrary, ILiveLoads* pLiveLoads,IVehicularLoads* pVehicles) const;
+   void AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdrLineIdx,pgsTypes::LiveLoadType llType,std::vector<std::_tstring>& libraryLoads,std::shared_ptr<ILibrary> pLibrary, std::shared_ptr<ILiveLoads> pLiveLoads,IVehicularLoads* pVehicles) const;
    void ApplyUserDefinedLoads(ILBAMModel* pModel,GirderIndexType gdrLineIdx) const;
    void ApplyPostTensionDeformation(ILBAMModel* pModel,GirderIndexType gdrLineIdx) const;
    void ApplyLiveLoadDistributionFactors(GirderIndexType gdrLineIdx,bool bContinuous,IContraflexureResponse* pContraflexureResponse,ILBAMModel* pModel) const;
@@ -369,15 +370,15 @@ private:
 
    Float64 GetPedestrianLiveLoad(const CSpanKey& spanKey) const;
    Float64 GetPedestrianLiveLoad(const CSegmentKey& segmentKey) const;
-   void AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
-   void AddFatigueLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
-   void AddDeflectionLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,Float64 IMtruck,Float64 IMlane) const;
-   void AddLegalLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
-   void AddNotionalRatingLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
-   void AddEmergencyLiveLoad(ILBAMModel* pModel, ILibrary* pLibrary, pgsTypes::LiveLoadType llType, Float64 IMtruck, Float64 IMlane) const;
-   void AddSHVLoad(ILBAMModel* pModel, ILibrary* pLibrary, pgsTypes::LiveLoadType llType, Float64 IMtruck, Float64 IMlane) const;
+   void AddHL93LiveLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
+   void AddFatigueLiveLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
+   void AddDeflectionLiveLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,Float64 IMtruck,Float64 IMlane) const;
+   void AddLegalLiveLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
+   void AddNotionalRatingLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
+   void AddEmergencyLiveLoad(ILBAMModel* pModel, std::shared_ptr<ILibrary> pLibrary, pgsTypes::LiveLoadType llType, Float64 IMtruck, Float64 IMlane) const;
+   void AddSHVLoad(ILBAMModel* pModel, std::shared_ptr<ILibrary> pLibrary, pgsTypes::LiveLoadType llType, Float64 IMtruck, Float64 IMlane) const;
    void AddPedestrianLoad(const std::_tstring& strLLName,Float64 wPedLL,IVehicularLoads* pVehicles) const;
-   void AddUserTruck(const std::_tstring& strLLName,ILibrary* pLibrary,Float64 IMtruck,Float64 IMlane,IVehicularLoads* pVehicles) const;
+   void AddUserTruck(const std::_tstring& strLLName,std::shared_ptr<ILibrary> pLibrary,Float64 IMtruck,Float64 IMlane,IVehicularLoads* pVehicles) const;
    void AddDummyLiveLoad(IVehicularLoads* pVehicles) const;
 
    void GetLiveLoadModel(pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,ILiveLoadModel** ppLiveLoadModel) const;
@@ -486,7 +487,7 @@ private:
 
 
    typedef std::set<COverhangLoadData> OverhangLoadSet;
-   mutable OverhangLoadSet m_OverhangLoadSet[2]; // index is pgsTypes::AnalysisType (only Simple or Continuous)
+   mutable std::array<OverhangLoadSet,2> m_OverhangLoadSet; // index is pgsTypes::AnalysisType (only Simple or Continuous)
 
 
    void RenameLiveLoad(ILBAMModel* pModel,pgsTypes::LiveLoadType llType,LPCTSTR strOldName,LPCTSTR strNewName);

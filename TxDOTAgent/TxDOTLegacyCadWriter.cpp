@@ -29,6 +29,7 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
+#include <IFace\Tools.h>
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
@@ -39,22 +40,18 @@
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
 #endif
 
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\GirderArtifactTool.h>
-#include <PgsExt\GirderLabel.h>
-#include <EAF\EAFAutoProgress.h>
+#include <PsgLib\GirderLabel.h>
+#include <EAF/AutoProgress.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // Workhorse for writing debond information
 
@@ -62,7 +59,7 @@ class TxDOTCadWriter : public TxDOTDebondTool
 {
 public:
 
-   TxDOTCadWriter(const CSegmentKey& segmentKey, Float64 girderLength, bool isUBeam, IStrandGeometry* pStrandGeometry):
+   TxDOTCadWriter(const CSegmentKey& segmentKey, Float64 girderLength, bool isUBeam, std::shared_ptr<IStrandGeometry> pStrandGeometry):
    TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry), 
    m_isUBeam(isUBeam)
    {;}
@@ -81,8 +78,8 @@ private:
 };
 
 //////////// Useful functions /////////////////
-static std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi);
-static int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& girderKey);
+static std::_tstring MakeNonStandardStrandString(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi);
+static int TxDOT_WriteCADDataForGirder(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey);
 
 
 // Return fractional string for strand size
@@ -141,7 +138,7 @@ Float64		value 			   /*  => Value to convert                   */
 }
 
 ////////////////// Main function for writing legacy cad file ///////////////////////////
-int TxDOT_WriteLegacyCADDataToFile(CString& filePath, IBroker* pBroker, const std::vector<CGirderKey>& girderKeys)
+int TxDOT_WriteLegacyCADDataToFile(CString& filePath, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys)
 {
    bool did_throw=false;
 
@@ -150,11 +147,11 @@ int TxDOT_WriteLegacyCADDataToFile(CString& filePath, IBroker* pBroker, const st
    {
 	   /* Create progress bar (before needing one) to remain alive during this task */
 	   /* (otherwise, progress bars will be repeatedly created & destroyed on the fly) */
-      GET_IFACE2(pBroker,IProgress,pProgress);
+      GET_IFACE2(pBroker,IEAFProgress,pProgress);
 
       bool multi = girderKeys.size()>1;
       DWORD mask = multi ? PW_ALL : PW_ALL|PW_NOGAUGE; // Progress window has a cancel button,
-      CEAFAutoProgress ap(pProgress,0,mask); 
+      WBFL::EAF::AutoProgress ap(pProgress,0,mask); 
 
       if (multi)
          pProgress->Init(0,(short)girderKeys.size(),1);  // and for multi-girders, a gauge.
@@ -200,7 +197,7 @@ int TxDOT_WriteLegacyCADDataToFile(CString& filePath, IBroker* pBroker, const st
    return S_OK;
 }
 
-int TxDOT_WriteCADDataForGirder(FILE *fp, IBroker* pBroker, const CGirderKey& girderKey)
+int TxDOT_WriteCADDataForGirder(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey)
 {
 #if defined _DEBUG
    GET_IFACE2(pBroker,IDocumentType,pDocType);
@@ -773,11 +770,10 @@ void TxDOTCadWriter::WriteInitialData(CadWriterWorkerBee& workerB)
       {
          // A little checking
          pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
-         RowIndexType nrs = m_pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
+         RowIndexType nrs = m_pStrandGeometry.lock()->GetNumRowsWithStrand(poi,pgsTypes::Straight);
          ATLASSERT((RowIndexType)m_Rows.size() == nrs); // could have more rows than rows with debonded strands
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         auto pBroker = EAFGetBroker();
       
          GET_IFACE2(pBroker, IIntervals, pIntervals);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
@@ -804,8 +800,7 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended, bool isIBeam, Int
    {
       pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
    
       GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
@@ -924,7 +919,7 @@ void TxDOTCadWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& ro
 
 
 
-std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi)
+std::_tstring MakeNonStandardStrandString(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi)
 {
    StrandRowUtil::StrandRowSet strandrows = StrandRowUtil::GetStrandRowSet(pBroker, midPoi);
 

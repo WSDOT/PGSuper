@@ -23,12 +23,8 @@
 #include "stdafx.h"
 #include "EditLLDF.h"
 #include "PGSuperDoc.h"
+#include <IFace/Tools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditLLDF::txnEditLLDF(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
                          WBFL::LRFD::RangeOfApplicabilityAction oldROA, WBFL::LRFD::RangeOfApplicabilityAction newROA)
@@ -57,7 +53,7 @@ void txnEditLLDF::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditLLDF::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditLLDF::CreateClone() const
 {
    return std::make_unique<txnEditLLDF>(*m_pBridgeDesc[0], *m_pBridgeDesc[1],m_ROA[0],m_ROA[1]);
 }
@@ -79,8 +75,8 @@ bool txnEditLLDF::IsRepeatable() const
 
 void txnEditLLDF::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done

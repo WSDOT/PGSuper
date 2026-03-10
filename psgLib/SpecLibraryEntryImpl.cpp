@@ -31,7 +31,7 @@
 #include <MathEx.h>
 
 #include <EAF\EAFApp.h>
-#include <psgLib\LibraryEntryDifferenceItem.h>
+#include <PsgLib\DifferenceItem.h>
 
 // During the development of PGSplice, there was an overlap in version numbers between the
 // 2.9 and 3.0 branches. It is ok for loads to fail for 44.0 <= version <= MAX_OVERLAP_VERSION.
@@ -40,7 +40,7 @@
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70.
 // The version number has progressed past version 70
-#define CURRENT_VERSION 83.0 
+#define CURRENT_VERSION 84.0 
 
 /****************************************************************************
 CLASS
@@ -64,6 +64,7 @@ bool SpecLibraryEntryImpl::SaveMe(WBFL::Library::LibraryEntry* pParent,WBFL::Sys
    // all of the project criteria data is now modeled in "Criteria" objects.
    m_SpecificationCriteria.Save(pSave);
    m_SectionPropertiesCriteria.Save(pSave);
+   m_ThermalMovementCriteria.Save(pSave);
    m_HoldDownCriteria.Save(pSave);
    m_StrandSlopeCriteria.Save(pSave);
    m_EndZoneCriteria.Save(pSave);
@@ -133,6 +134,10 @@ bool SpecLibraryEntryImpl::LoadMe(WBFL::Library::LibraryEntry* pParent,WBFL::Sys
 
          m_SpecificationCriteria.Load(pLoad);
          m_SectionPropertiesCriteria.Load(pLoad);
+         if (version > 83)
+         {
+             m_ThermalMovementCriteria.Load(pLoad);
+         }
          m_HoldDownCriteria.Load(pLoad);
          m_StrandSlopeCriteria.Load(pLoad);
          m_EndZoneCriteria.Load(pLoad);
@@ -182,7 +187,7 @@ bool SpecLibraryEntryImpl::LoadMe(WBFL::Library::LibraryEntry* pParent,WBFL::Sys
    return true;
 }
 
-bool SpecLibraryEntryImpl::Compare(const SpecLibraryEntryImpl* pOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool SpecLibraryEntryImpl::Compare(const SpecLibraryEntryImpl* pOther, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
@@ -193,7 +198,7 @@ bool SpecLibraryEntryImpl::Compare(const SpecLibraryEntryImpl* pOther, std::vect
       RETURN_ON_DIFFERENCE;
    }
 
-   if ( !m_SectionPropertiesCriteria.Compare(pOther->m_SectionPropertiesCriteria,*this,vDifferences,bReturnOnFirstDifference))
+   if ( !m_ThermalMovementCriteria.Compare(pOther->m_ThermalMovementCriteria,*this,vDifferences,bReturnOnFirstDifference))
    {
       RETURN_ON_DIFFERENCE;
    }
@@ -223,7 +228,7 @@ bool SpecLibraryEntryImpl::Compare(const SpecLibraryEntryImpl* pOther, std::vect
       RETURN_ON_DIFFERENCE;
    }
 
-   if (!m_HaulingCriteria.Compare(pOther->m_HaulingCriteria,*this,vDifferences,bReturnOnFirstDifference))
+   if (!m_HaulingCriteria.Compare(pOther->m_HaulingCriteria,this->GetSpecificationCriteria().GetEdition(), vDifferences, bReturnOnFirstDifference))
    {
       RETURN_ON_DIFFERENCE;
    }
@@ -356,6 +361,16 @@ void SpecLibraryEntryImpl::SetSpecificationCriteria(const SpecificationCriteria&
    m_SpecificationCriteria = criteria;
 }
 
+const ThermalMovementCriteria& SpecLibraryEntryImpl::GetThermalMovementCriteria() const
+{
+    return m_ThermalMovementCriteria;
+}
+
+void SpecLibraryEntryImpl::SetThermalMovementCriteria(const ThermalMovementCriteria& criteria)
+{
+    m_ThermalMovementCriteria = criteria;
+}
+
 const SectionPropertiesCriteria& SpecLibraryEntryImpl::GetSectionPropertiesCriteria() const
 {
    return m_SectionPropertiesCriteria;
@@ -452,7 +467,7 @@ void SpecLibraryEntryImpl::SetLiftingCriteria(const LiftingCriteria& criteria)
    m_LiftingCriteria = criteria;
 }
 
-const HaulingCriteria& SpecLibraryEntryImpl::GetHaulingCriteria() const
+const HaulingCriteria & SpecLibraryEntryImpl::GetHaulingCriteria() const
 {
    return m_HaulingCriteria;
 }
@@ -672,10 +687,11 @@ void SpecLibraryEntryImpl::SetBearingCriteria(const BearingCriteria& criteria)
    m_BearingCriteria = criteria;
 }
 
-void SpecLibraryEntryImpl::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void SpecLibraryEntryImpl::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    m_SpecificationCriteria.Report(pChapter,pDisplayUnits);
    m_SectionPropertiesCriteria.Report(pChapter,pDisplayUnits);
+   m_ThermalMovementCriteria.Report(pChapter, pDisplayUnits);
 
    m_HoldDownCriteria.Report(pChapter, pDisplayUnits);
    m_StrandSlopeCriteria.Report(pChapter, pDisplayUnits);
@@ -4200,7 +4216,7 @@ bool SpecLibraryEntryImpl::LegacyLoadMe(WBFL::Library::LibraryEntry* pParent, WB
       m_SlabOffsetCriteria.SlabOffsetTolerance = m_SpecificationCriteria.Units == WBFL::LRFD::BDSManager::Units::US ? WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch) : WBFL::Units::ConvertToSysUnits(5.0, WBFL::Units::Measure::Millimeter);
    }
 
-   // Bearings was added in verison 79
+   // Bearings was added in version 79
    if (78 < version)
    {
       if (!pLoad->BeginUnit(_T("Bearings")))

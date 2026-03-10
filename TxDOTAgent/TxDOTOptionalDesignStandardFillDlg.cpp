@@ -27,15 +27,13 @@
 #include "TxDOTOptionalDesignStandardFillDlg.h"
 #include <System\Tokenizer.h>
 #include <MfcTools\CustomDDX.h>
+
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include "EccentricityDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
+#include <psgLib/LibraryManager.h>
 
 // CTxDOTOptionalDesignStandardFillDlg dialog
 
@@ -85,7 +83,7 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
       UpdateLibraryData();
    }
 
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
+   auto pBroker = m_pBrokerRetriever->GetClassicBroker();
    if (pBroker==nullptr)
       return;
 
@@ -225,7 +223,7 @@ void CTxDOTOptionalDesignStandardFillDlg::UpdateControls()
 
    if (benable)
    {
-      CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
+      auto pBroker = m_pBrokerRetriever->GetClassicBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 toLower, toUpper;

@@ -26,14 +26,11 @@
 #include "stdafx.h"
 #include "DeckRegionGrid.h"
 #include "CastDeckDlg.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CDeckRegionGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -91,8 +88,8 @@ void CDeckRegionGrid::CustomInit()
    
    GetParam( )->EnableUndo(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    // get all the piers that have continuity
    GET_IFACE2(pBroker, IBridge, pBridge);
@@ -253,7 +250,7 @@ void CDeckRegionGrid::CustomInit()
 	GetParam( )->EnableUndo(TRUE);
 }
 
-void CDeckRegionGrid::GetPierUsage(PierIndexType pierIdx, IBridge* pBridge, BOOL* pbUseBack, BOOL* pbUseAhead)
+void CDeckRegionGrid::GetPierUsage(PierIndexType pierIdx, std::shared_ptr<IBridge> pBridge, BOOL* pbUseBack, BOOL* pbUseAhead)
 {
    // determies if a pier can be used as a reference point for deck casting region boundary
    PierIndexType nPiers = pBridge->GetPierCount();
@@ -286,8 +283,8 @@ void CDeckRegionGrid::GetPierUsage(PierIndexType pierIdx, IBridge* pBridge, BOOL
 
 void CDeckRegionGrid::GetData(CCastDeckActivity& activity)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    std::vector<CCastingRegion> vRegions;
@@ -300,7 +297,7 @@ void CDeckRegionGrid::GetData(CCastDeckActivity& activity)
    activity.SetCastingRegions(vRegions);
 }
 
-CCastingRegion CDeckRegionGrid::GetCastingRegion(ROWCOL row,IEAFDisplayUnits* pDisplayUnits)
+CCastingRegion CDeckRegionGrid::GetCastingRegion(ROWCOL row,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CCastingRegion::RegionType type = GetRegionType(row);
    if (type == CCastingRegion::Span)
@@ -331,7 +328,7 @@ CCastingRegion CDeckRegionGrid::GetSpanData(ROWCOL row)
    return CCastingRegion(spanIdx, sequenceIdx);
 }
 
-CCastingRegion CDeckRegionGrid::GetPierData(ROWCOL row, IEAFDisplayUnits* pDisplayUnits)
+CCastingRegion CDeckRegionGrid::GetPierData(ROWCOL row, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CGXStyle style;
    GetStyleRowCol(row, 0, style);
@@ -369,8 +366,8 @@ void CDeckRegionGrid::SetData(const CCastDeckActivity& activity)
       GetParam()->EnableUndo(FALSE);
       GetParam()->SetLockReadOnly(FALSE);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       GET_IFACE2(pBroker, IBridge, pBridge);
 
@@ -387,7 +384,7 @@ void CDeckRegionGrid::SetData(const CCastDeckActivity& activity)
    }
 }
 
-void CDeckRegionGrid::SetRegionData(const CCastingRegion& region, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits)
+void CDeckRegionGrid::SetRegionData(const CCastingRegion& region, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    if (region.m_Type == CCastingRegion::Pier)
    {
@@ -399,7 +396,7 @@ void CDeckRegionGrid::SetRegionData(const CCastingRegion& region, IBridge* pBrid
    }
 }
 
-void CDeckRegionGrid::SetPierData(const CCastingRegion& region, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits)
+void CDeckRegionGrid::SetPierData(const CCastingRegion& region, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    BOOL bUseBack, bUseAhead;
    GetPierUsage(region.m_Index, pBridge, &bUseBack, &bUseAhead);
@@ -407,7 +404,7 @@ void CDeckRegionGrid::SetPierData(const CCastingRegion& region, IBridge* pBridge
    SetPierData(region.m_Index, bUseBack, region.m_Start, bUseAhead, region.m_End, region.m_SequenceIndex, pDisplayUnits);
 }
 
-void CDeckRegionGrid::SetPierData(PierIndexType pierIdx, BOOL bUseBack, Float64 Xback, BOOL bUseAhead, Float64 Xahead, IndexType sequenceIdx,IEAFDisplayUnits* pDisplayUnits)
+void CDeckRegionGrid::SetPierData(PierIndexType pierIdx, BOOL bUseBack, Float64 Xback, BOOL bUseAhead, Float64 Xahead, IndexType sequenceIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    ROWCOL row = GetPierRow(pierIdx);
 
@@ -503,13 +500,13 @@ void CDeckRegionGrid::SetPierData(PierIndexType pierIdx, BOOL bUseBack, Float64 
    }
 }
 
-void CDeckRegionGrid::SetSpanData(const CCastingRegion& region, IBridge* pBridge,IEAFDisplayUnits* pDisplayUnits)
+void CDeckRegionGrid::SetSpanData(const CCastingRegion& region, std::shared_ptr<IBridge> pBridge,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    Float64 L = pBridge->GetSpanLength(region.m_Index);
    SetSpanData(region.m_Index, L, region.m_SequenceIndex, pDisplayUnits);
 }
 
-void CDeckRegionGrid::SetSpanData(SpanIndexType spanIdx, Float64 L, IndexType sequenceIdx, IEAFDisplayUnits* pDisplayUnits)
+void CDeckRegionGrid::SetSpanData(SpanIndexType spanIdx, Float64 L, IndexType sequenceIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    ROWCOL row = GetSpanRow(spanIdx);
 

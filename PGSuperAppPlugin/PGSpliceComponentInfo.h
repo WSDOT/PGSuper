@@ -20,43 +20,22 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-
 #pragma once
-#include <EAF\EAFComponentInfo.h>
-#include "resource.h"
 
-class ATL_NO_VTABLE CPGSpliceComponentInfo : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CPGSpliceComponentInfo, &CLSID_PGSpliceComponentInfo>,
-   public IEAFComponentInfo
+#include <EAF\ApplicationComponentInfo.h>
+
+class CPGSpliceComponentInfo : public WBFL::EAF::ApplicationComponentInfo
 {
 public:
-   CPGSpliceComponentInfo()
-   {
-   }
+   CPGSpliceComponentInfo() = default;
 
-DECLARE_REGISTRY_RESOURCEID(IDR_PGSPLICECOMPONENTINFO)
-DECLARE_CLASSFACTORY_SINGLETON(CPGSpliceComponentInfo)
-
-BEGIN_COM_MAP(CPGSpliceComponentInfo)
-   COM_INTERFACE_ENTRY(IEAFComponentInfo)
-END_COM_MAP()
-
-BEGIN_CONNECTION_POINT_MAP(CPGSpliceComponentInfo)
-END_CONNECTION_POINT_MAP()
-
-   HRESULT FinalConstruct();
-   void FinalRelease();
-
-// IEAFComponentInfo
+// IComponentInfo
 public:
-   virtual BOOL Init(CEAFApp* pApp);
-   virtual void Terminate();
-   virtual CString GetName();
-   virtual CString GetDescription();
-   virtual HICON GetIcon();
-   virtual bool HasMoreInfo();
-   virtual void OnMoreInfo();
+   BOOL Init(CEAFApp* pApp) override;
+   void Terminate() override;
+   CString GetName() override;
+   CString GetDescription() override;
+   HICON GetIcon() override;
+   bool HasMoreInfo() override;
+   void OnMoreInfo() override;
 };
-
-OBJECT_ENTRY_AUTO(__uuidof(PGSpliceComponentInfo), CPGSpliceComponentInfo)

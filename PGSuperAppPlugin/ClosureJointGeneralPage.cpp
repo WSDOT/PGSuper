@@ -7,10 +7,12 @@
 #include "ClosureJointDlg.h"
 #include "TimelineEventDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -20,11 +22,7 @@
 
 #include <PgsExt\ConcreteDetailsDlg.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+
 
 // CClosureJointGeneralPage dialog
 
@@ -107,8 +105,8 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -199,8 +197,8 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
 
 void CClosureJointGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
@@ -468,8 +466,8 @@ void CClosureJointGeneralPage::UpdateEci()
    if ( method == 0 )
    {
       // Eci is based on the user input value of Ec and not f'ci
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strEc;
@@ -516,8 +514,8 @@ void CClosureJointGeneralPage::UpdateEci()
       CString strFci, strDensity, strK1, strK2;
       m_ctrlFci.GetWindowText(strFci);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
@@ -567,8 +565,8 @@ void CClosureJointGeneralPage::UpdateEc()
    if ( method == 0 )
    {
       // Ec is based on the user input value of Eci and not f'c
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strEci;
@@ -600,8 +598,8 @@ void CClosureJointGeneralPage::UpdateEc()
       CString strFc, strDensity, strK1, strK2;
       m_ctrlFc.GetWindowText(strFc);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
@@ -625,8 +623,8 @@ void CClosureJointGeneralPage::UpdateFc()
       CString strFci;
       m_ctrlFci.GetWindowText(strFci);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fci;
@@ -662,8 +660,8 @@ void CClosureJointGeneralPage::UpdateFci()
       CString strFc;
       m_ctrlFc.GetWindowText(strFc);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fc;
@@ -771,8 +769,8 @@ BOOL CClosureJointGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* p
 
 void CClosureJointGeneralPage::UpdateConcreteParametersToolTip()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 

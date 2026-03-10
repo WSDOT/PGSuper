@@ -27,18 +27,16 @@
 #include "resource.h"
 #include "PGSuperDocBase.h"
 #include "GirderDescDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\Helpers.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\Helpers.h>
+
 
 #define IDC_CHECKBOX 100
 
@@ -105,8 +103,8 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
    AddPage( &m_General );
    AddPage( &m_Prestress );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    m_GirderSpacingType = pBridgeDesc->GetGirderSpacingType();
 
@@ -165,7 +163,7 @@ void CGirderDescDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-std::unique_ptr<CEAFTransaction> CGirderDescDlg::GetExtensionPageTransaction()
+std::unique_ptr<WBFL::EAF::Transaction> CGirderDescDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
    {
@@ -231,8 +229,8 @@ LRESULT CGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 
 void CGirderDescDlg::InitialzePages()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
@@ -352,8 +350,8 @@ void CGirderDescDlg::SetDebondTabName()
    if ( index < 0 )
       return; // not using the debond tab
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    CTabCtrl* pTab = GetTabControl();
    TC_ITEM ti;
@@ -413,8 +411,8 @@ Float64 CGirderDescDlg::GetConditionFactor()
 
 ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandType type)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    if (m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection)

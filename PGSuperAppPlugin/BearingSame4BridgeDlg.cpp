@@ -26,14 +26,13 @@
 #include "resource.h"
 #include "BearingSame4BridgeDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <IFace\Project.h>
+#include <psgLib\BearingCriteria.h>
 
 
 // CBearingSame4BridgeDlg dialog
@@ -71,9 +70,33 @@ BOOL CBearingSame4BridgeDlg::OnInitDialog()
 
 void CBearingSame4BridgeDlg::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+
+   DDX_CBIndex(pDX, IDC_BRG_DEF_TYPE, (int&)m_BearingData.DefinitionType);
+
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+   const BearingCriteria& criteria = pSpecEntry->GetBearingCriteria();
+
+   if (m_BearingData.DefinitionType == BearingDefinitionType::btBasic /*|| !criteria.bCheck*/)
+   {
+       ((CComboBox*)GetDlgItem(IDC_BUTTON_EDIT_BEARING_DETAIL))->EnableWindow(FALSE);
+       (CEdit*)GetDlgItem(IDC_BRG_HEIGHT)->EnableWindow(TRUE);
+
+       ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE))->EnableWindow(TRUE);
+
+       //if (!criteria.bCheck)
+       //{
+       //    ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE))->EnableWindow(FALSE);
+       //}
+   }
+   else
+   {
+       ((CComboBox*)GetDlgItem(IDC_BUTTON_EDIT_BEARING_DETAIL))->EnableWindow(TRUE);
+       (CEdit*)GetDlgItem(IDC_BRG_HEIGHT)->EnableWindow(FALSE);
+   }
 
    DDX_CBIndex(pDX, IDC_BRG_SHAPE, (int&)m_BearingData.Shape);
    DDX_CBItemData(pDX, IDC_BRG_COUNT, m_BearingData.BearingCount);
@@ -106,6 +129,8 @@ void CBearingSame4BridgeDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CBearingSame4BridgeDlg, CDialog)
    ON_CBN_SELCHANGE(IDC_BRG_SHAPE, &CBearingSame4BridgeDlg::OnCbnSelchangeBrgShape)
    ON_CBN_SELCHANGE(IDC_BRG_COUNT, &CBearingSame4BridgeDlg::OnCbnSelchangeBrgCount)
+   ON_CBN_SELCHANGE(IDC_BRG_DEF_TYPE, &CBearingSame4BridgeDlg::OnCbnSelchangeBrgDefType)
+   ON_BN_CLICKED(IDC_BUTTON_EDIT_BEARING_DETAIL, &CBearingSame4BridgeDlg::OnCbnEditBearingDetails)
 END_MESSAGE_MAP()
 
 void CBearingSame4BridgeDlg::UploadData(const BearingInputData& rData)
@@ -116,6 +141,7 @@ void CBearingSame4BridgeDlg::UploadData(const BearingInputData& rData)
 
    OnCbnSelchangeBrgShape();
    OnCbnSelchangeBrgCount();
+
 }
 
 void CBearingSame4BridgeDlg::DownloadData(BearingInputData* pData,CDataExchange* pDX)
@@ -174,3 +200,63 @@ void CBearingSame4BridgeDlg::OnCbnSelchangeBrgCount()
    pwnd = (CWnd*)GetDlgItem(IDC_BRG_SPACING_STATIC);
    pwnd->EnableWindow(benable);
 }
+
+void CBearingSame4BridgeDlg::OnCbnSelchangeBrgDefType()
+{
+
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+    CDataExchange dx(this, TRUE);
+    DoDataExchange(&dx);
+
+    if (m_BearingData.DefinitionType == BearingDefinitionType::btDetailed)
+    {
+        OnCbnEditBearingDetails();
+    }
+
+}
+
+void CBearingSame4BridgeDlg::OnCbnEditBearingDetails()
+{
+    AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+    CDataExchange dx(this, TRUE);
+    DoDataExchange(&dx);
+
+    m_details_dlg.SetBearingDetailDlg(m_BearingData);
+
+    if (m_details_dlg.DoModal() == IDOK)
+    {
+        const auto& computed_height = m_details_dlg.GetComputedHeight();
+
+        m_BearingData.Height = computed_height;
+
+        const auto& brg_details = m_details_dlg.GetBearingDetails();
+
+        m_BearingData.Length = brg_details.Length;
+        m_BearingData.Width = brg_details.Width;
+        m_BearingData.ElastomerThickness = brg_details.ElastomerThickness;
+        m_BearingData.CoverThickness = brg_details.CoverThickness;
+        m_BearingData.ShimThickness = brg_details.ShimThickness;
+        m_BearingData.NumIntLayers = brg_details.NumIntLayers;
+        m_BearingData.UseExtPlates = brg_details.UseExtPlates;
+        m_BearingData.FixedX = brg_details.FixedX;
+        m_BearingData.FixedY = brg_details.FixedY;
+        m_BearingData.ShearDeformationOverride = brg_details.ShearDeformationOverride;
+    }
+
+    UpdateData(false);
+
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+    DDX_UnitValueAndTag(&dx, IDC_BRG_LENGTH, IDC_BRG_LENGTH_UNIT, m_BearingData.Length, pDisplayUnits->GetComponentDimUnit());
+    DDV_UnitValueZeroOrMore(&dx, IDC_BRG_LENGTH, m_BearingData.Length, pDisplayUnits->GetComponentDimUnit());
+    if (!(dx.m_bSaveAndValidate && m_BearingData.Shape == bsRound))
+    {
+        DDX_UnitValueAndTag(&dx, IDC_BRG_WIDTH, IDC_BRG_WIDTH_UNIT, m_BearingData.Width, pDisplayUnits->GetComponentDimUnit());
+        DDV_UnitValueZeroOrMore(&dx, IDC_BRG_WIDTH, m_BearingData.Width, pDisplayUnits->GetComponentDimUnit());
+    }
+
+}
+

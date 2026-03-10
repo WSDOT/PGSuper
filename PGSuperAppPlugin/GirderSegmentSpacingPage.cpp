@@ -33,8 +33,9 @@
 
 #include <PGSuperUnits.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -42,11 +43,6 @@
 
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderSegmentSpacingPage property page
@@ -123,8 +119,8 @@ void CGirderSegmentSpacingPage::DoDataExchange(CDataExchange* pDX)
 
    DDV_SpacingGrid(pDX,IDC_SPACING_GRID,&m_SpacingGrid);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_CBItemData(pDX, IDC_REF_GIRDER, m_RefGirderIdx);
@@ -392,8 +388,7 @@ void CGirderSegmentSpacingPage::OnChangeSameGirderSpacing()
          {
             // there is more than one unique girder spacing... which one do we want to use
             // for the entire bridge???
-            CComPtr<IBroker> broker;
-            EAFGetBroker(&broker);
+            auto broker = EAFGetBroker();
             GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
             CSelectItemDlg dlg;
@@ -562,8 +557,7 @@ LPCTSTR CGirderSegmentSpacingPage::GetOrientation()
 
 Float64 CGirderSegmentSpacingPage::GetSkewAngle()
 {
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
+   auto broker = EAFGetBroker();
    GET_IFACE2(broker,IBridge,pBridge);
 
    Float64 skewAngle;

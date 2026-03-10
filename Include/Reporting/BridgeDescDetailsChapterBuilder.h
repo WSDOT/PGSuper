@@ -20,78 +20,20 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_BRIDGEDESCDETAILSCHAPTERBUILDER_H_
-#define INCLUDED_BRIDGEDESCDETAILSCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-
-/*****************************************************************************
-CLASS 
-   CBridgeDescDetailsChapterBuilder
-
-   Bridge Description Details Chapter Builder.
-
-
-DESCRIPTION
-   Bridge Description Chapter Builder.  Generates a chapter that echos the details
-   of the bridge description input.
-
-LOG
-   rab : 11.03.1998 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CBridgeDescDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CBridgeDescDetailsChapterBuilder(bool bOmitStrandLocations = false,bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
    bool m_bOmitStrandLocations;
-
-   // Prevent accidental copying and assignment
-   CBridgeDescDetailsChapterBuilder(const CBridgeDescDetailsChapterBuilder&) = delete;
-   CBridgeDescDetailsChapterBuilder& operator=(const CBridgeDescDetailsChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_BRIDGEDESCDETAILSCHAPTERBUILDER_H_

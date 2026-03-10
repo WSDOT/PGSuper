@@ -27,10 +27,10 @@
 class CInplaceTemporarySupportStationEditEvents : public CInplaceEditDisplayObjectEvents
 {
 public:
-   CInplaceTemporarySupportStationEditEvents(IBroker* pBroker,SupportIndexType tsIdx);
+   CInplaceTemporarySupportStationEditEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker,SupportIndexType tsIdx);
 
 protected:
-   virtual void Handle_OnChanged(iDisplayObject* pDO);
+   virtual void Handle_OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
 
 private:
    SupportIndexType m_TSIdx;

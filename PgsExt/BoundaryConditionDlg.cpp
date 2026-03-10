@@ -27,15 +27,11 @@
 #include "BoundaryConditionDlg.h"
 #include <MFCTools\CustomDDX.h>
 #include <EAF\EAFUtilities.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
-#include <PgsExt\PierData2.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PsgLIb\PierData2.h>
 
 // CBoundaryConditionDlg dialog
 
@@ -69,8 +65,7 @@ BOOL CBoundaryConditionDlg::OnInitDialog()
 {
    CDialog::OnInitDialog();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    ATLASSERT(pIBridgeDesc->GetPier(m_PierIdx)->IsBoundaryPier());

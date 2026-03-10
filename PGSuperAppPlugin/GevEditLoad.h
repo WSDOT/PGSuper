@@ -20,19 +20,10 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_GEVEDITLOAD_H_
-#define INCLUDED_GEVEDITLOAD_H_
-
-
-// {305877B5-8FE7-444d-80CD-88D11026DBB6}
-DEFINE_GUID(IID_iGevEditLoad, 
-0x305877b5, 0x8fe7, 0x444d, 0x80, 0xcd, 0x88, 0xd1, 0x10, 0x26, 0xdb, 0xb6);
-
-
-interface iGevEditLoad : public IUnknown
+#pragma once
+class iGevEditLoad
 {
-  STDMETHOD_(HRESULT,EditLoad)() PURE;
-  STDMETHOD_(HRESULT,DeleteLoad)() PURE;
+public:
+  virtual void EditLoad() = 0;
+  virtual void DeleteLoad() = 0;
 };
-
-#endif // INCLUDED_GEVEDITLOAD_H_

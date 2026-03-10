@@ -27,8 +27,6 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 
-interface IEAFDisplayUnits;
-
 class REPORTINGCLASS CTimeStepCamberChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
@@ -36,22 +34,14 @@ public:
 
    virtual LPCTSTR GetName() const override;
    virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 private:
-   // Prevent accidental copying and assignment
-   CTimeStepCamberChapterBuilder(const CTimeStepCamberChapterBuilder&) = delete;
-   CTimeStepCamberChapterBuilder& operator=(const CTimeStepCamberChapterBuilder&) = delete;
-
-   rptRcTable* CreateStorageDeflectionTable(IBroker* pBroker, const CGirderKey& girderKey) const;
-   rptRcTable* CreateHandlingDeflectionTable(IBroker* pBroker, const CGirderKey& girderKey) const;
-   rptRcTable* CreateAfterErectionDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
-
-   rptRcTable* CreateTable(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;
-
-
-   rptRcTable* CreateBeforeSlabCastingDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
-   rptRcTable* CreateScreedCamberDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
-   rptRcTable* CreateExcessCamberTable(IBroker* pBroker,const CGirderKey& girderKey) const;
-   rptRcTable* CreateFinalDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const;
+   rptRcTable* CreateStorageDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey) const;
+   rptRcTable* CreateHandlingDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey) const;
+   rptRcTable* CreateAfterErectionDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const;
+   rptRcTable* CreateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const;
+   rptRcTable* CreateBeforeSlabCastingDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const;
+   rptRcTable* CreateScreedCamberDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const;
+   rptRcTable* CreateExcessCamberTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const;
+   rptRcTable* CreateFinalDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const;
 };

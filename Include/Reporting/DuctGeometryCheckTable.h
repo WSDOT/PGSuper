@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class pgsGirderArtifact;
 
 /*****************************************************************************
@@ -43,7 +43,7 @@ public:
 
    CDuctGeometryCheckTable& operator = (const CDuctGeometryCheckTable& rOther);
 
-   void Build(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const;
+   void Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
 protected:
    void MakeCopy(const CDuctGeometryCheckTable& rOther);

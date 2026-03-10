@@ -24,20 +24,15 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "SpecDesignPage.h"
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
-#include <psgLib/PrestressLossCriteria.h>
+#include <PsgLib/PrestressLossCriteria.h>
 
 #include "SpecMainSheet.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecDesignPage dialog
@@ -70,6 +65,7 @@ BEGIN_MESSAGE_MAP(CSpecDesignPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CSpecDesignPage)
 	ON_BN_CLICKED(IDC_CHECK_A, OnCheckA)
 	ON_BN_CLICKED(IDC_CHECK_HAULING, OnCheckHauling)
+    //ON_BN_CLICKED(IDC_CHECK_BEARING, OnCheckBearing)
 	ON_BN_CLICKED(IDC_CHECK_HD, OnCheckHd)
 	ON_BN_CLICKED(IDC_CHECK_LIFTING, OnCheckLifting)
 	ON_BN_CLICKED(IDC_CHECK_SLOPE, OnCheckSlope)
@@ -97,7 +93,7 @@ BOOL CSpecDesignPage::OnInitDialog()
 	
    // set statics for strand slope
    CString sl05, sl06, sl07;
-   if (pApp->GetUnitsMode() == eafTypes::umSI)
+   if (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI)
    {
       VERIFY(sl05.LoadString(IDS_SLOPE_O5_SI));
       VERIFY(sl06.LoadString(IDS_SLOPE_O6_SI));
@@ -294,6 +290,12 @@ BOOL CSpecDesignPage::OnSetActive()
       pWnd = GetDlgItem(IDC_HAULING_GROUP);
       pWnd->SetWindowText(_T("Hauling Stability Check/Design Options (LRFD 5.5.4.3)"));
    }
+
+   // only applicable if LRFD 10th edition or later
+   auto show = (pDad->GetSpecVersion() < WBFL::LRFD::BDSManager::Edition::TenthEdition2024) ? SW_HIDE : SW_SHOW;
+   GetDlgItem(IDC_HORIZ_TENSION_TIE_LABEL)->ShowWindow(show);
+   GetDlgItem(IDC_HORIZ_TENSION_TIE_CHECK)->ShowWindow(show);
+
 
    return CPropertyPage::OnSetActive();
 }

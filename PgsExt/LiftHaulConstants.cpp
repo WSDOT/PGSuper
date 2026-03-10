@@ -23,12 +23,6 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\LiftHaulConstants.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 Float64 CompareConcreteStrength(Float64 maxConc, Float64 newConc)
 {
    // NO_AVAILABLE_CONCRETE_STRENGTH is magic number meaning no possible value

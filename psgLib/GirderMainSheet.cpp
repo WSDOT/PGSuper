@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "GirderMainSheet.h"
 #include <MfcTools\CustomDDX.h>
 
@@ -38,11 +38,6 @@
 
 #include <Plugins\BeamFamilyCLSID.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 inline bool B2b(BOOL val) { return val!=0; }
 
@@ -66,14 +61,14 @@ CGirderMainSheet::~CGirderMainSheet()
 {
 }
 
-void CGirderMainSheet::SetBeamFactory(IBeamFactory* pFactory)
+void CGirderMainSheet::SetBeamFactory(std::shared_ptr<PGS::Beams::BeamFactory> pFactory)
 {
    m_Entry.SetBeamFactory(pFactory);
 }
 
 bool CGirderMainSheet::IsSplicedGirder()
 {
-   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_Entry.m_pBeamFactory);
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(m_Entry.GetBeamFactory());
    return (splicedBeamFactory == nullptr ? false : true);
 }
 
@@ -184,9 +179,9 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
       m_Entry.SetDragCoefficient(Cd);
    }
 
-   bool bUnitsSI = (pApp->GetUnitsMode() == eafTypes::umSI);
+   bool bUnitsSI = (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI);
 
-   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_Entry.m_pBeamFactory);
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(m_Entry.GetBeamFactory());
 
    DDX_Check_Bool(pDX,IDC_VARIABLE_DEPTH_CHECK,m_Entry.m_bIsVariableDepthSectionEnabled);
    DDX_Check_Bool(pDX,IDC_BEARING_ELEVS,m_Entry.m_DoReportBearingElevationsAtGirderEdges);
@@ -716,6 +711,7 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
 
    DDX_Text(pDX, IDC_MAX_NUM_PER_SECTION_10_OR_LESS, m_Entry.m_MaxNumDebondedStrandsPerSection10orLess);
    DDX_Text(pDX, IDC_MAX_NUM_PER_SECTION, m_Entry.m_MaxNumDebondedStrandsPerSection);
+   DDX_Text(pDX, IDC_MAX_NUM_PER_SECTION_FOR_07, m_Entry.m_MaxNumDebondedStrandsPerSectionFor07);
    DDX_Check_Bool(pDX, IDC_CHECK_MAX_FRACTION_PER_SECTION, m_Entry.m_bCheckMaxNumDebondedStrandsPerSection);
    DDX_Percentage(pDX,IDC_MAX_FRACTION_PER_SECTION, m_Entry.m_MaxDebondedStrandsPerSection);
 
@@ -833,7 +829,7 @@ void CGirderMainSheet::ExchangeFlexuralDesignStrategyCriteriaData(CDataExchange*
    else
    {
       // Hard coded min design values. 
-      bool is_si = eafTypes::umSI == pApp->GetUnitsMode();
+      bool is_si = WBFL::EAF::UnitMode::SI == pApp->GetUnitsMode();
 
       Float64 minfci = is_si ? WBFL::Units::ConvertToSysUnits(28.0,WBFL::Units::Measure::MPa) :
                                WBFL::Units::ConvertToSysUnits( 4.0,WBFL::Units::Measure::KSI); // minimum per LRFD 5.4.2.1

@@ -27,26 +27,19 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\CrackedSection.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CCrackedSectionDetailsChapterBuilder
-****************************************************************************/
-
-void write_cracked_section_table(IBroker* pBroker,
-                             IEAFDisplayUnits* pDisplayUnits,
+void write_cracked_section_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                              const PoiList& vPoi,
                              rptChapter* pChapter,
@@ -67,17 +60,17 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(const std::shared_ptr<co
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
@@ -139,13 +132,8 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(const std::shared_ptr<co
    return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCrackedSectionDetailsChapterBuilder::Clone() const
-{
-   return std::make_unique<CCrackedSectionDetailsChapterBuilder>();
-}
-
-void write_cracked_section_table(IBroker* pBroker,
-                             IEAFDisplayUnits* pDisplayUnits,
+void write_cracked_section_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                              const PoiList& vPoi,
                              rptChapter* pChapter,

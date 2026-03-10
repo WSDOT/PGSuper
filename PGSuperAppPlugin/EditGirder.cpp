@@ -23,18 +23,15 @@
 #include "stdafx.h"
 #include "EditGirder.h"
 #include "PGSuperDoc.h"
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
+
+#include <IFace/Tools.h>
 #include <IFace\GirderHandling.h>
 
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
 #endif
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // NOTE: This transaction is for use with PGSuper only
 
@@ -70,8 +67,8 @@ txnEditGirder::txnEditGirder(const CGirderKey& girderKey,const txnEditGirderData
    m_NewGirderData = newGirderData;
 
 #if defined _DEBUG
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IDocumentType, pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument());
 #endif
@@ -83,8 +80,8 @@ txnEditGirder::~txnEditGirder()
 
 bool txnEditGirder::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
@@ -165,8 +162,8 @@ bool txnEditGirder::Execute()
 
 void txnEditGirder::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
@@ -181,7 +178,7 @@ void txnEditGirder::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction>txnEditGirder::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction>txnEditGirder::CreateClone() const
 {
    return std::make_unique<txnEditGirder>(m_GirderKey,m_NewGirderData);
 }
@@ -216,8 +213,8 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
    /// this is a precast girder bridge (PGSuper) so there is only the one segment
    CSegmentKey segmentKey(girderKey.groupIndex,girderKey.girderIndex,0);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 

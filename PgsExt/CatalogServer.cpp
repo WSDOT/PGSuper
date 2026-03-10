@@ -25,12 +25,6 @@
 #include "..\MakePgz\UnzipPgz.h" 
 #include <EAF\EAFApp.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 // Functions to save and create our servers to/from a string
 CCatalogServer* CreateCatalogServer(LPCTSTR strAppName,const CString& createString,const CString& strExt)
 {
@@ -1610,51 +1604,51 @@ CIniCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& strFil
    // and caused HTTPS connections to fail.
    CInternetSession	session(pstrAgent); 
 
-   try
-   {
+	try 
+   {		
       // Use a unique_ptr with the custom deleter
       std::unique_ptr<CHttpFile, CHttpFileDeleter> pFile(static_cast<CHttpFile*>(session.OpenURL(strFileURL)));
       if (pFile)
-      {
+		{
          // Code above doesn't always throw on 404. Check manually
          DWORD dwStatus;
          pFile->QueryInfoStatusCode(dwStatus);
-
+			
          if (dwStatus == HTTP_STATUS_NOT_FOUND)
-         {
+			{
             // Handle 404 error specifically
-            return gwNotFound;
-         }
+				return gwNotFound;
+			}
          else if (dwStatus != HTTP_STATUS_OK)
-         {
+			{
             return gwConnectionError;
-         }
+		}
 
          // Copy file contents to local file
-         ULONGLONG len = pFile->GetLength();
-         TCHAR buf[2000];
-         int numread;
+			ULONGLONG len = pFile->GetLength();
+			TCHAR buf[2000];
+			int numread;
          CFile myfile(strLocalTargetFile, CFile::modeCreate | CFile::modeWrite | CFile::typeBinary);
          while ((numread = pFile->Read(buf, sizeof(buf) / sizeof(TCHAR) - 1)) > 0)
-         {
-            buf[numread] = _T('\0');
-            strObject += buf;
-            myfile.Write(buf, numread);
-            PeekAndPump();
-         }
-         myfile.Close();
+			{
+				buf[numread] = _T('\0');
+				strObject += buf;
+				myfile.Write(buf, numread);
+				PeekAndPump();
+			}
+			myfile.Close();
 
-         retVal = gwOk; // only good exit
-      }
-   }
-   catch (CInternetException* pEx)
-   {
+        retVal = gwOk; // only good exit
+		}
+	}
+	catch (CInternetException* pEx) 
+	{
       TCHAR szErr[256];
       pEx->GetErrorMessage(szErr, 256);
       AfxMessageBox(szErr);
-      pEx->Delete();
+		pEx->Delete();
       retVal = gwNotFound;
-   }
+	}
 
 	return retVal;
 }

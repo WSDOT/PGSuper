@@ -23,18 +23,18 @@
 #ifndef INCLUDED_INSERTDELETESPAN_H_
 #define INCLUDED_INSERTDELETESPAN_H_
 
-#include <EAF\EAFTransaction.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\GirderSpacing2.h>
+#include <EAF\Transaction.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\GirderSpacing2.h>
 #include <IFace\Project.h>
 
-class txnInsertSpan : public CEAFTransaction
+class txnInsertSpan : public WBFL::EAF::Transaction
 {
 public:
    txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face,Float64 spanLength,bool bCreateNewGroup,EventIndexType pierErectionEventIdx);
    virtual std::_tstring Name() const;
-   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction>CreateClone() const;
    virtual bool Execute();
    virtual void Undo();
    virtual bool IsUndoable() const;
@@ -54,7 +54,7 @@ private:
    ConnectionLibraryEntry::EndDistanceMeasurementType m_EndDistMeasure[2];
 };
 
-class txnDeleteSpan : public CEAFTransaction
+class txnDeleteSpan : public WBFL::EAF::Transaction
 {
 public:
    txnDeleteSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face,pgsTypes::BoundaryConditionType boundaryCondition);
@@ -62,7 +62,7 @@ public:
    txnDeleteSpan(const txnDeleteSpan& other);
    ~txnDeleteSpan();
    virtual std::_tstring Name() const;
-   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction>CreateClone() const;
    virtual bool Execute();
    virtual void Undo();
    virtual bool IsUndoable() const;

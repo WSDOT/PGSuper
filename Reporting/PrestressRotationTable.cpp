@@ -24,48 +24,17 @@
 #include <Reporting\PrestressRotationTable.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\PrecastSegmentData.h>
+#include <PsgLib\PrecastSegmentData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-//======================== LIFECYCLE  =======================================
-CPrestressRotationTable::CPrestressRotationTable()
-{
-}
-
-CPrestressRotationTable::CPrestressRotationTable(const CPrestressRotationTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CPrestressRotationTable::~CPrestressRotationTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CPrestressRotationTable& CPrestressRotationTable::operator= (const CPrestressRotationTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType, IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CPrestressRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType, IntervalIndexType intervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -204,32 +173,3 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
 
    return pTable;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CPrestressRotationTable::MakeCopy(const CPrestressRotationTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CPrestressRotationTable::MakeAssignment(const CPrestressRotationTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

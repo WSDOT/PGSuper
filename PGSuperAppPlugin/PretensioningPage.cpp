@@ -24,20 +24,16 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "PretensioningPage.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CPretensioningPage dialog
@@ -56,8 +52,8 @@ CPretensioningPage::~CPretensioningPage()
 
 void CPretensioningPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CPropertyPage::DoDataExchange(pDX);
@@ -87,8 +83,8 @@ BOOL CPretensioningPage::OnInitDialog()
 {
    CPropertyPage::OnInitDialog();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();

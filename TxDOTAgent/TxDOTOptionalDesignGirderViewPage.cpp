@@ -27,18 +27,15 @@
 #include "TxDOTOptionalDesignGirderViewPage.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace/PointOfInterest.h>
 
 #include "TogaGirderModelElevationView.h"
 #include "TogaGirderModelSectionView.h"
 #include "TxDOTOptionalDesignDoc.h"
 #include "TogaSectionCutDlgEx.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CTxDOTOptionalDesignGirderViewPage dialog
@@ -216,7 +213,7 @@ void CTxDOTOptionalDesignGirderViewPage::ShowCutDlg()
    Float64 val  = m_CurrentCutLocation;
    Float64 high = m_MaxCutLocation;
 
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+   auto pBroker = m_pBrokerRetriever->GetUpdatedBroker();
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    SpanIndexType span;
@@ -320,7 +317,7 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
 
    try
    {
-      CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+      auto pBroker = m_pBrokerRetriever->GetUpdatedBroker();
       GET_IFACE2(pBroker, IBridge, pBridge);
 
       // cut location

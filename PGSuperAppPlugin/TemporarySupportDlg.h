@@ -4,9 +4,10 @@
 #include "ClosureJointGeometryPage.h"
 #include "GirderSegmentSpacingPage.h"
 
-#include <PgsExt\TemporarySupportData.h>
+#include <PsgLib\TemporarySupportData.h>
+
 #include <IFace\ExtendUI.h>
-#include <EAF\EAFMacroTxn.h>
+#include <EAF\MacroTxn.h>
 
 // CTemporarySupportDlg
 
@@ -30,7 +31,7 @@ public:
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
-   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
+   std::unique_ptr<WBFL::EAF::Transaction> GetExtensionPageTransaction();
 
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -56,7 +57,7 @@ protected:
    friend CClosureJointGeometryPage;
    friend CGirderSegmentSpacingPage;
 
-   CEAFMacroTxn m_Macro;
+   WBFL::EAF::MacroTxn m_Macro;
    std::vector<std::pair<IEditTemporarySupportCallback*,CPropertyPage*>> m_ExtensionPages;
    std::vector<EditBridgeExtension> m_BridgeExtensionPages; // sorted based on callback ID
    void NotifyExtensionPages();

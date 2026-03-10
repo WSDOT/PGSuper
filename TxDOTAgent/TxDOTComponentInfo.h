@@ -22,32 +22,15 @@
 
 
 #pragma once
-#include "CLSID.h"
-#include "PGSComponentInfo.h"
-#include "resource.h"
 
-class ATL_NO_VTABLE CTxDOTComponentInfo : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CTxDOTComponentInfo, &CLSID_TxDOTComponentInfo>,
+#include <EAF\ComponentObject.h>
+#include "PGSComponentInfo.h"
+
+class CTxDOTComponentInfo : public WBFL::EAF::ComponentObject,
    public IPGSuperComponentInfo
 {
 public:
-   CTxDOTComponentInfo()
-   {
-   }
-
-DECLARE_REGISTRY_RESOURCEID(IDR_TXDOTCOMPONENTINFO)
-DECLARE_CLASSFACTORY_SINGLETON(CTxDOTComponentInfo)
-
-BEGIN_COM_MAP(CTxDOTComponentInfo)
-   COM_INTERFACE_ENTRY(IPGSuperComponentInfo)
-END_COM_MAP()
-
-BEGIN_CONNECTION_POINT_MAP(CTxDOTComponentInfo)
-END_CONNECTION_POINT_MAP()
-
-   HRESULT FinalConstruct();
-   void FinalRelease();
+   CTxDOTComponentInfo() = default;
 
 // IEAFComponentInfo
 public:
@@ -59,5 +42,3 @@ public:
    virtual bool HasMoreInfo() const override;
    virtual void OnMoreInfo() const override;
 };
-
-OBJECT_ENTRY_AUTO(__uuidof(TxDOTComponentInfo), CTxDOTComponentInfo)

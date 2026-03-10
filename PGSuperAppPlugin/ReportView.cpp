@@ -31,18 +31,16 @@
 #include "ReportView.h"
 #include "Hints.h"
 
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFStatusCenter.h>
 
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
+#include <Reporting\SpanGirderBearingReportSpecification.h>
+#include <Reporting\SpanGirderBearingReportSpecificationBuilder.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperReportView
@@ -86,11 +84,11 @@ void CPGSuperReportView::Dump(CDumpContext& dc) const
 // CPGSuperReportView message handlers
 void CPGSuperReportView::OnInitialUpdate()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFStatusCenter,pStatusCenter);
 
-   if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
+   if ( pStatusCenter->GetSeverity() == WBFL::EAF::StatusSeverityType::Error )
    {
       m_bUpdateError = true;
       m_ErrorMsg = _T("Errors exist that prevent analysis. Review the errors posted in the status center for more information");
@@ -112,11 +110,12 @@ void CPGSuperReportView::OnInitialUpdate()
    ASSERT(pCreateData != nullptr);
    std::vector<std::_tstring> rptNames(pCreateData->m_pRptMgr->GetReportNames());
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pCreateData->m_pRptMgr->GetReportSpecificationBuilder(rptNames[pCreateData->m_RptIdx]);
-   CMultiViewSpanGirderReportSpecificationBuilder* pMultiViewRptSpecBuilder(dynamic_cast<CMultiViewSpanGirderReportSpecificationBuilder*>(pRptSpecBuilder.get()));
+   CMultiViewSpanGirderReportSpecificationBuilder* pGMultiViewRptSpecBuilder(dynamic_cast<CMultiViewSpanGirderReportSpecificationBuilder*>(pRptSpecBuilder.get()));
+   CMultiViewSpanGirderBearingReportSpecificationBuilder* pBMultiViewRptSpecBuilder(dynamic_cast<CMultiViewSpanGirderBearingReportSpecificationBuilder*>(pRptSpecBuilder.get()));
 
    // if autocalc is turned on, or this is not a multi-view report, just process this normally
    // by calling the base class OnInitialUpdate method
-   if ( pAutoCalcDoc->IsAutoCalcEnabled() || pMultiViewRptSpecBuilder == nullptr )
+   if ( pAutoCalcDoc->IsAutoCalcEnabled() || (pGMultiViewRptSpecBuilder == nullptr && pBMultiViewRptSpecBuilder == nullptr))
    {
       CEAFAutoCalcReportView::OnInitialUpdate();
    }
@@ -172,11 +171,10 @@ BOOL CPGSuperReportView::PreTranslateMessage(MSG* pMsg)
 
 HRESULT CPGSuperReportView::UpdateReportBrowser(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IProgress,pProgress);
-   CEAFAutoProgress ap(pProgress,0);
+   GET_IFACE2(pBroker,IEAFProgress,pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress,0);
 
    pProgress->UpdateMessage(_T("Working..."));
 
@@ -197,10 +195,10 @@ HRESULT CPGSuperReportView::UpdateReportBrowser(const std::shared_ptr<const WBFL
 
 void CPGSuperReportView::RefreshReport()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IProgress,pProgress);
-   CEAFAutoProgress progress(pProgress);
+   
+   auto pBroker = EAFGetBroker();
+   GET_IFACE2(pBroker,IEAFProgress,pProgress);
+   WBFL::EAF::AutoProgress progress(pProgress);
    pProgress->UpdateMessage(_T("Updating report..."));
 
    CEAFAutoCalcReportView::RefreshReport();
@@ -255,98 +253,169 @@ bool CPGSuperReportView::CreateReport(IndexType rptIdx,BOOL bPromptForSpec)
 
    // If the requested report is a span/girder report we want to support creating multiple individual reports
    // Learn if this is a multi-span/girder report
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IReportManager,pRptMgr);
+   
+   auto pBroker = EAFGetBroker();
+   GET_IFACE2(pBroker,IEAFReportManager,pRptMgr);
    std::vector<std::_tstring> names = pRptMgr->GetReportNames();
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(names[rptIdx]);
    WBFL::Reporting::ReportDescription rptDesc = pRptBuilder->GetReportDescription();
 
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pRptBuilder->GetReportSpecificationBuilder();
 
-   // See if we have a CMultiViewSpanGirderReportSpecificationBuilder. 
+   // See if we have a CSpanGirderReportSpecificationBuilder. 
    // If so, we will cycle through creating report windows - one for each girder
    //////////////////////////////////////////////////////////////////////////////////////////////////////
-   CMultiViewSpanGirderReportSpecificationBuilder* pSGRptSpecBuilder(dynamic_cast<CMultiViewSpanGirderReportSpecificationBuilder*>(pRptSpecBuilder.get()));
+   CSpanReportSpecificationBuilder* pSGRptSpecBuilder(dynamic_cast<CSpanReportSpecificationBuilder*>(pRptSpecBuilder.get()));
    if ( pSGRptSpecBuilder )
    {
-      // this is a Span/Girder spec builder
-      // Create the report specification. This will define the girders to be reported on and the chapters to report
+      // this is a Span spec builder
+      // Create the report specification. This will define the girders/bearings to be reported on and the chapters to report
       std::shared_ptr<WBFL::Reporting::ReportSpecification> nullSpec;
       std::shared_ptr<WBFL::Reporting::ReportSpecification> rptSpec = pSGRptSpecBuilder->CreateReportSpec(rptDesc,nullSpec);
 
       if(rptSpec)
       {
          CMultiViewSpanGirderReportSpecification* pSGRptSpec( dynamic_cast<CMultiViewSpanGirderReportSpecification*>(rptSpec.get()) );
-
-         AFX_MANAGE_STATE(AfxGetStaticModuleState()); /////////
-
-         const std::vector<CGirderKey>& girderKeys( pSGRptSpec->GetGirderKeys() );
-         ATLASSERT(!girderKeys.empty()); // UI should not allow this
-
-         GET_IFACE2(pBroker,IProgress,pProgress);
-         DWORD dwMask(girderKeys.size() == 1 ? PW_ALL | PW_NOGAUGE | PW_NOCANCEL : PW_ALL | PW_NOGAUGE);
-         CEAFAutoProgress ap(pProgress,0,dwMask); // progress window has a cancel button
-
-         std::_tstring reportName = pSGRptSpec->GetReportName();
-
-         bool first(true);
-         std::vector<CGirderKey>::const_iterator iter(girderKeys.begin());
-         std::vector<CGirderKey>::const_iterator iterEnd(girderKeys.end());
-         for ( ; iter != iterEnd; iter++)
+         if (pSGRptSpec)
          {
-            const CGirderKey& girderKey(*iter);
+             AFX_MANAGE_STATE(AfxGetStaticModuleState()); /////////
 
-            // Progress button
-            pProgress->UpdateMessage(GIRDER_LABEL(girderKey));
+             const std::vector<CGirderKey>& girderKeys(pSGRptSpec->GetGirderKeys());
+             ATLASSERT(!girderKeys.empty()); // UI should not allow this
 
-            if ( pProgress->Continue() != S_OK )
-            {
-               break; // cancel button pressed... quit creating reports
-            }
+             GET_IFACE2(pBroker, IEAFProgress, pProgress);
+             DWORD dwMask(girderKeys.size() == 1 ? PW_ALL | PW_NOGAUGE | PW_NOCANCEL : PW_ALL | PW_NOGAUGE);
+             WBFL::EAF::AutoProgress ap(pProgress, 0, dwMask); // progress window has a cancel button
+
+             std::_tstring reportName = pSGRptSpec->GetReportName();
+
+             bool first(true);
+             std::vector<CGirderKey>::const_iterator iter(girderKeys.begin());
+             std::vector<CGirderKey>::const_iterator iterEnd(girderKeys.end());
+             for (; iter != iterEnd; iter++)
+             {
+                 const CGirderKey& girderKey(*iter);
+
+                 // Progress button
+                 pProgress->UpdateMessage(GIRDER_LABEL(girderKey));
+
+                 if (pProgress->Continue() != S_OK)
+                 {
+                     break; // cancel button pressed... quit creating reports
+                 }
 
 
-            // Create a CSegmentReportSpecification. A single report view news a specification for a 
-            // single segment.
-            // Set the segment to report on
-            std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec( std::make_shared<CGirderReportSpecification>(pSGRptSpec->GetReportTitle().c_str(),pBroker,girderKey) );
-            CGirderReportSpecification* pMyReportSpec = (CGirderReportSpecification*)pRptSpec.get();
-            pRptSpec->SetChapterInfo(pSGRptSpec->GetChapterInfo());
+                 // Create a CSegmentReportSpecification. A single report view news a specification for a 
+                 // single segment.
+                 // Set the segment to report on
+                 std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CGirderReportSpecification>(pSGRptSpec->GetReportTitle().c_str(), pBroker, girderKey));
+                 CGirderReportSpecification* pMyReportSpec = (CGirderReportSpecification*)pRptSpec.get();
+                 pRptSpec->SetChapterInfo(pSGRptSpec->GetChapterInfo());
 
-            // Also need a SpanGirder Report Spec Builder for when the Edit button is pressed
-            std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder( std::make_shared<CGirderReportSpecificationBuilder>(pBroker,girderKey) );
+                 // Also need a SpanGirder Report Spec Builder for when the Edit button is pressed
+                 std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CGirderReportSpecificationBuilder>(pBroker, girderKey));
 
-            if ( first )
-            {
-               // first report goes in this view
-               if ( pAutoCalcDoc->IsAutoCalcEnabled() )
-               {
-                  CEAFAutoCalcReportView::CreateReport(rptIdx,pRptSpec,pRptSpecBuilder);
-               }
-               else
-               {
-                  InitReport(pRptSpec,pRptSpecBuilder);
-               }
-               first = false;
-            }
-            else
-            {
-               CEAFReportViewCreationData data;
-               data.m_RptIdx = rptIdx;
-               data.m_pRptSpecification = pRptSpec;
-               data.m_pRptSpecificationBuilder = pRptSpecBuilder;
-               data.m_pRptMgr = pRptMgr;
+                 if (first)
+                 {
+                     // first report goes in this view
+                     if (pAutoCalcDoc->IsAutoCalcEnabled())
+                     {
+                         CEAFAutoCalcReportView::CreateReport(rptIdx, pRptSpec, pRptSpecBuilder);
+                     }
+                     else
+                     {
+                         InitReport(pRptSpec, pRptSpecBuilder);
+                     }
+                     first = false;
+                 }
+                 else
+                 {
+                     CEAFReportViewCreationData data;
+                     data.m_RptIdx = rptIdx;
+                     data.m_pRptSpecification = pRptSpec;
+                     data.m_pRptSpecificationBuilder = pRptSpecBuilder;
+                     data.m_pRptMgr = pRptMgr;
 
-               if ( !pAutoCalcDoc->IsAutoCalcEnabled() )
-               {
-                  data.m_bInitializeOnly = true;
-               }
+                     if (!pAutoCalcDoc->IsAutoCalcEnabled())
+                     {
+                         data.m_bInitializeOnly = true;
+                     }
 
-               // create new views for all other reports
-               CView* pView = pEAFDoc->CreateView(pDoc->GetReportViewKey(),LPVOID(&data));
-            }
+                     // create new views for all other reports
+                     CView* pView = pEAFDoc->CreateView(pDoc->GetReportViewKey(), LPVOID(&data));
+                 }
+             }
          }
+         CMultiViewSpanGirderBearingReportSpecification* pSGBRptSpec(dynamic_cast<CMultiViewSpanGirderBearingReportSpecification*>(rptSpec.get()));
+         if (pSGBRptSpec)
+         {
+             AFX_MANAGE_STATE(AfxGetStaticModuleState()); /////////
 
+             const std::vector<ReactionLocation>& reactionLocations(pSGBRptSpec->GetReactionLocations());
+             ATLASSERT(!reactionLocations.empty()); // UI should not allow this
+
+             GET_IFACE2(pBroker, IEAFProgress, pProgress);
+             DWORD dwMask(reactionLocations.size() == 1 ? PW_ALL | PW_NOGAUGE | PW_NOCANCEL : PW_ALL | PW_NOGAUGE);
+             WBFL::EAF::AutoProgress ap(pProgress, 0, dwMask); // progress window has a cancel button
+
+             std::_tstring reportName = pSGBRptSpec->GetReportName();
+
+             bool first(true);
+             std::vector<ReactionLocation>::const_iterator iter(reactionLocations.begin());
+             std::vector<ReactionLocation>::const_iterator iterEnd(reactionLocations.end());
+             for (; iter != iterEnd; iter++)
+             {
+                 const ReactionLocation& reactionLocation(*iter);
+
+                 // Progress button
+                 pProgress->UpdateMessage(reactionLocation.PierLabel.c_str());
+
+                 if (pProgress->Continue() != S_OK)
+                 {
+                     break; // cancel button pressed... quit creating reports
+                 }
+
+                 // Create a CBearingReportSpecification. A single report view news a specification for a 
+                 // single bearing.
+                 // Set the segment to report on
+                 std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CBearingReportSpecification>(pSGBRptSpec->GetReportTitle().c_str(), pBroker, reactionLocation));
+                 CBearingReportSpecification* pMyReportSpec = (CBearingReportSpecification*)pRptSpec.get();
+                 pRptSpec->SetChapterInfo(pSGBRptSpec->GetChapterInfo());
+
+                 // Also need a SpanGirderBearing Report Spec Builder for when the Edit button is pressed
+                 std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CBearingReportSpecificationBuilder>(pBroker, reactionLocation));
+
+                 if (first)
+                 {
+                     // first report goes in this view
+                     if (pAutoCalcDoc->IsAutoCalcEnabled())
+                     {
+                         CEAFAutoCalcReportView::CreateReport(rptIdx, pRptSpec, pRptSpecBuilder);
+                     }
+                     else
+                     {
+                         InitReport(pRptSpec, pRptSpecBuilder);
+                     }
+                     first = false;
+                 }
+                 else
+                 {
+                     CEAFReportViewCreationData data;
+                     data.m_RptIdx = rptIdx;
+                     data.m_pRptSpecification = pRptSpec;
+                     data.m_pRptSpecificationBuilder = pRptSpecBuilder;
+                     data.m_pRptMgr = pRptMgr;
+
+                     if (!pAutoCalcDoc->IsAutoCalcEnabled())
+                     {
+                         data.m_bInitializeOnly = true;
+                     }
+
+                     // create new views for all other reports
+                     CView* pView = pEAFDoc->CreateView(pDoc->GetReportViewKey(), LPVOID(&data));
+                 }
+             }
+         }
          return true; 
       }
       else

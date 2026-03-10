@@ -37,34 +37,29 @@
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
-//////////////////////////////////////////////////////////////////////
+////////////////////////////////////
 
-CGirderViewPrintJob::CGirderViewPrintJob(CGirderModelElevationView* pev, 
-                                         CGirderModelSectionView* psv, 
-                                         CGirderModelChildFrame* pframe,
-                                         IBroker* pBroker)
+CGirderViewPrintJob::CGirderViewPrintJob(CGirderModelElevationView* pev,
+   CGirderModelSectionView* psv,
+   CGirderModelChildFrame* pframe,
+   std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
-   ATLASSERT(pev!=0);
-   ATLASSERT(psv!=0);
-   m_pElevationView=pev;
-   m_pSectionView=psv;
+   ATLASSERT(pev != 0);
+   ATLASSERT(psv != 0);
+   m_pElevationView = pev;
+   m_pSectionView = psv;
    m_pBroker = pBroker;
    m_pFrame = pframe;
 
-	m_rcMarginMM = CRect(10,10,10,10);
+   m_rcMarginMM = CRect(10, 10, 10, 10);
 
-	m_csFtPrint = "Arial";
-	m_iFtPrint = 120;
+   m_csFtPrint = "Arial";
+   m_iFtPrint = 120;
 
-	strTitle = "Girder View";
+   strTitle = "Girder View";
 }
 
 CGirderViewPrintJob::~CGirderViewPrintJob()
