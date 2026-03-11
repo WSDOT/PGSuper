@@ -211,7 +211,6 @@
     <ClInclude Include="..\Include\IFace\AnalysisResults.h" />
     <ClInclude Include="AnalysisAgent.h" />
     <ClInclude Include="AnalysisAgentImp.h" />
-    <ClInclude Include="AnalysisResult.h" />
     <ClInclude Include="BarrierSidewalkLoadDistributionTool.h" />
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="GirderModelData.h" />

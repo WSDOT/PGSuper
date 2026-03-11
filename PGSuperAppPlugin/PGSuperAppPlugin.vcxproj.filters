@@ -978,9 +978,6 @@
     <ClInclude Include="EditTimelineDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ErectPiersActivity.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ErectPiersDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1341,7 +1338,6 @@
     <ClInclude Include="DistributedLoadDrawStrategyImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Documentation\PGSuper.hh" />
     <ClInclude Include="EditAlignment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
