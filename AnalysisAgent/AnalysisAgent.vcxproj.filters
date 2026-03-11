@@ -72,9 +72,6 @@
     <ClInclude Include="PGSuperLoadCombinationResponse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AnalysisResult.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\IFace\AnalysisResults.h">
       <Filter>IFace</Filter>
     </ClInclude>

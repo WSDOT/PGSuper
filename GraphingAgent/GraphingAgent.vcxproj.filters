@@ -30,9 +30,6 @@
     <ClInclude Include="PGSpliceGrapherImp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\Graphing\GraphingTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GrapherBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>

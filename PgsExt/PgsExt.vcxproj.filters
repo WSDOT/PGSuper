@@ -567,30 +567,6 @@
     <ClInclude Include="..\Include\PgsExt\ReportCreepCoefficient.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Include\PgsExt\HorizontalInterfaceZoneData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\PgsExt\StructuredLoad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\PgsExt\StructuredSave.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\PgsExt\SlabOffsetCriteria.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\PgsExt\DifferenceItem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\PgsExt\ShearZoneData2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\PgsExt\TensionStressLimit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\PgsExt\HaulingCriteria.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\PgsExt\DeckReinforcementArtifact.h">
       <Filter>Header Files</Filter>
     </ClInclude>

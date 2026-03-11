@@ -202,7 +202,6 @@
     <ResourceCompile Include="GraphingAgent.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Include\Graphing\GraphingTypes.h" />
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="GrapherBase.h" />
     <ClInclude Include="PGSpliceGrapherImp.h" />

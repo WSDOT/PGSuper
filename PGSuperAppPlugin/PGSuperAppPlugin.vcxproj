@@ -659,7 +659,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="DisplayObjectFactory.h" />
     <ClInclude Include="DistributedLoadDrawStrategy.h" />
     <ClInclude Include="DistributedLoadDrawStrategyImpl.h" />
-    <ClInclude Include="Documentation\PGSuper.hh" />
     <ClInclude Include="EditAlignment.h" />
     <ClInclude Include="EditBoundaryConditions.h" />
     <ClInclude Include="EditConstructionLoad.h" />
@@ -866,7 +865,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="EditTemporarySupportStation.h" />
     <ClInclude Include="EditTimeline.h" />
     <ClInclude Include="EditTimelineDlg.h" />
-    <ClInclude Include="ErectPiersActivity.h" />
     <ClInclude Include="ErectPiersDlg.h" />
     <ClInclude Include="ErectSegmentsDlg.h" />
     <ClInclude Include="GirderGrid.h" />
