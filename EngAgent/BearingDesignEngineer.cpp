@@ -1074,8 +1074,6 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
 
 void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation& reactionLocation,
     CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const
-
-
 {
     GetBearingParameters(girderKey, pDetails);
 
@@ -1083,13 +1081,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
     pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
 
-    pgsTypes::BridgeAnalysisType batSS = pgsTypes::SimpleSpan;
-    pgsTypes::BridgeAnalysisType batCS = pgsTypes::ContinuousSpan;
-
     GET_IFACE2(GetBroker(),IBridge, pBridge);
-
-    
-
 
     GET_IFACE2(GetBroker(),IIntervals, pIntervals);
     IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
@@ -1098,27 +1090,16 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     IntervalIndexType shearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
     IntervalIndexType constructionIntervalIdx = pIntervals->GetConstructionLoadInterval();
     IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
-    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
     IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-
-
-    
-    
+    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
     PierIndexType nPiers = pBridge->GetPierCount();
-
-
-    
 
     GET_IFACE2(GetBroker(),IReactions, pReactions);
     std::unique_ptr<IProductReactionAdapter> pForces = std::make_unique<ProductForcesReactionAdapter>(pReactions, girderKey);
 
     const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
     IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
-
-
-    
-
 
     pDetails->erectedSegmentReaction = pForces->GetReaction(erectSegmentIntervalIdx, reactionLocation, pgsTypes::pftGirder, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
     pDetails->maxGirderReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftGirder, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
@@ -1156,20 +1137,16 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
         pDetails->minSlabPanelReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, minBAT);
     }
 
-    pDetails->maxSidewalkReaction = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, batSS);
-    pDetails->minSidewalkReaction = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, batCS);
+    pDetails->maxSidewalkReaction = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, maxBAT);
+    pDetails->minSidewalkReaction = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, minBAT);
 
-    Float64 R1 = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftTrafficBarrier, batSS);
-    Float64 R2 = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftTrafficBarrier, batCS);
-    pDetails->maxRailingSystemReaction = Max(R1, R2);
-    pDetails->minRailingSystemReaction = Min(R1, R2);
+    pDetails->maxRailingSystemReaction = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftTrafficBarrier, maxBAT);
+    pDetails->minRailingSystemReaction = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftTrafficBarrier, minBAT);
 
     if (pDetails->bHasOverlay)
     {
-        R1 = pForces->GetReaction(overlayIntervalIdx, reactionLocation, pgsTypes::pftOverlay, batSS);
-        R2 = pForces->GetReaction(overlayIntervalIdx, reactionLocation, pgsTypes::pftOverlay, batCS);
-        pDetails->maxFutureOverlayReaction = Max(R1, R2);
-        pDetails->minFutureOverlayReaction = Min(R1, R2);
+       pDetails->maxFutureOverlayReaction = pForces->GetReaction(overlayIntervalIdx, reactionLocation, pgsTypes::pftOverlay, maxBAT);
+       pDetails->maxFutureOverlayReaction = pForces->GetReaction(overlayIntervalIdx, reactionLocation, pgsTypes::pftOverlay, minBAT);
     }
 
 
@@ -1186,8 +1163,8 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
     if (pDetails->bPedLoading)
     {
-        pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, batSS, bIncludeImpact, true, &R1min, &R2max);
-        pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, batCS, bIncludeImpact, true, &R2min, &R2max);
+        pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, maxBAT, bIncludeImpact, true, &R1min, &R2max);
+        pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, minBAT, bIncludeImpact, true, &R2min, &R2max);
         pDetails->maxPedReaction = Max(R1max, R2max);
         pDetails->minPedReaction = Min(R1min, R2min);
     }
