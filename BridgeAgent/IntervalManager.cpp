@@ -2075,6 +2075,10 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx, const CTimelineEven
       {
          strDescriptions.push_back(_T("Roadway Geometry Control"));
       }
+      else
+      {
+         strDescriptions.push_back(_T("Roadway Geometry Control Report Only"));
+      }
    }
 
    if ( strDescriptions.size() == 0 )
