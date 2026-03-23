@@ -3,7 +3,7 @@ Bearing Shear Deformation {#tg_bearing_shear_deformation}
 
 In PGSuper, bearing shear deformation is determined by computing the horizontal displacement of the bottom of the girder at the bearing location from a point of longitudinal fixity in the superstructure. This displacement is found by computing the factored thermal movement range combined with the movements caused by creep, shrinkage, and relaxation. For this calculation, it is assumed that the pier supporting the bearing is rigid and there is no slip between the bearing and girder. 
 
-Point of Longitidunal Fixity
+Point of Longitudinal Fixity
 ----------------------------
 In PGSuper, points of longitudinal fixity in the superstructure are assumed to be at supports that have fixed longitudinal translation. If all supports are defined with free longitudinal translation (e.g. all rollers), then the point of longitudinal fixity is taken to be at the first pier, ahead on station, that is at or adjacent to the center of the bridge (where the center of the bridge is either at the central pier for girders with even numbers of spans, or at midspan of the central span for girders with odd numbers of spans).
 

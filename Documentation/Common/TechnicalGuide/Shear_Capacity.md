@@ -1,7 +1,7 @@
 Shear Capacity {#tg_shear_capacity}
 ======================================
 
-## Adjustment Factors for Net Longitunal Tensile Strain
+## Adjustment Factors for Net Longitudinal Tensile Strain
 
 
 LRFD 5.7.3.4.2 provides guidance for estimating the beta and theta parameters for shear capacity. The net longitudinal strain is a key parameter and it is computed by LRFD Equation 5.7.3.4.2-4. Within this software, they equation has been modified as described herein.
