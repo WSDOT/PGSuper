@@ -142,19 +142,23 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
                y += Hg; // y is in girder coordinates, we want y measured up from bottom of girder. Add girder height
                ASSERT(0.0 <= y); // y should always be a positive value
 
-               if (x < x_left)
+               if (y <= hb)
                {
-                  // strand is left of web projection box
-                  nLeft++;
-                  sum_x_left += x;
-                  sum_y_left += y;
-               }
-               else if (x_right < x)
-               {
-                  // strand is right of web projection box
-                  nRight++;
-                  sum_x_right += x;
-                  sum_y_right += y;
+                  // only look at strands in the bottom flange - for spliced girders, straight strands could be in the top
+                  if (x < x_left)
+                  {
+                     // strand is left of web projection box
+                     nLeft++;
+                     sum_x_left += x;
+                     sum_y_left += y;
+                  }
+                  else if (x_right < x)
+                  {
+                     // strand is right of web projection box
+                     nRight++;
+                     sum_x_right += x;
+                     sum_y_right += y;
+                  }
                }
             }
          }
