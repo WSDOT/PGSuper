@@ -3276,16 +3276,7 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
    // the beam family ID (basically removing PGSuper girders
    // for PGSplice and visa-versa)
    CATID catid = GetBeamFamilyCategoryID();
-   CComPtr<ICatRegister> pICatReg = 0;
-   HRESULT hr;
-   hr = ::CoCreateInstance( CLSID_StdComponentCategoriesMgr,
-                            nullptr,
-                            CLSCTX_INPROC_SERVER,
-                            IID_ICatRegister,
-                            (void**)&pICatReg );
-
-   CComPtr<ICatInformation> pICatInfo;
-   pICatReg->QueryInterface(IID_ICatInformation,(void**)&pICatInfo);
+   auto& component_mgr = WBFL::EAF::ComponentManager::GetInstance();
 
    GirderLibrary& gdrLib = m_LibMgr.GetGirderLibrary();
    WBFL::Library::KeyListType keyList;
@@ -3299,8 +3290,7 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
       auto beamFactory = pGdrEntry->GetBeamFactory();
       CLSID clsid = beamFactory->GetFamilyCLSID();
 
-      HRESULT result = pICatInfo->IsClassOfCategories(clsid,1,&catid,0,nullptr);
-      if ( result == S_FALSE )
+      if (!component_mgr.IsClassOfCategory(clsid, catid))
       { 
          gdrLib.RemoveEntry(strName.c_str());
       }
