@@ -219,7 +219,7 @@ bool CFillHaunchDlg::ModifyCompute(CBridgeDescription2& rBridgeDescription2)
 
 	// Copy designed bridge descr
 	GET_IFACE(IBridgeDescription, pBridgeDesc);
-	pBridgeDesc->DesignHaunches(rBridgeDescription2, designSegmentKey, m_ToBeComputedGirderIdx, (pgsTypes::HaunchInputDistributionType)m_HaunchInputDistributionType, m_ToGirderSel == 1);
+	rBridgeDescription2 = pBridgeDesc->DesignHaunches(rBridgeDescription2, designSegmentKey, m_ToBeComputedGirderIdx, (pgsTypes::HaunchInputDistributionType)m_HaunchInputDistributionType, m_ToGirderSel == 1).second;
 
 	return true;
 }
