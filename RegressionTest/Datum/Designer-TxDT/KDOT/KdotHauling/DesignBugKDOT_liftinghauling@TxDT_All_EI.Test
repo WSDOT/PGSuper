@@ -20,7 +20,6 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Lifting checks failed
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -35,7 +34,6 @@ Ultimate moment capacity (positive moment) check failed for Strength I Limit Sta
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Lifting checks failed
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -76,6 +74,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
 Ultimate vertical shear capacity check failed for Strength II Limit State
+Lifting checks failed
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -122,7 +121,6 @@ Girder design was Not Successful
 The Specification Check was Not Successful
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
-Lifting checks failed
 Minimum fillet value exceeded for bridge check failed
 
 
@@ -137,7 +135,6 @@ Ultimate moment capacity (positive moment) check failed for Strength I Limit Sta
 Ultimate moment capacity (positive moment) check failed for Strength II Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength II Limit State
-Lifting checks failed
 Minimum fillet value exceeded for bridge check failed
 
 
