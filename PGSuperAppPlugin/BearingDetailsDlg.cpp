@@ -165,6 +165,7 @@ void CBearingDetailsDlg::MethodBControls(int s)
 	GetDlgItem(IDC_CHECK_FIXED_X_TRANS)->ShowWindow(s);
 	GetDlgItem(IDC_CHECK_FIXED_Y_TRANS)->ShowWindow(s);
 	GetDlgItem(IDC_CHECK_EXT_BONDED_PLATES)->ShowWindow(s);
+	GetDlgItem(IDC_TRANS_GROUP)->ShowWindow(s);
 }
 
 

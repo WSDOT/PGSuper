@@ -173,7 +173,7 @@ void CMultiBearingSelectGrid::CustomInit(const GroupGirderCollection& groupGirde
         if (bcType == _T("Hinge"))
         {
             CString hingeBrgStr;
-            hingeBrgStr.Format(_T("%s (Hinge)"), lbl);
+            hingeBrgStr.Format(_T("%s (Model Hinge)"), lbl);
             lbl = hingeBrgStr;
         }
 
