@@ -1511,7 +1511,7 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
         {
             m_current_row_data.clear();
 
-            const auto& rowData = m_schedule_data[gdrIdx];
+            const auto& rowData = m_schedule_data[grpIdx * (pBridge->GetGirderCount(grpIdx)) + gdrIdx];
 
             ColumnIndexType col = 0;
 
