@@ -26303,7 +26303,8 @@ Float64 CBridgeAgentImp::GetTransverseTopFlangeSlope(const CSegmentKey& segmentK
    CComQIPtr<IThickenedFlangeSegment> tfSegment(segment);
    if (tfSegment)
    {
-      tfSegment->get_TopFlangeSlope(&topFlangeSlope);
+      tfSegment->get_TopFlangeSlope(&topFlangeSlope); //in girder section coordinate system
+      topFlangeSlope += GetOrientation(segmentKey);// adjusted for girder orientation
    }
    else
    {
