@@ -118,7 +118,7 @@ void CBearingMultiViewReportDlg::DoDataExchange(CDataExchange* pDX)
         if (bcType == _T("Hinge"))
         {
             CString hingeBrgStr;
-            hingeBrgStr.Format(_T("%s (Hinge)"), strBrg);
+            hingeBrgStr.Format(_T("%s (Hinged)"), strBrg);
             pBrgBox->AddString(hingeBrgStr);
         }
         else
@@ -328,7 +328,7 @@ void CBearingMultiViewReportDlg::UpdateBearingComboBox()
         if (bcType == _T("Hinge"))
         {
             CString hingeBrgStr;
-            hingeBrgStr.Format(_T("%s (Hinge)"), strBrg);
+            hingeBrgStr.Format(_T("%s (Hinged)"), strBrg);
             pBrgBox->AddString(hingeBrgStr);
         }
         else

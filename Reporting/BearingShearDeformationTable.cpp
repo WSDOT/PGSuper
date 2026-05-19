@@ -253,7 +253,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(std
         if (bcType == _T("Hinge"))
         {
             CString hingeBrgStr;
-            hingeBrgStr.Format(_T("%s (Hinge)"), strBrg);
+            hingeBrgStr.Format(_T("%s (Model Hinge)"), strBrg);
 
             (*p_table)(row, col++) << hingeBrgStr;
         }
