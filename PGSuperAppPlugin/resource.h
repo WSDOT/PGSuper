@@ -1490,6 +1490,7 @@
 #define IDC_BUTTON_EDIT_BEARING_DETAIL_1 2067
 #define IDC_SELECT_BEARINGS             2068
 #define IDC_STATIC_BRG_NOTE             2069
+#define IDC_TRANS_GROUP                 2070
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1683,7 +1684,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        411
 #define _APS_NEXT_COMMAND_VALUE         37026
-#define _APS_NEXT_CONTROL_VALUE         2070
+#define _APS_NEXT_CONTROL_VALUE         2071
 #define _APS_NEXT_SYMED_VALUE           115
 #endif
 #endif
