@@ -10763,15 +10763,20 @@ Float64 CAnalysisAgentImp::GetFinishedElevation(const pgsPointOfInterest& poi,In
       pBridge->GetStationAndOffset(poi,&station,&zs);
 
       // roadway surface elevations above girder locations
+      GET_IFACE(IGirder, pIGirder);
+      Float64 orientation = pIGirder->GetTransverseTopFlangeSlope(segmentKey);
+
       GET_IFACE(IRoadway,pAlignment);
       Float64 YsbLeft = pAlignment->GetElevation(station,zs - leftEdge);
       Float64 YsbCenter = pAlignment->GetElevation(station,zs);
       Float64 YsbRight = pAlignment->GetElevation(station,zs + rightEdge);
 
       Float64 lftSlope = (YsbLeft - YsbCenter) / leftEdge;
+      lftSlope += orientation;
       *pLftHaunch = *pCtrHaunch + leftEdge * lftSlope;
 
       Float64 rgtSlope = (YsbRight - YsbCenter) / rightEdge;
+      rgtSlope -= orientation;
       *pRgtHaunch = *pCtrHaunch + rightEdge * rgtSlope;
 
       return ctrGrdElev;
