@@ -54,13 +54,83 @@ struct DataSeriesNameHolder
 
    DataSeriesNameHolder() : vectorIndex1(INVALID_INDEX),vectorIndex2(INVALID_INDEX) {;}
 
-   bool operator<(const DataSeriesNameHolder& other) const { return penStyle+penWidth+color < other.penStyle + other.penWidth + other.color; }
+   bool operator<(const DataSeriesNameHolder& other) const
+   {
+       if (penStyle != other.penStyle)
+           return penStyle < other.penStyle;
+
+       if (penWidth != other.penWidth)
+           return penWidth < other.penWidth;
+
+       return color < other.color;
+   }
+
    bool operator==(const DataSeriesNameHolder& other) const { return penStyle == other.penStyle && penWidth == other.penWidth && color == other.color; }
 };
 
 bool compare_point (const WBFL::Graphing::Point& i, const WBFL::Graphing::Point& j)
 {
    return i.X() < j.X();
+}
+
+static Float64 GetYAtX(const std::vector<WBFL::Graphing::Point>& points, Float64 x)
+{
+    if (points.empty())
+        return Float64_Max;
+
+    if (x <= points.front().X())
+        return points.front().Y();
+
+    for (std::size_t i = 1; i < points.size(); i++)
+    {
+        if (x <= points[i].X())
+        {
+            const auto& left = points[i - 1];
+            const auto& right = points[i];
+
+            if (right.X() == left.X())
+                return right.Y();
+
+            return LinInterpLine(left.X(), left.Y(), right.X(), right.Y(), x);
+        }
+    }
+
+    return points.back().Y();
+}
+
+static void MergeOutOfOrderSegment(
+    std::vector<WBFL::Graphing::Point>& target,
+    const std::vector<WBFL::Graphing::Point>& segment)
+{
+    target.insert(target.end(), segment.begin(), segment.end());
+
+    std::stable_sort(target.begin(), target.end(), compare_point);
+
+    // Keep at most two points at the same X location.
+    std::vector<WBFL::Graphing::Point> cleaned;
+    cleaned.reserve(target.size());
+
+    Float64 lastX = Float64_Max;
+    IndexType numDups = 0;
+
+    for (const auto& point : target)
+    {
+        if (point.X() != lastX)
+        {
+            cleaned.push_back(point);
+            lastX = point.X();
+            numDups = 0;
+        }
+        else
+        {
+            if (numDups == 0)
+                cleaned.push_back(point);
+
+            numDups++;
+        }
+    }
+
+    target.swap(cleaned);
 }
 
 
@@ -451,8 +521,25 @@ bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
                   }
                   else
                   {
-                     ATLASSERT(0); // more than two series with same properties. Didn't expect this.
+                      // More than two same-style segments can happen when the graph gives
+                      // spans/regions out of X-order. Do not create a new exported series;
+                      // merge this segment into whichever existing curve it best matches.
+
+                      std::size_t idx1 = iter->vectorIndex1;
+                      std::size_t idx2 = iter->vectorIndex2;
+
+                      Float64 x = cleanPoints.front().X();
+                      Float64 y = cleanPoints.front().Y();
+
+                      Float64 score1 = fabs(GetYAtX(rawSeriesGraphPoints[idx1], x) - y);
+                      Float64 score2 = fabs(GetYAtX(rawSeriesGraphPoints[idx2], x) - y);
+
+                      if (score1 <= score2)
+                          MergeOutOfOrderSegment(rawSeriesGraphPoints[idx1], cleanPoints);
+                      else
+                          MergeOutOfOrderSegment(rawSeriesGraphPoints[idx2], cleanPoints);
                   }
+
                }
             }
          }
