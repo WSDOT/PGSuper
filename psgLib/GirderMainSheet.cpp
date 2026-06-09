@@ -1079,6 +1079,7 @@ BOOL CGirderMainSheet::OnInitDialog()
 	if (!m_bAllowEditing)
    {
       CWnd* pOK = GetDlgItem(IDOK);
+      pOK->EnableWindow(FALSE);
       pOK->ShowWindow(SW_HIDE);
 
       CWnd* pCancel = GetDlgItem(IDCANCEL);
