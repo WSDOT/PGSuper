@@ -133,6 +133,9 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
         bCold = false;
     }
 
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
+    pBearing->GetTimeDependentShearDeformation(girderKey, &sfDetails);
+
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pDisplayUnits, false, bCold, &sfDetails) << rptNewLine;
 
     *p << _T("-Deck shrinkage effects are ignored") << rptNewLine;

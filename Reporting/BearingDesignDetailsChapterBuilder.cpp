@@ -218,33 +218,8 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << _T("If all specified connection types are free to translate longitudinally, then the point of fixity is taken to be at the pier nearest the center.") << rptNewLine;
 
 
-    
-    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
-    {
-        *p << Sub2(_T("T"), _T("max")) << _T(" = maximum temperature used for design") << rptNewLine;
-        *p << Sub2(_T("T"), _T("min")) << _T(" = minimum temperature used for design") << rptNewLine;
-
-        p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-        *pChapter << p;
-        *p << _T("Shear deformation at bearing, ") << Sub2(symbol(DELTA), _T("s"));
-        *p << _T(", due to tendon shortening, ") << symbol(DELTA) << Sub2(_T(" L"), _T("ten")) << _T(" :") << rptNewLine;
-
-        p = new rptParagraph;
-        *pChapter << p;
-        //CString html = "<h1>TEST</h1>";
-        //*p << html;
-
-        *p << _T("Bottom flange shortening is calculated using PCI BDM Eq. 10.8.3.8.2-6:") << rptNewLine;
-        *p << rptRcEquation(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png"),
-        _T("\\Delta_S = -\\Delta L_{bf} = -\\frac{\\left(1 + \\dfrac{e_p y_b}{r ^ 2} \\right)}{\\left(1 + \\dfrac{e_p ^ 2}{r ^ 2} \\right)} \\left(\\Delta L_{ten} \\right)"));
-        *p << rptNewLine;
-
-        *p << _T("where") << rptNewLine;
-        *p << rptRcEquation(std::_tstring(rptStyleManager::GetImagePath()) + _T("radius_of_gyration.png"), _T("r = \\sqrt{\\dfrac{I_{xx}}{A_g}}")) << rptNewLine;
-    }
-
     bool bCold;
-    
+
     if (pEnvironment->GetClimateCondition() == pgsTypes::ClimateCondition::Cold)
     {
         bCold = true;
@@ -254,21 +229,53 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         bCold = false;
     }
 
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
+    pBearing->GetTimeDependentShearDeformation(girderKey, &sfDetails);
 
+    *p << CBearingShearDeformationTable().BuildThermalDeformationTable(pBroker, girderKey, pDisplayUnits, bCold, &sfDetails);
 
-    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pDisplayUnits,
-        true, bCold, &sfDetails);
+    *p << Sub2(_T("T"), _T("max")) << _T(" = maximum temperature used for design") << rptNewLine;
+    *p << Sub2(_T("T"), _T("min")) << _T(" = minimum temperature used for design") << rptNewLine;
+
+    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+    {
+
+        p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+        *pChapter << p;
+
+        *p << _T("Longitudinal deformation at prestressed steel (tendon) centroid due to time-dependent losses:") << rptNewLine;
+
+        *p << CBearingShearDeformationTable().BuildTendonDeformationTable(pBroker, girderKey, pDisplayUnits, &sfDetails);
+
+        *p << rptNewLine;
+
+        *p << _T("Shear deformation at bearing, ") << Sub2(symbol(DELTA), _T("s"));
+        *p << _T(", due to ") << symbol(DELTA) << Sub2(_T(" L"), _T("ten")) << _T(" :") << rptNewLine;
+
+        p = new rptParagraph;
+        *pChapter << p;
+        //CString html = "<h1>TEST</h1>";
+        //*p << html;
+
+        *p << _T("Bottom flange shortening is calculated using PCI BDM Eq. 10.8.3.8.2-6:") << rptNewLine;
+        *p << rptRcEquation(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png"),
+            _T("\\Delta L_{bf} = \\frac{\\left(1 + \\dfrac{e_p y_b}{r ^ 2} \\right)}{\\left(1 + \\dfrac{e_p ^ 2}{r ^ 2} \\right)} \\left(\\Delta L_{ten} \\right)"));
+        *p << rptNewLine;
+
+        *p << _T("where") << rptNewLine;
+        *p << rptRcEquation(std::_tstring(rptStyleManager::GetImagePath()) + _T("radius_of_gyration.png"), _T("r = \\sqrt{\\dfrac{I_{xx}}{A_g}}")) << rptNewLine;
+    }
+
+    *p << CBearingShearDeformationTable().BuildShearDeformationTable(pBroker, girderKey, pDisplayUnits, &sfDetails);
 
     if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
     {
         *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
         *p << _T("-It is assumed that creep and shrinkage effects cease after deck casting") << rptNewLine;
+        *p << _T("-Deck shrinkage effects are ignored") << rptNewLine;
     }
     *p << _T("-Bearing reset effects are ignored") << rptNewLine;
-    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
-    {
-        *p << _T("-Deck shrinkage effects are ignored") << rptNewLine << rptNewLine;
-    }
+
 
     p = new rptParagraph;
     *pChapter << p;

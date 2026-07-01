@@ -63,9 +63,18 @@ public:
        GroupIndexType endGroup;
    };
 
+   rptRcTable* BuildThermalDeformationTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bCold, SHEARDEFORMATIONDETAILS* details) const;
+
+   rptRcTable* BuildTendonDeformationTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, SHEARDEFORMATIONDETAILS* details) const;
+
+   rptRcTable* BuildShearDeformationTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,
+       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, SHEARDEFORMATIONDETAILS* details) const;
+
    ColumnIndexType GetBearingTableColumnCount(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, SHEARDEFORMATIONDETAILS* details, bool bDetail) const;
 
-   virtual rptRcTable* BuildBearingShearDeformationTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+   rptRcTable* BuildBearingShearDeformationTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bDetail, bool bCold, SHEARDEFORMATIONDETAILS* details) const;
 
 };
