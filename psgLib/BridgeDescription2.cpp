@@ -4307,14 +4307,11 @@ bool CBridgeDescription2::IsStable() const
          for ( ; tsIter != tsIterEnd; tsIter++ )
          {
             const CTemporarySupportData* pTS = *tsIter;
-            if ( pTS->GetSupportType() == pgsTypes::ErectionTower )
-            {
-               nReactions++; // erection tower provide a reaction in the Y direction
-            }
+            nReactions++;
          }
 
          IndexType Ne = 3*nJoints;
-         IndexType Nu = 3*nMembers+nReactions+1;
+         IndexType Nu = 3*nMembers + nReactions + 1;
          bool bIsThisSegmentStable = Nu < Ne ? false : true;
 
          if ( segIdx == 0 )
