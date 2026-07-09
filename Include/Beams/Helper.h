@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -69,6 +69,8 @@ namespace PGS
       bool BEAMSFUNC IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, const BeamFactory* pFactory, pgsTypes::SupportedBeamSpacing spacingType);
 
       void BEAMSFUNC LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, pgsPoiMgr* pPoiMgr);
+
+      void BEAMSFUNC LayoutWebThickeningPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, Float64 Xpier, pgsPoiMgr* pPoiMgr);
 
 
       /////////////////////////////////////////////////////////////////////////////

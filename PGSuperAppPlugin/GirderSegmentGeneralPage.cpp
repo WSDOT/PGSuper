@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -142,6 +142,13 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_RIGHT_END_BLOCK_TRANSITION, IDC_RIGHT_END_BLOCK_TRANSITION_UNIT, pSegment->EndBlockTransitionLength[pgsTypes::metEnd], pDisplayUnits->GetSpanLengthUnit() );
    DDX_UnitValueAndTag(pDX, IDC_RIGHT_END_BLOCK_WIDTH,      IDC_RIGHT_END_BLOCK_WIDTH_UNIT,      pSegment->EndBlockWidth[pgsTypes::metEnd],            pDisplayUnits->GetComponentDimUnit() );
 
+   DDX_UnitValueAndTag(pDX, IDC_WEB_THICKENING_WIDTH,      IDC_WEB_THICKENING_WIDTH_UNIT,      pSegment->WebThickeningWidth,            pDisplayUnits->GetComponentDimUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_WEB_THICKENING_WIDTH, pSegment->WebThickeningWidth, pDisplayUnits->GetComponentDimUnit());
+   DDX_UnitValueAndTag(pDX, IDC_WEB_THICKENING_LENGTH,     IDC_WEB_THICKENING_LENGTH_UNIT,     pSegment->WebThickeningLength,           pDisplayUnits->GetSpanLengthUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_WEB_THICKENING_LENGTH, pSegment->WebThickeningLength, pDisplayUnits->GetSpanLengthUnit());
+   DDX_UnitValueAndTag(pDX, IDC_WEB_THICKENING_TRANSITION, IDC_WEB_THICKENING_TRANSITION_UNIT, pSegment->WebThickeningTransitionLength, pDisplayUnits->GetSpanLengthUnit() );
+   DDV_UnitValueZeroOrMore(pDX, IDC_WEB_THICKENING_TRANSITION, pSegment->WebThickeningTransitionLength, pDisplayUnits->GetSpanLengthUnit());
+
    if ( pDX->m_bSaveAndValidate )
    {
       pSegment->SetVariationType(variationType);
@@ -163,6 +170,43 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
    {
       AfxMessageBox(_T("End block parameters exceed the overall length of the segment."), MB_OK);
       pDX->Fail();
+   }
+
+   if (pDX->m_bSaveAndValidate && !IsZero(pSegment->WebThickeningWidth))
+   {
+      // Find the interior pier's segment-coordinate location so we can validate
+      // that the thickening zone fits within the closer half of the segment.
+      Float64 minDistToPierEnd = segment_length; // fallback: no pier found
+      Float64 Xpier = -1.0;
+      {
+         auto pBroker = EAFGetBroker();
+         GET_IFACE2(pBroker, IBridge, pBridge);
+         const CSegmentKey& segmentKey = pParent->m_SegmentKey;
+         PierIndexType nPiers = pBridge->GetPierCount();
+         for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+         {
+            if (pBridge->IsInteriorPier(pierIdx))
+            {
+               Float64 Xs;
+               if (pBridge->GetPierLocation(pierIdx, segmentKey, &Xs) && Xs > 0.0 && Xs < segment_length)
+               {
+                  minDistToPierEnd = Min(Xs, segment_length - Xs);
+                  Xpier = Xs;
+                  break;
+               }
+            }
+         }
+      }
+      if (!pSegment->AreWebThickeningParamsValid(minDistToPierEnd))
+      {
+         AfxMessageBox(_T("Web thickening extent exceeds the distance from the pier to the nearer end of the segment."), MB_OK);
+         pDX->Fail();
+      }
+      if (pSegment->HasWebThickeningEndBlockOverlap(segment_length, Xpier))
+      {
+         AfxMessageBox(_T("Web thickening zone overlaps the end block zone. Reduce the thickening length, transition length, or end block length."), MB_OK);
+         pDX->Fail();
+      }
    }
 
    // no precamber in spliced girder segments
@@ -269,6 +313,7 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
 
    InitBottomFlangeDepthControls();
    InitEndBlockControls();
+   InitWebThickeningControls();
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    EventIDType constructionEventID = pParent->m_TimelineMgr.GetSegmentConstructionEventID(pParent->m_SegmentID);
@@ -1530,6 +1575,68 @@ void CGirderSegmentGeneralPage::InitEndBlockControls()
       GetDlgItem(IDC_RIGHT_END_BLOCK_TRANSITION_UNIT)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_RIGHT_END_BLOCK_WIDTH)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_RIGHT_END_BLOCK_WIDTH_UNIT)->ShowWindow(SW_HIDE);
+   }
+}
+
+void CGirderSegmentGeneralPage::InitWebThickeningControls()
+{
+   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
+   const GirderLibraryEntry* pLibEntry = pParent->m_Girder.GetGirderLibraryEntry();
+   auto factory = pLibEntry->GetBeamFactory();
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(factory);
+
+   bool bSupportsWebThickening = splicedBeamFactory && splicedBeamFactory->SupportsWebThickening();
+
+   // Controls are only relevant when the factory supports web thickening AND
+   // an interior permanent pier lies within this segment. Use IBridge::GetPierLocation
+   // (Segment Coordinate System) to avoid unstable station-based arithmetic.
+   bool bHasInteriorPier = false;
+   Float64 pierXs = -1.0;
+   if (bSupportsWebThickening)
+   {
+      auto pBroker = EAFGetBroker();
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      const CSegmentKey& segmentKey = pParent->m_SegmentKey;
+      Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
+      PierIndexType nPiers = pBridge->GetPierCount();
+      for (PierIndexType pierIdx = 0; pierIdx < nPiers && !bHasInteriorPier; pierIdx++)
+      {
+         if (pBridge->IsInteriorPier(pierIdx))
+         {
+            Float64 Xs;
+            if (pBridge->GetPierLocation(pierIdx, segmentKey, &Xs) && Xs > 0.0 && Xs < segmentLength)
+            {
+               bHasInteriorPier = true;
+               pierXs = Xs;
+            }
+         }
+      }
+   }
+
+   if (!bSupportsWebThickening || !bHasInteriorPier)
+   {
+      GetDlgItem(IDC_WEB_THICKENING_WIDTH_HEADER)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_WEB_THICKENING_LENGTH_HEADER)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_WEB_THICKENING_TRANSITION_HEADER)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_WEB_THICKENING_LABEL)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_WEB_THICKENING_WIDTH)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_WEB_THICKENING_WIDTH_UNIT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_WEB_THICKENING_LENGTH)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_WEB_THICKENING_LENGTH_UNIT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_WEB_THICKENING_TRANSITION)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_WEB_THICKENING_TRANSITION_UNIT)->ShowWindow(SW_HIDE);
+      GetDlgItem(IDC_INTERIOR_PIER_LOCATION_LABEL)->ShowWindow(SW_HIDE);
+   }
+   else
+   {
+      auto pBroker = EAFGetBroker();
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      const auto& spanLengthUnit = pDisplayUnits->GetSpanLengthUnit();
+
+      CString strPierLocation;
+      strPierLocation.Format(_T("Interior Pier CL Location measured from start of segment: %s"), FormatDimension(pierXs, pDisplayUnits->GetSpanLengthUnit(), true));
+      CDataExchange dx(this, FALSE);
+      DDX_Text(&dx, IDC_INTERIOR_PIER_LOCATION_LABEL, strPierLocation);
    }
 }
 

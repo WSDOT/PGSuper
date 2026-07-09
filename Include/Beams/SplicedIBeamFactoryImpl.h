@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -111,6 +111,7 @@ namespace PGS
          bool CanBottomFlangeDepthVary() const override;
          LPCTSTR GetBottomFlangeDepthDimension() const override;
          bool SupportsEndBlocks() const override;
+         bool SupportsWebThickening() const override;
          Float64 GetBottomFlangeDepth(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const override;
 
       private:

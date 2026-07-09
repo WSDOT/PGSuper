@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper Beam Factory
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This library is a part of the Washington Bridge Foundation Libraries
@@ -363,6 +363,9 @@ namespace PGS
 
          // returns true if the section supports end blocks
          virtual bool SupportsEndBlocks() const = 0;
+
+         // returns true if the section supports web thickening at an interior pier
+         virtual bool SupportsWebThickening() const = 0;
 
          virtual Float64 GetBottomFlangeDepth(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
 

@@ -1,0 +1,22 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    7   9.00  Freeport Unit 3    1     1     STX7    *     42  0.6  270  29.50  30.48                                              5.998 10.000   2.423    -3.090    13538   0.724  0.884   2.668 -0.528  0.000 -0.033 -0.561 109.22  477.50    2.00   18.00   18.00    2.49    2.91    3.23    4.12    1.97 
+
+
+The Specification Check was Not Successful
+Lifting checks failed for Segment 2.
+Lifting checks failed for Segment 4.
+Finished elevation check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    7   9.00  Freeport Unit 3    1     2     STX7    *     42  0.6  270  29.50  30.48                                              5.998 10.000   2.435    -3.104    13615   0.724  0.884   2.645 -0.478  0.000 -0.033 -0.511 109.22  476.67    2.00   18.00   18.00    2.47    2.82    3.20    3.98    1.94 
+
+
+The Specification Check was Not Successful
+Lifting checks failed for Segment 2.
+Lifting checks failed for Segment 4.
+Finished elevation check failed
+
+

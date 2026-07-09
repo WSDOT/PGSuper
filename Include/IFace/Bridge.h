@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1740,6 +1740,13 @@ public:
 
    // Returns the top flange thickening for the provided segment
    virtual Float64 GetTopFlangeThickening(const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
+
+   // Returns true if the segment's beam factory supports web thickening and a non-zero width is configured
+   virtual bool CanWebBeThickened(const CSegmentKey& segmentKey) const = 0;
+
+   // Returns the extra web width (per face) at the given poi due to web thickening at an interior pier
+   virtual Float64 GetWebThickening(const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetWebThickening(const CSegmentKey& segmentKey, Float64 Xpoi) const = 0;
 
    // Returns the number of bottom flanges
    virtual FlangeIndexType GetBottomFlangeCount(const CGirderKey& girderKey) const = 0;

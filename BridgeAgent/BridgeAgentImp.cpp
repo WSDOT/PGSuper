@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -4297,6 +4297,31 @@ void CBridgeAgentImp::ValidateGirders()
 
                //strMsg += _T("See Status Center for Details");
                //THROW_UNWIND(os.str().c_str(),XREASON_INVALID_SEGMENT_VARIATION);
+            }
+
+            // Web thickening / end block overlap check
+            if (!IsZero(pSegment->WebThickeningWidth))
+            {
+               Float64 segLen = GetSegmentLength(segmentKey);
+               PierIndexType nPiers = GetPierCount();
+               for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+               {
+                  if (IsInteriorPier(pierIdx))
+                  {
+                     Float64 Xs;
+                     if (GetPierLocation(pierIdx, segmentKey, &Xs) && Xs > 0.0 && Xs < segLen)
+                     {
+                        if (pSegment->HasWebThickeningEndBlockOverlap(segLen, Xs))
+                        {
+                           std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey))
+                              + _T(": Web thickening zone overlaps end block zone. Reduce the thickening length, transition length, or end block length.");
+                           pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(
+                              segmentKey, EGD_GENERAL, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str()));
+                        }
+                        break;
+                     }
+                  }
+               }
             }
 
             // Warn if girder has both debonded and harped strands
@@ -25653,6 +25678,73 @@ Float64 CBridgeAgentImp::GetTopFlangeThickening(const CPrecastSegmentData* pSegm
 
    ATLASSERT(false);
    return -99999;
+}
+
+bool CBridgeAgentImp::CanWebBeThickened(const CSegmentKey& segmentKey) const
+{
+   const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
+   using namespace PGS::Beams;
+   SplicedBeamFactory* pSplicedFactory = dynamic_cast<SplicedBeamFactory*>(beamFactory.get());
+   if (pSplicedFactory == nullptr || !pSplicedFactory->SupportsWebThickening())
+   {
+      return false;
+   }
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+   if (IsZero(pSegment->WebThickeningWidth))
+   {
+      return false;
+   }
+   // Also require an interior pier to actually fall within this segment â€” the stored
+   // width may be stale from a prior geometry where a pier was present.
+   Float64 segmentLength = GetSegmentLength(segmentKey);
+   PierIndexType nPiers = GetPierCount();
+   for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+   {
+      if (IsInteriorPier(pierIdx))
+      {
+         Float64 Xs;
+         if (GetPierLocation(pierIdx, segmentKey, &Xs) && Xs > 0.0 && Xs < segmentLength)
+            return true;
+      }
+   }
+   return false;
+}
+
+Float64 CBridgeAgentImp::GetWebThickening(const pgsPointOfInterest& poi) const
+{
+   const CSegmentKey& segmentKey(poi.GetSegmentKey());
+   return GetWebThickening(segmentKey, poi.GetDistFromStart());
+}
+
+Float64 CBridgeAgentImp::GetWebThickening(const CSegmentKey& segmentKey, Float64 Xpoi) const
+{
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+
+   if (IsZero(pSegment->WebThickeningWidth))
+   {
+      return 0.0;
+   }
+
+   Float64 segmentLength = GetSegmentLength(segmentKey);
+   PierIndexType nPiers = GetPierCount();
+   for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+   {
+      if (IsInteriorPier(pierIdx))
+      {
+         Float64 Xpier;
+         if (GetPierLocation(pierIdx, segmentKey, &Xpier) && Xpier > 0.0 && Xpier < segmentLength)
+         {
+            Float64 deltaW;
+            ::GetWebThickeningWidth(Xpoi, Xpier, pSegment->WebThickeningWidth,
+               pSegment->WebThickeningLength, pSegment->WebThickeningTransitionLength, &deltaW);
+            return deltaW;
+         }
+      }
+   }
+   return 0.0;
 }
 
 Float64 CBridgeAgentImp::GetTopFlangeWidth(const pgsPointOfInterest& poi) const

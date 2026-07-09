@@ -41,11 +41,15 @@ Double Linear and Double Parabolic variations are used to define haunched segmen
 
 Some girder types support variable depth bottom flanges. This is common with I-Beam type sections. The bottom flange depth can be defined for the prismatic and tapered sections.
 
-Some girder types support end blocks. End blocks are defined by their length, transition length, and width at the end of the girder. End blocks are a constant width for their length, and then transition back into the typical girder section over the transition length.
+![](SegmentShape.png)
+> TIP: The sketch of the segment updates as dimensions are changed. The dark gray segment is the current segment and the light gray segments are the adjacent segments. This image will show you how changes to this segment effects the adjacent segments.
 
-> TIP: The sketch of the segment updates as dimensions are changed. The dark gray segment is the current segment and the light gray segments are the adjacent segments. This image will show you how changes to this segment effects the adjacent segments. ![](SegmentShape.png)
+Some girder types support end blocks. End blocks are defined by their length, taper length, and width at the end of the girder. End blocks are a constant width for their length, and then transition back into the typical girder section over the taper length.
 
+Some girder types support web thickening at mid-segment if the segment is supported by an interior pier. Web thickening is defined by: the additional width added to each face of the web at the pier centerline (total web increase = 2 × this value), half-length of the constant full-width zone on each side of the pier centerline, and the length of the taper zone as shown below. 
+![](WebThickening.png)
 
+ 
 ### Defining Segment Concrete Properties ###
 Since PGSplice is using a non-linear time-step analysis, time-dependent material models are needed for concrete. The material model needs to define concrete strength and modulus of elasticity as a function of time. 
 

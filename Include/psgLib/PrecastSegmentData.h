@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -96,6 +96,13 @@ public:
    std::array<Float64, 2> EndBlockTransitionLength;
    std::array<Float64, 2> EndBlockWidth;
    bool AreEndBlocksValid(Float64 segmentFramingLength) const;
+
+   // Web thickening at interior pier (zero width = disabled)
+   Float64 WebThickeningWidth;            // added width per web face at pier
+   Float64 WebThickeningLength;           // full-width zone half-length from pier
+   Float64 WebThickeningTransitionLength; // linear taper half-length from pier
+   bool AreWebThickeningParamsValid(Float64 minDistFromPierToSegmentEnd) const;
+   bool HasWebThickeningEndBlockOverlap(Float64 segmentLength, Float64 Xpier) const;
 
    // Copies only segment definition data. Does not copy ID or Index
    void CopySegmentData(const CPrecastSegmentData* pSegment,bool bCopyLocation);

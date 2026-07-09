@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -298,6 +298,46 @@ void write_segment_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::share
          pIGirder->GetTopWidth(poi, &left, &right);
          (*pTable)(0, 1) << _T("Left Overhang = ") << cmpdim.SetValue(left) << rptNewLine;
          (*pTable)(0, 1) << _T("Right Overhang = ") << cmpdim.SetValue(right) << rptNewLine;
+      }
+   }
+
+   GET_IFACE2(pBroker, IGirder, pGirderIface);
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+   if (pGirderIface->CanWebBeThickened(segmentKey))
+   {
+      const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
+
+      INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
+      INIT_UV_PROTOTYPE(rptLengthUnitValue, len, pDisplayUnits->GetSpanLengthUnit(), true);
+
+      rptParagraph* pWTTablePara = new rptParagraph;
+      *pChapter << pWTTablePara;
+      rptRcTable* pWTtable = rptStyleManager::CreateTableNoHeading(2, _T("Pier Web Thickening"));
+      pWTtable->EnableRowStriping(false);
+      *pWTTablePara << pWTtable;
+      RowIndexType wtrow = 0;
+      (*pWTtable)(wtrow, 0) << _T("Web Thickening Width (each face)");
+      (*pWTtable)(wtrow++, 1) << dim.SetValue(pSegment->WebThickeningWidth);
+      (*pWTtable)(wtrow, 0) << _T("Full-Width Zone Half-Length");
+      (*pWTtable)(wtrow++, 1) << len.SetValue(pSegment->WebThickeningLength);
+      (*pWTtable)(wtrow, 0) << _T("Taper Zone Half-Length");
+      (*pWTtable)(wtrow++, 1) << len.SetValue(pSegment->WebThickeningTransitionLength);
+
+      // CanWebBeThickened guarantees a pier exists within this segment
+      Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
+      PierIndexType nPiers = pBridge->GetPierCount();
+      for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+      {
+         if (pBridge->IsInteriorPier(pierIdx))
+         {
+            Float64 Xs;
+            if (pBridge->GetPierLocation(pierIdx, segmentKey, &Xs) && Xs > 0.0 && Xs < segmentLength)
+            {
+               (*pWTtable)(wtrow, 0) << _T("Distance from Segment Start to Pier CL");
+               (*pWTtable)(wtrow++, 1) << len.SetValue(Xs);
+               break;
+            }
+         }
       }
    }
 

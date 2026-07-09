@@ -46,3 +46,20 @@ Define the geometry of the slab haunch
 Item | Description
 -----|-------------
 Haunch Depth | Haunch depth at start and end of segment are shown when applicable
+
+Web Thickening Over Interior Piers
+--------------------
+For spliced girder segments that span over an interior pier, the web can be thickened in the vicinity of the pier to carry the increased shear demand. This input section is only shown when the girder type supports web thickening and an interior permanent pier falls within the segment.
+
+The thickened zone is symmetric about the pier centerline. The width increases linearly from zero over the taper zone, holds at the full thickening width through the full-width zone, then tapers back symmetrically on the other side.
+
+Item | Description
+-----|-------------
+Web Thickening Width | The additional width added to each face of the web at the pier centerline (total web increase = 2 × this value)
+Pier Thickening Length | Half-length of the constant full-width zone on each side of the pier centerline
+Taper Zone Length | Half-length of the linear taper on each side of the full-width zone over which the web width transitions from the nominal value to the full thickening width
+Interior Pier Location | Distance from the start of the segment to the centerline of the interior pier (informational, read-only)
+
+The combined extent of the thickening zone (Pier Thickening Length + Taper Zone Length) must be less than the distance from the pier centerline to the nearer end of the segment.
+
+> Web thickening is only available for spliced I-beam and spliced NU-beam girder types.

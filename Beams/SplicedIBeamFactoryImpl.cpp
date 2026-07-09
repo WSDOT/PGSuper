@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -162,6 +162,28 @@ void SplicedIBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBrok
    segment->put_EndBlockTransitionLength(etEnd,pSegment->EndBlockTransitionLength[pgsTypes::metEnd]);
    segment->put_EndBlockWidth(           etEnd,pSegment->EndBlockWidth[pgsTypes::metEnd]);
 
+   // set web thickening at interior pier
+   // NOTE: CreateSegment is called during bridge model construction, before girder line geometry
+   // is available. IBridge methods that need GetGirderLine cannot be used here. Station arithmetic
+   // on the real bridge description segment (not a dialog copy) is safe and correct.
+   {
+      Float64 segStartStation, segEndStation;
+      pSegment->GetStations(&segStartStation, &segEndStation);
+      Float64 Xpier = -1.0;
+      for (const auto* pPier : pSegment->GetPiers())
+      {
+         Float64 ps = pPier->GetStation();
+         if (segStartStation < ps && ps < segEndStation)
+         {
+            Xpier = ps - segStartStation;
+            break;
+         }
+      }
+      segment->put_InteriorPierXs(Xpier);
+      segment->put_WebThickeningWidth(pSegment->WebThickeningWidth);
+      segment->put_WebThickeningLength(pSegment->WebThickeningLength);
+      segment->put_WebThickeningTransitionLength(pSegment->WebThickeningTransitionLength);
+   }
 
    // set the segment parameters
    pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();
@@ -205,6 +227,28 @@ void SplicedIBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> 
    Float64 Wb, Wt;
    ::GetEndBlockWidth(Xs, Ls, (SectionBias)sectionBias, beam, pSegment->EndBlockWidth,pSegment->EndBlockLength,pSegment->EndBlockTransitionLength,&Wt,&Wb);
    ::AdjustForEndBlocks(beam, Wt, Wb);
+
+   if (!IsZero(pSegment->WebThickeningWidth))
+   {
+      const CSegmentKey& sk = pSegment->GetSegmentKey();
+      Float64 segmentLength = pBridge->GetSegmentLength(sk);
+      PierIndexType nPiers = pBridge->GetPierCount();
+      for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+      {
+         if (pBridge->IsInteriorPier(pierIdx))
+         {
+            Float64 Xpier;
+            if (pBridge->GetPierLocation(pierIdx, sk, &Xpier) && Xpier > 0.0 && Xpier < segmentLength)
+            {
+               Float64 deltaW;
+               ::GetWebThickeningWidth(Xs, Xpier, pSegment->WebThickeningWidth,
+                  pSegment->WebThickeningLength, pSegment->WebThickeningTransitionLength, &deltaW);
+               ::AdjustForWebThickening(beam, deltaW);
+               break;
+            }
+         }
+      }
+   }
 
    beam.QueryInterface(ppShape);
 }
@@ -300,6 +344,27 @@ void SplicedIBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WB
    // end block transition points
    //
    LayoutIBeamEndBlockPointsOfInterest(segmentKey, pSegment, segment_length, pPoiMgr);
+
+   //
+   // web thickening transition points
+   //
+   {
+      Float64 Xpier = -1.0;
+      PierIndexType nPiers = pBridge->GetPierCount();
+      for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+      {
+         if (pBridge->IsInteriorPier(pierIdx))
+         {
+            Float64 Xs;
+            if (pBridge->GetPierLocation(pierIdx, segmentKey, &Xs) && Xs > 0.0 && Xs < segment_length)
+            {
+               Xpier = Xs;
+               break;
+            }
+         }
+      }
+      LayoutWebThickeningPointsOfInterest(segmentKey, pSegment, segment_length, Xpier, pPoiMgr);
+   }
 
    // POI for transition points
    pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();
@@ -1125,6 +1190,11 @@ LPCTSTR SplicedIBeamFactory::GetBottomFlangeDepthDimension() const
 }
 
 bool SplicedIBeamFactory::SupportsEndBlocks() const
+{
+   return true;
+}
+
+bool SplicedIBeamFactory::SupportsWebThickening() const
 {
    return true;
 }

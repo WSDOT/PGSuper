@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -442,4 +442,37 @@ void PGS::Beams::LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentK
          VERIFY(pPoiMgr->AddPointOfInterest(poiEndEndBlock1) != INVALID_ID);
       }
    }
+}
+
+void PGS::Beams::LayoutWebThickeningPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, Float64 Xpier, pgsPoiMgr* pPoiMgr)
+{
+   if (IsZero(pSegment->WebThickeningWidth) || Xpier < 0.0)
+      return;
+
+   Float64 L  = pSegment->WebThickeningLength;
+   Float64 Lt = pSegment->WebThickeningTransitionLength;
+
+   // Boundaries of full-width zone
+   Float64 xs1 = Xpier - L;
+   Float64 xs2 = Xpier + L;
+   // Boundaries of taper zones
+   Float64 xt1 = Xpier - (L + Lt);
+   Float64 xt2 = Xpier + (L + Lt);
+
+   auto addTransitionPoi = [&](Float64 Xs)
+   {
+      if (0.0 <= Xs && Xs <= segmentLength)
+      {
+         pgsPointOfInterest poi(segmentKey, Xs, POI_SECTCHANGE_TRANSITION);
+         VERIFY(pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
+      }
+   };
+
+   if (!IsZero(Lt))
+   {
+      addTransitionPoi(xt1);
+      addTransitionPoi(xt2);
+   }
+   addTransitionPoi(xs1);
+   addTransitionPoi(xs2);
 }

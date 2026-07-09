@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1055,6 +1055,9 @@ public:
    Float64 GetTopFlangeThickening(const pgsPointOfInterest& poi) const override;
    Float64 GetTopFlangeThickening(const CSegmentKey& segmentKey, Float64 Xpoi) const override;
    Float64 GetTopFlangeThickening(const CPrecastSegmentData* pSegment, Float64 Xs) const override;
+   bool CanWebBeThickened(const CSegmentKey& segmentKey) const override;
+   Float64 GetWebThickening(const pgsPointOfInterest& poi) const override;
+   Float64 GetWebThickening(const CSegmentKey& segmentKey, Float64 Xpoi) const override;
    Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi) const override;
    Float64 GetTopWidth(const pgsPointOfInterest& poi, Float64* pLeft=nullptr, Float64* pRight=nullptr) const override;
    FlangeIndexType GetBottomFlangeCount(const CGirderKey& girderKey) const override;

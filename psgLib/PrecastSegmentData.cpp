@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -105,6 +105,10 @@ void CPrecastSegmentData::Init()
 
    TopFlangeThickeningType = pgsTypes::tftNone;
    TopFlangeThickening = 0.0;
+
+   WebThickeningWidth = 0.0;
+   WebThickeningLength = 0.0;
+   WebThickeningTransitionLength = 0.0;
 
    Precamber = 0.0;
 
@@ -422,6 +426,24 @@ bool CPrecastSegmentData::AreEndBlocksValid(Float64 segmentFramingLength) const
    Float64 L = EndBlockLength[pgsTypes::metStart] + EndBlockTransitionLength[pgsTypes::metStart]
       + EndBlockTransitionLength[pgsTypes::metEnd] + EndBlockLength[pgsTypes::metEnd];
    return L < segmentFramingLength;
+}
+
+bool CPrecastSegmentData::AreWebThickeningParamsValid(Float64 minDistFromPierToSegmentEnd) const
+{
+   Float64 L = WebThickeningLength + WebThickeningTransitionLength;
+   return L < minDistFromPierToSegmentEnd;
+}
+
+bool CPrecastSegmentData::HasWebThickeningEndBlockOverlap(Float64 segmentLength, Float64 Xpier) const
+{
+   if (Xpier < 0.0 || IsZero(WebThickeningWidth))
+      return false;
+
+   Float64 wtExtent = WebThickeningLength + WebThickeningTransitionLength;
+   Float64 ebLeft   = EndBlockLength[pgsTypes::metStart] + EndBlockTransitionLength[pgsTypes::metStart];
+   Float64 ebRight  = segmentLength - EndBlockLength[pgsTypes::metEnd] - EndBlockTransitionLength[pgsTypes::metEnd];
+
+   return (Xpier - wtExtent) < ebLeft || (Xpier + wtExtent) > ebRight;
 }
 
 Float64 CPrecastSegmentData::GetBasicSegmentHeight() const
@@ -841,6 +863,10 @@ void CPrecastSegmentData::CopyVariationFrom(const CPrecastSegmentData& rOther)
       EndBlockTransitionLength[j] = rOther.EndBlockTransitionLength[j];
       EndBlockWidth[j]            = rOther.EndBlockWidth[j];
    }
+
+   WebThickeningWidth            = rOther.WebThickeningWidth;
+   WebThickeningLength           = rOther.WebThickeningLength;
+   WebThickeningTransitionLength = rOther.WebThickeningTransitionLength;
 }
 
 bool CPrecastSegmentData::operator==(const CPrecastSegmentData& rOther) const
@@ -977,7 +1003,22 @@ bool CPrecastSegmentData::operator==(const CPrecastSegmentData& rOther) const
       return false;
    }
 
-   
+   if (!IsEqual(WebThickeningWidth, rOther.WebThickeningWidth))
+   {
+      return false;
+   }
+
+   if (!IsEqual(WebThickeningLength, rOther.WebThickeningLength))
+   {
+      return false;
+   }
+
+   if (!IsEqual(WebThickeningTransitionLength, rOther.WebThickeningTransitionLength))
+   {
+      return false;
+   }
+
+
    return true;
 }
 
@@ -1202,6 +1243,20 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAF
          pStrLoad->EndUnit(); // HaunchDepthsPerSegment
       }
 
+      if (5 < version)
+      {
+         // added in version 6
+         hr = pStrLoad->BeginUnit(_T("WebThickening"));
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("Width"), &var);
+         WebThickeningWidth = var.dblVal;
+         hr = pStrLoad->get_Property(_T("Length"), &var);
+         WebThickeningLength = var.dblVal;
+         hr = pStrLoad->get_Property(_T("TransitionLength"), &var);
+         WebThickeningTransitionLength = var.dblVal;
+         hr = pStrLoad->EndUnit(); // WebThickening
+      }
+
       hr = pStrLoad->EndUnit(); // PrecastSegment
    }
    catch (HRESULT)
@@ -1216,7 +1271,7 @@ HRESULT CPrecastSegmentData::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAF
 
 HRESULT CPrecastSegmentData::Save(IStructuredSave* pStrSave, std::shared_ptr<IEAFProgress> pProgress)
 {
-   pStrSave->BeginUnit(_T("PrecastSegment"), 5.0);
+   pStrSave->BeginUnit(_T("PrecastSegment"), 6.0);
 
    pStrSave->put_Property(_T("ID"), CComVariant(m_SegmentID));
 
@@ -1342,6 +1397,13 @@ HRESULT CPrecastSegmentData::Save(IStructuredSave* pStrSave, std::shared_ptr<IEA
    }
    pStrSave->EndUnit(); // HaunchDepths
 
+   // added in version 6
+   pStrSave->BeginUnit(_T("WebThickening"),1.0);
+      pStrSave->put_Property(_T("Width"), CComVariant(WebThickeningWidth));
+      pStrSave->put_Property(_T("Length"), CComVariant(WebThickeningLength));
+      pStrSave->put_Property(_T("TransitionLength"), CComVariant(WebThickeningTransitionLength));
+   pStrSave->EndUnit(); // WebThickening
+
    pStrSave->EndUnit(); // PrecastSegment
 
    return S_OK;
@@ -1390,6 +1452,10 @@ void CPrecastSegmentData::MakeCopy(const CPrecastSegmentData& rOther,bool bCopyI
       m_SlabOffset = rOther.m_SlabOffset;
 
       m_vHaunchDepths = rOther.m_vHaunchDepths;
+
+      WebThickeningWidth            = rOther.WebThickeningWidth;
+      WebThickeningLength           = rOther.WebThickeningLength;
+      WebThickeningTransitionLength = rOther.WebThickeningTransitionLength;
    }
 
    ResolveReferences();
