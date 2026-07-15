@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1639,7 +1639,7 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
                doText2->SetPosition(geomUtil::GetPoint(pntText2));
 
                CComBSTR bstrBearing;
-               direction_formatter->Format(dir,CComBSTR("°,\',\""),&bstrBearing);
+               direction_formatter->Format(dir,CComBSTR("Â°,\',\""),&bstrBearing);
                doText2->SetText(OLE2T(bstrBearing));
                doText2->SetAngle(angle);
                doText2->SetTextAlign(TA_BOTTOM | TA_LEFT);
@@ -1866,9 +1866,6 @@ void CBridgePlanView::BuildPierDisplayObjects()
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
    bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
-
-   CComPtr<IDocUnitSystem> docUnitSystem;
-   pDoc->GetDocUnitSystem(&docUnitSystem);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    PierIndexType nPiers = pBridge->GetPierCount();
@@ -2583,9 +2580,6 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
    UINT settings = pDoc->GetBridgeEditorSettings();
 
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
-
-   CComPtr<IDocUnitSystem> docUnitSystem;
-   pDoc->GetDocUnitSystem(&docUnitSystem);
 
    GET_IFACE2_NOCHECK(pBroker,ITempSupport,pTemporarySupport); // only needed if there are temporary supports
    GET_IFACE2(pBroker,IBridge,pBridge);

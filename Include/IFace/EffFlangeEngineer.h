@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2022  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,10 +21,6 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-
-#include <Reporter\Reporter.h>
-
-class IDisplayUnits;
 
 /*****************************************************************************
 INTERFACE
@@ -49,9 +45,5 @@ public:
    //---------------------------------------------------------------------
    // Returns the effective flange width
    virtual double GetEffectiveFlangeWidth(Uint16 span,Uint16 gdr) = 0;
-
-   //---------------------------------------------------------------------
-   // Creates a detailed report of the effective flange width computation
-   virtual void BuildReport(Uint16 span,Uint16 gdr,rptChapter* pChapter,IDisplayUnits* pDispUnit) = 0;
 };
 
