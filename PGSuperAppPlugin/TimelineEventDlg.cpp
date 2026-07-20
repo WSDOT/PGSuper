@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -53,7 +53,8 @@
 IMPLEMENT_DYNAMIC(CTimelineEventDlg, CDialog)
 
 CTimelineEventDlg::CTimelineEventDlg(const CTimelineManager& timelineMgr,EventIndexType eventIdx,BOOL bEditEvent,EventIndexType minEventIdx,BOOL bReadOnly,CWnd* pParent /*=nullptr*/)
-	: CDialog(CTimelineEventDlg::IDD, pParent)
+	: CDialog(CTimelineEventDlg::IDD, pParent),
+   m_pAddMenu(nullptr)
 {
    m_bEdit = bEditEvent;
    m_bReadOnly = bReadOnly;
@@ -142,6 +143,7 @@ BEGIN_MESSAGE_MAP(CTimelineEventDlg, CDialog)
    ON_COMMAND(ID_ACTIVITIES_GEOMETRYCONTROLEVENT,&CTimelineEventDlg::OnGeometryControl)
    ON_COMMAND(ID_ACTIVITIES_STRESSTENDON,&CTimelineEventDlg::OnStressTendons)
    ON_BN_CLICKED(ID_HELP, &CTimelineEventDlg::OnHelp)
+   ON_BN_CLICKED(IDC_ADD, &CTimelineEventDlg::OnAddClicked)
 END_MESSAGE_MAP()
 
 BOOL CTimelineEventDlg::OnInitDialog()
@@ -166,7 +168,6 @@ BOOL CTimelineEventDlg::OnInitDialog()
 
    CDialog::OnInitDialog();
 
-   m_btnAdd.SetSplit(FALSE);
    UpdateAddButton();
 
    m_Grid.Refresh();
@@ -241,9 +242,9 @@ BOOL CTimelineEventDlg::OnInitDialog()
 
 void CTimelineEventDlg::UpdateAddButton()
 {
-   m_btnAdd.Clear();
+   CMenu* pMenu = new CMenu();
+   pMenu->CreatePopupMenu();
 
-   
    auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IDocumentType,pDocType);
    CString strErectPiers;
@@ -263,26 +264,49 @@ void CTimelineEventDlg::UpdateAddButton()
    }
 
    // Keep the activities in a somewhat logical sequence
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_PIERS,strErectPiers,MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CONSTRUCTSEGMENT,strConstructSegments,MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_ERECT_SEGMENTS,strErectSegments,MF_ENABLED);
+   pMenu->AppendMenu(MF_ENABLED | MF_STRING,ID_ACTIVITIES_ERECT_PIERS,strErectPiers);
+   pMenu->AppendMenu(MF_ENABLED | MF_STRING,ID_ACTIVITIES_CONSTRUCTSEGMENT,strConstructSegments);
+   pMenu->AppendMenu(MF_ENABLED | MF_STRING,ID_ACTIVITIES_ERECT_SEGMENTS,strErectSegments);
 
    if ( pDocType->IsPGSpliceDocument() )
    {
-      m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTCLOSUREJOINTS,_T("Cast Closure Joints"),MF_ENABLED);
-      m_btnAdd.AddMenuItem(ID_ACTIVITIES_STRESSTENDON,_T("Stress Tendons"),MF_ENABLED);
-      m_btnAdd.AddMenuItem(ID_ACTIVITIES_REMOVE_TS,_T("Remove Temporary Supports"),MF_ENABLED);
+      pMenu->AppendMenu(MF_ENABLED | MF_STRING,ID_ACTIVITIES_CASTCLOSUREJOINTS,_T("Cast Closure Joints"));
+      pMenu->AppendMenu(MF_ENABLED | MF_STRING,ID_ACTIVITIES_STRESSTENDON,_T("Stress Tendons"));
+      pMenu->AppendMenu(MF_ENABLED | MF_STRING,ID_ACTIVITIES_REMOVE_TS,_T("Remove Temporary Supports"));
    }
 
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    if (pIBridgeDesc->GetBridgeDescription()->HasStructuralLongitudinalJoints())
    {
-      m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTLONGITUDINALJOINTS, _T("Cast Longitudinal Joints"), MF_ENABLED);
+      pMenu->AppendMenu(MF_ENABLED | MF_STRING,ID_ACTIVITIES_CASTLONGITUDINALJOINTS, _T("Cast Longitudinal Joints"));
    }
    CString strName(GetCastDeckEventName(pIBridgeDesc->GetDeckDescription()->GetDeckType()));
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTDECK,strName,MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_APPLYLOADS,_T("Apply Loads"),MF_ENABLED);
-   m_btnAdd.AddMenuItem(ID_ACTIVITIES_GEOMETRYCONTROLEVENT,_T("Geometry Control Event"),MF_ENABLED);
+   pMenu->AppendMenu(MF_ENABLED | MF_STRING,ID_ACTIVITIES_CASTDECK,strName);
+   pMenu->AppendMenu(MF_ENABLED | MF_STRING,ID_ACTIVITIES_APPLYLOADS,_T("Apply Loads"));
+   pMenu->AppendMenu(MF_ENABLED | MF_STRING,ID_ACTIVITIES_GEOMETRYCONTROLEVENT,_T("Geometry Control Event"));
+
+   m_btnAdd.SetDropDownMenu(pMenu); // m_btnAdd takes ownership of pMenu
+   m_pAddMenu = pMenu; // keep our own non-owning view of it, see declaration comment
+}
+
+void CTimelineEventDlg::OnAddClicked()
+{
+   // CSplitButton only shows its drop-down menu automatically when the arrow is clicked (BCN_DROPDOWN).
+   // This button wants the whole face to behave that way, so reproduce CSplitButton::OnDropDown's own
+   // TrackPopupMenuEx call here for a plain BN_CLICKED on the button body.
+   if ( m_pAddMenu == nullptr )
+   {
+      return;
+   }
+
+   CRect rectButton;
+   m_btnAdd.GetWindowRect(&rectButton);
+
+   TPMPARAMS tpmParams;
+   tpmParams.cbSize = sizeof(TPMPARAMS);
+   tpmParams.rcExclude = rectButton;
+
+   m_pAddMenu->TrackPopupMenuEx(TPM_LEFTALIGN | TPM_TOPALIGN | TPM_LEFTBUTTON, rectButton.left, rectButton.bottom, this, &tpmParams);
 }
 
 void CTimelineEventDlg::OnRemoveActivities()

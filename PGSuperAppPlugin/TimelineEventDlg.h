@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include <PsgLib\TimelineEvent.h>
 #include <PsgLib\TimelineManager.h>
 #include "ActivityGrid.h"
+#include <afxwin.h>
 
 class CTimelineEventDlg : public CDialog
 {
@@ -54,7 +55,8 @@ protected:
    BOOL m_bReadOnly;
    BOOL m_bEdit;
 
-   CCoolButton m_btnAdd;
+   CSplitButton m_btnAdd;
+   CMenu* m_pAddMenu; // non-owning: lifetime is managed by m_btnAdd via SetDropDownMenu(); kept here so the main button click (not just the arrow) can also show it
    CActivityGrid m_Grid;
    CListCtrl m_TimelineEventList;
 
@@ -69,6 +71,7 @@ protected:
    afx_msg void OnApplyLoads();
    afx_msg void OnGeometryControl();
    afx_msg void OnStressTendons();
+   afx_msg void OnAddClicked();
 
    void UpdateAddButton();
 
