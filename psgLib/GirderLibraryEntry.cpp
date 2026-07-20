@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -273,11 +273,6 @@ m_bWarnLongReinfLibraryEquality(true)
 GirderLibraryEntry::GirderLibraryEntry(const GirderLibraryEntry& rOther) :
 WBFL::Library::LibraryEntry(rOther)
 {
-   m_pCompatibilityData = nullptr;
-   if (rOther.m_pCompatibilityData != nullptr)
-   {
-      m_pCompatibilityData = std::make_shared<PGS::Beams::CompatibilityData>(*rOther.m_pCompatibilityData);
-   }
    InitCLSIDMap();
    CopyValuesAndAttributes(rOther);
 }
@@ -4784,6 +4779,10 @@ bool GirderLibraryEntry::Edit(bool allowEditing,int nPage)
 void GirderLibraryEntry::CopyValuesAndAttributes(const GirderLibraryEntry& rOther)
 {
    __super::CopyValuesAndAttributes(rOther);
+
+   // deep-copy so operator= and the copy ctor can never diverge on this member again
+   m_pCompatibilityData = rOther.m_pCompatibilityData ?
+      std::make_shared<PGS::Beams::CompatibilityData>(*rOther.m_pCompatibilityData) : nullptr;
 
    m_LongitudinalBarType      = rOther.m_LongitudinalBarType;
    m_LongitudinalBarGrade     = rOther.m_LongitudinalBarGrade;
