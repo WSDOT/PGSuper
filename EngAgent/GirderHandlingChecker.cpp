@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -77,17 +77,14 @@ void pgsGirderHandlingChecker::ComputeMoments(std::weak_ptr<WBFL::EAF::Broker> p
                                               const PoiList& rpoiVec,
                                               std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection)
 {
-   CComPtr<IFem2dModel> pModel;
-   pgsPoiPairMap poiMap;
-
    // need left and right support locations measured from the left end of the girder
    Float64 leftSupportLocation = leftOH;
    Float64 rightSupportLocation = glen - rightOH;
    LoadCaseIDType lcid = 0;
-   pGirderModelFactory->CreateGirderModel(pBroker,intervalIdx,segmentKey,leftSupportLocation,rightSupportLocation,glen,E,lcid,true,true,rpoiVec,&pModel,&poiMap);
+   auto [pModel, poiMap] = pGirderModelFactory->CreateGirderModel(pBroker,intervalIdx,segmentKey,leftSupportLocation,rightSupportLocation,glen,E,lcid,true,true,rpoiVec);
+   WBFL::FEA2D::Model& model = *pModel;
 
    // Get results
-   CComQIPtr<IFem2dModelResults> results(pModel);
    pmomVec->clear();
    *pMidSpanDeflection = 0.0;
    bool found_mid = false;
@@ -97,8 +94,7 @@ void pgsGirderHandlingChecker::ComputeMoments(std::weak_ptr<WBFL::EAF::Broker> p
    {
       Float64 fx,fy,mz;
       PoiIDPairType femPoiID = poiMap.GetModelPoi(poi);
-      HRESULT hr = results->ComputePOIForces(lcid,femPoiID.first,mftLeft,lotMember,&fx,&fy,&mz);
-      ATLASSERT(SUCCEEDED(hr));
+      model.ComputePOIForces(lcid,femPoiID.first,WBFL::FEA2D::MemberFaceType::Left,WBFL::FEA2D::LoadOrientation::Member,&fx,&fy,&mz);
       pmomVec->push_back(mz);
 
 
@@ -108,8 +104,7 @@ void pgsGirderHandlingChecker::ComputeMoments(std::weak_ptr<WBFL::EAF::Broker> p
          // poi should be at the half-way point between the supports
          ATLASSERT( IsEqual(poi.GetDistFromStart(),leftOH + (glen-leftOH-rightOH)/2,0.001) );
 
-         hr = results->ComputePOIDeflections(lcid,femPoiID.first,lotMember,&dx,&dy,&rz);
-         ATLASSERT(SUCCEEDED(hr));
+         model.ComputePOIDeflections(lcid,femPoiID.first,WBFL::FEA2D::LoadOrientation::Member,&dx,&dy,&rz);
 
          *pMidSpanDeflection = dy;
          found_mid = true;

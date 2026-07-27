@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright � 1999-2026  Washington State Department of Transportation
+// Copyright © 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27880,26 +27880,20 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
       // build a fem model and compute it
       pgsGirderModelFactory girderModelFactory;
 
-      CComPtr<IFem2dModel> pModel;
-      pgsPoiPairMap poiMap;
-
       Float64 Ls = GetSegmentLength(segmentKey);
 
       LoadCaseIDType lcid = 0;
-      girderModelFactory.CreateGirderModel(m_pBroker, releaseIntervalIdx, segmentKey, Loh, Ls-Roh, Ls, concrete.GetE(), lcid, true, true, vPoi, &pModel, &poiMap);
+      auto [pModel, poiMap] = girderModelFactory.CreateGirderModel(m_pBroker, releaseIntervalIdx, segmentKey, Loh, Ls-Roh, Ls, concrete.GetE(), lcid, true, true, vPoi);
+      WBFL::FEA2D::Model& model = *pModel;
 
       // Get results
-      CComQIPtr<IFem2dModelResults> results(pModel);
-
       Float64 dx, dy, rz;
       PoiIDPairType femPoiID = poiMap.GetModelPoi(poiMS);
-      CAnalysisResult ar(_T(__FILE__),__LINE__);
-      ar = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
+      FEA2D_ANALYSIS_RESULT(model.ComputePOIDeflections(lcid, femPoiID.first, WBFL::FEA2D::LoadOrientation::Member, &dx, &dy, &rz));
       DgdrMS = dy;
 
       femPoiID = poiMap.GetModelPoi(poiEnd);
-      CAnalysisResult ar2(_T(__FILE__),__LINE__);
-      ar2 = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
+      FEA2D_ANALYSIS_RESULT(model.ComputePOIDeflections(lcid, femPoiID.first, WBFL::FEA2D::LoadOrientation::Member, &dx, &dy, &rz));
       DgdrEnd = dy;
 
       GET_IFACE(ISectionProperties, pSectProps);
@@ -28222,32 +28216,25 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
       // build a fem model and compute it
       pgsGirderModelFactory girderModelFactory;
 
-      CComPtr<IFem2dModel> pModel;
-      pgsPoiPairMap poiMap;
-
       Float64 Ls = GetSegmentLength(segmentKey);
 
       LoadCaseIDType lcid = 0;
-      girderModelFactory.CreateGirderModel(m_pBroker, releaseIntervalIdx, segmentKey, Loh, Ls - Roh, Ls, concrete.GetE(), lcid, true, true, vPoi, &pModel, &poiMap);
+      auto [pModel, poiMap] = girderModelFactory.CreateGirderModel(m_pBroker, releaseIntervalIdx, segmentKey, Loh, Ls - Roh, Ls, concrete.GetE(), lcid, true, true, vPoi);
+      WBFL::FEA2D::Model& model = *pModel;
 
       // Get results
-      CComQIPtr<IFem2dModelResults> results(pModel);
-
       Float64 dx, dy, rz;
 
       PoiIDPairType femPoiID = poiMap.GetModelPoi(poiStart);
-      CAnalysisResult arStart(_T(__FILE__), __LINE__);
-      arStart = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
+      FEA2D_ANALYSIS_RESULT(model.ComputePOIDeflections(lcid, femPoiID.first, WBFL::FEA2D::LoadOrientation::Member, &dx, &dy, &rz));
       DgdrStart = dy;
 
       femPoiID = poiMap.GetModelPoi(poiMS);
-      CAnalysisResult ar(_T(__FILE__),__LINE__);
-      ar = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
+      FEA2D_ANALYSIS_RESULT(model.ComputePOIDeflections(lcid, femPoiID.first, WBFL::FEA2D::LoadOrientation::Member, &dx, &dy, &rz));
       DgdrMS = dy;
 
       femPoiID = poiMap.GetModelPoi(poiEnd);
-      CAnalysisResult arEnd(_T(__FILE__),__LINE__);
-      arEnd = results->ComputePOIDeflections(lcid, femPoiID.first, lotMember, &dx, &dy, &rz);
+      FEA2D_ANALYSIS_RESULT(model.ComputePOIDeflections(lcid, femPoiID.first, WBFL::FEA2D::LoadOrientation::Member, &dx, &dy, &rz));
       DgdrEnd = dy;
 
       GET_IFACE(ISectionProperties, pSectProps);

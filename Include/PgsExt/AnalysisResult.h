@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2022  Washington State Department of Transportation
+// Copyright Â© 1999-2022  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,7 @@
 #pragma once
 
 #include <MFCTools\Exceptions.h>
+#include <FEA2D\XFEA2D.h>
 
 class CAnalysisResult
 {
@@ -50,3 +51,28 @@ private:
    CString m_File;
    long m_Line;
 };
+
+// WBFL::FEA2D::XFEA2D (like every WBFL::System::XBase) only signals that
+// the library couldn't complete the operation - it carries no notion of
+// severity. It's the client's job to decide whether that's fatal or not,
+// and a girder structural analysis failure has always been treated as
+// non-fatal here (the app reports the error and keeps running), the same
+// way CAnalysisResult above used THROW_UNWIND rather than THROW_SHUTDOWN
+// for a failed Fem2d COM call.
+//
+// Wrap any single FEA2D call (Model::ComputeXxx, etc.) in this macro to
+// catch WBFL::FEA2D::XFEA2D and re-throw it as a CXUnwind, stamped with
+// *this* call site's file/line - XFEA2D's own file/line point inside
+// FEA2D's implementation (wherever THROW_FEA2D fired), which isn't useful
+// for knowing which of the many PGSuper call sites was responsible.
+#define FEA2D_ANALYSIS_RESULT(expr) \
+   try \
+   { \
+      expr; \
+   } \
+   catch (const WBFL::FEA2D::XFEA2D& fea2d_ex) \
+   { \
+      CString strMsg; \
+      strMsg.Format(_T("An error occurred during the girder structural analysis\n%s\n%s, Line %d"), fea2d_ex.GetErrorMessage().c_str(), _T(__FILE__), __LINE__); \
+      THROW_UNWIND(strMsg, fea2d_ex.GetReason()); \
+   }

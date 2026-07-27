@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,7 @@
 #include "SegmentModelManager.h"
 #include "GirderModelManager.h"
 
+#include <FEA2D/Model.h>
 
 #include <Math/LinearFunction.h>
 
@@ -463,7 +464,7 @@ private:
    // camber models
    struct CamberModelData
    {
-      CComPtr<IFem2dModel> Model;
+      std::shared_ptr<WBFL::FEA2D::Model> Model;
       pgsPoiPairMap PoiMap;
       CamberModelData& operator=(const CamberModelData& other)
       {

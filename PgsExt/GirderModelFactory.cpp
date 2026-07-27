@@ -1,22 +1,22 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
-// it under the terms of the Alternate Route Open Source License as 
-// published by the Washington State Department of Transportation, 
+// it under the terms of the Alternate Route Open Source License as
+// published by the Washington State Department of Transportation,
 // Bridge and Structures Office.
 //
-// This program is distributed in the hope that it will be useful, but 
-// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// This program is distributed in the hope that it will be useful, but
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
 // the Alternate Route Open Source License for more details.
 //
-// You should have received a copy of the Alternate Route Open Source 
-// License along with this program; if not, write to the Washington 
-// State Department of Transportation, Bridge and Structures Office, 
-// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// You should have received a copy of the Alternate Route Open Source
+// License along with this program; if not, write to the Washington
+// State Department of Transportation, Bridge and Structures Office,
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
@@ -39,7 +39,7 @@ pgsGirderModelFactory::~pgsGirderModelFactory(void)
 {
 }
 
-void pgsGirderModelFactory::CreateGirderModel(std::weak_ptr<WBFL::EAF::Broker> pBroker, // broker to access PGSuper data
+pgsGirderModelFactory::GirderModelResult pgsGirderModelFactory::CreateGirderModel(std::weak_ptr<WBFL::EAF::Broker> pBroker, // broker to access PGSuper data
                                  IntervalIndexType intervalIdx, // used for looking up section properties and section transition POIs
                                  const CSegmentKey& segmentKey, // this is the segment that the modeling is build for
                                  Float64 leftSupportLoc,        // distance from the left end of the model to the left support location
@@ -49,9 +49,7 @@ void pgsGirderModelFactory::CreateGirderModel(std::weak_ptr<WBFL::EAF::Broker> p
                                  LoadCaseIDType lcidGirder,     // load case ID that is to be used to define the girder dead load
                                  bool bModelLeftCantilever,     // if true, the cantilever defined by leftSupportLoc is modeled
                                  bool bModelRightCantilever,    // if true, the cantilever defined by rightSupportLoc is modeled
-                                 const PoiList& vPoi,           // vector of PGSuper POIs that are to be modeld in the Fem2d Model
-                                 IFem2dModel** ppModel,         // the Fem2d Model
-                                 pgsPoiPairMap* pPoiMap         // a mapping of PGSuper POIs to Fem2d POIs
+                                 const PoiList& vPoi            // vector of PGSuper POIs that are to be modeld in the Fem2d Model
                                  )
 {
 #if defined _DEBUG
@@ -60,29 +58,24 @@ void pgsGirderModelFactory::CreateGirderModel(std::weak_ptr<WBFL::EAF::Broker> p
    ATLASSERT(IsEqual(segmentLength, _SegmentLength));
 #endif
 
+   auto model = std::make_unique<WBFL::FEA2D::Model>();
+   pgsPoiPairMap poiMap;
+
    // Build the model... always model the cantilevers in the geometry of the FEM model
-   BuildModel(pBroker, intervalIdx, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, vPoi, ppModel);
+   BuildModel(pBroker, intervalIdx, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, vPoi, *model);
 
-   ApplyLoads(pBroker, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPoi, ppModel);
+   ApplyLoads(pBroker, segmentKey, segmentLength, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPoi, *model);
 
-   ApplyPointsOfInterest(pBroker, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPoi, ppModel, pPoiMap);
+   ApplyPointsOfInterest(pBroker, segmentKey, leftSupportLoc, rightSupportLoc, E, lcidGirder, bModelLeftCantilever, bModelRightCantilever, vPoi, *model, &poiMap);
+
+   return { std::move(model), std::move(poiMap) };
 }
 
 void pgsGirderModelFactory::BuildModel(std::weak_ptr<WBFL::EAF::Broker> pBroker, IntervalIndexType intervalIdx, const CSegmentKey& segmentKey,
    Float64 segmentLength, Float64 leftSupportLoc, Float64 rightSupportLoc, Float64 E,
-   LoadCaseIDType lcidGirder, const PoiList& vPOI, IFem2dModel** ppModel)
+   LoadCaseIDType lcidGirder, const PoiList& vPOI, WBFL::FEA2D::Model& model)
 {
-   if (*ppModel)
-   {
-      (*ppModel)->Clear();
-   }
-   else
-   {
-      CComPtr<IFem2dModel> model;
-      model.CoCreateInstance(CLSID_Fem2dModel);
-      (*ppModel) = model;
-      (*ppModel)->AddRef();
-   }
+   model.Clear();
 
    // get all the cross section changes
    GET_IFACE2(pBroker.lock(), IPointOfInterest, pPoi);
@@ -213,15 +206,12 @@ void pgsGirderModelFactory::BuildModel(std::weak_ptr<WBFL::EAF::Broker> pBroker,
 
 
    // layout the joints
-   CComPtr<IFem2dJoint> jnt;
    bool bFoundLeftSupport(false), bFoundRightSupport(false);
    JointIDType jntID = 0;
-   CComPtr<IFem2dJointCollection> joints;
-   (*ppModel)->get_Joints(&joints);
    for( const auto& poi : vXSPoi)
    {
       Float64 Xpoi = poi.GetDistFromStart();
-      if ( (!bDoModelLeftCantilever && (Xpoi < leftSupportLoc)) || 
+      if ( (!bDoModelLeftCantilever && (Xpoi < leftSupportLoc)) ||
            (!bDoModelRightCantilever && (rightSupportLoc < Xpoi)) )
       {
          // location is before or after the left/right support and we arn't modeling
@@ -229,21 +219,21 @@ void pgsGirderModelFactory::BuildModel(std::weak_ptr<WBFL::EAF::Broker> pBroker,
          continue;
       }
 
-      jnt.Release();
-      joints->Create(jntID++,Xpoi,0,&jnt);
+      WBFL::FEA2D::Joint& jnt = model.CreateJoint(jntID++,Xpoi,0);
+
 
       // set boundary conditions if this is a support joint
       if ( !bFoundLeftSupport && IsEqual(Xpoi,leftSupportLoc) )
       {
-         jnt->Support();
-         jnt->ReleaseDof(jrtFx);
-         jnt->ReleaseDof(jrtMz);
+         jnt.Support();
+         jnt.ReleaseDof(WBFL::FEA2D::JointReleaseType::Fx);
+         jnt.ReleaseDof(WBFL::FEA2D::JointReleaseType::Mz);
          bFoundLeftSupport = true;
       }
       else if ( !bFoundRightSupport && IsEqual(Xpoi,rightSupportLoc) )
       {
-         jnt->Support();
-         jnt->ReleaseDof(jrtMz);
+         jnt.Support();
+         jnt.ReleaseDof(WBFL::FEA2D::JointReleaseType::Mz);
          bFoundRightSupport = true;
       }
    }
@@ -267,10 +257,6 @@ void pgsGirderModelFactory::BuildModel(std::weak_ptr<WBFL::EAF::Broker> pBroker,
    Float64 EI = E*(Ixx*Iyy - Ixy*Ixy) / Iyy;
    Float64 EA = E*Ag;
 
-   CComPtr<IFem2dMemberCollection> members;
-   (*ppModel)->get_Members(&members);
-
-   CComPtr<IFem2dMember> member;
    MemberIDType mbrID = 0;
    JointIDType prevJntID = 0;
    jntID = prevJntID + 1;
@@ -283,7 +269,7 @@ void pgsGirderModelFactory::BuildModel(std::weak_ptr<WBFL::EAF::Broker> pBroker,
       pgsPointOfInterest& prevPoi( *prevJointIter );
       pgsPointOfInterest& poi( *jointIter );
 
-      if ( (!bDoModelLeftCantilever  && (prevPoi.GetDistFromStart() < leftSupportLoc)) || 
+      if ( (!bDoModelLeftCantilever  && (prevPoi.GetDistFromStart() < leftSupportLoc)) ||
            (!bDoModelRightCantilever && (rightSupportLoc <= prevPoi.GetDistFromStart())) )
       {
          // location is before or after the left/right support and we aren't modeling
@@ -291,8 +277,7 @@ void pgsGirderModelFactory::BuildModel(std::weak_ptr<WBFL::EAF::Broker> pBroker,
          continue;
       }
 
-      member.Release();
-      members->Create(mbrID++,prevJntID,jntID,EA,EI,&member);
+      model.CreateMember(mbrID++,prevJntID,jntID,EA,EI);
 
       prevJntID++;
       jntID++;
@@ -302,20 +287,12 @@ void pgsGirderModelFactory::BuildModel(std::weak_ptr<WBFL::EAF::Broker> pBroker,
 void pgsGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                        Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
                                        bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPOI,
-                                       IFem2dModel** ppModel)
+                                       WBFL::FEA2D::Model& model)
 {
    // apply loads
    GET_IFACE2(pBroker.lock(), IProductLoads, pProductLoads);
-   CComPtr<IFem2dLoadingCollection> loadings;
-   CComPtr<IFem2dLoading> loading;
-   (*ppModel)->get_Loadings(&loadings);
-   loadings->Create(lcidGirder,&loading);
+   WBFL::FEA2D::Loading& loading = model.CreateLoading(lcidGirder);
 
-   CComPtr<IFem2dMemberCollection> members;
-   (*ppModel)->get_Members(&members);
-
-   CComPtr<IFem2dJointCollection> joints;
-   (*ppModel)->get_Joints(&joints);
 
    std::vector<SegmentLoad> segLoads;
    std::vector<DiaphragmLoad> diaphLoads;
@@ -323,9 +300,6 @@ void pgsGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,
    pProductLoads->GetSegmentSelfWeightLoad(segmentKey,&segLoads,&diaphLoads,&cjLoads);
 
    // apply girder self weight load
-   CComPtr<IFem2dDistributedLoadCollection> distributedLoads;
-   loading->get_DistributedLoads(&distributedLoads);
-   
    MemberIDType mbrID = 0;
    LoadIDType loadID = 0;
    for (const auto& segLoad : segLoads)
@@ -338,7 +312,7 @@ void pgsGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,
       if ( !bModelLeftCantilever && ::IsLT(start,leftSupportLoc) )
       {
          // this load segment begins before the left support and we are ignoring loads out there
-  
+
          // compute load intensity at the left support
          wStart = ::LinInterp(leftSupportLoc,wStart,wEnd,end-start);
          start = leftSupportLoc;
@@ -358,48 +332,38 @@ void pgsGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,
       MemberIDType mbrIDEnd;   // member ID at the end of the load
       Float64 xStart; // distance from start of member mbrIDStart to the start of the load
       Float64 xEnd;   // distance from start of member mbrIDEnd to end of the load
-      FindMember(*ppModel,start,&mbrIDStart,&xStart);
-      FindMember(*ppModel,end,  &mbrIDEnd,  &xEnd);
+      FindMember(model,start,&mbrIDStart,&xStart);
+      FindMember(model,end,  &mbrIDEnd,  &xEnd);
 
       if (mbrIDStart == mbrIDEnd && IsEqual(xStart, xEnd))
       {
          continue;
       }
 
-      CComPtr<IFem2dDistributedLoad> distLoad;
       if ( mbrIDStart == mbrIDEnd )
       {
          // load is contained on a single member
-         distLoad.Release();
-         distributedLoads->Create(loadID++,mbrIDStart,loadDirFy,xStart,xEnd,wStart,wEnd,lotMember,&distLoad);
+         loading.CreateDistributedLoad(loadID++,mbrIDStart,WBFL::FEA2D::LoadDirection::Fy,xStart,xEnd,wStart,wEnd);
       }
       else
       {
          // load straddles two or more members
-         CComPtr<IFem2dMember> mbr;
-         CComPtr<IFem2dJoint> jntStart, jntEnd;
          for ( MemberIDType mbrID = mbrIDStart; mbrID <= mbrIDEnd; mbrID++ )
          {
             Float64 w1,w2; // start and end load intensity on this member
             Float64 x1,x2; // start and end load location from the start of this member
 
-            Float64 Lmbr;
-            mbr.Release();
-            members->Find(mbrID,&mbr);
-            mbr->get_Length(&Lmbr); 
+            WBFL::FEA2D::Member* mbr = model.FindMember(mbrID);
+            Float64 Lmbr = mbr->GetLength();
 
-            JointIDType jntIDStart,jntIDEnd;
-            mbr->get_StartJoint(&jntIDStart);
-            mbr->get_EndJoint(&jntIDEnd);
+            JointIDType jntIDStart = mbr->GetStartJoint();
+            JointIDType jntIDEnd = mbr->GetEndJoint();
 
-            jntStart.Release();
-            jntEnd.Release();
-            joints->Find(jntIDStart,&jntStart);
-            joints->Find(jntIDEnd,  &jntEnd);
+            WBFL::FEA2D::Joint* jntStart = model.FindJoint(jntIDStart);
+            WBFL::FEA2D::Joint* jntEnd = model.FindJoint(jntIDEnd);
 
-            Float64 xMbrStart, xMbrEnd;
-            jntStart->get_X(&xMbrStart);
-            jntEnd->get_X(&xMbrEnd);
+            Float64 xMbrStart = jntStart->GetX();
+            Float64 xMbrEnd = jntEnd->GetX();
 
             if ( mbrID == mbrIDStart )
             {
@@ -426,20 +390,13 @@ void pgsGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,
             if ( !IsEqual(x1,x2) )
             {
                // no need to add the laod if its length is 0
-               distLoad.Release();
-               distributedLoads->Create(loadID++,mbrID,loadDirFy,x1,x2,w1,w2,lotMember,&distLoad);
+               loading.CreateDistributedLoad(loadID++,mbrID,WBFL::FEA2D::LoadDirection::Fy,x1,x2,w1,w2);
             }
          }
       }
    }
 
    // apply diaphragm loads for precast diaphragms
-   CComPtr<IFem2dPointLoadCollection> pointLoads;
-   loading->get_PointLoads(&pointLoads);
-
-
-   CComPtr<IFem2dJoint> prevJoint, nextJoint;
-   CComPtr<IFem2dPointLoad> pointLoad;
    for(const auto& diaphragmLoad : diaphLoads)
    {
       Float64 x = 0;
@@ -447,18 +404,14 @@ void pgsGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,
       mbrID = 0;
       bool bApplyLoad = false;
 
-      IndexType nJoints;
-      joints->get_Count(&nJoints);
+      IndexType nJoints = model.GetJointCount();
       for ( IndexType jntIdx = 1; jntIdx < nJoints; jntIdx++, mbrID++ )
       {
-         prevJoint.Release();
-         nextJoint.Release();
-         joints->get_Item(jntIdx-1,&prevJoint);
-         joints->get_Item(jntIdx,&nextJoint);
+         WBFL::FEA2D::Joint* prevJoint = model.FindJointByIndex(jntIdx-1);
+         WBFL::FEA2D::Joint* nextJoint = model.FindJointByIndex(jntIdx);
 
-         Float64 xPrev, xNext;
-         prevJoint->get_X(&xPrev);
-         nextJoint->get_X(&xNext);
+         Float64 xPrev = prevJoint->GetX();
+         Float64 xNext = nextJoint->GetX();
 
          if ((!bModelLeftCantilever  && ::IsLT(xPrev,leftSupportLoc) ) ||
              (!bModelRightCantilever && ::IsLT(rightSupportLoc,xPrev) ) )
@@ -478,8 +431,7 @@ void pgsGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,
 
       if ( bApplyLoad )
       {
-         pointLoad.Release();
-         pointLoads->Create(loadID++,mbrID,x,0,diaphragmLoad.Load,0,lotMember,&pointLoad);
+         loading.CreatePointLoad(loadID++,mbrID,x,0,diaphragmLoad.Load,0);
       }
    }
 }
@@ -487,11 +439,11 @@ void pgsGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,
 void pgsGirderModelFactory::ApplyPointsOfInterest(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,
                                                   bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPOI,
-                                                  IFem2dModel** ppModel,pgsPoiPairMap* pPoiMap)
+                                                  WBFL::FEA2D::Model& model,pgsPoiPairMap* pPoiMap)
 {
    // layout poi on fem model
    pPoiMap->Clear();
-   auto poiIDs = pgsGirderModelFactory::AddPointsOfInterest(*ppModel,vPOI);
+   auto poiIDs = pgsGirderModelFactory::AddPointsOfInterest(model,vPOI);
    auto poiIDiter(poiIDs.cbegin());
    auto poiIDiterEnd(poiIDs.cend());
    auto poiIter(vPOI.cbegin());
@@ -502,110 +454,75 @@ void pgsGirderModelFactory::ApplyPointsOfInterest(std::weak_ptr<WBFL::EAF::Broke
    }
 }
 
-void pgsGirderModelFactory::FindMember(IFem2dModel* pModel,Float64 distFromStartOfModel,MemberIDType* pMbrID,Float64* pDistFromStartOfMbr)
+void pgsGirderModelFactory::FindMember(WBFL::FEA2D::Model& model,Float64 distFromStartOfModel,MemberIDType* pMbrID,Float64* pDistFromStartOfMbr)
 {
-   CComPtr<IFem2dMemberCollection> members;
-   pModel->get_Members(&members);
+   IndexType mbrcnt = model.GetMemberCount();
 
-   IndexType mbrcnt;
-   members->get_Count(&mbrcnt);
-
-   CComPtr<IFem2dJointCollection> joints;
-   pModel->get_Joints(&joints);
-
-   CComPtr<IFem2dEnumMember> enumMembers;
-   members->get__EnumElements(&enumMembers);
-
-   IndexType idx = 0;
-   CComPtr<IFem2dJoint> j1, j2;
-   CComPtr<IFem2dMember> mbr;
-   while ( enumMembers->Next(1,&mbr,nullptr) != S_FALSE )
+   for ( IndexType idx = 0; idx < mbrcnt; idx++ )
    {
-      JointIDType jntID1, jntID2;
-      mbr->get_StartJoint(&jntID1);
-      mbr->get_EndJoint(&jntID2);
+      WBFL::FEA2D::Member* mbr = model.FindMemberByIndex(idx);
 
-      j1.Release();
-      j2.Release();
-      joints->Find(jntID1,&j1);
-      joints->Find(jntID2,&j2);
+      JointIDType jntID1 = mbr->GetStartJoint();
+      JointIDType jntID2 = mbr->GetEndJoint();
 
-      Float64 x1,x2;
-      j1->get_X(&x1);
-      j2->get_X(&x2);
+      WBFL::FEA2D::Joint* j1 = model.FindJoint(jntID1);
+      WBFL::FEA2D::Joint* j2 = model.FindJoint(jntID2);
+
+      Float64 x1 = j1->GetX();
+      Float64 x2 = j2->GetX();
 
       if ( InRange(x1,distFromStartOfModel,x2) )
       {
-         mbr->get_ID(pMbrID);
+         *pMbrID = mbr->GetID();
          *pDistFromStartOfMbr = distFromStartOfModel - x1;
          return;
       }
       else if (idx==0 && distFromStartOfModel<x1) // next cases are for short cantilevers where fem model is not generated
       {
-         mbr->get_ID(pMbrID);
+         *pMbrID = mbr->GetID();
          *pDistFromStartOfMbr = 0.0;
          return;
       }
       else if (idx==mbrcnt-1 && distFromStartOfModel>x2)
       {
-         mbr->get_ID(pMbrID);
+         *pMbrID = mbr->GetID();
          *pDistFromStartOfMbr = x2-x1;
          return;
       }
-
-      mbr.Release();
-      idx++;
    }
 
    ATLASSERT(false); // didn't find a solution
 }
 
-PoiIDPairType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,const pgsPointOfInterest& poi)
+PoiIDPairType pgsGirderModelFactory::AddPointOfInterest(WBFL::FEA2D::Model& model,const pgsPointOfInterest& poi)
 {
    // layout poi on fem model
-   CComPtr<IFem2dJointCollection> joints;
-   pModel->get_Joints(&joints);
-   IndexType nJoints;
-   joints->get_Count(&nJoints);
-
-   CComPtr<IFem2dPOICollection> pois;
-   pModel->get_POIs(&pois);
+   IndexType nJoints = model.GetJointCount();
 
    Float64 dist_from_start_of_member;
    MemberIDType mbrID = 0;
-   
+
    IndexType jntIdx = 0;
 
-   CComPtr<IFem2dJoint> prevJnt;
-   joints->get_Item(jntIdx++,&prevJnt);
-   Float64 prevLocation;
-   prevJnt->get_X(&prevLocation);
+   WBFL::FEA2D::Joint* prevJnt = model.FindJointByIndex(jntIdx++);
+   Float64 prevLocation = prevJnt->GetX();
 
    Float64 poi_dist_from_start = poi.GetDistFromStart();
 
-   bool is_dual_pois = false; // if poi straddles a support location, add fem pois at either side
-   CComPtr<IFem2dJoint> jnt;
    for ( ; jntIdx < nJoints; jntIdx++, mbrID++ )
    {
-      jnt.Release();
-      joints->get_Item(jntIdx,&jnt);
-      Float64 location;
-      jnt->get_X(&location);
-      VARIANT_BOOL is_support;
-      jnt->IsSupport(&is_support);
+      WBFL::FEA2D::Joint* jnt = model.FindJointByIndex(jntIdx);
+      Float64 location = jnt->GetX();
+      bool is_support = jnt->IsSupport();
 
       if (is_support && IsEqual(poi_dist_from_start,location) && jntIdx!=nJoints-1 )
       {
          // poi is directly over an interior support joint. we need fem pois on either side
-         CComPtr<IFem2dPOI> objPOI_left,objPOI_right;
-
          PoiIDType femID_left = ms_FemModelPoiID++;
          PoiIDType femID_right = ms_FemModelPoiID++;
 
-         HRESULT hr = pois->Create(femID_left, mbrID, -1.0, &objPOI_left);
-         ATLASSERT(SUCCEEDED(hr));
-         hr = pois->Create(femID_right, mbrID+1, 0.0, &objPOI_right);
-         ATLASSERT(SUCCEEDED(hr));
+         model.CreatePOI(femID_left, mbrID, -1.0);
+         model.CreatePOI(femID_right, mbrID+1, 0.0);
 
          return PoiIDPairType(femID_left, femID_right);
       }
@@ -613,12 +530,9 @@ PoiIDPairType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,cons
       {
          dist_from_start_of_member = poi_dist_from_start - prevLocation;
 
-         CComPtr<IFem2dPOI> objPOI;
-
          PoiIDType femID = ms_FemModelPoiID++;
 
-         HRESULT hr = pois->Create(femID,mbrID,dist_from_start_of_member,&objPOI);
-         ATLASSERT(SUCCEEDED(hr));
+         model.CreatePOI(femID,mbrID,dist_from_start_of_member);
 
          return PoiIDPairType(femID, femID);
       }
@@ -628,56 +542,45 @@ PoiIDPairType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,cons
 
    // POI is not on model. This can happen if the POI is before or after the support and cantilevers are not modelled
    // First check left end
-   Float64 location;
-   CComPtr<IFem2dJoint> lftjnt;
-   joints->get_Item(0,&lftjnt);
-   lftjnt->get_X(&location);
+   WBFL::FEA2D::Joint* lftjnt = model.FindJointByIndex(0);
+   Float64 location = lftjnt->GetX();
 
    if (poi_dist_from_start < location)
    {
-      VARIANT_BOOL is_support;
-      lftjnt->IsSupport(&is_support);
-      ATLASSERT(is_support); // remember, we are assuming no cantilever here
+      ATLASSERT(lftjnt->IsSupport()); // remember, we are assuming no cantilever here
 
-      CComPtr<IFem2dPOI> objPOI;
       PoiIDType femID = ms_FemModelPoiID++;
 
-      HRESULT hr = pois->Create(femID,0,0.0,&objPOI); // left end of first member
-      ATLASSERT(SUCCEEDED(hr));
+      model.CreatePOI(femID,0,0.0); // left end of first member
       return PoiIDPairType(femID, femID);
    }
 
    // Now check right end
-   CComPtr<IFem2dJoint> rgtjnt;
-   joints->get_Item(nJoints-1,&rgtjnt);
-   rgtjnt->get_X(&location);
+   WBFL::FEA2D::Joint* rgtjnt = model.FindJointByIndex(nJoints-1);
+   location = rgtjnt->GetX();
 
    if (location < poi_dist_from_start)
    {
-      VARIANT_BOOL is_support;
-      rgtjnt->IsSupport(&is_support);
-      ATLASSERT(is_support); // remember, we are assuming no cantilever here
+      ATLASSERT(rgtjnt->IsSupport()); // remember, we are assuming no cantilever here
 
-      CComPtr<IFem2dPOI> objPOI;
       PoiIDType femID = ms_FemModelPoiID++;
 
-      HRESULT hr = pois->Create(femID,nJoints-2,-1.0,&objPOI); // left end of first member
-      ATLASSERT(SUCCEEDED(hr));
+      model.CreatePOI(femID,nJoints-2,-1.0); // left end of first member
       return PoiIDPairType(femID, femID);
    }
 
    // poi not found. should never happen
-   ATLASSERT(0); 
+   ATLASSERT(0);
    return PoiIDPairType(INVALID_ID,INVALID_ID);
 }
 
-std::vector<PoiIDPairType> pgsGirderModelFactory::AddPointsOfInterest(IFem2dModel* pModel,const PoiList& vPoi)
+std::vector<PoiIDPairType> pgsGirderModelFactory::AddPointsOfInterest(WBFL::FEA2D::Model& model,const PoiList& vPoi)
 {
    std::vector<PoiIDPairType> femIDs;
 
    for(const pgsPointOfInterest& poi : vPoi)
    {
-      femIDs.push_back(pgsGirderModelFactory::AddPointOfInterest(pModel,poi));
+      femIDs.push_back(pgsGirderModelFactory::AddPointOfInterest(model,poi));
    }
 
    return femIDs;
@@ -698,22 +601,14 @@ pgsKdotHaulingGirderModelFactory::~pgsKdotHaulingGirderModelFactory(void)
 void pgsKdotHaulingGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
                                                   LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
-                                                  const PoiList& vPOI,IFem2dModel** ppModel)
+                                                  const PoiList& vPOI,WBFL::FEA2D::Model& model)
 {
    ATLASSERT(bModelLeftCantilever && bModelRightCantilever); // kdot method should always include cantilevers
 
    // apply  loads
    GET_IFACE2(pBroker.lock(), IProductLoads, pProductLoads);
-   CComPtr<IFem2dLoadingCollection> loadings;
-   CComPtr<IFem2dLoading> loading;
-   (*ppModel)->get_Loadings(&loadings);
-   loadings->Create(lcidGirder,&loading);
+   WBFL::FEA2D::Loading& loading = model.CreateLoading(lcidGirder);
 
-   CComPtr<IFem2dMemberCollection> members;
-   (*ppModel)->get_Members(&members);
-
-   CComPtr<IFem2dJointCollection> joints;
-   (*ppModel)->get_Joints(&joints);
 
    std::vector<SegmentLoad> segLoads;
    std::vector<DiaphragmLoad> diaphLoads;
@@ -721,9 +616,6 @@ void pgsKdotHaulingGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broke
    pProductLoads->GetSegmentSelfWeightLoad(segmentKey,&segLoads,&diaphLoads,&cjLoads);
 
    // apply dynamically factored girder self weight load
-   CComPtr<IFem2dDistributedLoadCollection> distributedLoads;
-   loading->get_DistributedLoads(&distributedLoads);
-   
    MemberIDType mbrID = 0;
    LoadIDType loadID = 0;
    std::vector<SegmentLoad>::iterator segLoadIter(segLoads.begin());
@@ -742,8 +634,8 @@ void pgsKdotHaulingGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broke
       MemberIDType mbrIDEnd;   // member ID at the end of the load
       Float64 xStart; // distance from start of member mbrIDStart to the start of the load
       Float64 xEnd;   // distance from start of member mbrIDEnd to end of the load
-      FindMember(*ppModel,start,&mbrIDStart,&xStart);
-      FindMember(*ppModel,end,  &mbrIDEnd,  &xEnd);
+      FindMember(model,start,&mbrIDStart,&xStart);
+      FindMember(model,end,  &mbrIDEnd,  &xEnd);
 
       if ( mbrIDStart == mbrIDEnd )
       {
@@ -751,8 +643,7 @@ void pgsKdotHaulingGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broke
          wStart *= m_InteriorFactor;
          wEnd   *= m_InteriorFactor;
 
-         CComPtr<IFem2dDistributedLoad> distLoad;
-         distributedLoads->Create(loadID++,mbrIDStart,loadDirFy,xStart,xEnd,wStart,wEnd,lotMember,&distLoad);
+         loading.CreateDistributedLoad(loadID++,mbrIDStart,WBFL::FEA2D::LoadDirection::Fy,xStart,xEnd,wStart,wEnd);
       }
       else
       {
@@ -762,22 +653,17 @@ void pgsKdotHaulingGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broke
             Float64 w1,w2; // start and end load intensity on this member
             Float64 x1,x2; // start and end load location from the start of this member
 
-            Float64 Lmbr;
-            CComPtr<IFem2dMember> mbr;
-            members->Find(mbrID,&mbr);
-            mbr->get_Length(&Lmbr); 
+            WBFL::FEA2D::Member* mbr = model.FindMember(mbrID);
+            Float64 Lmbr = mbr->GetLength();
 
-            JointIDType jntIDStart,jntIDEnd;
-            mbr->get_StartJoint(&jntIDStart);
-            mbr->get_EndJoint(&jntIDEnd);
+            JointIDType jntIDStart = mbr->GetStartJoint();
+            JointIDType jntIDEnd = mbr->GetEndJoint();
 
-            CComPtr<IFem2dJoint> jntStart, jntEnd;
-            joints->Find(jntIDStart,&jntStart);
-            joints->Find(jntIDEnd,  &jntEnd);
+            WBFL::FEA2D::Joint* jntStart = model.FindJoint(jntIDStart);
+            WBFL::FEA2D::Joint* jntEnd = model.FindJoint(jntIDEnd);
 
-            Float64 xMbrStart, xMbrEnd;
-            jntStart->get_X(&xMbrStart);
-            jntEnd->get_X(&xMbrEnd);
+            Float64 xMbrStart = jntStart->GetX();
+            Float64 xMbrEnd = jntEnd->GetX();
 
             if ( mbrID == mbrIDStart )
             {
@@ -815,8 +701,7 @@ void pgsKdotHaulingGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broke
                w2 *= this->m_InteriorFactor;
             }
 
-            CComPtr<IFem2dDistributedLoad> distLoad;
-            distributedLoads->Create(loadID++,mbrID,loadDirFy,x1,x2,w1,w2,lotMember,&distLoad);
+            loading.CreateDistributedLoad(loadID++,mbrID,WBFL::FEA2D::LoadDirection::Fy,x1,x2,w1,w2);
          }
       }
    }
@@ -837,28 +722,15 @@ pgsDesignHaunchLoadGirderModelFactory::~pgsDesignHaunchLoadGirderModelFactory(vo
 void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,
                                                   Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,
                                                   LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,
-                                                  const PoiList& vPOI,IFem2dModel** ppModel)
+                                                  const PoiList& vPOI,WBFL::FEA2D::Model& model)
 {
    // apply  loads
    // We dont need girder self weight, so don't use it
-   CComPtr<IFem2dLoadingCollection> loadings;
-   (*ppModel)->get_Loadings(&loadings);
+   WBFL::FEA2D::Loading& slabLoading = model.CreateLoading(m_SlabLoadCase);
 
-   CComPtr<IFem2dLoading> slabPadLoading, slabLoading;
+   WBFL::FEA2D::Loading& slabPadLoading = model.CreateLoading(m_SlabPadLoadCase);
 
-   loadings->Create(m_SlabLoadCase,   &slabLoading);
-   loadings->Create(m_SlabPadLoadCase,&slabPadLoading);
 
-   CComPtr<IFem2dMemberCollection> members;
-   (*ppModel)->get_Members(&members);
-
-   CComPtr<IFem2dJointCollection> joints;
-   (*ppModel)->get_Joints(&joints);
-
-   CComPtr<IFem2dDistributedLoadCollection> slabDistributedLoads, slabPadDistributedLoads;
-   slabLoading->get_DistributedLoads(&slabDistributedLoads);
-   slabPadLoading->get_DistributedLoads(&slabPadDistributedLoads);
-   
    MemberIDType mbrID = 0;
    LoadIDType loadID = 0;
 
@@ -872,7 +744,6 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::
    Float64 wslabPadStart = startSlabLoad.PadLoad;
    slabLoadIter++;
 
-   CComPtr<IFem2dDistributedLoad> slabDistLoad, slabPadDistLoad;
    for ( ; slabLoadIter != slabLoadIterEnd; slabLoadIter++ )
    {
       SlabLoad& slabLoad = *slabLoadIter;
@@ -885,7 +756,7 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::
       if ( !bModelLeftCantilever && ::IsLT(start,leftSupportLoc) )
       {
          // this load segment begins before the left support and we are ignoring loads out there
-  
+
          // compute load intensity at the left support
          wslabStart = ::LinInterp(leftSupportLoc,wslabStart,wslabEnd,end-start);
          wslabPadStart = ::LinInterp(leftSupportLoc,wslabPadStart,wslabPadEnd,end-start);
@@ -907,47 +778,37 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::
       MemberIDType mbrIDEnd;   // member ID at the end of the load
       Float64 xStart; // distance from start of member mbrIDStart to the start of the load
       Float64 xEnd;   // distance from start of member mbrIDEnd to end of the load
-      FindMember(*ppModel,start,&mbrIDStart,&xStart);
-      FindMember(*ppModel,end,  &mbrIDEnd,  &xEnd);
+      FindMember(model,start,&mbrIDStart,&xStart);
+      FindMember(model,end,  &mbrIDEnd,  &xEnd);
 
       if ( mbrIDStart == mbrIDEnd )
       {
          // load is contained on a single member and is all interior
          if (!IsEqual(xStart, xEnd)) // No use creating a load if it's zero length
          {
-            slabDistLoad.Release();
-            slabPadDistLoad.Release();
-            slabDistributedLoads->Create(loadID++, mbrIDStart, loadDirFy, xStart, xEnd, wslabStart, wslabEnd, lotMember, &slabDistLoad);
-            slabPadDistributedLoads->Create(loadID++, mbrIDStart, loadDirFy, xStart, xEnd, wslabPadStart, wslabPadEnd, lotMember, &slabPadDistLoad);
+            slabLoading.CreateDistributedLoad(loadID++, mbrIDStart, WBFL::FEA2D::LoadDirection::Fy, xStart, xEnd, wslabStart, wslabEnd);
+            slabPadLoading.CreateDistributedLoad(loadID++, mbrIDStart, WBFL::FEA2D::LoadDirection::Fy, xStart, xEnd, wslabPadStart, wslabPadEnd);
          }
       }
       else
       {
          // load straddles two or more members
-         CComPtr<IFem2dMember> mbr;
-         CComPtr<IFem2dJoint> jntStart, jntEnd;
          for ( MemberIDType mbrID = mbrIDStart; mbrID <= mbrIDEnd; mbrID++ )
          {
             Float64 wsl1, wsl2, wsp1, wsp2; // start and end load intensity of slab and slab pad on this member
             Float64 x1,x2; // start and end load location from the start of this member
 
-            Float64 Lmbr;
-            mbr.Release();
-            members->Find(mbrID,&mbr);
-            mbr->get_Length(&Lmbr); 
+            WBFL::FEA2D::Member* mbr = model.FindMember(mbrID);
+            Float64 Lmbr = mbr->GetLength();
 
-            JointIDType jntIDStart,jntIDEnd;
-            mbr->get_StartJoint(&jntIDStart);
-            mbr->get_EndJoint(&jntIDEnd);
+            JointIDType jntIDStart = mbr->GetStartJoint();
+            JointIDType jntIDEnd = mbr->GetEndJoint();
 
-            jntStart.Release();
-            jntEnd.Release();
-            joints->Find(jntIDStart,&jntStart);
-            joints->Find(jntIDEnd,  &jntEnd);
+            WBFL::FEA2D::Joint* jntStart = model.FindJoint(jntIDStart);
+            WBFL::FEA2D::Joint* jntEnd = model.FindJoint(jntIDEnd);
 
-            Float64 xMbrStart, xMbrEnd;
-            jntStart->get_X(&xMbrStart);
-            jntEnd->get_X(&xMbrEnd);
+            Float64 xMbrStart = jntStart->GetX();
+            Float64 xMbrEnd = jntEnd->GetX();
 
             if ( mbrID == mbrIDStart )
             {
@@ -977,10 +838,8 @@ void pgsDesignHaunchLoadGirderModelFactory::ApplyLoads(std::weak_ptr<WBFL::EAF::
 
             if (!IsEqual(x1, x2)) // No use creating a load if it's zero length
             {
-               slabDistLoad.Release();
-               slabPadDistLoad.Release();
-               slabDistributedLoads->Create(loadID++, mbrID, loadDirFy, x1, x2, wsl1, wsl2, lotMember, &slabDistLoad);
-               slabPadDistributedLoads->Create(loadID++, mbrID, loadDirFy, x1, x2, wsp1, wsp2, lotMember, &slabPadDistLoad);
+               slabLoading.CreateDistributedLoad(loadID++, mbrID, WBFL::FEA2D::LoadDirection::Fy, x1, x2, wsl1, wsl2);
+               slabPadLoading.CreateDistributedLoad(loadID++, mbrID, WBFL::FEA2D::LoadDirection::Fy, x1, x2, wsp1, wsp2);
             }
          }
       }

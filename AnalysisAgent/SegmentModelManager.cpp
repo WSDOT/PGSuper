@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,10 @@
 #include "AnalysisAgent.h"
 #include "SegmentModelManager.h"
 #include <pgsExt\AnalysisResult.h>
+
+#include <FEA2D/XFEA2D.h>
+#include <System\FileStream.h>
+#include <System\StructuredSaveXml.h>
 
 #include <EAF/AutoProgress.h>
 #include <PgsExt\GirderModelFactory.h>
@@ -91,7 +95,6 @@ void CSegmentModelManager::DumpAnalysisModels(GirderIndexType gdrIdx) const
 
 void CSegmentModelManager::DumpAnalysisModels(GirderIndexType gdrIdx,const SegmentModels* pModels,LPCTSTR name) const
 {
-   USES_CONVERSION;
    for(const auto& modelData : *pModels)
    {
       const CSegmentKey& segmentKey(modelData.first);
@@ -102,14 +105,14 @@ void CSegmentModelManager::DumpAnalysisModels(GirderIndexType gdrIdx,const Segme
          CString strFilename;
          strFilename.Format(_T("Group_%d_Girder_%s_Segment_%d_%s_Fem2d.xml"), LABEL_GROUP(segmentKey.groupIndex), LABEL_GIRDER(segmentKey.girderIndex), LABEL_SEGMENT(segmentKey.segmentIndex), name);
 
-         CComPtr<IStructuredSave2> save;
-         save.CoCreateInstance(CLSID_StructuredSave2);
-         save->Open(T2BSTR(strFilename));
+         WBFL::System::FileStream file;
+         file.open(strFilename, /*read=*/false);
+         WBFL::System::StructuredSaveXml save;
+         save.BeginSave(&file);
 
-         CComQIPtr<IStructuredStorage2> storage(segmentModelData.Model);
-         storage->Save(save);
+         segmentModelData.Model->Save(&save);
 
-         save->Close();
+         save.EndSave();
       }
    }
 }
@@ -1525,13 +1528,13 @@ bool CSegmentModelManager::CreateLoading(GirderIndexType girderLineIdx,LPCTSTR s
                pModelData = GetHaulingModel(segmentKey);
             }
 
-            CComPtr<IFem2dLoadingCollection> loadings;
-            pModelData->Model->get_Loadings(&loadings);
-
             LoadCaseIDType lcid = GetFirstExternalLoadCaseID() + pModelData->ExternalLoadMap.size();
 
-            CComPtr<IFem2dLoading> loading;
-            if ( FAILED(loadings->Create(lcid,&loading)) )
+            try
+            {
+               pModelData->Model->CreateLoading(lcid);
+            }
+            catch (WBFL::FEA2D::XFEA2D&)
             {
                ATLASSERT(false);
                return false;
@@ -1724,22 +1727,17 @@ void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalInd
    CSegmentModelData* pModelData = GetSegmentModel(segmentKey,intervalIdx);
    if (pModelData)
    {
-      CComQIPtr<IFem2dModelResults> results(pModelData->Model);
       JointIDType leftJntID, rightJntID;
       leftJntID = 0;
 
-      CComPtr<IFem2dJointCollection> joints;
-      pModelData->Model->get_Joints(&joints);
-      IndexType nJoints;
-      joints->get_Count(&nJoints);
+      IndexType nJoints = pModelData->Model->GetJointCount();
       rightJntID = nJoints - 1;
 
       LoadCaseIDType lcid = GetLoadCaseID(pModelData, strLoadingName);
 
       Float64 fx, mz;
-      CAnalysisResult ar(_T(__FILE__), __LINE__);
-      ar = results->ComputeReactions(lcid, leftJntID, &fx, pRleft, &mz);
-      ar = results->ComputeReactions(lcid, leftJntID, &fx, pRright, &mz);
+      FEA2D_ANALYSIS_RESULT(pModelData->Model->ComputeReactions(lcid, leftJntID, &fx, pRleft, &mz));
+      FEA2D_ANALYSIS_RESULT(pModelData->Model->ComputeReactions(lcid, leftJntID, &fx, pRright, &mz));
    }
    else
    {
@@ -1850,15 +1848,15 @@ std::vector<pgsPointOfInterest> CSegmentModelManager::GetDeflectionDatumLocation
       //       i)	If tower(s) on side of pier with adjacent segment with free end, place EDD at outermost tower.Allow tower adjustment if free to move
       //       ii)	Else if tower on side of pier with a supporting adjacent segment, Place EDD at strongback, or tower if tower at closure
       //    c)	Else if > 1 towers, and towers on both sides of pier :
-      //      Place single EDD at Pier, allow outermost towers to be adjustable in co - dependent seesaw motion.Any redundant towers go along for the ride.Segment rotation is independent of adjacent segment BC’s.
+      //      Place single EDD at Pier, allow outermost towers to be adjustable in co - dependent seesaw motion.Any redundant towers go along for the ride.Segment rotation is independent of adjacent segment BCâ€™s.
       //4)	Else If zero permanent piers :
       //    a)	If zero towers : Place EDDs at strongbacks
       //    b)	Else if 1 tower:
-      //       i)	If both ends of segment dependent on adjacent segments, place EDD’s at strongbacksand adjust tower elevation per unrecoverable deflection
+      //       i)	If both ends of segment dependent on adjacent segments, place EDD's at strongbacksand adjust tower elevation per unrecoverable deflection
       //       ii)	If only one end dependent on adjacent segment, place EDD at towerand at supporting strongback
       //    c)	If 2 + towers:
       //       i)	If adjacent segments at both ends free, place EDDs at outermost towers
-      //       ii)	Else if both ends dependent on adjacent segments.Place EDD’s on strongbacks, adjust tower elevations
+      //       ii)	Else if both ends dependent on adjacent segments.Place EDD's on strongbacks, adjust tower elevations
       //       iii)	Else if one end freeand other dependent.Place EDD at strongback at dependent end, and other EDD at closest tower to free end
       //5)	Additional rules for erection deflection datums :
       //    a)	Deflections at free ends of drop in segments are made to match deflection of adjacent supporting segment
@@ -2424,17 +2422,13 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
 
          ATLASSERT(poi_id.first != INVALID_ID);
 
-
-         CComQIPtr<IFem2dModelResults> results(pModelData->Model);
-
          Float64 FxRight(0), FyRight(0), MzRight(0);
          Float64 FxLeft(0),  FyLeft(0),  MzLeft(0);
-         CAnalysisResult ar(_T(__FILE__),__LINE__);
-         ar = results->ComputePOIForces(lcid,poi_id.first,mftLeft,lotGlobal,&FxLeft,&FyLeft,&MzLeft);
+         FEA2D_ANALYSIS_RESULT(pModelData->Model->ComputePOIForces(lcid,poi_id.first,WBFL::FEA2D::MemberFaceType::Left,WBFL::FEA2D::LoadOrientation::Global,&FxLeft,&FyLeft,&MzLeft));
 
          FyLeft *= -1;
 
-         ar = results->ComputePOIForces(lcid,poi_id.second,mftRight,lotGlobal,&FxRight,&FyRight,&MzRight);
+         FEA2D_ANALYSIS_RESULT(pModelData->Model->ComputePOIForces(lcid,poi_id.second,WBFL::FEA2D::MemberFaceType::Right,WBFL::FEA2D::LoadOrientation::Global,&FxRight,&FyRight,&MzRight));
 
          WBFL::System::SectionValue fx(FxLeft,FxRight);
          WBFL::System::SectionValue fy(FyLeft,FyRight);
@@ -2445,7 +2439,7 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
          pvMz->push_back(mz);
 
          Float64 dx(0),dy(0),rz(0);
-         ar = results->ComputePOIDeflections(lcid,poi_id.first,lotGlobal,&dx,&dy,&rz);
+         FEA2D_ANALYSIS_RESULT(pModelData->Model->ComputePOIDeflections(lcid,poi_id.first,WBFL::FEA2D::LoadOrientation::Global,&dx,&dy,&rz));
 
          pvDx->push_back(dx);
          pvDy->push_back(dy);
@@ -2542,10 +2536,9 @@ void CSegmentModelManager::GetSectionStress(IntervalIndexType intervalIdx,LoadCa
       poi_id = AddPointOfInterest( pModelData, poi );
    }
 
-   CComQIPtr<IFem2dModelResults> results(pModelData->Model);
    Float64 fx,fy,mz;
-   Fem2dMbrFaceType face = IsZero( poi.GetDistFromStart() ) ? mftRight : mftLeft;
-   PoiIDType pid = face==mftLeft ? poi_id.first : poi_id.second;
+   WBFL::FEA2D::MemberFaceType face = IsZero( poi.GetDistFromStart() ) ? WBFL::FEA2D::MemberFaceType::Right : WBFL::FEA2D::MemberFaceType::Left;
+   PoiIDType pid = face==WBFL::FEA2D::MemberFaceType::Left ? poi_id.first : poi_id.second;
 
    if ( lcid == INVALID_ID )
    {
@@ -2555,8 +2548,7 @@ void CSegmentModelManager::GetSectionStress(IntervalIndexType intervalIdx,LoadCa
    }
    else
    {
-      CAnalysisResult ar(_T(__FILE__),__LINE__);
-      ar = results->ComputePOIForces(lcid,pid,face,lotMember,&fx,&fy,&mz);
+      FEA2D_ANALYSIS_RESULT(pModelData->Model->ComputePOIForces(lcid,pid,face,WBFL::FEA2D::LoadOrientation::Member,&fx,&fy,&mz));
    }
 
    GET_IFACE2(GetBroker(), ISectionProperties, pSectProp);
@@ -2598,26 +2590,17 @@ void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalInd
 
       CSegmentModelData* pModelData = GetSegmentModel(segmentKey,intervalIdx);
 
-      CComQIPtr<IFem2dModelResults> results(pModelData->Model);
-      CComPtr<IFem2dJointCollection> joints;
-      pModelData->Model->get_Joints(&joints);
-      IndexType nJoints;
-      joints->get_Count(&nJoints);
+      IndexType nJoints = pModelData->Model->GetJointCount();
       std::vector<Float64> reactions;
       for ( IndexType jntIdx = 0; jntIdx < nJoints; jntIdx++ )
       {
-         CComPtr<IFem2dJoint> joint;
-         joints->get_Item(jntIdx,&joint);
-         VARIANT_BOOL vbIsSupport;
-         joint->IsSupport(&vbIsSupport);
-         if ( vbIsSupport == VARIANT_TRUE )
+         WBFL::FEA2D::Joint* joint = pModelData->Model->FindJointByIndex(jntIdx);
+         if ( joint->IsSupport() )
          {
-            JointIDType jntID;
-            joint->get_ID(&jntID);
+            JointIDType jntID = joint->GetID();
 
             Float64 fx,fy,mz;
-            CAnalysisResult ar(_T(__FILE__),__LINE__);
-            ar = results->ComputeReactions(lcid,jntID,&fx,&fy,&mz);
+            FEA2D_ANALYSIS_RESULT(pModelData->Model->ComputeReactions(lcid,jntID,&fx,&fy,&mz));
 
             reactions.push_back(fy);
          }
@@ -2655,7 +2638,6 @@ Float64 CSegmentModelManager::GetReaction(IntervalIndexType intervalIdx,LoadCase
 
    CSegmentModelData* pModelData = GetSegmentModel(segmentKey,intervalIdx);
 
-   CComQIPtr<IFem2dModelResults> results(pModelData->Model);
    JointIDType jointID;
    if ( pierIdx == 0 )
    {
@@ -2663,16 +2645,12 @@ Float64 CSegmentModelManager::GetReaction(IntervalIndexType intervalIdx,LoadCase
    }
    else
    {
-      CComPtr<IFem2dJointCollection> joints;
-      pModelData->Model->get_Joints(&joints);
-      IndexType nJoints;
-      joints->get_Count(&nJoints);
+      IndexType nJoints = pModelData->Model->GetJointCount();
       jointID = nJoints-1;
    }
 
    Float64 fx,fy,mz;
-   CAnalysisResult ar(_T(__FILE__),__LINE__);
-   ar = results->ComputeReactions(lcid,jointID,&fx,&fy,&mz);
+   FEA2D_ANALYSIS_RESULT(pModelData->Model->ComputeReactions(lcid,jointID,&fx,&fy,&mz));
    return fy;
 }
 
@@ -2690,7 +2668,7 @@ void CSegmentModelManager::ZeroResults(const PoiList& vPoi,std::vector<WBFL::Sys
 
 PoiIDPairType CSegmentModelManager::AddPointOfInterest(CSegmentModelData* pModelData,const pgsPointOfInterest& poi) const
 {
-   PoiIDPairType femID = pgsGirderModelFactory::AddPointOfInterest(pModelData->Model, poi);
+   PoiIDPairType femID = pgsGirderModelFactory::AddPointOfInterest(*pModelData->Model, poi);
    pModelData->PoiMap.AddMap( poi, femID );
 
 #if defined ENABLE_LOGGING
@@ -2965,7 +2943,9 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
       pBridge->ModelCantilevers(segmentKey, leftSupportDistance, rightSupportDistance, &bModelLeftCantilever, &bModelRightCantilever);
    }
 
-   pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Ls-rightSupportDistance,Ls,Ec,lcid,bModelLeftCantilever,bModelRightCantilever,vPoi,&model_data.Model,&model_data.PoiMap);
+   auto [model, poiMap] = pgsGirderModelFactory().CreateGirderModel(m_pBroker,intervalIdx,segmentKey,leftSupportDistance,Ls-rightSupportDistance,Ls,Ec,lcid,bModelLeftCantilever,bModelRightCantilever,vPoi);
+   model_data.Model = std::move(model);
+   model_data.PoiMap = std::move(poiMap);
 
    // create loadings for all product load types
    // this may seems silly because many of these loads aren't applied
@@ -2983,19 +2963,13 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
       AddLoading(model_data, pfType);
    }
 
-   CComPtr<IFem2dLoadingCollection> loadings;
-   model_data.Model->get_Loadings(&loadings);
-   CComPtr<IFem2dLoading> loading;
-   loadings->Create(GetGirderIncrementalLoadCaseID(), &loading);
+   model_data.Model->CreateLoading(GetGirderIncrementalLoadCaseID());
 
    return model_data;
 }
 
 void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const
 {
-   CComPtr<IFem2dLoadingCollection> loadings;
-   pModelData->Model->get_Loadings(&loadings);
-
    GET_IFACE2_NOCHECK(GetBroker(),IProductLoads,pProductLoads);
 
    for (int i = 0; i < 3; i++)
@@ -3013,30 +2987,19 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
          continue;
       }
 
-      CComPtr<IFem2dLoading> loadingX, loadingY;
-      CComPtr<IFem2dPointLoadCollection> pointLoadsX, pointLoadsY;
-      CComPtr<IFem2dDistributedLoadCollection> distLoadsX;
+      WBFL::FEA2D::Loading& loadingX = pModelData->Model->CreateLoading(lcidMx);
 
-      loadings->Create(lcidMx, &loadingX);
-      loadingX->get_PointLoads(&pointLoadsX);
-      loadingX->get_DistributedLoads(&distLoadsX);
+      WBFL::FEA2D::Loading& loadingY = pModelData->Model->CreateLoading(lcidMy);
 
-      loadings->Create(lcidMy, &loadingY);
-      loadingY->get_PointLoads(&pointLoadsY);
 
       pModelData->Loads.insert(lcidMx);
       pModelData->Loads.insert(lcidMy);
 
       std::vector<EquivPretensionLoad> vLoads = pProductLoads->GetEquivPretensionLoads(segmentKey, strandType);
 
-      LoadIDType ptLoadIDX;
-      pointLoadsX->get_Count((IndexType*)&ptLoadIDX);
-
-      LoadIDType ptLoadIDY;
-      pointLoadsY->get_Count((IndexType*)&ptLoadIDY);
-
-      LoadIDType distLoadIDX;
-      distLoadsX->get_Count((IndexType*)&distLoadIDX);
+      LoadIDType ptLoadIDX = 0;
+      LoadIDType ptLoadIDY = 0;
+      LoadIDType distLoadIDX = 0;
 
       std::vector<EquivPretensionLoad>::iterator iter(vLoads.begin());
       std::vector<EquivPretensionLoad>::iterator iterEnd(vLoads.end());
@@ -3044,42 +3007,37 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
       {
          EquivPretensionLoad& equivLoad = *iter;
 
-         CComPtr<IFem2dPointLoad> ptLoad;
          MemberIDType mbrIDStart, mbrIDEnd;
          Float64 Xs, Xe;
-         pgsGirderModelFactory::FindMember(pModelData->Model, equivLoad.Xs, &mbrIDStart, &Xs);
-         pgsGirderModelFactory::FindMember(pModelData->Model, equivLoad.Xe, &mbrIDEnd, &Xe);
-         
+         pgsGirderModelFactory::FindMember(*pModelData->Model, equivLoad.Xs, &mbrIDStart, &Xs);
+         pgsGirderModelFactory::FindMember(*pModelData->Model, equivLoad.Xe, &mbrIDEnd, &Xe);
+
          if (IsZero(equivLoad.N))
          {
-            pointLoadsX->Create(ptLoadIDX++, mbrIDStart, Xs, equivLoad.P, equivLoad.N, equivLoad.Mx, lotGlobal, &ptLoad);
+            loadingX.CreatePointLoad(ptLoadIDX++, mbrIDStart, Xs, equivLoad.P, equivLoad.N, equivLoad.Mx, WBFL::FEA2D::LoadOrientation::Global);
          }
          else
          {
             // if N is not zero, this is the load for the vertical component of harped strand prestress
             // P is in the data structure for reporting purposes, so we can show how N is computed
             // however, there is not a new axial load, P, applied at this location
-            pointLoadsX->Create(ptLoadIDX++, mbrIDStart, Xs, 0.0/*equivLoad.P*/, equivLoad.N, equivLoad.Mx, lotGlobal, &ptLoad);
+            loadingX.CreatePointLoad(ptLoadIDX++, mbrIDStart, Xs, 0.0/*equivLoad.P*/, equivLoad.N, equivLoad.Mx, WBFL::FEA2D::LoadOrientation::Global);
          }
 
          if (!IsZero(equivLoad.wy))
          {
             if (mbrIDStart == mbrIDEnd)
             {
-               CComPtr<IFem2dDistributedLoad> distLoad;
-               distLoadsX->Create(distLoadIDX++, mbrIDStart, loadDirFy, Xs, Xe, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+               loadingX.CreateDistributedLoad(distLoadIDX++, mbrIDStart, WBFL::FEA2D::LoadDirection::Fy, Xs, Xe, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
             }
             else
             {
-               CComPtr<IFem2dDistributedLoad> distLoad;
-               distLoadsX->Create(distLoadIDX++, mbrIDStart, loadDirFy, Xs, -1, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+               loadingX.CreateDistributedLoad(distLoadIDX++, mbrIDStart, WBFL::FEA2D::LoadDirection::Fy, Xs, -1, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
                for (MemberIDType mbrID = mbrIDStart + 1; mbrID < mbrIDEnd; mbrID++)
                {
-                  distLoad.Release();
-                  distLoadsX->Create(distLoadIDX++, mbrID, loadDirFy, 0, -1, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+                  loadingX.CreateDistributedLoad(distLoadIDX++, mbrID, WBFL::FEA2D::LoadDirection::Fy, 0, -1, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
                }
-               distLoad.Release();
-               distLoadsX->Create(distLoadIDX++, mbrIDEnd, loadDirFy, 0, Xe, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+               loadingX.CreateDistributedLoad(distLoadIDX++, mbrIDEnd, WBFL::FEA2D::LoadDirection::Fy, 0, Xe, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
             }
          }
 
@@ -3089,8 +3047,7 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
             // as if it is a moment about the horizontal X axis. This is because we have a plane frame
             // model. For deflections, we have to take out the EI used in the model and replace it
             // with EI for transverse deflection.
-            ptLoad.Release();
-            pointLoadsY->Create(ptLoadIDY++, mbrIDStart, Xs, 0.0, 0.0, equivLoad.My, lotGlobal, &ptLoad);
+            loadingY.CreatePointLoad(ptLoadIDY++, mbrIDStart, Xs, 0.0, 0.0, equivLoad.My, WBFL::FEA2D::LoadOrientation::Global);
          }
       }
    }
@@ -3098,10 +3055,6 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
 
 void CSegmentModelManager::ApplyPostTensionLoad(CSegmentModelData* pModelData, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
 {
-   CComPtr<IFem2dLoadingCollection> loadings;
-   pModelData->Model->get_Loadings(&loadings);
-
-
    LoadCaseIDType lcidPT = GetLoadCaseID(pgsTypes::pftPostTensioning);
    if (pModelData->Loads.find(lcidPT) != pModelData->Loads.end())
    {
@@ -3110,21 +3063,13 @@ void CSegmentModelManager::ApplyPostTensionLoad(CSegmentModelData* pModelData, c
       return;
    }
 
-   CComPtr<IFem2dLoading> loading;
-   CComPtr<IFem2dPointLoadCollection> pointLoads;
-   CComPtr<IFem2dDistributedLoadCollection> distLoads;
+   WBFL::FEA2D::Loading& loading = pModelData->Model->CreateLoading(lcidPT);
 
-   loadings->Create(lcidPT, &loading);
-   loading->get_PointLoads(&pointLoads);
-   loading->get_DistributedLoads(&distLoads);
 
    pModelData->Loads.insert(lcidPT);
 
-   LoadIDType ptLoadID;
-   pointLoads->get_Count((IndexType*)&ptLoadID);
-
-   LoadIDType distLoadID;
-   distLoads->get_Count((IndexType*)&distLoadID);
+   LoadIDType ptLoadID = 0;
+   LoadIDType distLoadID = 0;
 
    GET_IFACE2_NOCHECK(GetBroker(),IProductLoads, pProductLoads);
    std::vector<EquivPretensionLoad> vLoads = pProductLoads->GetEquivSegmentPostTensionLoads(segmentKey);
@@ -3135,32 +3080,27 @@ void CSegmentModelManager::ApplyPostTensionLoad(CSegmentModelData* pModelData, c
    {
       EquivPretensionLoad& equivLoad = *iter;
 
-      CComPtr<IFem2dPointLoad> ptLoad;
       MemberIDType mbrIDStart, mbrIDEnd;
       Float64 Xs, Xe;
-      pgsGirderModelFactory::FindMember(pModelData->Model, equivLoad.Xs, &mbrIDStart, &Xs);
-      pgsGirderModelFactory::FindMember(pModelData->Model, equivLoad.Xe, &mbrIDEnd, &Xe);
+      pgsGirderModelFactory::FindMember(*pModelData->Model, equivLoad.Xs, &mbrIDStart, &Xs);
+      pgsGirderModelFactory::FindMember(*pModelData->Model, equivLoad.Xe, &mbrIDEnd, &Xe);
 
-      pointLoads->Create(ptLoadID++, mbrIDStart, Xs, equivLoad.P, equivLoad.N, equivLoad.Mx, lotGlobal, &ptLoad);
+      loading.CreatePointLoad(ptLoadID++, mbrIDStart, Xs, equivLoad.P, equivLoad.N, equivLoad.Mx, WBFL::FEA2D::LoadOrientation::Global);
 
       if (!IsZero(equivLoad.wy))
       {
          if (mbrIDStart == mbrIDEnd)
          {
-            CComPtr<IFem2dDistributedLoad> distLoad;
-            distLoads->Create(distLoadID++, mbrIDStart, loadDirFy, Xs, Xe, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+            loading.CreateDistributedLoad(distLoadID++, mbrIDStart, WBFL::FEA2D::LoadDirection::Fy, Xs, Xe, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
          }
          else
          {
-            CComPtr<IFem2dDistributedLoad> distLoad;
-            distLoads->Create(distLoadID++, mbrIDStart, loadDirFy, Xs, -1, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+            loading.CreateDistributedLoad(distLoadID++, mbrIDStart, WBFL::FEA2D::LoadDirection::Fy, Xs, -1, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
             for (MemberIDType mbrID = mbrIDStart + 1; mbrID < mbrIDEnd; mbrID++)
             {
-               distLoad.Release();
-               distLoads->Create(distLoadID++, mbrID, loadDirFy, 0, -1, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+               loading.CreateDistributedLoad(distLoadID++, mbrID, WBFL::FEA2D::LoadDirection::Fy, 0, -1, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
             }
-            distLoad.Release();
-            distLoads->Create(distLoadID++, mbrIDEnd, loadDirFy, 0, Xe, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+            loading.CreateDistributedLoad(distLoadID++, mbrIDEnd, WBFL::FEA2D::LoadDirection::Fy, 0, Xe, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
          }
       }
    }
@@ -3227,24 +3167,17 @@ void CSegmentModelManager::GetMemberLocation(const pgsPointOfInterest& poi,CSegm
       if ( poi.GetSegmentKey().IsEqual(closureKey) )
       {
          // poi is at the end of the model
-         CComPtr<IFem2dMemberCollection> members;
-         pModelData->Model->get_Members(&members);
-         IndexType nMembers;
-         members->get_Count(&nMembers);
-         CComPtr<IFem2dMember> member;
-         members->get_Item(nMembers-1,&member);
-         member->get_ID(pMbrID);
-         member->get_Length(pLocation);
+         IndexType nMembers = pModelData->Model->GetMemberCount();
+         WBFL::FEA2D::Member* member = pModelData->Model->FindMemberByIndex(nMembers-1);
+         *pMbrID = member->GetID();
+         *pLocation = member->GetLength();
       }
       else
       {
          // poi is at the start of the mode
          ATLASSERT(poi.GetSegmentKey().segmentIndex == closureKey.segmentIndex+1);
-         CComPtr<IFem2dMemberCollection> members;
-         pModelData->Model->get_Members(&members);
-         CComPtr<IFem2dMember> member;
-         members->get_Item(0,&member);
-         member->get_ID(pMbrID);
+         WBFL::FEA2D::Member* member = pModelData->Model->FindMemberByIndex(0);
+         *pMbrID = member->GetID();
          *pLocation = 0;
       }
    }
@@ -3257,14 +3190,10 @@ void CSegmentModelManager::GetMemberLocation(const pgsPointOfInterest& poi,CSegm
          ATLASSERT(poiID.first != INVALID_ID);
       }
 
-      CComPtr<IFem2dPOICollection> pois;
-      pModelData->Model->get_POIs(&pois);
+      WBFL::FEA2D::POI* femPoi = pModelData->Model->FindPOI(poiID.first); // opt to left poi for historical reasons
 
-      CComPtr<IFem2dPOI> femPoi;
-      pois->Find(poiID.first, &femPoi); // opt to left poi for historical reasons
-
-      femPoi->get_MemberID(pMbrID);
-      femPoi->get_Location(pLocation);
+      *pMbrID = femPoi->GetMemberID();
+      *pLocation = femPoi->GetLocation();
    }
 }
 
@@ -3303,10 +3232,7 @@ CSegmentKey CSegmentModelManager::GetSegmentKey(const CGirderKey& girderKey,Pier
 
 void CSegmentModelManager::AddLoading(CSegmentModelData& model_data,pgsTypes::ProductForceType pfType) const
 {
-   CComPtr<IFem2dLoadingCollection> loadings;
-   model_data.Model->get_Loadings(&loadings);
-   CComPtr<IFem2dLoading> loading;
-   loadings->Create(GetLoadCaseID(pfType),&loading);
+   model_data.Model->CreateLoading(GetLoadCaseID(pfType));
 }
 
 
@@ -3314,30 +3240,25 @@ bool CSegmentModelManager::CreateConcentratedLoad(IntervalIndexType intervalIdx,
 {
    CSegmentModelData* pModelData = GetSegmentModel(poi.GetSegmentKey(),intervalIdx);
 
-   CComPtr<IFem2dLoadingCollection> loadings;
-   pModelData->Model->get_Loadings(&loadings);
-
-   CComPtr<IFem2dLoading> loading;
-   if ( FAILED(loadings->Find(lcid,&loading)) )
+   WBFL::FEA2D::Loading* loading = pModelData->Model->FindLoading(lcid);
+   if ( loading == nullptr )
    {
       ATLASSERT(false);
       return false;
    }
-
-   CComPtr<IFem2dPointLoadCollection> pointLoads;
-   loading->get_PointLoads(&pointLoads);
 
    MemberIDType mbrID;
    Float64 location;
    GetMemberLocation(poi,pModelData,&mbrID,&location);
 
    // each load gets its own individual identifier... just use it's index
-   IndexType nLoads;
-   pointLoads->get_Count(&nLoads);
-   LoadIDType loadID = (LoadIDType)(nLoads);
+   LoadIDType loadID = (LoadIDType)(loading->GetPointLoadCount());
 
-   CComPtr<IFem2dPointLoad> ptLoad;
-   if ( FAILED(pointLoads->Create(loadID,mbrID,location,Fx,Fy,Mz,lotGlobal,&ptLoad)) )
+   try
+   {
+      loading->CreatePointLoad(loadID,mbrID,location,Fx,Fy,Mz,WBFL::FEA2D::LoadOrientation::Global);
+   }
+   catch (WBFL::FEA2D::XFEA2D&)
    {
       ATLASSERT(false);
       return false;
@@ -3367,22 +3288,13 @@ bool CSegmentModelManager::CreateUniformLoad(IntervalIndexType intervalIdx, Load
       // get the model for this segment
       CSegmentModelData* pModelData = GetSegmentModel(segmentKey,intervalIdx);
 
-      CComPtr<IFem2dLoadingCollection> loadings;
-      pModelData->Model->get_Loadings(&loadings);
-
-      CComPtr<IFem2dLoading> loading;
-      loadings->Find(lcid,&loading);
-
-      CComPtr<IFem2dDistributedLoadCollection> distributedLoads;
-      loading->get_DistributedLoads(&distributedLoads);
+      WBFL::FEA2D::Loading* loading = pModelData->Model->FindLoading(lcid);
 
       // use the loading index as its ID
-      IndexType nLoads;
-      distributedLoads->get_Count(&nLoads);
-      LoadIDType loadID = (LoadIDType)nLoads;
+      LoadIDType loadID = (LoadIDType)loading->GetDistributedLoadCount();
 
       // determien the location where load starts/stops for this model
-      MemberIDType mbrID1, mbrID2; 
+      MemberIDType mbrID1, mbrID2;
       Float64 location1, location2;
       Float64 length1, length2; // length of mbrID1 and mbrID2
 
@@ -3390,22 +3302,16 @@ bool CSegmentModelManager::CreateUniformLoad(IntervalIndexType intervalIdx, Load
       {
          // loading starts in this fem model
          GetMemberLocation(poi1,pModelData,&mbrID1,&location1);
-         CComPtr<IFem2dMemberCollection> members;
-         pModelData->Model->get_Members(&members);
-         CComPtr<IFem2dMember> member;
-         members->Find(mbrID1,&member);
-         member->get_Length(&length1);
+         WBFL::FEA2D::Member* member = pModelData->Model->FindMember(mbrID1);
+         length1 = member->GetLength();
       }
       else if ( segIdx < firstSegmentIdx )
       {
          // loading starts before this segment/fem model
          // so apply the load to the entire model
-         CComPtr<IFem2dMemberCollection> members;
-         pModelData->Model->get_Members(&members);
-         CComPtr<IFem2dMember> member;
-         members->get_Item(0,&member);
-         member->get_ID(&mbrID1);
-         member->get_Length(&length1);
+         WBFL::FEA2D::Member* member = pModelData->Model->FindMemberByIndex(0);
+         mbrID1 = member->GetID();
+         length1 = member->GetLength();
          location1 = 0;
       }
       else
@@ -3418,24 +3324,17 @@ bool CSegmentModelManager::CreateUniformLoad(IntervalIndexType intervalIdx, Load
       {
          // loading ends in this fem model
          GetMemberLocation(poi2,pModelData,&mbrID2,&location2);
-         CComPtr<IFem2dMemberCollection> members;
-         pModelData->Model->get_Members(&members);
-         CComPtr<IFem2dMember> member;
-         members->Find(mbrID2,&member);
-         member->get_Length(&length2);
+         WBFL::FEA2D::Member* member = pModelData->Model->FindMember(mbrID2);
+         length2 = member->GetLength();
       }
       else if ( segIdx < lastSegmentIdx )
       {
          // loading ends after this segment/fem model
          // so apply the load to the entire model
-         CComPtr<IFem2dMemberCollection> members;
-         pModelData->Model->get_Members(&members);
-         IndexType nMembers;
-         members->get_Count(&nMembers);
-         CComPtr<IFem2dMember> member;
-         members->get_Item(nMembers-1,&member);
-         member->get_ID(&mbrID2);
-         member->get_Length(&length2);
+         IndexType nMembers = pModelData->Model->GetMemberCount();
+         WBFL::FEA2D::Member* member = pModelData->Model->FindMemberByIndex(nMembers-1);
+         mbrID2 = member->GetID();
+         length2 = member->GetLength();
          location2 = length2;
       }
       else
@@ -3456,14 +3355,12 @@ bool CSegmentModelManager::CreateUniformLoad(IntervalIndexType intervalIdx, Load
                   // model the load if it doesn't start and the end of member
                   if ( !IsZero(wx) )
                   {
-                     CComPtr<IFem2dDistributedLoad> distLoad;
-                     distributedLoads->Create(loadID++,mbrID1,loadDirFx,location1,length1,wx,wx,lotGlobal,&distLoad);
+                     loading->CreateDistributedLoad(loadID++,mbrID1,WBFL::FEA2D::LoadDirection::Fx,location1,length1,wx,wx,WBFL::FEA2D::LoadOrientation::Global);
                   }
 
                   if ( !IsZero(wy) )
                   {
-                     CComPtr<IFem2dDistributedLoad> distLoad;
-                     distributedLoads->Create(loadID++,mbrID1,loadDirFy,location1,length1,wy,wy,lotGlobal,&distLoad);
+                     loading->CreateDistributedLoad(loadID++,mbrID1,WBFL::FEA2D::LoadDirection::Fy,location1,length1,wy,wy,WBFL::FEA2D::LoadOrientation::Global);
                   }
                }
             }
@@ -3474,14 +3371,12 @@ bool CSegmentModelManager::CreateUniformLoad(IntervalIndexType intervalIdx, Load
                   // model the load if it doesn't end at the start of this member
                   if ( !IsZero(wx) )
                   {
-                     CComPtr<IFem2dDistributedLoad> distLoad;
-                     distributedLoads->Create(loadID++,mbrID2,loadDirFx,0.0,location2,wx,wx,lotGlobal,&distLoad);
+                     loading->CreateDistributedLoad(loadID++,mbrID2,WBFL::FEA2D::LoadDirection::Fx,0.0,location2,wx,wx,WBFL::FEA2D::LoadOrientation::Global);
                   }
 
                   if ( !IsZero(wy) )
                   {
-                     CComPtr<IFem2dDistributedLoad> distLoad;
-                     distributedLoads->Create(loadID++,mbrID2,loadDirFx,0.0,location2,wy,wy,lotGlobal,&distLoad);
+                     loading->CreateDistributedLoad(loadID++,mbrID2,WBFL::FEA2D::LoadDirection::Fx,0.0,location2,wy,wy,WBFL::FEA2D::LoadOrientation::Global);
                   }
                }
             }
@@ -3492,31 +3387,27 @@ bool CSegmentModelManager::CreateUniformLoad(IntervalIndexType intervalIdx, Load
                ATLASSERT(mbrID1 < id && id < mbrID2);
                if ( !IsZero(wx) )
                {
-                  CComPtr<IFem2dDistributedLoad> distLoad;
-                  distributedLoads->Create(loadID++,mbrID2,loadDirFx,0.0,-1,wx,wx,lotGlobal,&distLoad);
+                  loading->CreateDistributedLoad(loadID++,mbrID2,WBFL::FEA2D::LoadDirection::Fx,0.0,-1,wx,wx,WBFL::FEA2D::LoadOrientation::Global);
                }
 
                if ( !IsZero(wy) )
                {
-                  CComPtr<IFem2dDistributedLoad> distLoad;
-                  distributedLoads->Create(loadID++,mbrID2,loadDirFx,0.0,-1,wy,wy,lotGlobal,&distLoad);
+                  loading->CreateDistributedLoad(loadID++,mbrID2,WBFL::FEA2D::LoadDirection::Fx,0.0,-1,wy,wy,WBFL::FEA2D::LoadOrientation::Global);
                }
             }
          } // next fem member
-      } 
+      }
       else
       {
          // load is applied to a single member
          if ( !IsZero(wx) )
          {
-            CComPtr<IFem2dDistributedLoad> distLoad;
-            distributedLoads->Create(loadID++,mbrID1,loadDirFx,location1,location2,wx,wx,lotGlobal,&distLoad);
+            loading->CreateDistributedLoad(loadID++,mbrID1,WBFL::FEA2D::LoadDirection::Fx,location1,location2,wx,wx,WBFL::FEA2D::LoadOrientation::Global);
          }
 
          if ( !IsZero(wy) )
          {
-            CComPtr<IFem2dDistributedLoad> distLoad;
-            distributedLoads->Create(loadID++,mbrID1,loadDirFy,location1,location2,wy,wy,lotGlobal,&distLoad);
+            loading->CreateDistributedLoad(loadID++,mbrID1,WBFL::FEA2D::LoadDirection::Fy,location1,location2,wy,wy,WBFL::FEA2D::LoadOrientation::Global);
          }
       }
    } // next segment
@@ -3547,22 +3438,13 @@ bool CSegmentModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx
       // get the model for this segment
       CSegmentModelData* pModelData = GetSegmentModel(segmentKey,intervalIdx);
 
-      CComPtr<IFem2dLoadingCollection> loadings;
-      pModelData->Model->get_Loadings(&loadings);
-
-      CComPtr<IFem2dLoading> loading;
-      loadings->Find(lcid,&loading);
-
-      CComPtr<IFem2dMemberStrainCollection> memberStrains;
-      loading->get_MemberStrains(&memberStrains);
+      WBFL::FEA2D::Loading* loading = pModelData->Model->FindLoading(lcid);
 
       // use the loading index as its ID
-      IndexType nLoads;
-      memberStrains->get_Count(&nLoads);
-      LoadIDType loadID = (LoadIDType)nLoads;
+      LoadIDType loadID = (LoadIDType)loading->GetMemberStrainCount();
 
       // determine the location where load starts/stops for this model
-      MemberIDType mbrID1, mbrID2; 
+      MemberIDType mbrID1, mbrID2;
       Float64 location1, location2;
       Float64 lengthMbr1, lengthMbr2; // length of mbrID1 and mbrID2
 
@@ -3570,22 +3452,16 @@ bool CSegmentModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx
       {
          // loading starts in this fem model
          GetMemberLocation(poi1,pModelData,&mbrID1,&location1);
-         CComPtr<IFem2dMemberCollection> members;
-         pModelData->Model->get_Members(&members);
-         CComPtr<IFem2dMember> member;
-         members->Find(mbrID1,&member);
-         member->get_Length(&lengthMbr1);
+         WBFL::FEA2D::Member* member = pModelData->Model->FindMember(mbrID1);
+         lengthMbr1 = member->GetLength();
       }
       else if ( segIdx < firstSegmentIdx )
       {
          // loading starts before this segment/fem model
          // so apply the load to the entire model
-         CComPtr<IFem2dMemberCollection> members;
-         pModelData->Model->get_Members(&members);
-         CComPtr<IFem2dMember> member;
-         members->get_Item(0,&member);
-         member->get_ID(&mbrID1);
-         member->get_Length(&lengthMbr1);
+         WBFL::FEA2D::Member* member = pModelData->Model->FindMemberByIndex(0);
+         mbrID1 = member->GetID();
+         lengthMbr1 = member->GetLength();
          location1 = 0;
       }
       else
@@ -3598,24 +3474,17 @@ bool CSegmentModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx
       {
          // loading ends in this fem model
          GetMemberLocation(poi2,pModelData,&mbrID2,&location2);
-         CComPtr<IFem2dMemberCollection> members;
-         pModelData->Model->get_Members(&members);
-         CComPtr<IFem2dMember> member;
-         members->Find(mbrID2,&member);
-         member->get_Length(&lengthMbr2);
+         WBFL::FEA2D::Member* member = pModelData->Model->FindMember(mbrID2);
+         lengthMbr2 = member->GetLength();
       }
       else if ( segIdx < lastSegmentIdx )
       {
          // loading ends after this segment/fem model
          // so apply the load to the entire model
-         CComPtr<IFem2dMemberCollection> members;
-         pModelData->Model->get_Members(&members);
-         IndexType nMembers;
-         members->get_Count(&nMembers);
-         CComPtr<IFem2dMember> member;
-         members->get_Item(nMembers-1,&member);
-         member->get_ID(&mbrID2);
-         member->get_Length(&lengthMbr2);
+         IndexType nMembers = pModelData->Model->GetMemberCount();
+         WBFL::FEA2D::Member* member = pModelData->Model->FindMemberByIndex(nMembers-1);
+         mbrID2 = member->GetID();
+         lengthMbr2 = member->GetLength();
          location2 = lengthMbr2;
       }
       else
@@ -3634,8 +3503,7 @@ bool CSegmentModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx
                if ( !IsEqual(location1,lengthMbr1) && location1 != -1 )
                {
                   // model the load if it doesn't start and the end of member
-                  CComPtr<IFem2dMemberStrain> strainLoad;
-                  memberStrains->Create(loadID++,mbrID1,location1,lengthMbr1,e,r,&strainLoad);
+                  loading->CreateMemberStrain(loadID++,mbrID1,location1,lengthMbr1,e,r);
                }
             }
             else if ( id == mbrID2 )
@@ -3643,8 +3511,7 @@ bool CSegmentModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx
                if ( !IsZero(location2) )
                {
                   // model the load if it doesn't end at the start of this member
-                  CComPtr<IFem2dMemberStrain> strainLoad;
-                  memberStrains->Create(loadID++,mbrID2,0.0,location2,e,r,&strainLoad);
+                  loading->CreateMemberStrain(loadID++,mbrID2,0.0,location2,e,r);
                }
             }
             else
@@ -3652,16 +3519,14 @@ bool CSegmentModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx
                // this is an intermediate member between mbrID1 && mbrID2
                // the load goes over the entire length of the member
                ATLASSERT(mbrID1 < id && id < mbrID2);
-               CComPtr<IFem2dMemberStrain> strainLoad;
-               memberStrains->Create(loadID++,id,0,-1,e,r,&strainLoad);
+               loading->CreateMemberStrain(loadID++,id,0,-1,e,r);
             }
          } // next fem member
-      } 
+      }
       else
       {
          // load is applied to a single member
-         CComPtr<IFem2dMemberStrain> strainLoad;
-         memberStrains->Create(loadID++,mbrID1,location1,location2,e,r,&strainLoad);
+         loading->CreateMemberStrain(loadID++,mbrID1,location1,location2,e,r);
       }
    } // next segment
 

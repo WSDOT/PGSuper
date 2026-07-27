@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,10 +23,12 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <WBFLFem2d.h>
+#include <FEA2D/Model.h>
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\PoiPairMap.h>
 #include <IFace\AnalysisResults.h>
+#include <memory>
+#include <utility>
 
 namespace WBFL { namespace EAF { class Broker; }; };
 
@@ -35,12 +37,17 @@ namespace WBFL { namespace EAF { class Broker; }; };
 class PGSEXTCLASS pgsGirderModelFactory
 {
 public:
+   /// The FEA2D model (heap-allocated; ownership transfers to the caller
+   /// via the returned unique_ptr) paired with the mapping of PGSuper POIs
+   /// to Fem2d POIs.
+   using GirderModelResult = std::pair<std::unique_ptr<WBFL::FEA2D::Model>, pgsPoiPairMap>;
+
    pgsGirderModelFactory(void);
    ~pgsGirderModelFactory(void);
 
    // Creates a simple span FEM2d model for a precast segment.
    // intervalIdx is used to define the interval at which section properties and section transitions are used
-   virtual void CreateGirderModel(std::weak_ptr<WBFL::EAF::Broker> pBroker,                            // broker to access PGSuper data
+   virtual GirderModelResult CreateGirderModel(std::weak_ptr<WBFL::EAF::Broker> pBroker,                 // broker to access PGSuper data
                                  IntervalIndexType intervalIdx,               // used for looking up section properties and section transition POIs
                                  const CSegmentKey& segmentKey,               // this is the segment that the modeling is build for
                                  Float64 leftSupportLoc,                      // distance from the left end of the model to the left support location
@@ -50,32 +57,30 @@ public:
                                  LoadCaseIDType lcidGirder,                   // load case ID that is to be used to define the girder dead load
                                  bool bModelLeftCantilever,                   // if true, the cantilever defined by leftSupportLoc is modeled
                                  bool bModelRightCantilever,                  // if true, the cantilever defined by rightSupportLoc is modeled
-                                 const PoiList& vPoi, // vector of PGSuper POIs that are to be modeld in the Fem2d Model
-                                 IFem2dModel** ppModel,                       // the Fem2d Model
-                                 pgsPoiPairMap* pPoiMap                           // a mapping of PGSuper POIs to Fem2d POIs
+                                 const PoiList& vPoi                          // vector of PGSuper POIs that are to be modeld in the Fem2d Model
                                  );
 
    // searches the fem model of a girder to find the member ID and distance from start of member for
    // a location measured from the start of the girder
-   static void FindMember(IFem2dModel* pModel,          // the Fem2d model to search
+   static void FindMember(WBFL::FEA2D::Model& model,    // the FEA2D model to search
                           Float64 distFromStartOfModel, // distance from the start of the model
                           MemberIDType* pMbrID,         // Fem2d member ID
                           Float64* pDistFromStartOfMbr  // distance from the start of the Fem2d member
                           );
 
    // adds a PGSuper POI to the fem2d model. Returns the Fem2d POI ID
-   static PoiIDPairType AddPointOfInterest(IFem2dModel* pModel,const pgsPointOfInterest& poi);
+   static PoiIDPairType AddPointOfInterest(WBFL::FEA2D::Model& model,const pgsPointOfInterest& poi);
 
    // adds a vector of PGSuper POIs to the Fem2d model. Returns a vector of Fem2d POI IDs.
-   static std::vector<PoiIDPairType> AddPointsOfInterest(IFem2dModel* pModel,const PoiList& vPoi);
+   static std::vector<PoiIDPairType> AddPointsOfInterest(WBFL::FEA2D::Model& model,const PoiList& vPoi);
 
 
 protected:
    // Use template methods to allow children to add functionality
    // BuildModel returns length of model
-   virtual void BuildModel(std::weak_ptr<WBFL::EAF::Broker> pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,const PoiList& vPoi,IFem2dModel** ppModel);
-   virtual void ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,IFem2dModel** ppModel);
-   virtual void ApplyPointsOfInterest(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,IFem2dModel** ppModel,pgsPoiPairMap* pPoiMap);
+   virtual void BuildModel(std::weak_ptr<WBFL::EAF::Broker> pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,const PoiList& vPoi,WBFL::FEA2D::Model& model);
+   virtual void ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,WBFL::FEA2D::Model& model);
+   virtual void ApplyPointsOfInterest(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,WBFL::FEA2D::Model& model,pgsPoiPairMap* pPoiMap);
 
    static PoiIDType ms_FemModelPoiID;
 };
@@ -94,7 +99,7 @@ public:
 
 protected:
    // Use template methods to allow children to add functionality
-   virtual void ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,IFem2dModel** ppModel) override;
+   virtual void ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,WBFL::FEA2D::Model& model) override;
 
 private:
    Float64 m_OverhangFactor;
@@ -117,7 +122,7 @@ public:
 
 protected:
    // Use template methods to allow children to add functionality
-   virtual void ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,IFem2dModel** ppModel) override;
+   virtual void ApplyLoads(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,WBFL::FEA2D::Model& model) override;
 
 private:
    pgsDesignHaunchLoadGirderModelFactory();

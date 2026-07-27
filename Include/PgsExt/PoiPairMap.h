@@ -28,7 +28,7 @@
 
 typedef std::pair<PoiIDType,PoiIDType> PoiIDPairType;
 
-// Utility class to mape points of interest to model POI IDs.
+// Utility class to map points of interest to model POI IDs.
 // Model POI IDs can be any POI-type ID in any model. This
 class PGSEXTCLASS pgsPoiPairMap
 {

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -272,13 +272,13 @@ void CAnalysisAgentImp::ValidateCamberModels(const GDRCONFIG* pConfig) const
    ATLASSERT(pConfig != nullptr);
    if ( *pConfig != m_CacheConfig )
    {
-      m_CacheConfig_PrestressDeflectionModel.Model.Release();
+      m_CacheConfig_PrestressDeflectionModel.Model.reset();
       m_CacheConfig_PrestressDeflectionModel.PoiMap.Clear();
 
-      m_CacheConfig_InitialTempPrestressDeflectionModels.Model.Release();
+      m_CacheConfig_InitialTempPrestressDeflectionModels.Model.reset();
       m_CacheConfig_InitialTempPrestressDeflectionModels.PoiMap.Clear();
 
-      m_CacheConfig_ReleaseTempPrestressDeflectionModels.Model.Release();
+      m_CacheConfig_ReleaseTempPrestressDeflectionModels.Model.reset();
       m_CacheConfig_ReleaseTempPrestressDeflectionModels.PoiMap.Clear();
 
       const CSegmentKey& segmentKey = pConfig->SegmentKey;
@@ -893,11 +893,9 @@ CAnalysisAgentImp::CamberModelData CAnalysisAgentImp::BuildCamberModel(const CSe
    pPoi->SortPoiList(&vPoi);
 
    CamberModelData modelData;
-
-   pgsGirderModelFactory().CreateGirderModel(m_pBroker,releaseIntervalIdx,segmentKey,0.0,Ls,Ls,E,g_lcidGirder,false,false,vPoi,&modelData.Model,&modelData.PoiMap);
-
-   CComPtr<IFem2dLoadingCollection> loadings;
-   modelData.Model->get_Loadings(&loadings);
+   auto [model, poiMap] = pgsGirderModelFactory().CreateGirderModel(m_pBroker,releaseIntervalIdx,segmentKey,0.0,Ls,Ls,E,g_lcidGirder,false,false,vPoi);
+   modelData.Model = std::move(model);
+   modelData.PoiMap = std::move(poiMap);
 
    // add pretension forces for permanent (straight and harped) strands
    for ( int i = 0; i < 2; i++ )
@@ -905,67 +903,50 @@ CAnalysisAgentImp::CamberModelData CAnalysisAgentImp::BuildCamberModel(const CSe
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
       std::vector<EquivPretensionLoad> vLoads = GetEquivPretensionLoads(segmentKey,strandType,pConfig);
 
-      CComPtr<IFem2dLoading> loadingX, loadingY;
-      CComPtr<IFem2dPointLoadCollection> pointLoadsX, pointLoadsY;
-      CComPtr<IFem2dDistributedLoadCollection> distLoadsX;
-
       LoadCaseIDType lcidX, lcidY;
       GetPrestressLoadCaseIDs(strandType, &lcidX, &lcidY);
 
-      loadings->Create(lcidX, &loadingX);
-      loadingX->get_PointLoads(&pointLoadsX);
-      loadingX->get_DistributedLoads(&distLoadsX);
+      WBFL::FEA2D::Loading& loadingX = modelData.Model->CreateLoading(lcidX);
 
-      loadings->Create(lcidY, &loadingY);
-      loadingY->get_PointLoads(&pointLoadsY);
+      WBFL::FEA2D::Loading& loadingY = modelData.Model->CreateLoading(lcidY);
 
-      LoadIDType ptLoadIDX;
-      pointLoadsX->get_Count((IndexType*)&ptLoadIDX);
 
-      LoadIDType distLoadIDX;
-      distLoadsX->get_Count((IndexType*)&distLoadIDX);
-
-      LoadIDType ptLoadIDY;
-      pointLoadsY->get_Count((IndexType*)&ptLoadIDY);
+      LoadIDType ptLoadIDX = 0;
+      LoadIDType distLoadIDX = 0;
+      LoadIDType ptLoadIDY = 0;
 
       for(const auto& equivLoad : vLoads)
       {
-         CComPtr<IFem2dPointLoad> ptLoad;
          MemberIDType mbrIDStart, mbrIDEnd;
          Float64 Xs, Xe;
-         pgsGirderModelFactory::FindMember(modelData.Model, equivLoad.Xs, &mbrIDStart, &Xs);
-         pgsGirderModelFactory::FindMember(modelData.Model, equivLoad.Xe, &mbrIDEnd, &Xe);
+         pgsGirderModelFactory::FindMember(*modelData.Model, equivLoad.Xs, &mbrIDStart, &Xs);
+         pgsGirderModelFactory::FindMember(*modelData.Model, equivLoad.Xe, &mbrIDEnd, &Xe);
 
 
          // loading that causes bending about the x-axis (vertical deflections)
-         pointLoadsX->Create(ptLoadIDX++,mbrIDStart,Xs,equivLoad.P,equivLoad.N,equivLoad.Mx,lotGlobal,&ptLoad);
+         loadingX.CreatePointLoad(ptLoadIDX++,mbrIDStart,Xs,equivLoad.P,equivLoad.N,equivLoad.Mx,WBFL::FEA2D::LoadOrientation::Global);
 
          if (!IsZero(equivLoad.wy))
          {
             if (mbrIDStart == mbrIDEnd)
             {
-               CComPtr<IFem2dDistributedLoad> distLoad;
-               distLoadsX->Create(distLoadIDX++, mbrIDStart, loadDirFy, Xs, Xe, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+               loadingX.CreateDistributedLoad(distLoadIDX++, mbrIDStart, WBFL::FEA2D::LoadDirection::Fy, Xs, Xe, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
             }
             else
             {
-               CComPtr<IFem2dDistributedLoad> distLoad;
-               distLoadsX->Create(distLoadIDX++, mbrIDStart, loadDirFy, Xs, -1, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+               loadingX.CreateDistributedLoad(distLoadIDX++, mbrIDStart, WBFL::FEA2D::LoadDirection::Fy, Xs, -1, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
                for (MemberIDType mbrID = mbrIDStart + 1; mbrID < mbrIDEnd; mbrID++)
                {
-                  distLoad.Release();
-                  distLoadsX->Create(distLoadIDX++, mbrID, loadDirFy, 0, -1, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+                  loadingX.CreateDistributedLoad(distLoadIDX++, mbrID, WBFL::FEA2D::LoadDirection::Fy, 0, -1, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
                }
-               distLoad.Release();
-               distLoadsX->Create(distLoadIDX++, mbrIDEnd, loadDirFy, 0, Xe, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+               loadingX.CreateDistributedLoad(distLoadIDX++, mbrIDEnd, WBFL::FEA2D::LoadDirection::Fy, 0, Xe, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
             }
          }
 
          // loading that causes bending about the y-axis (lateral deflections)
          if (!IsZero(equivLoad.My)) // no need to create the loading if it is zero
          {
-            ptLoad.Release();
-            pointLoadsY->Create(ptLoadIDY++, mbrIDStart, Xs, 0, 0, equivLoad.My, lotGlobal, &ptLoad);
+            loadingY.CreatePointLoad(ptLoadIDY++, mbrIDStart, Xs, 0, 0, equivLoad.My, WBFL::FEA2D::LoadOrientation::Global);
          }
       }
    }
@@ -1006,131 +987,99 @@ void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,const
 
    pPoi->SortPoiList(&vPoi);
 
-   pgsGirderModelFactory().CreateGirderModel(m_pBroker,tsInstallationIntervalIdx, segmentKey,0.0,Ls,Ls,Eci,g_lcidGirder,false,false,vPoi,&pInitialModelData->Model,&pInitialModelData->PoiMap);
-   pgsGirderModelFactory().CreateGirderModel(m_pBroker,tsRemovalIntervalIdx,      segmentKey,0.0,Ls,Ls,Ec, g_lcidGirder,false,false,vPoi,&pReleaseModelData->Model,&pReleaseModelData->PoiMap);
+   {
+      auto [model, poiMap] = pgsGirderModelFactory().CreateGirderModel(m_pBroker,tsInstallationIntervalIdx, segmentKey,0.0,Ls,Ls,Eci,g_lcidGirder,false,false,vPoi);
+      pInitialModelData->Model = std::move(model);
+      pInitialModelData->PoiMap = std::move(poiMap);
+   }
+   {
+      auto [model, poiMap] = pgsGirderModelFactory().CreateGirderModel(m_pBroker,tsRemovalIntervalIdx,      segmentKey,0.0,Ls,Ls,Ec, g_lcidGirder,false,false,vPoi);
+      pReleaseModelData->Model = std::move(model);
+      pReleaseModelData->PoiMap = std::move(poiMap);
+   }
 
    std::vector<EquivPretensionLoad> vInstallationLoads = GetEquivPretensionLoads(segmentKey,pgsTypes::Temporary,pConfig,true);
    std::vector<EquivPretensionLoad> vRemovalLoads      = GetEquivPretensionLoads(segmentKey,pgsTypes::Temporary,pConfig,false);
 
-   CComPtr<IFem2dLoadingCollection> loadings;
-   CComPtr<IFem2dLoading> loadingX, loadingY;
-   pInitialModelData->Model->get_Loadings(&loadings);
-
    LoadCaseIDType lcidX, lcidY;
    GetPrestressLoadCaseIDs(pgsTypes::Temporary, &lcidX, &lcidY);
-   loadings->Create(lcidX, &loadingX);
-   loadings->Create(lcidY, &loadingY);
 
-   CComPtr<IFem2dPointLoadCollection> pointLoadsX, pointLoadsY;
-   loadingX->get_PointLoads(&pointLoadsX);
-   loadingY->get_PointLoads(&pointLoadsY);
+   WBFL::FEA2D::Loading* loadingX = &pInitialModelData->Model->CreateLoading(lcidX);
 
-   CComPtr<IFem2dDistributedLoadCollection> distLoadsX;
-   loadingX->get_DistributedLoads(&distLoadsX);
+   WBFL::FEA2D::Loading* loadingY = &pInitialModelData->Model->CreateLoading(lcidY);
 
-   LoadIDType ptLoadIDX;
-   pointLoadsX->get_Count((IndexType*)&ptLoadIDX);
 
-   LoadIDType ptLoadIDY;
-   pointLoadsY->get_Count((IndexType*)&ptLoadIDY);
-
-   LoadIDType distLoadIDX;
-   distLoadsX->get_Count(((IndexType*)&distLoadIDX));
+   LoadIDType ptLoadIDX = 0;
+   LoadIDType ptLoadIDY = 0;
+   LoadIDType distLoadIDX = 0;
 
    for( const auto& equivLoad : vInstallationLoads)
    {
-      CComPtr<IFem2dPointLoad> ptLoad;
       MemberIDType mbrIDStart, mbrIDEnd;
       Float64 Xs, Xe;
-      pgsGirderModelFactory::FindMember(pInitialModelData->Model, equivLoad.Xs, &mbrIDStart, &Xs);
-      pgsGirderModelFactory::FindMember(pInitialModelData->Model, equivLoad.Xe, &mbrIDEnd, &Xe);
+      pgsGirderModelFactory::FindMember(*pInitialModelData->Model, equivLoad.Xs, &mbrIDStart, &Xs);
+      pgsGirderModelFactory::FindMember(*pInitialModelData->Model, equivLoad.Xe, &mbrIDEnd, &Xe);
 
-      pointLoadsX->Create(ptLoadIDX++,mbrIDStart,Xs,equivLoad.P,equivLoad.N,equivLoad.Mx,lotGlobal,&ptLoad);
+      loadingX->CreatePointLoad(ptLoadIDX++,mbrIDStart,Xs,equivLoad.P,equivLoad.N,equivLoad.Mx,WBFL::FEA2D::LoadOrientation::Global);
 
       if (!IsZero(equivLoad.My))
       {
-         ptLoad.Release();
-         pointLoadsY->Create(ptLoadIDY++, mbrIDStart, Xs, 0, 0, equivLoad.My, lotGlobal, &ptLoad);
+         loadingY->CreatePointLoad(ptLoadIDY++, mbrIDStart, Xs, 0, 0, equivLoad.My, WBFL::FEA2D::LoadOrientation::Global);
       }
 
       if (!IsZero(equivLoad.wy))
       {
          if (mbrIDStart == mbrIDEnd)
          {
-            CComPtr<IFem2dDistributedLoad> distLoad;
-            distLoadsX->Create(distLoadIDX++, mbrIDStart, loadDirFy, Xs, Xe, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+            loadingX->CreateDistributedLoad(distLoadIDX++, mbrIDStart, WBFL::FEA2D::LoadDirection::Fy, Xs, Xe, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
          }
          else
          {
-            CComPtr<IFem2dDistributedLoad> distLoad;
-            distLoadsX->Create(distLoadIDX++, mbrIDStart, loadDirFy, Xs, -1, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+            loadingX->CreateDistributedLoad(distLoadIDX++, mbrIDStart, WBFL::FEA2D::LoadDirection::Fy, Xs, -1, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
             for (MemberIDType mbrID = mbrIDStart + 1; mbrID < mbrIDEnd; mbrID++)
             {
-               distLoad.Release();
-               distLoadsX->Create(distLoadIDX++, mbrID, loadDirFy, 0, -1, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+               loadingX->CreateDistributedLoad(distLoadIDX++, mbrID, WBFL::FEA2D::LoadDirection::Fy, 0, -1, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
             }
-            distLoad.Release();
-            distLoadsX->Create(distLoadIDX++, mbrIDEnd, loadDirFy, 0, Xe, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+            loadingX->CreateDistributedLoad(distLoadIDX++, mbrIDEnd, WBFL::FEA2D::LoadDirection::Fy, 0, Xe, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
          }
       }
    }
 
+   loadingX = &pReleaseModelData->Model->CreateLoading(lcidX);
+   loadingY = &pReleaseModelData->Model->CreateLoading(lcidY);
 
-   loadings.Release();
-   loadingX.Release();
-   loadingY.Release();
-   
-   pReleaseModelData->Model->get_Loadings(&loadings);
-
-   loadings->Create(lcidX, &loadingX);
-   loadings->Create(lcidY, &loadingY);
-
-   pointLoadsX.Release();
-   loadingX->get_PointLoads(&pointLoadsX);
-   pointLoadsX->get_Count((IndexType*)&ptLoadIDX);
-
-   pointLoadsY.Release();
-   loadingY->get_PointLoads(&pointLoadsY);
-   pointLoadsY->get_Count((IndexType*)&ptLoadIDY);
-
-   distLoadsX.Release();
-   loadingX->get_DistributedLoads(&distLoadsX);
-   distLoadsX->get_Count((IndexType*)&distLoadIDX);
+   ptLoadIDX = 0;
+   ptLoadIDY = 0;
+   distLoadIDX = 0;
 
    for( const auto& equivLoad : vRemovalLoads)
    {
-      CComPtr<IFem2dPointLoad> ptLoad;
       MemberIDType mbrIDStart, mbrIDEnd;
       Float64 Xs, Xe;
-      pgsGirderModelFactory::FindMember(pReleaseModelData->Model,equivLoad.Xs,&mbrIDStart,&Xs);
-      pgsGirderModelFactory::FindMember(pReleaseModelData->Model, equivLoad.Xe, &mbrIDEnd, &Xe);
+      pgsGirderModelFactory::FindMember(*pReleaseModelData->Model,equivLoad.Xs,&mbrIDStart,&Xs);
+      pgsGirderModelFactory::FindMember(*pReleaseModelData->Model, equivLoad.Xe, &mbrIDEnd, &Xe);
 
-      pointLoadsX->Create(ptLoadIDX++,mbrIDStart,Xs,equivLoad.P, equivLoad.N, equivLoad.Mx,lotGlobal,&ptLoad);
+      loadingX->CreatePointLoad(ptLoadIDX++,mbrIDStart,Xs,equivLoad.P, equivLoad.N, equivLoad.Mx,WBFL::FEA2D::LoadOrientation::Global);
 
       if (!IsZero(equivLoad.My))
       {
-         ptLoad.Release();
-         pointLoadsY->Create(ptLoadIDY++, mbrIDStart, Xs, 0, 0, equivLoad.My, lotGlobal, &ptLoad);
+         loadingY->CreatePointLoad(ptLoadIDY++, mbrIDStart, Xs, 0, 0, equivLoad.My, WBFL::FEA2D::LoadOrientation::Global);
       }
 
       if (!IsZero(equivLoad.wy))
       {
          if (mbrIDStart == mbrIDEnd)
          {
-            CComPtr<IFem2dDistributedLoad> distLoad;
-            distLoadsX->Create(distLoadIDX++, mbrIDStart, loadDirFy, Xs, Xe, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+            loadingX->CreateDistributedLoad(distLoadIDX++, mbrIDStart, WBFL::FEA2D::LoadDirection::Fy, Xs, Xe, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
          }
          else
          {
-            CComPtr<IFem2dDistributedLoad> distLoad;
-            distLoadsX->Create(distLoadIDX++, mbrIDStart, loadDirFy, Xs, -1, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+            loadingX->CreateDistributedLoad(distLoadIDX++, mbrIDStart, WBFL::FEA2D::LoadDirection::Fy, Xs, -1, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
             for (MemberIDType mbrID = mbrIDStart + 1; mbrID < mbrIDEnd; mbrID++)
             {
-               distLoad.Release();
-               distLoadsX->Create(distLoadIDX++, mbrID, loadDirFy, 0, -1, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+               loadingX->CreateDistributedLoad(distLoadIDX++, mbrID, WBFL::FEA2D::LoadDirection::Fy, 0, -1, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
             }
-            distLoad.Release();
-            distLoadsX->Create(distLoadIDX++, mbrIDEnd, loadDirFy, 0, Xe, equivLoad.wy, equivLoad.wy, lotGlobal, &distLoad);
+            loadingX->CreateDistributedLoad(distLoadIDX++, mbrIDEnd, WBFL::FEA2D::LoadDirection::Fy, 0, Xe, equivLoad.wy, equivLoad.wy, WBFL::FEA2D::LoadOrientation::Global);
          }
       }
    }
@@ -1138,7 +1087,7 @@ void CAnalysisAgentImp::BuildTempCamberModel(const CSegmentKey& segmentKey,const
 
 void CAnalysisAgentImp::InValidateSlabOffsetDesignModel()
 {
-   m_CacheConfig_SlabOffsetDesignModel.Model.Release();
+   m_CacheConfig_SlabOffsetDesignModel.Model.reset();
    m_CacheConfig_SlabOffsetDesignModel.PoiMap.Clear();
 }
 
@@ -1146,7 +1095,7 @@ void CAnalysisAgentImp::ValidateSlabOffsetDesignModel( const GDRCONFIG* pConfig)
 {
    if ( *pConfig != m_SlabOffsetDesignCacheConfig || !m_CacheConfig_SlabOffsetDesignModel.Model)
    {
-      m_CacheConfig_SlabOffsetDesignModel.Model.Release();
+      m_CacheConfig_SlabOffsetDesignModel.Model.reset();
 
       const CSegmentKey& segmentKey = pConfig->SegmentKey;
       ASSERT_SEGMENT_KEY(segmentKey);
@@ -1184,7 +1133,9 @@ void CAnalysisAgentImp::BuildSlabOffsetDesignModel(const CSegmentKey& segmentKey
    bool bModelLeftCantilever,bModelRightCantilever;
    pBridge->ModelCantilevers(segmentKey,&bModelLeftCantilever,&bModelRightCantilever);
    pgsDesignHaunchLoadGirderModelFactory factory(slabLoads, g_lcidDesignSlab, g_lcidDesignSlabPad);
-   factory.CreateGirderModel(m_pBroker, lastCastDeckIntervalIdx,segmentKey,left_support_loc,right_support_loc,Ls,E,g_lcidGirder,bModelLeftCantilever,bModelRightCantilever,vPOI,&pModelData->Model,&pModelData->PoiMap);
+   auto [model, poiMap] = factory.CreateGirderModel(m_pBroker, lastCastDeckIntervalIdx,segmentKey,left_support_loc,right_support_loc,Ls,E,g_lcidGirder,bModelLeftCantilever,bModelRightCantilever,vPOI);
+   pModelData->Model = std::move(model);
+   pModelData->PoiMap = std::move(poiMap);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1284,7 +1235,7 @@ void CAnalysisAgentImp::GetTrafficBarrierLoadFraction(const CSegmentKey& segment
 
 PoiIDPairType CAnalysisAgentImp::AddPointOfInterest(CamberModelData& models,const pgsPointOfInterest& poi) const
 {
-   PoiIDPairType femPoiID = pgsGirderModelFactory::AddPointOfInterest(models.Model,poi);
+   PoiIDPairType femPoiID = pgsGirderModelFactory::AddPointOfInterest(*models.Model,poi);
    models.PoiMap.AddMap( poi, femPoiID );
    return femPoiID;
 }
@@ -2005,11 +1956,8 @@ Float64 CAnalysisAgentImp::GetDesignMomentAdjustment(LoadCaseIDType lcid, const 
       ATLASSERT( 0 <= femPoiID.first );
    }
 
-   CComQIPtr<IFem2dModelResults> results(m_CacheConfig_SlabOffsetDesignModel.Model);
-
    Float64 fxRight, fyRight, mzRight;
-   CAnalysisResult ar(_T(__FILE__),__LINE__);
-   ar = results->ComputePOIForces(lcid,femPoiID.first,mftRight,lotMember,&fxRight,&fyRight,&mzRight);
+   FEA2D_ANALYSIS_RESULT(m_CacheConfig_SlabOffsetDesignModel.Model->ComputePOIForces(lcid,femPoiID.first,WBFL::FEA2D::MemberFaceType::Right,WBFL::FEA2D::LoadOrientation::Member,&fxRight,&fyRight,&mzRight));
 
    return mzRight;
 }
@@ -2065,11 +2013,8 @@ void CAnalysisAgentImp::GetDesignDeflectionAdjustment(LoadCaseIDType lcid, const
          ATLASSERT( 0 <= femPoiID.first );
       }
 
-      CComQIPtr<IFem2dModelResults> results(m_CacheConfig_SlabOffsetDesignModel.Model);
-
       Float64 Dx;
-      CAnalysisResult ar(_T(__FILE__),__LINE__);
-      ar = results->ComputePOIDeflections(lcid,femPoiID.first,lotGlobal,&Dx,pDy,pRz);
+      FEA2D_ANALYSIS_RESULT(m_CacheConfig_SlabOffsetDesignModel.Model->ComputePOIDeflections(lcid,femPoiID.first,WBFL::FEA2D::LoadOrientation::Global,&Dx,pDy,pRz));
    }
 }
 
@@ -8240,7 +8185,6 @@ void CAnalysisAgentImp::GetPrestressDeflectionFromModel(const pgsPointOfInterest
    // deflection occurs over the length of the entire girder.  To accomplish this, simply
    // deduct the deflection at the bearing (when the girder is supported on its ends) from
    // the deflection at the specified location.
-   CComQIPtr<IFem2dModelResults> results(modelData.Model);
    Float64 Dx, Dy, Rz;
 
    PoiIDPairType femPoiID = modelData.PoiMap.GetModelPoi(poi);
@@ -8265,16 +8209,14 @@ void CAnalysisAgentImp::GetPrestressDeflectionFromModel(const pgsPointOfInterest
    GetPrestressLoadCaseIDs(strandType, &lcidX, &lcidY);
 
    // get deflection due to prestressing associated with moments about the x-axis
-   CAnalysisResult ar(_T(__FILE__),__LINE__);
-   ar = results->ComputePOIDeflections(lcidX,femPoiID.first,lotGlobal,&Dx,&Dy,&Rz);
+   FEA2D_ANALYSIS_RESULT(modelData.Model->ComputePOIDeflections(lcidX,femPoiID.first,WBFL::FEA2D::LoadOrientation::Global,&Dx,&Dy,&Rz));
    Float64 delta_y1 = Dy;
 
    *pRz = Rz;
 
    // get deflection due to prestressing associated with moments about the y-axis
    // remember that we have a plane frame model so we've applied the loads in the same direction as those causing y-deflections
-   CAnalysisResult ar2(_T(__FILE__),__LINE__);
-   ar2 = results->ComputePOIDeflections(lcidY, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   FEA2D_ANALYSIS_RESULT(modelData.Model->ComputePOIDeflections(lcidY, femPoiID.first, WBFL::FEA2D::LoadOrientation::Global, &Dx, &Dy, &Rz));
    Float64 delta_x1 = Dy; // remember that this is using the vertical deflection stiffness. we have to adjust for the lateral stiffness
 
    // get the section properties used to build the model
@@ -8347,12 +8289,10 @@ void CAnalysisAgentImp::GetPrestressDeflectionFromModel(const pgsPointOfInterest
    ATLASSERT( 0 <= poiAtStart.GetID() );
    
    femPoiID = modelData.PoiMap.GetModelPoi(poiAtStart);
-   CAnalysisResult ar3(_T(__FILE__),__LINE__);
-   ar3 = results->ComputePOIDeflections(lcidX, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   FEA2D_ANALYSIS_RESULT(modelData.Model->ComputePOIDeflections(lcidX, femPoiID.first, WBFL::FEA2D::LoadOrientation::Global, &Dx, &Dy, &Rz));
    Float64 start_delta_brg_y1 = Dy;
 
-   CAnalysisResult ar4(_T(__FILE__),__LINE__);
-   ar4 = results->ComputePOIDeflections(lcidY, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   FEA2D_ANALYSIS_RESULT(modelData.Model->ComputePOIDeflections(lcidY, femPoiID.first, WBFL::FEA2D::LoadOrientation::Global, &Dx, &Dy, &Rz));
    Float64 start_delta_brg_x1 = Dy; // based on vertical stiffness
    start_delta_brg_x1 *= (Ixx / Iyy); // adjust for lateral stiffness
 
@@ -8368,12 +8308,10 @@ void CAnalysisAgentImp::GetPrestressDeflectionFromModel(const pgsPointOfInterest
    ATLASSERT( 0 <= poiAtEnd.GetID() );
    femPoiID = modelData.PoiMap.GetModelPoi(poiAtEnd);
 
-   CAnalysisResult ar5(_T(__FILE__),__LINE__);
-   ar5 = results->ComputePOIDeflections(lcidX, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   FEA2D_ANALYSIS_RESULT(modelData.Model->ComputePOIDeflections(lcidX, femPoiID.first, WBFL::FEA2D::LoadOrientation::Global, &Dx, &Dy, &Rz));
    Float64 end_delta_brg_y1 = Dy;
 
-   CAnalysisResult ar6(_T(__FILE__),__LINE__);
-   ar6 = results->ComputePOIDeflections(lcidY, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   FEA2D_ANALYSIS_RESULT(modelData.Model->ComputePOIDeflections(lcidY, femPoiID.first, WBFL::FEA2D::LoadOrientation::Global, &Dx, &Dy, &Rz));
    Float64 end_delta_brg_x1 = Dy; // based on vertical stiffness
    end_delta_brg_x1 *= (Ixx / Iyy); // adjust for lateral stiffness
 
@@ -8419,22 +8357,21 @@ void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfIntere
    GetPrestressLoadCaseIDs(pgsTypes::Temporary, &lcidX, &lcidY);
 
    // Get deflection at poi
-   CComQIPtr<IFem2dModelResults> results(modelData.Model);
    Float64 Dx, Dy, Rz;
    PoiIDPairType femPoiID = modelData.PoiMap.GetModelPoi(poi);
    if (femPoiID.first == INVALID_ID)
    {
-      PoiIDPairType result = pgsGirderModelFactory::AddPointOfInterest(modelData.Model, poi);
+      PoiIDPairType result = pgsGirderModelFactory::AddPointOfInterest(*modelData.Model, poi);
       modelData.PoiMap.AddMap(poi, result);
       femPoiID = modelData.PoiMap.GetModelPoi(poi);
       ATLASSERT(femPoiID.first != INVALID_ID);
    }
-   results->ComputePOIDeflections(lcidX,femPoiID.first,lotGlobal,&Dx,&Dy,&Rz);
+   FEA2D_ANALYSIS_RESULT(modelData.Model->ComputePOIDeflections(lcidX,femPoiID.first,WBFL::FEA2D::LoadOrientation::Global,&Dx,&Dy,&Rz));
    Float64 delta_poi_y = Dy;
 
    *pRz = Rz;
 
-   results->ComputePOIDeflections(lcidY, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   FEA2D_ANALYSIS_RESULT(modelData.Model->ComputePOIDeflections(lcidY, femPoiID.first, WBFL::FEA2D::LoadOrientation::Global, &Dx, &Dy, &Rz));
    Float64 delta_poi_x = Dy;
 
    // get the section properties used to build the model
@@ -8476,15 +8413,15 @@ void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfIntere
    femPoiID = modelData.PoiMap.GetModelPoi(poiStart);
    if (femPoiID.first == INVALID_ID)
    {
-      PoiIDPairType result = pgsGirderModelFactory::AddPointOfInterest(modelData.Model, poiStart);
+      PoiIDPairType result = pgsGirderModelFactory::AddPointOfInterest(*modelData.Model, poiStart);
       modelData.PoiMap.AddMap(poiStart, result);
       femPoiID = modelData.PoiMap.GetModelPoi(poiStart);
       ATLASSERT(femPoiID.first != INVALID_ID);
    }
-   results->ComputePOIDeflections(lcidX, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   FEA2D_ANALYSIS_RESULT(modelData.Model->ComputePOIDeflections(lcidX, femPoiID.first, WBFL::FEA2D::LoadOrientation::Global, &Dx, &Dy, &Rz));
    Float64 start_delta_y_brg = Dy;
 
-   results->ComputePOIDeflections(lcidY, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   FEA2D_ANALYSIS_RESULT(modelData.Model->ComputePOIDeflections(lcidY, femPoiID.first, WBFL::FEA2D::LoadOrientation::Global, &Dx, &Dy, &Rz));
    Float64 start_delta_x_brg = Dy;
 
    start_delta_x_brg *= (Ixx / Iyy);
@@ -8499,15 +8436,15 @@ void CAnalysisAgentImp::GetReleaseTempPrestressDeflection(const pgsPointOfIntere
    femPoiID = modelData.PoiMap.GetModelPoi(poiEnd);
    if (femPoiID.first == INVALID_ID)
    {
-      PoiIDPairType result = pgsGirderModelFactory::AddPointOfInterest(modelData.Model, poiEnd);
+      PoiIDPairType result = pgsGirderModelFactory::AddPointOfInterest(*modelData.Model, poiEnd);
       modelData.PoiMap.AddMap(poiEnd, result);
       femPoiID = modelData.PoiMap.GetModelPoi(poiEnd);
       ATLASSERT(femPoiID.first != INVALID_ID);
    }
-   results->ComputePOIDeflections(lcidX,femPoiID.first,lotGlobal,&Dx,&Dy,&Rz);
+   FEA2D_ANALYSIS_RESULT(modelData.Model->ComputePOIDeflections(lcidX,femPoiID.first,WBFL::FEA2D::LoadOrientation::Global,&Dx,&Dy,&Rz));
    Float64 end_delta_y_brg = Dy;
 
-   results->ComputePOIDeflections(lcidY, femPoiID.first, lotGlobal, &Dx, &Dy, &Rz);
+   FEA2D_ANALYSIS_RESULT(modelData.Model->ComputePOIDeflections(lcidY, femPoiID.first, WBFL::FEA2D::LoadOrientation::Global, &Dx, &Dy, &Rz));
    Float64 end_delta_x_brg = Dy;
 
    end_delta_x_brg *= (Ixx / Iyy);

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 #pragma once
 
 #include <PgsExt\PoiPairMap.h>
-#include <WBFLFem2d.h>
+#include <FEA2D/Model.h>
 
 class CSegmentModelData
 {
@@ -34,7 +34,7 @@ public:
    CSegmentKey SegmentKey;
    IntervalIndexType IntervalIdx;
    Float64 Ec;
-   CComPtr<IFem2dModel> Model;
+   std::shared_ptr<WBFL::FEA2D::Model> Model;
    pgsPoiPairMap PoiMap;
    std::map<PoiIDType,LoadCaseIDType> UnitLoadIDMap; // maps product model POI ID to a FEM2D load case ID for a unit load at the corresponding poi in the Fem2d Model
    std::map<PoiIDType,LoadCaseIDType> UnitMomentIDMap; // maps product model POI ID to a FEM2D load case ID for a unit load at the corresponding poi in the Fem2d Model
