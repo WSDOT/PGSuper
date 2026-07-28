@@ -26,7 +26,7 @@
 #include "PrincipalWebStressEngineer.h"
 #include <algorithm>
 
-#include <EngTools/MohrCircle.h>
+#include <GeomModel/MohrCircle.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\PointOfInterest.h>
@@ -287,7 +287,7 @@ std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> pgsPrincipalW
       detail.Service3Tau  += gLL * detail.LL_Tau;
 
       // Finally, principal stress
-      WBFL::EngTools::MohrCircle mc;
+      WBFL::Geometry::MohrCircle mc;
       mc.SetSii(detail.Service3Fpcx);
       mc.SetSjj(0);
       mc.SetSij(detail.Service3Tau);
@@ -610,7 +610,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
 
          t = (Vc - details.Vp)*Qc / (bw*details.Ic);
 
-         WBFL::EngTools::MohrCircle mc;
+         WBFL::Geometry::MohrCircle mc;
          mc.SetSii(fpcx);
          mc.SetSjj(0);
          mc.SetSij(t);
@@ -630,7 +630,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
 
          t = (Vnc - details.Vp)*Qnc / (bw*details.Inc) + Vc*Qc / (bw*details.Ic);
 
-         WBFL::EngTools::MohrCircle mc;
+         WBFL::Geometry::MohrCircle mc;
          mc.SetSii(fpcx);
          mc.SetSjj(0);
          mc.SetSij(t);

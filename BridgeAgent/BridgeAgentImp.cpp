@@ -29,6 +29,8 @@
 #include "DeckEdgeBuilder.h"
 #include "CLSID.h"
 
+#include <GeomModel/MohrCircle.h>
+
 #include <PsgLib\LibraryManager.h>
 #include <PsgLib\GirderLibraryEntry.h>
 #include <PsgLib\ConnectionLibraryEntry.h>
@@ -11960,19 +11962,14 @@ void CBridgeAgentImp::GetColumnProperties(PierIndexType pierIdx,ColumnIndexType 
          // use Mohr's circle to get ix about an axis that is normal to the alignment
          if ( bSkewAdjust )
          {
-            CComPtr<IMohrCircle> mc;
-            mc.CoCreateInstance(CLSID_MohrCircle);
-            mc->put_Sii(Ix);
-            mc->put_Sjj(Iy);
-            mc->put_Sij(0);
+            WBFL::Geometry::MohrCircle mc(Ix, Iy, 0);
 
             CComPtr<IAngle> objSkew;
             GetPierSkew(pierIdx,&objSkew);
             Float64 skew;
             objSkew->get_Value(&skew);
 
-            Float64 ix;
-            mc->ComputeSxx(-skew,&ix);
+            auto [ix, iy, ixy] = mc.ComputeState(-skew);
             ATLASSERT(0 < ix);
             I = ix;
          }
