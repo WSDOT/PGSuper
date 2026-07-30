@@ -77,6 +77,10 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
    GET_IFACE2(GetBroker(), ILibrary, pLib);
    GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+
+   // Since splitting zone is not used for horizontal tension tie checks, 
+   // we should probably have an input for horizontal tension tie zone.
+   // This is a temporary solution since we can't change file formats for hot fixes.
    auto n = pSpecEntry->GetEndZoneCriteria().SplittingZoneLengthFactor; // this is for h/4
 
    bool bIsChecked = pSpecEntry->GetEndZoneCriteria().bCheckHorizTensionTie;
@@ -99,7 +103,11 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
       // Use IBearingDesign->GetBearingLimitStateReaction to get Vu
       // Use the reactionLocation.poi to get girder properties such as Hg and #webs
 
-      if (bIsApplicable)
+      // This check is only intended for the simple ends of beams, not interior pier locations of spliced girders
+      bool bIsBoundaryPier = pBridge->IsBoundaryPier(reactionLocation.PierIdx);
+
+      bool bAnalyze = bIsApplicable && bIsBoundaryPier;
+      if (bAnalyze)
       {
          Float64 Hg = pGirder->GetHeight(reactionLocation.poi);
          Float64 hb = pGirder->GetBottomFlangeThickness(reactionLocation.poi, 0);
@@ -173,20 +181,50 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
 
          IndexType Nw = nStrands - nDebondedStrands; // total number of bonded strands at section
 
+         //
          // Resistance
+         //
+
+         // Need to figure out the relative position on the segment where the reaction is occuring.
+         // There is no direct way to get this information so two strategies will be used:
+         // 1) Check if the poi is at a 10th Point POI. If the 10th Point is 1 or 11, then the reaction is at the start or end of the segment. 
+         //    Otherwise, the reaction is somewhere in the middle of the segment.
+         // 2) If the poi is not at a 10th Point, then use the distance from the start of the segment to determine if the reaction is at the start or end of the segment.
+         //    If the poi is in the 1st 1/3 or the last 1/3 of the segment, then the reaction is at the start or end of the segment. Otherwise, the reaction is somewhere in the middle of the segment.
          auto tp = reactionLocation.poi.IsTenthPoint(POI_SPAN);
+
+         if (tp == 0)
+         {
+            auto segment_length = pBridge->GetSegmentLength(reactionLocation.poi.GetSegmentKey());
+            if (reactionLocation.poi.GetDistFromStart() <= segment_length / 3.)
+            {
+               tp = 1; // start of segment
+            }
+            else if (2. * segment_length / 3. <= reactionLocation.poi.GetDistFromStart())
+            {
+               tp = 11; // end of segment
+            }
+         }
+
          Float64 start_zl = 0.;
-         Float64 end_zl = Hg / n;
+         Float64 end_zl = 0;
+
+         // From LRFD 5.9.4.4.3, "The horizontal transverse tie reinforcement shall be uniformly distributed over a length of h/4 beyond the bearing"
+         // We don't have a good way to assess if the reinforcement is uniformly distributed, so we will just use the average area of reinforcement over the tie reinforcement zone length.
+         // Checking uniform distribution of reinforcement is a future enhancement.
 
          if (tp == 1)
          {
-            // do nothing
+            start_zl = 0.;
+            auto support_length = pBridge->GetSegmentStartSupportLength(reactionLocation.poi.GetSegmentKey());
+            end_zl = reactionLocation.poi.GetDistFromStart() + support_length / 2. + Hg / n;
          }
          else if (tp == 11)
          {
             // at end of span
+            auto support_length = pBridge->GetSegmentEndSupportLength(reactionLocation.poi.GetSegmentKey());
             auto segment_length = pBridge->GetSegmentLength(reactionLocation.poi.GetSegmentKey());
-            start_zl = segment_length - Hg / n;
+            start_zl = reactionLocation.poi.GetDistFromStart() - support_length / 2. - Hg / n;
             end_zl = segment_length;
          }
          else
@@ -198,7 +236,7 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
             end_zl = reactionLocation.poi.GetDistFromStart() + 0.5 * (Hg / n);
          }
 
-         auto Avc = pStirrupGeometry->GetConfinementAv(reactionLocation.poi.GetSegmentKey(), 0.0, Hg / n);
+         auto Avc = pStirrupGeometry->GetConfinementAv(reactionLocation.poi.GetSegmentKey(), start_zl, end_zl);
 
          Float64 Es, fy, fu;
          pMaterials->GetSegmentTransverseRebarProperties(reactionLocation.poi.GetSegmentKey(), &Es, &fy, &fu);
@@ -209,6 +247,7 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
             artifact.IsApplicable(true);
             artifact.IsChecked(bIsChecked);
 
+            artifact.SetTieReinforcementZoneRange(reactionLocation.poi.GetSegmentKey().segmentIndex,start_zl, end_zl);
             artifact.SetTieArea(Avc);
             artifact.SetTieYieldStrength(fy);
 
@@ -232,16 +271,7 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
             artifact.SetPhi(phi);
 
             pGdrArtifact->AddHorizontalTensionTieArtifact(artifact);
-         }
-      }
-      else
-      {
-         for (auto& ls : vLimitStates)
-         {
-            pgsHorizontalTieForceArtifact artifact(reactionLocation, ls);
-            artifact.IsApplicable(false);
-            pGdrArtifact->AddHorizontalTensionTieArtifact(artifact);
-         }
+         } // next limit state
       }
    }
 }
@@ -329,6 +359,7 @@ void pgsHorizTieForceEng::ReportHorizontalTensionTieForceCheckDetails(const pgsG
    GET_IFACE2(GetBroker(), IEAFDisplayUnits, pDisplayUnits);
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, span, pDisplayUnits->GetSpanLengthUnit(), false);
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false);
    INIT_UV_PROTOTYPE(rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
@@ -341,6 +372,9 @@ void pgsHorizTieForceEng::ReportHorizontalTensionTieForceCheckDetails(const pgsG
 
    auto nArtifacts = pGirderArtifact->GetHorizontalTensionTieArtifactCount();
 
+   GET_IFACE2(GetBroker(), IBridge, pBridge);
+   auto nSegments = pBridge->GetSegmentCount(pGirderArtifact->GetGirderKey());
+
    bool bIsSymmetric = true;
    for (IndexType idx = 0; idx < nArtifacts; idx++)
    {
@@ -348,19 +382,27 @@ void pgsHorizTieForceEng::ReportHorizontalTensionTieForceCheckDetails(const pgsG
       bIsSymmetric &= artifact->IsSymmetric();
    }
 
-   ColumnIndexType nColumns = bIsSymmetric ? 15 : 19;
+   ColumnIndexType nColumns = bIsSymmetric ? 17 : 21;
+
+   if (1 < nSegments)
+      nColumns++; // add a column for segment number
 
    auto pTable = rptStyleManager::CreateDefaultTable(nColumns);
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
    pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));   
    *pPara << pTable << rptNewLine;
 
+   pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
+   *pChapter << pPara;
+   auto strGirder = 1 < nSegments ? _T("segment") : _T("girder");
+   *pPara << _T("*") << _T(" = Distance from the left end of the ") << strGirder << _T(" to the start and end of the transverse tie reinforcement") << rptNewLine;
+
    if (!bIsSymmetric)
    {
       pTable->SetNumberOfHeaderRows(2);
       pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
       *pChapter << pPara;
-      *pPara << _T("* AASHTO Equation 5.9.4.4.3-1 assumes strands are place symmetrically about the centerline of the web. The strands are unsymmetric for this girder. The ") << RPT_AS << RPT_FY << _T(" demand is computed using the left and right side values and the average value used.") << rptNewLine;
+      *pPara << _T("** AASHTO Equation 5.9.4.4.3-1 assumes strands are place symmetrically about the centerline of the web. The strands are unsymmetric for this girder. The ") << RPT_AS << RPT_FY << _T(" demand is computed using the left and right side values and the average value used.") << rptNewLine;
    }
 
    ColumnIndexType col = 0;
@@ -419,6 +461,18 @@ void pgsHorizTieForceEng::ReportHorizontalTensionTieForceCheckDetails(const pgsG
    if (!bIsSymmetric) pTable->SetRowSpan(0, col, 2);
    (*pTable)(0, col++) << COLHDR(RPT_AS << RPT_FY << rptNewLine << _T("(Demand)"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
+   if (1 < nSegments)
+   {
+      if (!bIsSymmetric) pTable->SetRowSpan(0, col, 2);
+      (*pTable)(0, col++) << _T("Segment");
+   }
+
+   if (!bIsSymmetric) pTable->SetRowSpan(0, col, 2);
+   (*pTable)(0, col++) << COLHDR(Super2(_T("Start"),_T("*")), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
+   if (!bIsSymmetric) pTable->SetRowSpan(0, col, 2);
+   (*pTable)(0, col++) << COLHDR(Super2(_T("End"),_T("*")), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+
    if (!bIsSymmetric) pTable->SetRowSpan(0, col, 2);
    (*pTable)(0, col++) << COLHDR(RPT_AS, rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
 
@@ -459,6 +513,13 @@ void pgsHorizTieForceEng::ReportHorizontalTensionTieForceCheckDetails(const pgsG
          (*pTable)(row, col++) << artifact->GetPhi();
          (*pTable)(row, col++) << force.SetValue(artifact->GetShearForce());
          (*pTable)(row, col++) << force.SetValue(artifact->GetTieForce());
+         auto [segIdx,xs, xe] = artifact->GetTieReinforcementZoneRange();
+         if(1 < nSegments)
+         {
+            (*pTable)(row, col++) << LABEL_INDEX(segIdx);
+         }
+         (*pTable)(row, col++) << span.SetValue(xs);
+         (*pTable)(row, col++) << span.SetValue(xe);
          (*pTable)(row, col++) << area.SetValue(artifact->GetTieArea());
          (*pTable)(row, col++) << stress.SetValue(artifact->GetTieYieldStrength());
          (*pTable)(row, col++) << force.SetValue(artifact->GetTieResistance());
