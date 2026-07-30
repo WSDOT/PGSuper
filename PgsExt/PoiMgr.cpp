@@ -25,6 +25,10 @@
 #include <algorithm>
 #include <iterator>
 
+#if defined _DEBUG
+#include <ranges>
+#endif
+
 
 /****************************************************************************
 CLASS
@@ -149,8 +153,10 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
          // try to merge them together
          if (pCurrentPoi->MergeAttributes(poi))
          {
-            // merge was successful, we are done
-            return pCurrentPoi->m_ID; 
+            // merge was successful, we are done. make sure the poi's are properly sorted (sometimes attributes defined the sort order)
+            // sort the poi's not their pointer addresses
+            std::sort(std::begin(poiContainer), std::end(poiContainer), [](auto& a, auto& b) {return *a < *b; });
+            return pCurrentPoi->m_ID;
          }
          else
          {
@@ -200,7 +206,7 @@ PoiIDType pgsPoiMgr::AddPointOfInterest(const pgsPointOfInterest& poi)
    poiContainer.emplace_back(std::make_unique<pgsPointOfInterest>(poi));
    poiContainer.back()->m_ID = id;
 
-   // sort POIs, not their pointers
+   // sort the poi's not their pointer addresses
    std::sort(std::begin(poiContainer), std::end(poiContainer), [](auto& a, auto& b) {return *a < *b;});
 
    return id;
@@ -600,8 +606,12 @@ void pgsPoiMgr::GetPointsOfInterest(const CSegmentKey& segmentKey,PoiList* pPoiL
       }
    }
 
-//   std::sort(poiList.begin(), poiList.end(), [](const auto& a, const auto& b) {return *a.get() < *b.get();});
-   ATLASSERT(std::is_sorted(std::begin(*pPoiList), std::end(*pPoiList), [](const pgsPointOfInterest& a, const pgsPointOfInterest& b) {return a < b; }));
+#if defined _DEBUG
+   // expecting the poi list to be sorted... check that
+   // if the assert fires, "it" is the iterator to the first unsorted element
+   auto it = std::ranges::is_sorted_until(*pPoiList,[](const pgsPointOfInterest& a, const pgsPointOfInterest& b) { return a < b; });
+   ATLASSERT(it == pPoiList->end());
+#endif
 }
 
 void pgsPoiMgr::MergePoiLists(const PoiList& list1, const PoiList& list2,PoiList* pPoiList) const
