@@ -73,6 +73,9 @@ public:
    void SetPhi(Float64 phi);
    Float64 GetPhi() const;
 
+   void SetTieReinforcementZoneRange(SegmentIndexType segIdx,Float64 xs, Float64 xe);
+   std::tuple<SegmentIndexType,Float64, Float64> GetTieReinforcementZoneRange() const;
+
    void SetTieArea(Float64 As);
    Float64 GetTieArea() const;
 
@@ -104,6 +107,9 @@ private:
    std::array<Float64, 2> m_yp;
    Float64 m_Vu;
    Float64 m_phi;
+   SegmentIndexType m_SegmentIdx = INVALID_INDEX;
+   Float64 m_Xs = 0;
+   Float64 m_Xe = 0;
    Float64 m_As = 0;
    Float64 m_fy = 0;
 };

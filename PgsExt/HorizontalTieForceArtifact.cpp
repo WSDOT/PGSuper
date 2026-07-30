@@ -143,6 +143,18 @@ Float64 pgsHorizontalTieForceArtifact::GetPhi() const
    return m_phi;
 }
 
+void pgsHorizontalTieForceArtifact::SetTieReinforcementZoneRange(SegmentIndexType segIdx, Float64 xs, Float64 xe)
+{
+   m_SegmentIdx = segIdx;
+   m_Xs = xs;
+   m_Xe = xe;
+}
+
+std::tuple<SegmentIndexType,Float64, Float64> pgsHorizontalTieForceArtifact::GetTieReinforcementZoneRange() const
+{
+   return { m_SegmentIdx,m_Xs,m_Xe };
+}
+
 void pgsHorizontalTieForceArtifact::SetTieArea(Float64 As)
 {
    m_As = As;
