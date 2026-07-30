@@ -36,7 +36,8 @@ bool EndZoneCriteria::operator!=(const EndZoneCriteria& other) const
       bCheckSplitting != other.bCheckSplitting or
       bDesignSplitting != other.bDesignSplitting or 
       bCheckHorizTensionTie != other.bCheckHorizTensionTie or
-      !::IsEqual(SplittingZoneLengthFactor, other.SplittingZoneLengthFactor);
+      !::IsEqual(SplittingZoneLengthFactor, other.SplittingZoneLengthFactor) or
+      !::IsEqual(HorizTensionTieZoneLengthFactor, other.HorizTensionTieZoneLengthFactor);
 }
 
 bool EndZoneCriteria::Compare(const EndZoneCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
@@ -101,18 +102,21 @@ void EndZoneCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUn
          *pPara << _T("Horizontal Transverse Tension Tie Reinforcement checks (LRFD 5.9.4.4.3) are enabled.") << rptNewLine;
       else
          *pPara << _T("Horizontal Transverse Tension Tie Reinforcement checks (LRFD 5.9.4.4.3) are disabled.") << rptNewLine;
+
+      *pPara << _T("Horizontal tension tie zone length: h/") << HorizTensionTieZoneLengthFactor << rptNewLine;
    }
 }
 
 void EndZoneCriteria::Save(WBFL::System::IStructuredSave* pSave) const
 {
-   pSave->BeginUnit(_T("EndZoneCriteria"), 2.0);
+   pSave->BeginUnit(_T("EndZoneCriteria"), 3.0);
    pSave->Property(_T("CheckSplitting"), bCheckSplitting);
    pSave->Property(_T("DesignSplitting"), bDesignSplitting);
    pSave->Property(_T("SplittingZoneLengthFactor"), SplittingZoneLengthFactor);
    pSave->Property(_T("CheckConfinement"), bCheckConfinement);
    pSave->Property(_T("DesignConfinement"), bDesignConfinement);
    pSave->Property(_T("HorizontalTransverseTensionTie"), bCheckHorizTensionTie); // added in version 2
+   pSave->Property(_T("HorizontalTransverseTensionTieZoneLengthFactor"), HorizTensionTieZoneLengthFactor); // added in version 3
    pSave->EndUnit();
 }
 
@@ -134,6 +138,12 @@ void EndZoneCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
    {
       // added in version 2
       if (!pLoad->Property(_T("HorizontalTransverseTensionTie"), &bCheckHorizTensionTie)) THROW_LOAD(InvalidFileFormat, pLoad);
+   }
+
+   if (2.0 < version)
+   {
+      // added in version 3
+      if (!pLoad->Property(_T("HorizontalTransverseTensionTieZoneLengthFactor"), &HorizTensionTieZoneLengthFactor)) THROW_LOAD(InvalidFileFormat, pLoad);
    }
 
    if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);

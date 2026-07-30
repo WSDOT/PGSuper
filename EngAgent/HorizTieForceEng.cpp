@@ -78,10 +78,7 @@ void pgsHorizTieForceEng::Check(const CGirderKey& girderKey, pgsGirderArtifact* 
    GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   // Since splitting zone is not used for horizontal tension tie checks, 
-   // we should probably have an input for horizontal tension tie zone.
-   // This is a temporary solution since we can't change file formats for hot fixes.
-   auto n = pSpecEntry->GetEndZoneCriteria().SplittingZoneLengthFactor; // this is for h/4
+   auto n = pSpecEntry->GetEndZoneCriteria().HorizTensionTieZoneLengthFactor;
 
    bool bIsChecked = pSpecEntry->GetEndZoneCriteria().bCheckHorizTensionTie;
 

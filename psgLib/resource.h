@@ -175,6 +175,7 @@
 #define IDC_HPY                         1011
 #define IDC_CONFINE_SPACING             1011
 #define IDC_LWC_PHI_DEBOND              1011
+#define IDC_N2                          1011
 #define IDC_T2                          1012
 #define IDC_UP_ADJUST                   1012
 #define IDC_PICK_POINT_HEIGHT           1012
@@ -1342,7 +1343,9 @@
 #define IDC_STATIC_SH                   1645
 #define IDS_E_FORMAT                    1646
 #define IDC_SCROLLBAR1                  1646
+#define IDC_STATIC_SPL2                 1646
 #define IDC_GIRDER_SWEEP_TOL_LABEL      1647
+#define IDC_STATIC_SH2                  1647
 #define IDC_CAMBER2                     1648
 #define IDS_E_WRITE                     1650
 #define IDC_GIRDER_SWEEP_TOL_UNIT       1650
