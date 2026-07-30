@@ -248,8 +248,8 @@ public:
    Float64 GetSegmentEndEndDistance(const CSegmentKey& segmentKey) const override;
    Float64 GetSegmentStartBearingOffset(const CSegmentKey& segmentKey) const override;
    Float64 GetSegmentEndBearingOffset(const CSegmentKey& segmentKey) const override;
-   Float64 GetSegmentStartSupportWidth(const CSegmentKey& segmentKey) const override;
-   Float64 GetSegmentEndSupportWidth(const CSegmentKey& segmentKey) const override;
+   Float64 GetSegmentStartSupportLength(const CSegmentKey& segmentKey) const override;
+   Float64 GetSegmentEndSupportLength(const CSegmentKey& segmentKey) const override;
    Float64 GetCLPierToCLBearingDistance(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,pgsTypes::MeasurementType measure) const override;
    Float64 GetCLPierToSegmentEndDistance(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType,pgsTypes::MeasurementType measure) const override;
    Float64 GetSegmentOffset(const CSegmentKey& segmentKey,Float64 station) const override;

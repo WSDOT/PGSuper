@@ -324,8 +324,9 @@ public:
    virtual Float64 GetSegmentStartBearingOffset(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSegmentEndBearingOffset(const CSegmentKey& segmentKey) const = 0;
 
-   virtual Float64 GetSegmentStartSupportWidth(const CSegmentKey& segmentKey) const = 0;
-   virtual Float64 GetSegmentEndSupportWidth(const CSegmentKey& segmentKey) const = 0;
+   // Length of the bearing support at the start and end of the segment. This is the length of the bearing support along the girder centerline.
+   virtual Float64 GetSegmentStartSupportLength(const CSegmentKey& segmentKey) const = 0;
+   virtual Float64 GetSegmentEndSupportLength(const CSegmentKey& segmentKey) const = 0;
 
    // End-to-end length of segment, measured along the grade 
    virtual Float64 GetSegmentPlanLength(const CSegmentKey& segmentKey) const = 0;
