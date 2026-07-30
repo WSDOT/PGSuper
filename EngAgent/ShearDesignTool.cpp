@@ -304,8 +304,8 @@ void pgsShearDesignTool::Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, co
    m_StartConnectionLength = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
    m_EndConnectionLength   = pBridge->GetSegmentEndEndDistance(m_SegmentKey);
 
-   m_LeftFosLocation  = m_StartConnectionLength + pBridge->GetSegmentStartSupportWidth(m_SegmentKey)/2.0;
-   m_RightFosLocation = m_SegmentLength - m_EndConnectionLength - pBridge->GetSegmentEndSupportWidth(m_SegmentKey)/2.0;
+   m_LeftFosLocation  = m_StartConnectionLength + pBridge->GetSegmentStartSupportLength(m_SegmentKey)/2.0;
+   m_RightFosLocation = m_SegmentLength - m_EndConnectionLength - pBridge->GetSegmentEndSupportLength(m_SegmentKey)/2.0;
 
    m_LongReinfShearAs = 0.0;
 
@@ -2242,8 +2242,8 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    Int32 nls = m_bIsPermit ? 2 : 1;
 
    // Loop over pois between faces of support and CSS
-   Float64 startSl = m_StartConnectionLength + pBridge->GetSegmentStartSupportWidth(m_SegmentKey)/2.0;
-   Float64 endSl = m_SegmentLength - m_EndConnectionLength - pBridge->GetSegmentEndSupportWidth(m_SegmentKey)/2.0;
+   Float64 startSl = m_StartConnectionLength + pBridge->GetSegmentStartSupportLength(m_SegmentKey)/2.0;
+   Float64 endSl = m_SegmentLength - m_EndConnectionLength - pBridge->GetSegmentEndSupportLength(m_SegmentKey)/2.0;
 
    // We will use #5 bars if using rebar 
    // Compute min development length for this bar size

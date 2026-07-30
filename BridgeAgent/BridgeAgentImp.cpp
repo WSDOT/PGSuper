@@ -5508,7 +5508,7 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       {
          // NOTE: Assuming that the support is symmetric about the CL Bearing
          // Distance from CL Brg to face of support is taken to be support_width/2
-         Float64 support_width = GetSegmentStartSupportWidth(segmentKey); // this is based on the bearing size
+         Float64 support_width = GetSegmentStartSupportLength(segmentKey); // this is based on the bearing size
          right_support_width = support_width / 2;
       }
 
@@ -5579,7 +5579,7 @@ void CBridgeAgentImp::LayoutPoiForShear(const CSegmentKey& segmentKey,Float64 se
       }
       else
       {
-         Float64 support_width = GetSegmentEndSupportWidth(segmentKey);
+         Float64 support_width = GetSegmentEndSupportLength(segmentKey);
          left_support_width = support_width / 2; // support width on left side of CL Pier
       }
 
@@ -9529,7 +9529,7 @@ Float64 CBridgeAgentImp::GetSegmentEndBearingOffset(const CSegmentKey& segmentKe
    return length;
 }
 
-Float64 CBridgeAgentImp::GetSegmentStartSupportWidth(const CSegmentKey& segmentKey) const
+Float64 CBridgeAgentImp::GetSegmentStartSupportLength(const CSegmentKey& segmentKey) const
 {
    // returns the support width
    // measured along the CL girder
@@ -9568,7 +9568,7 @@ Float64 CBridgeAgentImp::GetSegmentStartSupportWidth(const CSegmentKey& segmentK
    }
 }
 
-Float64 CBridgeAgentImp::GetSegmentEndSupportWidth(const CSegmentKey& segmentKey) const
+Float64 CBridgeAgentImp::GetSegmentEndSupportLength(const CSegmentKey& segmentKey) const
 {
    // returns the support width
    // measured along the CL girder
