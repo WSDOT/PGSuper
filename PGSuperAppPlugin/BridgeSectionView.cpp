@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,9 @@
 //
 
 #include "stdafx.h"
+
+#include <numeric>
+
 #include "resource.h"
 #include "PGSuperApp.h"
 #include "PGSuperDocBase.h"
@@ -2903,7 +2906,7 @@ std::vector<pgsPointOfInterest> CBridgeSectionView::GetPointsOfInterest()
       // all possible girders
       std::vector<GirderIndexType> vAllGirders;
       vAllGirders.resize(nGirders);
-      std::generate(vAllGirders.begin(), vAllGirders.end(), IncrementValue<GirderIndexType>(0)); // fill container with sequential values begining with 0
+      std::iota(vAllGirders.begin(), vAllGirders.end(), 0); // fill container with sequential values begining with 0
 
                                                                                                  // all the girders we found
       std::vector<GirderIndexType> vFoundGirders;

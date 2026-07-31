@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,9 +49,8 @@
 
 #include <MFCTools\MFCTools.h>
 
-#include <Reporting\ReportNotes.h> // for IncrementValue
-
 #include <algorithm>
+#include <numeric>
 
 
 
@@ -458,7 +457,7 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
    if ( m_GraphType == GRAPH_TYPE_CR )
    {
       vIntervals.resize(nIntervals-startIntervalIdx);
-      std::generate(vIntervals.begin(),vIntervals.end(),IncrementValue<IntervalIndexType>(startIntervalIdx));
+      std::iota(vIntervals.begin(),vIntervals.end(),startIntervalIdx);
    }
    else
    {

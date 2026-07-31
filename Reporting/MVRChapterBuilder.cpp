@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,8 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+
+#include <numeric>
 
 #include <Reporting\MVRChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
@@ -367,8 +369,7 @@ rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reportin
       IntervalIndexType firstReleaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
       vIntervals.clear();
       vIntervals.resize(nIntervals-firstReleaseIntervalIdx);
-      std::generate(vIntervals.begin(),vIntervals.end(),IncrementValue<IntervalIndexType>(firstReleaseIntervalIdx));
-#pragma Reminder("When we go to C++ 11, use the std::itoa algorithm")
+      std::iota(vIntervals.begin(),vIntervals.end(),firstReleaseIntervalIdx);
    }
 
    for (const auto& intervalIdx : vIntervals)
