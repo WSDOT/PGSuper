@@ -1,7 +1,7 @@
 # Adding an interface to an agent {#adding_an_interface_to_an_agent}
 
 # Purpose
-Ths procedure describes how to add an interface to an agent implemented with the ATL library.
+This procedure describes how to add an interface to an agent implemented with the WBFL EAF (Extensible Application Framework) ComponentObject/Agent framework.
 
 # Procedure
 
@@ -10,44 +10,48 @@ Ths procedure describes how to add an interface to an agent implemented with the
 // {D88670F0-3B83-11d2-8EC5-006097DF3C68}
 DEFINE_GUID(IID_IFoo,
 0xD88670F0, 0x3B83, 0x11d2, 0x8E, 0xC5, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
-interface IFoo : IUnknown
+class IFoo
 {
+public:
    virtual int Bar() const = 0;
 };
 ~~~
+The interface is a plain abstract C++ class. The DEFINE_GUID(IID_IFoo, ...) is required; it's the key the Broker uses to look up the interface at runtime.
 
 - Use the GUIDGEN utility to get a unique identifier for this interface. Don't use the IID shown in the example code.
 
 - Determine which agent is going to implement the interface
 
 - Make the following modifications to the agent's class declaration
--# Derive the agent class from the new interface.  ATL uses multiple inheritance for supporting multiple interfaces
-
--# Add a interface entry to the agent's interface map
+-# Derive the agent class from the new interface. Plain C++ multiple inheritance is used to support multiple interfaces on a single agent. For example:
 ~~~
-BEGIN_COM_MAP(CSomeAgentImp)
-   COM_INTERFACE_ENTRY(IFoo)  // Add this line
-END_COM_MAP()
+class CSomeAgentImp : public WBFL::EAF::Agent,
+   public IFoo,             // Add this line
+   public ISomeOtherIFace
+{
+   ...
+};
 ~~~
+See `CAnalysisAgentImp` (AnalysisAgent\AnalysisAgentImp.h) for a real, larger example of this pattern.
 
 -# Add the interface's methods in the class declaration
 ~~~
 // IFoo
 public:
-   virtual int Bar() const override;
+   int Bar() const override;
 ~~~
 
 - Make the following modifications to the agent's class definition (implementation)
 
--# Register the interface with the broker at startup
+-# Register the interface with the broker at startup, in the agent's RegisterInterfaces() override
 ~~~
-STDMETHODIMP CSomeAgentImp::RegInterfaces()
+bool CSomeAgentImp::RegisterInterfaces()
 {
-   CComQIPtr<IBrokerInit,&IID_IBrokerInit> pBrokerInit( m_pBroker );
+   EAF_AGENT_REGISTER_INTERFACES;
 
-   pBrokerInit->RegInterface( IID_IFoo, this ); // Add this line
+   REGISTER_INTERFACE(IFoo); // Add this line
 
-   return S_OK;
+   return true;
 }
 ~~~
 
@@ -56,9 +60,9 @@ STDMETHODIMP CSomeAgentImp::RegInterfaces()
 /////////////////////////////////////////////////////////////////////////
 // IFoo
 //
-int CSomeAgentImp::Bar()
+int CSomeAgentImp::Bar() const
 {
-    int value = 0.0;
+   int value = 0;
    // ...
    return value;
 }
