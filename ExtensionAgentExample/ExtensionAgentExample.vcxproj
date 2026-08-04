@@ -176,6 +176,7 @@
     <ClCompile Include="EditPierPage.cpp" />
     <ClCompile Include="ExampleExtensionAgent.cpp" />
     <ClCompile Include="ExtensionAgentExample.cpp" />
+    <ClCompile Include="ExtensionPage.cpp" />
     <ClCompile Include="MyChapterBuilder.cpp" />
     <ClCompile Include="MyReportSpecification.cpp" />
     <ClCompile Include="MyReportSpecificationBuilder.cpp" />
@@ -196,6 +197,7 @@
     <ClInclude Include="EditPierPage.h" />
     <ClInclude Include="ExampleExtensionAgent.h" />
     <ClInclude Include="ExtensionAgent.h" />
+    <ClInclude Include="ExtensionPage.h" />
     <ClInclude Include="MyChapterBuilder.h" />
     <ClInclude Include="MyReportSpecification.h" />
     <ClInclude Include="MyReportSpecificationBuilder.h" />

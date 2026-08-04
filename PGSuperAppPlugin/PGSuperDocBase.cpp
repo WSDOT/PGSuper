@@ -441,7 +441,14 @@ bool CPGSDocBase::EditAlignmentDescription(int nPage)
    dlg.m_ProfilePage.m_ProfileData = pAlignment->GetProfileData2();
    dlg.m_CrownSlopePage.m_RoadwaySectionData = pAlignment->GetRoadwaySectionData();
 
-   dlg.SetActivePage(nPage);
+   // nPage is one of EAD_ROADWAY/EAD_PROFILE/EAD_SECTION (IFace\EditByUI.h). Resolve it to
+   // the actual page by name rather than trusting it's a raw tab index - an extension page
+   // (see CExtensionPageManager) can now be inserted before any of these built-in ones.
+   static const LPCTSTR pageNames[] = { ALIGNMENTDLG_PAGE_HORIZONTAL_ALIGNMENT, ALIGNMENTDLG_PAGE_PROFILE, ALIGNMENTDLG_PAGE_SUPERELEVATION };
+   if ( CPropertyPage* pActivePage = dlg.FindPage(pageNames[nPage]) )
+   {
+      dlg.SetActivePage(pActivePage);
+   }
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -1983,6 +1990,31 @@ bool CPGSDocBase::UnregisterEditLoadRatingOptionsCallback(IDType ID)
 const std::map<IDType,IEditLoadRatingOptionsCallback*>& CPGSDocBase::GetEditLoadRatingOptionsCallbacks()
 {
    return m_EditLoadRatingOptionsCallbacks;
+}
+
+IDType CPGSDocBase::RegisterEditAlignmentCallback(IEditAlignmentCallback* pCallback)
+{
+   IDType key = m_CallbackID++;
+   m_EditAlignmentCallbacks.insert(std::make_pair(key,pCallback));
+   return key;
+}
+
+bool CPGSDocBase::UnregisterEditAlignmentCallback(IDType ID)
+{
+   std::map<IDType,IEditAlignmentCallback*>::iterator found = m_EditAlignmentCallbacks.find(ID);
+   if ( found == m_EditAlignmentCallbacks.end() )
+   {
+      return false;
+   }
+
+   m_EditAlignmentCallbacks.erase(found);
+
+   return true;
+}
+
+const std::map<IDType,IEditAlignmentCallback*>& CPGSDocBase::GetEditAlignmentCallbacks()
+{
+   return m_EditAlignmentCallbacks;
 }
 
 BOOL CPGSDocBase::OnNewDocumentFromTemplate(LPCTSTR lpszPathName)

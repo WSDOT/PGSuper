@@ -78,6 +78,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 176
     END
+
+    IDD_EXTENSION_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 309
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 176
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -107,13 +115,30 @@ BEGIN
     CONTROL         "Cosine",IDC_COSINE,"Button",BS_AUTORADIOBUTTON,7,79,37,10
 END
 
+// The fuller example: shows how to receive the parent dialog's data interface
+// (IEditPierData) via the page's constructor, read from it (see
+// CEditPierPage::OnSetActive filling IDC_PIER_DATA with live girder counts), and
+// respond to a normal control notification (IDC_CHECK). See EditPierPage.h/.cpp.
 IDD_EDIT_PIER_PAGE DIALOGEX 0, 0, 316, 183
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Extension Page"
+CAPTION "Pier Extension Example"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "Click Me",IDC_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,20,41,10
     LTEXT           "Static",IDC_PIER_DATA,27,43,191,32
+END
+
+// The simple example: used by every CExampleExtensionAgent callback EXCEPT
+// IEditPierCallback. Just one CEdit bound to a CString via DDX_Text - no
+// interaction with the parent dialog's data interface. See ExtensionPage.h/.cpp
+// for why, and for the fuller pattern this is deliberately not showing again.
+IDD_EXTENSION_PAGE DIALOGEX 0, 0, 316, 183
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Extension Page"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Sample Data:",IDC_STATIC,27,20,50,8
+    EDITTEXT        IDC_EXTENSION_DATA,27,33,191,14,ES_AUTOHSCROLL
 END
 
 

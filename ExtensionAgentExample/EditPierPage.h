@@ -26,6 +26,28 @@
 class IEditPierData;
 
 // CEditPierPage dialog
+//
+// This is the FULLER example property page - it's the only one of
+// CExampleExtensionAgent's callback pages that actually talks to its parent
+// dialog's data. Three things worth studying here:
+//  - The constructor takes the same IEditPierData* that
+//    IEditPierCallback::CreatePropertyPage(IEditPierData*) was handed, and holds
+//    onto it in m_pEditPierData, exactly the way a real extension would receive
+//    read access to the Pier dialog's data.
+//  - OnSetActive() reads live data through that interface
+//    (pEditPierData->GetGirderCount(...)) and displays it - showing how a page can
+//    react to becoming the active tab, not just to being constructed.
+//  - OnBnClickedCheck() responds to a normal control notification the same way any
+//    other MFC dialog would.
+//  CExampleExtensionAgent::OnOK(CPropertyPage*, IEditPierData*) is the other half of
+//  this pattern - it casts pPage back to CEditPierPage* and reads m_bCheck to hand
+//  the result back to the agent.
+//
+// Every other callback on CExampleExtensionAgent instead returns a plain
+// CExtensionPage (see ExtensionPage.h) - a deliberately simpler page that does NOT
+// take a data interface pointer, because that pattern only needs to be demonstrated
+// once. A real extension for e.g. IEditBridgeCallback would normally follow this
+// class's shape instead, taking an IEditBridgeData* in its own constructor.
 
 class CEditPierPage : public CPropertyPage
 {

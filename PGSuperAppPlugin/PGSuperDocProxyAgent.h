@@ -289,10 +289,12 @@ public:
    IDType RegisterEditSpanCallback(IEditSpanCallback* pCallback) override;
    IDType RegisterEditBridgeCallback(IEditBridgeCallback* pCallback) override;
    IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback) override;
+   IDType RegisterEditAlignmentCallback(IEditAlignmentCallback* pCallback) override;
    bool UnregisterEditPierCallback(IDType ID) override;
    bool UnregisterEditSpanCallback(IDType ID) override;
    bool UnregisterEditBridgeCallback(IDType ID) override;
    bool UnregisterEditLoadRatingOptionsCallback(IDType ID) override;
+   bool UnregisterEditAlignmentCallback(IDType ID) override;
 
 // IExtendPGSuperUI
 public:

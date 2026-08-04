@@ -257,6 +257,10 @@ public:
    bool UnregisterEditLoadRatingOptionsCallback(IDType ID);
    const std::map<IDType, IEditLoadRatingOptionsCallback*>& GetEditLoadRatingOptionsCallbacks();
 
+   IDType RegisterEditAlignmentCallback(IEditAlignmentCallback* pCallback);
+   bool UnregisterEditAlignmentCallback(IDType ID);
+   const std::map<IDType, IEditAlignmentCallback*>& GetEditAlignmentCallbacks();
+
    // ISupportLibraryManager
    IndexType GetNumberOfLibraryManagers() const override;
    WBFL::Library::LibraryManager* GetLibraryManager(IndexType num) override;
@@ -376,6 +380,7 @@ protected:
    std::map<IDType,IEditClosureJointCallback*>      m_EditClosureJointCallbacks;
    std::map<IDType,IEditBridgeCallback*>            m_EditBridgeCallbacks;
    std::map<IDType,IEditLoadRatingOptionsCallback*> m_EditLoadRatingOptionsCallbacks;
+   std::map<IDType,IEditAlignmentCallback*>         m_EditAlignmentCallbacks;
 
    // map  from menu cmd to callback ID
    std::map<UINT,IDType>  m_CopyGirderPropertiesCallbacksCmdMap;

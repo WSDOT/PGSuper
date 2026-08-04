@@ -29,6 +29,7 @@
 
 #include <IFace\ExtendUI.h>
 #include "EditPierPage.h"
+#include "ExtensionPage.h"
 
 
 class CExampleExtensionAgent : public CCmdTarget, // it's very important CCmdTarget is the first parent for inheritance, see Warning C4407
@@ -45,6 +46,7 @@ class CExampleExtensionAgent : public CCmdTarget, // it's very important CCmdTar
    public IEditClosureJointCallback,
    public IEditSplicedGirderCallback,
    public IEditGirderCallback,
+   public IEditAlignmentCallback,
    public IExtendUIEventSink,
    public WBFL::EAF::ICommandCallback
 {
@@ -160,6 +162,18 @@ public:
    CPropertyPage* CreatePropertyPage(IEditGirderData* pGirderData) override;
    std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData) override;
 
+// IEditAlignmentCallback
+public:
+   CPropertyPage* CreatePropertyPage(IEditAlignmentData* pAlignmentData) override;
+   std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditAlignmentData* pAlignmentData) override;
+   // Deliberately NOT overriding GetPropertyPagePosition() here - it lives on the shared
+   // IExtensionPageCallback mixin, and this agent implements ten IEditXxxCallback interfaces
+   // at once. A single override in this class satisfies every one of those interfaces'
+   // IExtensionPageCallback vtable slot simultaneously (they're all the same non-virtual
+   // mixin, reached via different base paths), so overriding it "just for Alignment" here
+   // would silently move this agent's existing Pier/Girder/Bridge/etc. pages to the same
+   // position too. AtStart() positioning is exercised for real by the actual IFC extension
+   // agent (Part 4), which implements only IEditAlignmentCallback and has no such conflict.
 
 // IExtendUIEventSink
 public:
@@ -191,5 +205,6 @@ private:
    IDType m_EditClosureJointCallbackID;
    IDType m_EditSplicedGirderCallbackID;
    IDType m_EditGirderCallbackID;
+   IDType m_EditAlignmentCallbackID;
    bool m_bCheck = true; // dummy data
 };

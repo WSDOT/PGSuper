@@ -10,6 +10,8 @@
 #define IDR_CONTEXT                     204
 #define IDB_LOGO                        205
 #define IDD_EDIT_PIER_PAGE              206
+#define IDD_EXTENSION_PAGE              207
+#define IDC_EXTENSION_DATA              208
 #define IDD_TEST_GRAPH_CONTROLS         3006
 #define IDD_TEST_GRAPH_CONTROLS1        3007
 #define IDC_BUTTON1                     3012
@@ -20,12 +22,12 @@
 #define ID_COMMAND2                     37022
 
 // Next default values for new objects
-// 
+//
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        207
+#define _APS_NEXT_RESOURCE_VALUE        209
 #define _APS_NEXT_COMMAND_VALUE         37023
-#define _APS_NEXT_CONTROL_VALUE         204
+#define _APS_NEXT_CONTROL_VALUE         209
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

@@ -456,8 +456,39 @@ public:
    virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditLoadRatingOptions* pLoadRatingOptions) = 0;
 };
 
+// Well-known names of CAlignmentDescriptionDlg's built-in pages, as registered with
+// its CExtensionPageManager (PGSuperAppPlugin\AlignmentDescriptionDlg.cpp). Used with
+// ExtensionPagePosition::Before()/After() to position an extension page relative to
+// a specific built-in one, and by CPGSDocBase::EditAlignmentDescription to resolve
+// EAD_ROADWAY/EAD_PROFILE/EAD_SECTION to a page by name instead of by index.
+#define ALIGNMENTDLG_PAGE_HORIZONTAL_ALIGNMENT _T("HorizontalAlignment")
+#define ALIGNMENTDLG_PAGE_PROFILE              _T("Profile")
+#define ALIGNMENTDLG_PAGE_SUPERELEVATION       _T("Superelevation")
+
+/// @brief Interface that provides information to the IEditAlignmentCallback::CreatePropertyPage method
+class IEditAlignmentData
+{
+public:
+   /// @brief This is a dummy method - it doesn't do anything or provide any information.
+   /// This interface and the methods may change in the future
+   virtual void EADummy() = 0;
+};
+
+/// @brief Callback interface for objects extending the Edit Alignment Description dialog
+class IEditAlignmentCallback : public IExtensionPageCallback
+{
+public:
+   /// @brief Called by the framework to create the property page for the Edit Alignment Description dialog
+   virtual CPropertyPage* CreatePropertyPage(IEditAlignmentData* pAlignmentData) = 0;
+
+   /// @brief Called by the framework when stand alone editing is complete.
+   /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
+   /// otherwise return nullptr
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditAlignmentData* pAlignmentData) = 0;
+};
+
 // {F477FBFC-2C57-42bf-8FB5-A32296087B64}
-DEFINE_GUID(IID_IExtendUI, 
+DEFINE_GUID(IID_IExtendUI,
 0xf477fbfc, 0x2c57, 0x42bf, 0x8f, 0xb5, 0xa3, 0x22, 0x96, 0x8, 0x7b, 0x64);
 /// @brief Interface used to manage the registration of callback objects that extend elements of the user interface common to both PGSuper and PGSplice.
 class __declspec(uuid("{F477FBFC-2C57-42bf-8FB5-A32296087B64}")) IExtendUI
@@ -484,6 +515,11 @@ public:
    /// @return ID of the callback
    virtual IDType RegisterEditLoadRatingOptionsCallback(IEditLoadRatingOptionsCallback* pCallback) = 0;
 
+   /// @brief Registers a callback to extend the Edit Alignment Description dialog
+   /// @param pCallback Callback for extending the dialog
+   /// @return ID of the callback
+   virtual IDType RegisterEditAlignmentCallback(IEditAlignmentCallback* pCallback) = 0;
+
    /// @brief Unregistered a callback that extends the Edit Pier dialog
    /// @param ID ID of the callback
    /// @return true if successful
@@ -504,6 +540,11 @@ public:
    /// @param ID ID of the callback
    /// @return true if successful
    virtual bool UnregisterEditLoadRatingOptionsCallback(IDType ID) = 0;
+
+   /// @brief Unregisters a callback that extends the Edit Alignment Description dialog
+   /// @param ID ID of the callback
+   /// @return true if successful
+   virtual bool UnregisterEditAlignmentCallback(IDType ID) = 0;
 };
 
 // {D3CF52A4-A37E-4e9b-A71C-F9B37A045B8A}

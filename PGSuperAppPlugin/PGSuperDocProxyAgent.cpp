@@ -1403,6 +1403,11 @@ IDType CPGSuperDocProxyAgent::RegisterEditLoadRatingOptionsCallback(IEditLoadRat
    return m_pMyDocument->RegisterEditLoadRatingOptionsCallback(pCallback);
 }
 
+IDType CPGSuperDocProxyAgent::RegisterEditAlignmentCallback(IEditAlignmentCallback* pCallback)
+{
+   return m_pMyDocument->RegisterEditAlignmentCallback(pCallback);
+}
+
 bool CPGSuperDocProxyAgent::UnregisterEditPierCallback(IDType ID)
 {
    return m_pMyDocument->UnregisterEditPierCallback(ID);
@@ -1446,6 +1451,11 @@ bool CPGSuperDocProxyAgent::UnregisterEditBridgeCallback(IDType ID)
 bool CPGSuperDocProxyAgent::UnregisterEditLoadRatingOptionsCallback(IDType ID)
 {
    return m_pMyDocument->UnregisterEditLoadRatingOptionsCallback(ID);
+}
+
+bool CPGSuperDocProxyAgent::UnregisterEditAlignmentCallback(IDType ID)
+{
+   return m_pMyDocument->UnregisterEditAlignmentCallback(ID);
 }
 
 bool CPGSuperDocProxyAgent::IsPGSuperDocument() const

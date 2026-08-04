@@ -13,6 +13,9 @@
     <ClCompile Include="ExtensionAgentExample.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ExtensionPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="MyChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -43,6 +46,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ExampleExtensionAgent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtensionPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MyChapterBuilder.h">

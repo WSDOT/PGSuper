@@ -33,10 +33,14 @@
 #include "ProfilePage.h"
 #include "CrownSlopePage.h"
 
+#include <IFace\ExtendUI.h>
+#include <EAF\MacroTxn.h>
+#include "ExtensionPageManager.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CAlignmentDescriptionDlg
 
-class CAlignmentDescriptionDlg : public CPropertySheet
+class CAlignmentDescriptionDlg : public CPropertySheet, public IEditAlignmentData
 {
 	DECLARE_DYNAMIC(CAlignmentDescriptionDlg)
 
@@ -44,6 +48,9 @@ class CAlignmentDescriptionDlg : public CPropertySheet
 public:
 	CAlignmentDescriptionDlg(UINT nIDCaption, std::shared_ptr<WBFL::EAF::Broker> pBroker,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
 	CAlignmentDescriptionDlg(LPCTSTR pszCaption, std::shared_ptr<WBFL::EAF::Broker> pBroker,CWnd* pParentWnd = nullptr, UINT iSelectPage = 0);
+
+   // IEditAlignmentData
+   virtual void EADummy() override {}
 
 // Attributes
 public:
@@ -59,6 +66,13 @@ public:
 // Implementation
 public:
 	virtual ~CAlignmentDescriptionDlg();
+   virtual INT_PTR DoModal() override;
+
+   // Returns a macro transaction object that contains editing transactions
+   // for all the extension pages. The caller is responsible for deleting this object
+   std::unique_ptr<WBFL::EAF::Transaction> GetExtensionPageTransaction();
+
+   CPropertyPage* FindPage(LPCTSTR name) const { return m_PageManager.FindPage(name); }
 
    CHorizontalAlignmentPage m_AlignmentPage;
    CProfilePage m_ProfilePage;
@@ -70,10 +84,17 @@ public:
 protected:
    std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 	void Init();
+   void CreateExtensionPages();
+   void DestroyExtensionPages();
 	//{{AFX_MSG(CAlignmentDescriptionDlg)
 		// NOTE - the ClassWizard will add and remove member functions here.
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+   WBFL::EAF::MacroTxn m_Macro;
+   CExtensionPageManager m_PageManager;
+   std::vector<std::pair<IEditAlignmentCallback*,CPropertyPage*>> m_ExtensionPages;
+   void NotifyExtensionPages();
 
    friend CHorizontalAlignmentPage;
    friend CProfilePage;

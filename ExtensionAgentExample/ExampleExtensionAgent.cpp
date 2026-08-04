@@ -234,6 +234,7 @@ void CExampleExtensionAgent::RegisterUIExtensions()
    m_EditPierCallbackID = pExtendPGSuperUI->RegisterEditPierCallback(this,nullptr);
    m_EditSpanCallbackID = pExtendPGSuperUI->RegisterEditSpanCallback(this);
    m_EditGirderCallbackID = pExtendPGSuperUI->RegisterEditGirderCallback(this);
+   m_EditAlignmentCallbackID = pExtendPGSuperUI->RegisterEditAlignmentCallback(this);
 
    GET_IFACE(IExtendPGSpliceUI,pExtendPGSpliceUI);
    m_EditTemporarySupportCallbackID = pExtendPGSpliceUI->RegisterEditTemporarySupportCallback(this, nullptr);
@@ -249,6 +250,7 @@ void CExampleExtensionAgent::UnregisterUIExtensions()
    pExtendPGSuperUI->UnregisterEditPierCallback(m_EditPierCallbackID);
    pExtendPGSuperUI->UnregisterEditSpanCallback(m_EditSpanCallbackID);
    pExtendPGSuperUI->UnregisterEditGirderCallback(m_EditGirderCallbackID);
+   pExtendPGSuperUI->UnregisterEditAlignmentCallback(m_EditAlignmentCallbackID);
 
    GET_IFACE(IExtendPGSpliceUI,pExtendPGSpliceUI);
    pExtendPGSpliceUI->UnregisterEditTemporarySupportCallback(m_EditTemporarySupportCallbackID);
@@ -406,10 +408,15 @@ bool CExampleExtensionAgent::IntegrateWithGraphing(bool bIntegrate)
    return true;
 }
 
+// Every CreatePropertyPage() below returns a plain CExtensionPage - the simple
+// example, which doesn't interact with its parent dialog's data at all (see
+// ExtensionPage.h). The lone exception is CreatePropertyPage(IEditPierData*)
+// further down, which returns a CEditPierPage instead - the fuller example, showing
+// how a page can actually read/react to its parent's data (see EditPierPage.h).
 CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditBridgeData* pBridgeData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return new CPropertyPage(IDD_EDIT_PIER_PAGE);
+   return new CExtensionPage();
 }
 
 std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData)
@@ -458,7 +465,7 @@ IDType CExampleExtensionAgent::GetEditBridgeCallbackID()
 CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditTemporarySupportData* pEditTemporarySupportData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return new CPropertyPage(IDD_EDIT_PIER_PAGE);
+   return new CExtensionPage();
 }
 
 CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditTemporarySupportData* pEditTemporarySupportData,CPropertyPage* pBridgePropertyPage)
@@ -475,7 +482,7 @@ std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPa
 CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSpanData* pSpanData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return new CPropertyPage(IDD_EDIT_PIER_PAGE);
+   return new CExtensionPage();
 }
 
 CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSpanData* pEditSpanData,CPropertyPage* pBridgePropertyPage)
@@ -492,7 +499,7 @@ std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPa
 CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSegmentData* pSegmentData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return new CPropertyPage(IDD_EDIT_PIER_PAGE);
+   return new CExtensionPage();
 }
 
 std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData)
@@ -513,7 +520,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSegmentData* pEdi
 CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditClosureJointData* pClosureJointData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return new CPropertyPage(IDD_EDIT_PIER_PAGE);
+   return new CExtensionPage();
 }
 
 std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData)
@@ -529,7 +536,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditClosureJointData*
 CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSplicedGirderData* pGirderData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return new CPropertyPage(IDD_EDIT_PIER_PAGE);
+   return new CExtensionPage();
 }
 
 std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData)
@@ -548,10 +555,21 @@ void CExampleExtensionAgent::EditClosureJoint_OnOK(CPropertyPage* pSplicedGirder
 CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditGirderData* pGirderData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return new CPropertyPage(IDD_EDIT_PIER_PAGE);
+   return new CExtensionPage();
 }
 
 std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData)
+{
+   return nullptr;
+}
+
+CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditAlignmentData* pAlignmentData)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   return new CExtensionPage();
+}
+
+std::unique_ptr<WBFL::EAF::Transaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditAlignmentData* pAlignmentData)
 {
    return nullptr;
 }
