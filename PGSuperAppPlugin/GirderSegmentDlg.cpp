@@ -103,11 +103,11 @@ void CGirderSegmentDlg::CommonInit(const CBridgeDescription2* pBridgeDesc,const 
    m_StirrupsPage.m_psp.dwFlags       |= PSP_HASHELP;
    m_LiftingPage.m_psp.dwFlags        |= PSP_HASHELP;
 
-   AddPage(&m_GeneralPage);
-   AddPage(&m_StrandsPage);
-   AddPage(&m_TendonsPage);
-   AddPage(&m_RebarPage);
-   AddPage(&m_StirrupsPage);
+   m_PageManager.AddPage(_T("General"), &m_GeneralPage);
+   m_PageManager.AddPage(_T("Strands"), &m_StrandsPage);
+   m_PageManager.AddPage(_T("Tendons"), &m_TendonsPage);
+   m_PageManager.AddPage(_T("Rebar"), &m_RebarPage);
+   m_PageManager.AddPage(_T("Stirrups"), &m_StirrupsPage);
 
    // initialize the dialog data
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -124,19 +124,21 @@ void CGirderSegmentDlg::CommonInit(const CBridgeDescription2* pBridgeDesc,const 
    m_StrandsPage.Init(m_Girder.GetSegment(segmentKey.segmentIndex));
    m_TendonsPage.Init(m_Girder.GetSegment(segmentKey.segmentIndex));
 
-   AddPage( &m_LiftingPage );
+   m_PageManager.AddPage(_T("Lifting"), &m_LiftingPage );
 }
 
 void CGirderSegmentDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey)
 {
    CommonInit(pBridgeDesc,segmentKey);
    CreateExtensionPages();
+   m_PageManager.Commit(this);
 }
 
 void CGirderSegmentDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentKey& segmentKey,const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions)
 {
    CommonInit(pBridgeDesc,segmentKey);
    CreateExtensionPages(editSplicedGirderExtensions);
+   m_PageManager.Commit(this);
 }
 
 void CGirderSegmentDlg::CreateExtensionPages()
@@ -154,7 +156,10 @@ void CGirderSegmentDlg::CreateExtensionPages()
       if ( pPage )
       {
          m_ExtensionPages.emplace_back(pCallback,pPage);
-         AddPage(pPage);
+
+         CString name;
+         name.Format(_T("Extension%d"), callbackIter->first);
+         m_PageManager.InsertExtensionPage(name, pPage, pCallback->GetPropertyPagePosition());
       }
    }
 }
@@ -196,7 +201,10 @@ void CGirderSegmentDlg::CreateExtensionPages(const std::vector<EditSplicedGirder
       if ( pPage )
       {
          m_ExtensionPages.emplace_back(pEditSegmentCallback,pPage);
-         AddPage(pPage);
+
+         CString name;
+         name.Format(_T("Extension%d"), callbackIter->first);
+         m_PageManager.InsertExtensionPage(name, pPage, pEditSegmentCallback->GetPropertyPagePosition());
       }
    }
 }

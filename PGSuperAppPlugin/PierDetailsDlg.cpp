@@ -86,41 +86,43 @@ void CPierDetailsDlg::CommonInitPages()
    m_ClosureJointGeometryPage.m_psp.dwFlags |= PSP_HASHELP;
    m_GirderSegmentSpacingPage.m_psp.dwFlags |= PSP_HASHELP;
 
-   AddPage(&m_PierLocationPage);
-   AddPage(&m_PierLayoutPage);
+   m_PageManager.AddPage(_T("Location"), &m_PierLocationPage);
+   m_PageManager.AddPage(_T("Layout"), &m_PierLayoutPage);
 
    if ( m_pPier->IsBoundaryPier() )
    {
-      AddPage(&m_PierGirderSpacingPage);
+      m_PageManager.AddPage(_T("GirderSpacing"), &m_PierGirderSpacingPage);
 
       if ( m_pPier->IsAbutment() )
       {
-         AddPage(&m_AbutmentConnectionsPage);
+         m_PageManager.AddPage(_T("Connections"), &m_AbutmentConnectionsPage);
       }
       else
       {
-         AddPage(&m_PierConnectionsPage);
+         m_PageManager.AddPage(_T("Connections"), &m_PierConnectionsPage);
       }
    }
    else
    {
-      AddPage(&m_ClosureJointGeometryPage);
-      AddPage(&m_GirderSegmentSpacingPage);
+      m_PageManager.AddPage(_T("ClosureJointGeometry"), &m_ClosureJointGeometryPage);
+      m_PageManager.AddPage(_T("GirderSegmentSpacing"), &m_GirderSegmentSpacingPage);
    }
 
-   AddPage(&m_PierDetailsBearingsPage);
+   m_PageManager.AddPage(_T("Bearings"), &m_PierDetailsBearingsPage);
 }
 
 void CPierDetailsDlg::InitPages()
 {
    CommonInitPages();
    CreateExtensionPages();
+   m_PageManager.Commit(this);
 }
 
 void CPierDetailsDlg::InitPages(const std::vector<EditBridgeExtension>& editBridgeExtensions)
 {
    CommonInitPages();
    CreateExtensionPages(editBridgeExtensions);
+   m_PageManager.Commit(this);
 }
 
 void CPierDetailsDlg::Init(const CBridgeDescription2* pBridge,PierIndexType pierIdx)
@@ -204,10 +206,10 @@ void CPierDetailsDlg::CreateExtensionPages()
       IEditPierCallback* pEditPierCallback = callbackIter->second;
       CPropertyPage* pPage = pEditPierCallback->CreatePropertyPage(this);
       m_ExtensionPages.emplace_back(pEditPierCallback,pPage);
-      if ( pPage )
-      {
-         AddPage(pPage);
-      }
+
+      CString name;
+      name.Format(_T("Extension%d"), callbackIter->first);
+      m_PageManager.InsertExtensionPage(name, pPage, pEditPierCallback->GetPropertyPagePosition());
    }
 }
 
@@ -247,10 +249,9 @@ void CPierDetailsDlg::CreateExtensionPages(const std::vector<EditBridgeExtension
 
       m_ExtensionPages.emplace_back(pEditPierCallback,pPage);
 
-      if ( pPage )
-      {
-         AddPage(pPage);
-      }
+      CString name;
+      name.Format(_T("Extension%d"), callbackIter->first);
+      m_PageManager.InsertExtensionPage(name, pPage, pEditPierCallback->GetPropertyPagePosition());
    }
 }
 

@@ -40,6 +40,45 @@ class IEditBridgeCallback;
 class IEditSplicedGirderCallback;
 class IEditLoadRatingOptionsCallback;
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// Extension page positioning
+//
+// MFC's CPropertySheet::AddPage() only appends - it has no InsertPage, even though the
+// underlying Win32 controls do support ad-hoc insertion (CTabCtrl::InsertItem,
+// PSM_INSERTPAGE on the native property sheet). CPropertySheet can't use them here because
+// it tracks pages in its own private CPtrArray, and only AddPage()/RemovePage() keep that
+// array in sync with what's on screen. So positioning has to be resolved by the hosting
+// dialog before any page reaches AddPage() (see CExtensionPageManager in PGSuperAppPlugin,
+// which explains this in more detail). An extension requests where its page belongs by
+// overriding IExtensionPageCallback::GetPropertyPagePosition(); the default (AtEnd)
+// reproduces the framework's original append-only behavior, so existing extension agents
+// that don't override it are unaffected.
+/////////////////////////////////////////////////////////////////////////////////////////
+
+enum class ExtensionPagePlacement { Start, End, Before, After, AtIndex };
+
+struct ExtensionPagePosition
+{
+   ExtensionPagePlacement Placement = ExtensionPagePlacement::End;
+   std::_tstring ReferencePageName; // used with Before/After
+   int Index = -1;                  // used with AtIndex
+
+   static ExtensionPagePosition AtStart() { return ExtensionPagePosition{ ExtensionPagePlacement::Start }; }
+   static ExtensionPagePosition AtEnd()   { return ExtensionPagePosition{ ExtensionPagePlacement::End   }; }
+   static ExtensionPagePosition Before(LPCTSTR name) { ExtensionPagePosition p; p.Placement = ExtensionPagePlacement::Before; p.ReferencePageName = name; return p; }
+   static ExtensionPagePosition After(LPCTSTR name)  { ExtensionPagePosition p; p.Placement = ExtensionPagePlacement::After;  p.ReferencePageName = name; return p; }
+   static ExtensionPagePosition AtIndex(int idx)      { ExtensionPagePosition p; p.Placement = ExtensionPagePlacement::AtIndex; p.Index = idx; return p; }
+};
+
+/// @brief Mixin implemented by every IEditXxxCallback interface. Lets an extension say where
+/// its page belongs among a dialog's tabs. Not pure virtual - existing extension agents that
+/// don't override this keep today's "append at end" behavior with no source changes required.
+class IExtensionPageCallback
+{
+public:
+   virtual ExtensionPagePosition GetPropertyPagePosition() { return ExtensionPagePosition::AtEnd(); }
+};
+
 class CPierData2;
 class rptParagraph;
 
@@ -92,7 +131,7 @@ public:
 };
 
 /// @brief Callback interface for objects extending the Edit Pier dialog
-class IEditPierCallback
+class IEditPierCallback : public IExtensionPageCallback
 {
 public:
    /// @brief Called by the framework to create the property page when the Pier dialog is opened for stand alone editing
@@ -173,7 +212,7 @@ public:
 };
 
 /// @brief Callback interface for objects extending the Edit Temporary Support dialog
-class IEditTemporarySupportCallback
+class IEditTemporarySupportCallback : public IExtensionPageCallback
 {
 public:
    /// @brief Called by the framework to create the property page for the Pier dialog is opened for stand alone editing
@@ -209,7 +248,7 @@ public:
 };
 
 /// @brief Callback interface for objects extending the Edit Span dialog
-class IEditSpanCallback
+class IEditSpanCallback : public IExtensionPageCallback
 {
 public:
    /// @brief Called by the framework to create the property page for the Span dialog is opened for stand alone editing
@@ -236,7 +275,7 @@ public:
 };
 
 /// @brief Callback interface for objects extending the Edit Segment dialog
-class IEditSegmentCallback
+class IEditSegmentCallback : public IExtensionPageCallback
 {
 public:
    /// @brief Called by the framework to create the property page for the Segment dialog is opened for stand alone editing
@@ -263,7 +302,7 @@ public:
 };
 
 /// @brief Callback interface for objects extending the Edit Closure Joint dialog
-class IEditClosureJointCallback
+class IEditClosureJointCallback : public IExtensionPageCallback
 {
 public:
    /// @brief Called by the framework to create the property page for the Closure Joint dialog is opened for stand alone editing
@@ -290,7 +329,7 @@ public:
 };
 
 /// @brief Callback interface for objects extending the Edit Spliced Girder dialog
-class IEditSplicedGirderCallback
+class IEditSplicedGirderCallback : public IExtensionPageCallback
 {
 public:
    /// @brief Called by the framework to create the property page for the Girder dialog
@@ -320,7 +359,7 @@ public:
 };
 
 /// @brief Callback interface for objects extending the Edit Girder dialog
-class IEditGirderCallback
+class IEditGirderCallback : public IExtensionPageCallback
 {
 public:
    /// @brief Called by the framework to create the property page for the Girder dialog
@@ -342,7 +381,7 @@ public:
 };
 
 /// @brief Callback interface for objects extending the Edit Bridge dialog
-class IEditBridgeCallback
+class IEditBridgeCallback : public IExtensionPageCallback
 {
 public:
    /// @brief Called by the framework to create the property page for the Edit Bridge dialog
@@ -405,7 +444,7 @@ public:
 };
 
 /// @brief Callback interface for objects extending the Edit Load Rating Ptions dialog
-class IEditLoadRatingOptionsCallback
+class IEditLoadRatingOptionsCallback : public IExtensionPageCallback
 {
 public:
    /// @brief Called by the framework to create the property page for the Edit Bridge dialog

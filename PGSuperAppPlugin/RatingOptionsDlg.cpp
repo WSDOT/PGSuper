@@ -71,12 +71,13 @@ void CRatingOptionsDlg::Init()
    m_LegalPage.m_psp.dwFlags   |= PSP_HASHELP;
    m_PermitPage.m_psp.dwFlags  |= PSP_HASHELP;
 
-   AddPage( &m_GeneralPage );
-   AddPage( &m_DesignPage );
-   AddPage( &m_LegalPage );
-   AddPage( &m_PermitPage );
-   
+   m_PageManager.AddPage(_T("General"), &m_GeneralPage );
+   m_PageManager.AddPage(_T("Design"), &m_DesignPage );
+   m_PageManager.AddPage(_T("Legal"), &m_LegalPage );
+   m_PageManager.AddPage(_T("Permit"), &m_PermitPage );
+
    CreateExtensionPages();
+   m_PageManager.Commit(this);
 }
 
 void CRatingOptionsDlg::GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitState ls)
@@ -166,7 +167,10 @@ void CRatingOptionsDlg::CreateExtensionPages()
          extension.pCallback = pCallback;
          extension.pPage = pPage;
          m_ExtensionPages.insert(extension);
-         AddPage(pPage);
+
+         CString name;
+         name.Format(_T("Extension%d"), callbackIter->first);
+         m_PageManager.InsertExtensionPage(name, pPage, pCallback->GetPropertyPagePosition());
       }
    }
 }

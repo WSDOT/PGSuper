@@ -32,6 +32,7 @@
 
 #include <IFace\ExtendUI.h>
 #include <EAF\MacroTxn.h>
+#include "ExtensionPageManager.h"
 
 // CClosureJointDlg
 
@@ -80,6 +81,7 @@ protected:
 
 
    WBFL::EAF::MacroTxn m_Macro;
+   CExtensionPageManager m_PageManager;
    std::vector<std::pair<IEditClosureJointCallback*,CPropertyPage*>> m_ExtensionPages;
    std::vector<EditSplicedGirderExtension> m_SplicedGirderExtensionPages;
    void NotifyExtensionPages();

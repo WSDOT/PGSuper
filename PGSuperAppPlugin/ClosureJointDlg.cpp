@@ -97,9 +97,9 @@ void CClosureJointDlg::CommonInit(const CBridgeDescription2* pBridgeDesc)
    m_Longitudinal.m_psp.dwFlags |= PSP_HASHELP;
    m_Stirrups.m_psp.dwFlags     |= PSP_HASHELP;
 
-   AddPage(&m_General);
-   AddPage(&m_Longitudinal);
-   AddPage(&m_Stirrups);
+   m_PageManager.AddPage(_T("General"), &m_General);
+   m_PageManager.AddPage(_T("Longitudinal"), &m_Longitudinal);
+   m_PageManager.AddPage(_T("Stirrups"), &m_Stirrups);
 
    // initialize the dialog data
    m_pBridgeDesc = pBridgeDesc;
@@ -118,12 +118,14 @@ void CClosureJointDlg::Init(const CBridgeDescription2* pBridgeDesc)
 {
    CommonInit(pBridgeDesc);
    CreateExtensionPages();
+   m_PageManager.Commit(this);
 }
 
 void CClosureJointDlg::Init(const CBridgeDescription2* pBridgeDesc,const std::vector<EditSplicedGirderExtension>& editSplicedGirderExtensions)
 {
    CommonInit(pBridgeDesc);
    CreateExtensionPages(editSplicedGirderExtensions);
+   m_PageManager.Commit(this);
 }
 
 void CClosureJointDlg::CreateExtensionPages()
@@ -141,7 +143,10 @@ void CClosureJointDlg::CreateExtensionPages()
       if ( pPage )
       {
          m_ExtensionPages.emplace_back(pCallback,pPage);
-         AddPage(pPage);
+
+         CString name;
+         name.Format(_T("Extension%d"), callbackIter->first);
+         m_PageManager.InsertExtensionPage(name, pPage, pCallback->GetPropertyPagePosition());
       }
    }
 }
@@ -183,7 +188,10 @@ void CClosureJointDlg::CreateExtensionPages(const std::vector<EditSplicedGirderE
       if ( pPage )
       {
          m_ExtensionPages.emplace_back(pEditClosureJointCallback,pPage);
-         AddPage(pPage);
+
+         CString name;
+         name.Format(_T("Extension%d"), callbackIter->first);
+         m_PageManager.InsertExtensionPage(name, pPage, pEditClosureJointCallback->GetPropertyPagePosition());
       }
    }
 }

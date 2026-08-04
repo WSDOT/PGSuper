@@ -37,6 +37,7 @@
 #include "EditSpan.h"
 #include <IFace\ExtendUI.h>
 #include <EAF\MacroTxn.h>
+#include "ExtensionPageManager.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanDetailsDlg
@@ -114,6 +115,7 @@ protected:
    CSpanGdrDetailsBearingsPage m_SpanGdrDetailsBearingsPage;
 
    WBFL::EAF::MacroTxn m_Macro;
+   CExtensionPageManager m_PageManager;
    std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>> m_ExtensionPages;
    std::vector<EditBridgeExtension> m_BridgeExtensionPages;
    void NotifyExtensionPages();

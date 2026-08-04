@@ -85,7 +85,7 @@ void CSpanDetailsDlg::CommonInitPages()
    m_psh.dwFlags                       |= PSH_HASHELP | PSH_NOAPPLYNOW;
    m_SpanLayoutPage.m_psp.dwFlags      |= PSP_HASHELP;
 
-   AddPage(&m_SpanLayoutPage);
+   m_PageManager.AddPage(_T("Layout"), &m_SpanLayoutPage);
 
    // Even though connections and girder spacing aren't defined by span,
    // spans and groups are the same thing for PGSuper documents so it
@@ -94,29 +94,31 @@ void CSpanDetailsDlg::CommonInitPages()
    if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
       m_GirderLayoutPage.m_psp.dwFlags |= PSP_HASHELP;
-      AddPage(&m_GirderLayoutPage);
+      m_PageManager.AddPage(_T("GirderLayout"), &m_GirderLayoutPage);
 
       m_StartPierPage.m_psp.dwFlags |= PSP_HASHELP;
-      AddPage(&m_StartPierPage);
+      m_PageManager.AddPage(_T("StartPierConnections"), &m_StartPierPage);
 
       m_EndPierPage.m_psp.dwFlags |= PSP_HASHELP;
-      AddPage(&m_EndPierPage);
+      m_PageManager.AddPage(_T("EndPierConnections"), &m_EndPierPage);
    }
 
    m_SpanGdrDetailsBearingsPage.m_psp.dwFlags |= PSP_HASHELP;
-   AddPage(&m_SpanGdrDetailsBearingsPage);
+   m_PageManager.AddPage(_T("Bearings"), &m_SpanGdrDetailsBearingsPage);
 }
 
 void CSpanDetailsDlg::InitPages()
 {
    CommonInitPages();
    CreateExtensionPages();
+   m_PageManager.Commit(this);
 }
 
 void CSpanDetailsDlg::InitPages(const std::vector<EditBridgeExtension>& editBridgeExtensions)
 {
    CommonInitPages();
    CreateExtensionPages(editBridgeExtensions);
+   m_PageManager.Commit(this);
 }
 
 void CSpanDetailsDlg::Init(const CBridgeDescription2* pBridgeDesc,SpanIndexType spanIdx)
@@ -212,7 +214,10 @@ void CSpanDetailsDlg::CreateExtensionPages()
       if ( pPage )
       {
          m_ExtensionPages.emplace_back(pCallback,pPage);
-         AddPage(pPage);
+
+         CString name;
+         name.Format(_T("Extension%d"), callbackIter->first);
+         m_PageManager.InsertExtensionPage(name, pPage, pCallback->GetPropertyPagePosition());
       }
    }
 }
@@ -253,7 +258,10 @@ void CSpanDetailsDlg::CreateExtensionPages(const std::vector<EditBridgeExtension
       if ( pPage )
       {
          m_ExtensionPages.emplace_back(pEditSpanCallback,pPage);
-         AddPage(pPage);
+
+         CString name;
+         name.Format(_T("Extension%d"), callbackIter->first);
+         m_PageManager.InsertExtensionPage(name, pPage, pEditSpanCallback->GetPropertyPagePosition());
       }
    }
 }

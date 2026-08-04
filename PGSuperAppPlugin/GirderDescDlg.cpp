@@ -100,10 +100,10 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
    m_Lifting.m_psp.dwFlags   |= PSP_HASHELP;
    m_StrandExtensionandDebond.m_psp.dwFlags    |= PSP_HASHELP;
 
-   AddPage( &m_General );
-   AddPage( &m_Prestress );
+   m_PageManager.AddPage(_T("General"), &m_General );
+   m_PageManager.AddPage(_T("Prestress"), &m_Prestress );
 
-   
+
    auto pBroker = EAFGetBroker();
 
    m_GirderSpacingType = pBridgeDesc->GetGirderSpacingType();
@@ -113,7 +113,7 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-   
+
    m_Group = *pGroup;
    m_Girder = *pGirder;
    m_Girder.SetGirderGroup(&m_Group);
@@ -123,12 +123,23 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
 
    m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
 
-   AddAdditionalPropertyPages(IsGridBasedStrandModel(m_pSegment->Strands.GetStrandDefinitionType()) ? true : false);
+   m_bGridBasedStrandInput = IsGridBasedStrandModel(m_pSegment->Strands.GetStrandDefinitionType()) ? true : false;
+
+   // Only shown for grid-based strand input; m_bGridBasedStrandInput is updated by
+   // OnGirderTypeChanged() and re-checked every time m_PageManager.Commit() runs, so this
+   // page is added/removed live as the user changes strand input type, without needing to
+   // be registered again.
+   m_PageManager.AddPage(_T("StrandExtensionAndDebond"), &m_StrandExtensionandDebond, [this]() { return m_bGridBasedStrandInput; });
+
+   m_PageManager.AddPage(_T("LongRebar"), &m_LongRebar );
+   m_PageManager.AddPage(_T("Shear"), &m_Shear );
+   m_PageManager.AddPage(_T("Lifting"), &m_Lifting );
 
    m_SpanGdrDetailsBearingsPage.m_psp.dwFlags |= PSP_HASHELP;
-   AddPage(&m_SpanGdrDetailsBearingsPage);
+   m_PageManager.AddPage(_T("Bearings"), &m_SpanGdrDetailsBearingsPage);
 
    CreateExtensionPages();
+   m_PageManager.Commit(this);
 }
 
 void CGirderDescDlg::CreateExtensionPages()
@@ -146,7 +157,10 @@ void CGirderDescDlg::CreateExtensionPages()
       if ( pPage )
       {
          m_ExtensionPages.emplace_back(pCallback,pPage);
-         AddPage(pPage);
+
+         CString name;
+         name.Format(_T("Extension%d"), callbackIter->first);
+         m_PageManager.InsertExtensionPage(name, pPage, pCallback->GetPropertyPagePosition());
       }
    }
 }
@@ -468,34 +482,14 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
    }
 }
 
-void CGirderDescDlg::AddAdditionalPropertyPages(bool bGridBasedStrandInput)
-{
-   if (bGridBasedStrandInput)
-   {
-      AddPage(&m_StrandExtensionandDebond);
-   }
-
-   AddPage( &m_LongRebar );
-   AddPage( &m_Shear );
-   AddPage( &m_Lifting );
-}
-
 void CGirderDescDlg::OnGirderTypeChanged(bool bGridBasedStrandInput)
 {
-   // Remove all but the first two pages
-   int nps = GetPageCount();
-   for (int ip=nps-1; ip>1; ip--)
-   {
-      RemovePage(ip);
-   }
-
-   AddAdditionalPropertyPages(bGridBasedStrandInput);
+   // m_StrandExtensionandDebond's predicate (registered in Init()) reads this flag, so
+   // updating it and re-running Commit() is all that's needed to add/remove that page -
+   // Commit() diffs the desired page set against what's currently shown and only touches
+   // the part that changed, the same way this method used to do by hand with
+   // RemovePage()/AddPage() and a hardcoded "first two pages are safe" assumption.
+   m_bGridBasedStrandInput = bGridBasedStrandInput;
+   m_PageManager.Commit(this);
    SetDebondTabName();
-
-   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator iter(m_ExtensionPages.begin());
-   std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>>::iterator end(m_ExtensionPages.end());
-   for ( ; iter != end; iter++ )
-   {
-      AddPage(iter->second);
-   }
 }

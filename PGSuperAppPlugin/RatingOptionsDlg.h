@@ -29,6 +29,7 @@
 
 #include <IFace\ExtendUI.h>
 #include <EAF\MacroTxn.h>
+#include "ExtensionPageManager.h"
 
 // CRatingOptionsDlg
 
@@ -73,6 +74,7 @@ protected:
    void DestroyExtensionPages();
 
    WBFL::EAF::MacroTxn m_Macro;
+   CExtensionPageManager m_PageManager;
    std::set<EditLoadRatingOptionsExtension> m_ExtensionPages;
    void NotifyExtensionPages();
 };

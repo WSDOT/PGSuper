@@ -123,21 +123,23 @@ void CTemporarySupportDlg::CommonInitPages()
    m_Geometry.m_psp.dwFlags |= PSP_HASHELP;
    m_Spacing.m_psp.dwFlags  |= PSP_HASHELP;
 
-   AddPage(&m_General);
-   AddPage(&m_Geometry);
-   AddPage(&m_Spacing);
+   m_PageManager.AddPage(_T("General"), &m_General);
+   m_PageManager.AddPage(_T("Geometry"), &m_Geometry);
+   m_PageManager.AddPage(_T("Spacing"), &m_Spacing);
 }
 
 void CTemporarySupportDlg::InitPages()
 {
    CommonInitPages();
    CreateExtensionPages();
+   m_PageManager.Commit(this);
 }
 
 void CTemporarySupportDlg::InitPages(const std::vector<EditBridgeExtension>& editBridgeExtensions)
 {
    CommonInitPages();
    CreateExtensionPages(editBridgeExtensions);
+   m_PageManager.Commit(this);
 }
 
 void CTemporarySupportDlg::CreateExtensionPages()
@@ -155,7 +157,10 @@ void CTemporarySupportDlg::CreateExtensionPages()
       if ( pPage )
       {
          m_ExtensionPages.emplace_back(pEditTemporarySupportCallback,pPage);
-         AddPage(pPage);
+
+         CString name;
+         name.Format(_T("Extension%d"), callbackIter->first);
+         m_PageManager.InsertExtensionPage(name, pPage, pEditTemporarySupportCallback->GetPropertyPagePosition());
       }
    }
 }
@@ -197,7 +202,10 @@ void CTemporarySupportDlg::CreateExtensionPages(const std::vector<EditBridgeExte
       if ( pPage )
       {
          m_ExtensionPages.emplace_back(pEditTemporarySupportCallback,pPage);
-         AddPage(pPage);
+
+         CString name;
+         name.Format(_T("Extension%d"), callbackIter->first);
+         m_PageManager.InsertExtensionPage(name, pPage, pEditTemporarySupportCallback->GetPropertyPagePosition());
       }
    }
 }

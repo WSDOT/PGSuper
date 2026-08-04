@@ -33,6 +33,7 @@
 #include <PsgLib\SplicedGirderData.h>
 #include <PsgLib\BridgeDescription2.h>
 #include <EAF\MacroTxn.h>
+#include "ExtensionPageManager.h"
 
 // CGirderSegmentDlg
 
@@ -82,6 +83,7 @@ protected:
    bool m_bEditingInGirder;
 
    WBFL::EAF::MacroTxn m_Macro;
+   CExtensionPageManager m_PageManager;
    std::vector<std::pair<IEditSegmentCallback*,CPropertyPage*>> m_ExtensionPages;
    std::vector<EditSplicedGirderExtension> m_SplicedGirderExtensionPages;
    void NotifyExtensionPages();

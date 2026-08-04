@@ -284,6 +284,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="EditSpan.cpp" />
     <ClCompile Include="EditSpanLength.cpp" />
     <ClCompile Include="EnvironmentDlg.cpp" />
+    <ClCompile Include="ExtensionPageManager.cpp" />
     <ClCompile Include="GeneralRatingOptionsPage.cpp" />
     <ClCompile Include="GirderDescDlg.cpp" />
     <ClCompile Include="GirderDisplayObjectEvents.cpp" />
@@ -682,6 +683,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="EditSpan.h" />
     <ClInclude Include="EditSpanLength.h" />
     <ClInclude Include="EnvironmentDlg.h" />
+    <ClInclude Include="ExtensionPageManager.h" />
     <ClInclude Include="GeneralRatingOptionsPage.h" />
     <ClInclude Include="GevEditLoad.h" />
     <ClInclude Include="GirderDescDlg.h" />

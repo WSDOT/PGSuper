@@ -82,15 +82,16 @@ void CBridgeDescDlg::Init()
    m_EnvironmentalPage.m_psp.dwFlags  |= PSP_HASHELP;
    m_BridgeDescrBearings.m_psp.dwFlags      |= PSP_HASHELP;
 
-   AddPage(&m_GeneralPage );
-   AddPage(&m_FramingPage );
-   AddPage(&m_RailingSystemPage );
-   AddPage(&m_DeckDetailsPage );
-   AddPage(&m_DeckRebarPage );
-   AddPage(&m_BridgeDescrBearings );
-   AddPage(&m_EnvironmentalPage );
+   m_PageManager.AddPage(_T("General"), &m_GeneralPage );
+   m_PageManager.AddPage(_T("Framing"), &m_FramingPage );
+   m_PageManager.AddPage(_T("RailingSystem"), &m_RailingSystemPage );
+   m_PageManager.AddPage(_T("DeckDetails"), &m_DeckDetailsPage );
+   m_PageManager.AddPage(_T("DeckRebar"), &m_DeckRebarPage );
+   m_PageManager.AddPage(_T("Bearings"), &m_BridgeDescrBearings );
+   m_PageManager.AddPage(_T("Environmental"), &m_EnvironmentalPage );
 
    CreateExtensionPages();
+   m_PageManager.Commit(this);
 }
 
 void CBridgeDescDlg::CreateExtensionPages()
@@ -112,7 +113,10 @@ void CBridgeDescDlg::CreateExtensionPages()
          extension.pCallback = pCallback;
          extension.pPage = pPage;
          m_ExtensionPages.push_back(extension);
-         AddPage(pPage);
+
+         CString name;
+         name.Format(_T("Extension%d"), callbackIter->first);
+         m_PageManager.InsertExtensionPage(name, pPage, pCallback->GetPropertyPagePosition());
       }
    }
 }

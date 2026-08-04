@@ -454,6 +454,9 @@
     <ClCompile Include="EnvironmentDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ExtensionPageManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="GeneralRatingOptionsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1405,6 +1408,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EnvironmentDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtensionPageManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GeneralRatingOptionsPage.h">

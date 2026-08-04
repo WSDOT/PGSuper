@@ -38,6 +38,7 @@
 #include "BridgeDescrBearings.h"
 
 #include <IFace\ExtendUI.h>
+#include "ExtensionPageManager.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDlg
@@ -109,6 +110,7 @@ protected:
    friend CBridgeDescrBearings;
 
    WBFL::EAF::MacroTxn m_Macro;
+   CExtensionPageManager m_PageManager;
    std::vector<EditBridgeExtension> m_ExtensionPages;
    void NotifyExtensionPages();
 

@@ -28,6 +28,7 @@
 #include "SplicedGirderGeneralPage.h"
 #include <IFace\ExtendUI.h>
 #include <EAF\MacroTxn.h>
+#include "ExtensionPageManager.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -86,6 +87,7 @@ protected:
 
 
    WBFL::EAF::MacroTxn m_Macro;
+   CExtensionPageManager m_PageManager;
    std::vector<EditSplicedGirderExtension> m_ExtensionPages;
    void NotifyExtensionPages();
 

@@ -41,6 +41,7 @@
 #include "EditPier.h"
 #include <IFace\ExtendUI.h>
 #include <EAF\MacroTxn.h>
+#include "ExtensionPageManager.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierDetailsDlg
@@ -126,6 +127,7 @@ private:
    CGirderSegmentSpacingPage  m_GirderSegmentSpacingPage; // girder spacing
 
    WBFL::EAF::MacroTxn m_Macro;
+   CExtensionPageManager m_PageManager;
    std::vector<std::pair<IEditPierCallback*,CPropertyPage*>> m_ExtensionPages;
    std::vector<EditBridgeExtension> m_BridgeExtensionPages;
    void NotifyExtensionPages();

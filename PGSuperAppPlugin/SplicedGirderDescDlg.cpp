@@ -81,9 +81,10 @@ void CSplicedGirderDescDlg::Init()
 
    m_General.m_psp.dwFlags   |= PSP_HASHELP;
 
-   AddPage( &m_General );
+   m_PageManager.AddPage(_T("General"), &m_General );
 
    CreateExtensionPages();
+   m_PageManager.Commit(this);
 }
 
 void CSplicedGirderDescDlg::CreateExtensionPages()
@@ -105,7 +106,10 @@ void CSplicedGirderDescDlg::CreateExtensionPages()
          extension.pCallback = pCallback;
          extension.pPage = pPage;
          m_ExtensionPages.push_back(extension);
-         AddPage(pPage);
+
+         CString name;
+         name.Format(_T("Extension%d"), callbackIter->first);
+         m_PageManager.InsertExtensionPage(name, pPage, pCallback->GetPropertyPagePosition());
       }
    }
 }

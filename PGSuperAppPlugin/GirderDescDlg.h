@@ -40,6 +40,7 @@
 #include <PsgLib\BridgeDescription2.h>
 #include <IFace\ExtendUI.h>
 #include <EAF\MacroTxn.h>
+#include "ExtensionPageManager.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg
@@ -123,10 +124,12 @@ protected:
    void SetDebondTabName();
    ConfigStrandFillVector ComputeStrandFillVector(pgsTypes::StrandType type);
 
-   void AddAdditionalPropertyPages(bool bGridBasedStrandInput);
-
-
    WBFL::EAF::MacroTxn m_Macro;
+   CExtensionPageManager m_PageManager;
+   // Backs the predicate that decides whether m_StrandExtensionandDebond is shown - set once
+   // in Init() and again whenever OnGirderTypeChanged() runs, then re-evaluated by
+   // m_PageManager.Commit(). See the m_PageManager.AddPage() call for this page in Init().
+   bool m_bGridBasedStrandInput = false;
    std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>> m_ExtensionPages;
    void NotifyExtensionPages();
 
