@@ -85,6 +85,16 @@ report. `ExampleExtensionAgent::RegisterReports()` builds a
 `WBFL::Reporting::ReportBuilder("Extension Agent Report")` with a `CMyReportSpecificationBuilder`
 (`MyReportSpecificationBuilder.h`) and a `CMyChapterBuilder` (`MyChapterBuilder.h`).
 
+`CMyReportSpecificationBuilder` is the piece that actually decides what your report reports on. It
+implements two methods: `CreateReportSpec`, which shows UI (here just an `AfxQuestion` prompt) and
+builds a `CMyReportSpecification`, and `CreateDefaultReportSpec`, which is called instead when the
+user picks your report from the "quick report" menu and must not show UI - `CMyReportSpecification`
+has no notion of a sensible default, so it just delegates back to `CreateReportSpec`. See
+\ref WBFL_Reporting_Specifications "Report Specifications" for the full contract, a line-by-line
+walkthrough of this exact example, and a contrasting example that *does* have a usable default. See
+\ref WBFL_EAF_Reporting_QuickReports "Quick Reports" for how these two methods surface in the
+application's menus, toolbar button, and view context menus.
+
 ### Modifying an existing report
 To add or remove a chapter on a report *another* agent defined - rather than building your own -
 look the report up by name with `IEAFReportManager::GetReportBuilder`, then call
