@@ -25,8 +25,7 @@
 #include <PsgLib/SplicedGirderData.h>
 #include <PsgLib/BridgeDescription2.h>
 #include <PsgLib/ClosureJointData.h>
-#include <PsgLib/StructuredSave.h>
-#include <PsgLib/StructuredLoad.h>
+#include <WBFLTools/StructuredStorageComAdapter.h>
 #include <psgLib/GirderLibraryEntry.h>
 
 #include <WBFLGenericBridge.h>

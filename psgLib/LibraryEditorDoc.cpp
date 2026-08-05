@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // Library Editor - Editor for WBFL Library Services
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,8 +27,7 @@
 #include <PsgLib\PsgLib.h>
 #include <fstream>
 
-#include <PsgLib\StructuredLoad.h>
-#include <PsgLib\StructuredSave.h>
+#include <WBFLTools\StructuredStorageComAdapter.h>
 #include <PsgLib\LibraryEditorDoc.h>
 #include <PsgLib\BeamFamilyManager.h>
 

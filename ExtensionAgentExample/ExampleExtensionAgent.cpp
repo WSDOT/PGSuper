@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // ExtensionAgentExample - Extension Agent Example Project for PGSuper
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -323,34 +323,27 @@ CLSID CExampleExtensionAgent::GetCLSID() const
 
 ////////////////////////////////////////////////////////////////////
 // IAgentPersist
-WBFL::EAF::Broker::LoadResult CExampleExtensionAgent::Load(IStructuredLoad* pStrLoad)
+WBFL::EAF::Broker::LoadResult CExampleExtensionAgent::Load(WBFL::System::IStructuredLoad* pStrLoad)
 {
-   USES_CONVERSION;
-   CComVariant var;
-   var.vt = VT_BSTR;
-   
-   HRESULT hr = pStrLoad->BeginUnit(_T("ExampleExtensionAgent"));
-   if ( FAILED(hr) )
+   if ( !pStrLoad->BeginUnit(_T("ExampleExtensionAgent")) )
       return WBFL::EAF::Broker::LoadResult::Error;
 
-   var.vt = VT_BSTR;
-   hr = pStrLoad->get_Property(_T("SampleData"),&var);
-   if ( FAILED(hr) )
+   std::_tstring answer;
+   if ( !pStrLoad->Property(_T("SampleData"),&answer) )
       return WBFL::EAF::Broker::LoadResult::Error;
 
-   m_Answer = OLE2T(var.bstrVal);
+   m_Answer = answer.c_str();
 
-   hr = pStrLoad->EndUnit();
-   if ( FAILED(hr) )
+   if ( !pStrLoad->EndUnit() )
       return WBFL::EAF::Broker::LoadResult::Error;
 
    return WBFL::EAF::Broker::LoadResult::Success;
 }
 
-bool CExampleExtensionAgent::Save(IStructuredSave* pStrSave)
+bool CExampleExtensionAgent::Save(WBFL::System::IStructuredSave* pStrSave)
 {
    pStrSave->BeginUnit(_T("ExampleExtensionAgent"),1.0);
-   pStrSave->put_Property(_T("SampleData"),CComVariant(m_Answer));
+   pStrSave->Property(_T("SampleData"),m_Answer);
    pStrSave->EndUnit();
    return true;
 }

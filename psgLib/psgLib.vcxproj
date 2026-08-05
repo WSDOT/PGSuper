@@ -269,8 +269,6 @@
     <ClCompile Include="SplicedGirderData.cpp" />
     <ClCompile Include="StrandData.cpp" />
     <ClCompile Include="StressTendonActivity.cpp" />
-    <ClCompile Include="StructuredLoad.cpp" />
-    <ClCompile Include="StructuredSave.cpp" />
     <ClCompile Include="TemporarySupportData.cpp" />
     <ClCompile Include="TensionStressLimit.cpp" />
     <ClCompile Include="ThermalMovementCriteria.cpp" />
@@ -467,8 +465,6 @@
     <ClInclude Include="..\Include\psgLib\SplicedGirderData.h" />
     <ClInclude Include="..\Include\psgLib\StrandData.h" />
     <ClInclude Include="..\Include\psgLib\StressTendonActivity.h" />
-    <ClInclude Include="..\Include\psgLib\StructuredLoad.h" />
-    <ClInclude Include="..\Include\psgLib\StructuredSave.h" />
     <ClInclude Include="..\Include\psgLib\TemporarySupportData.h" />
     <ClInclude Include="..\Include\psgLib\TensionStressLimit.h" />
     <ClInclude Include="..\Include\psgLib\ThermalMovementCriteria.h" />

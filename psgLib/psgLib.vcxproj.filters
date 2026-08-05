@@ -460,12 +460,6 @@
     <ClCompile Include="StrandData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StructuredLoad.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StructuredSave.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RailingSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1003,12 +997,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\psgLib\StrandData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\psgLib\StructuredLoad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\psgLib\StructuredSave.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\psgLib\TemporarySupportData.h">

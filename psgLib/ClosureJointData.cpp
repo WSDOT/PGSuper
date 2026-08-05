@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,8 +25,7 @@
 #include <PsgLib\SplicedGirderData.h>
 #include <PsgLib\BridgeDescription2.h>
 
-#include <PsgLib\StructuredLoad.h>
-#include <PsgLib\StructuredSave.h>
+#include <WBFLTools\StructuredStorageComAdapter.h>
 
 CClosureJointData::CClosureJointData(CSplicedGirderData* pGirder)
 {

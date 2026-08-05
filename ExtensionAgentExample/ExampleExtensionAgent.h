@@ -97,8 +97,8 @@ public:
 
 // IAgentPersist
 public:
-   WBFL::EAF::Broker::LoadResult Load(IStructuredLoad* pStrLoad) override;
-   bool Save(IStructuredSave* pStrSave) override;
+   WBFL::EAF::Broker::LoadResult Load(WBFL::System::IStructuredLoad* pStrLoad) override;
+   bool Save(WBFL::System::IStructuredSave* pStrSave) override;
 
 // IAgentUIIntegration
 public:

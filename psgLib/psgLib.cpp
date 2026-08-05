@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@
 #include "CLSID.h"
 
 #include <PsgLib\PsgLib.h>
-#include <PsgLib\StructuredLoad.h>
+#include <WBFLTools\StructuredStorageComAdapter.h>
 #include <PsgLib\DifferenceItem.h>
 #include "LibraryEntryConflict.h"
 

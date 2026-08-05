@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,8 +36,7 @@
 #include <GeomModel\GeomModel.h>
 
 #include <psglib\psglib.h>
-#include <PsgLib\StructuredLoad.h>
-#include <PsgLib\StructuredSave.h>
+#include <WBFLTools\StructuredStorageComAdapter.h>
 #include <psgLib\BeamFamilyManager.h>
 
 #include <LRFD\StrandPool.h>
@@ -5941,8 +5940,15 @@ void CProjectAgentImp::ValidateBridgeModel()
 
 }
 
-WBFL::EAF::Broker::LoadResult CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
+WBFL::EAF::Broker::LoadResult CProjectAgentImp::Load(WBFL::System::IStructuredLoad* pNativeStrLoad)
 {
+   // The internal load pipeline below (library manager merge, psgLib data-model Load calls) is
+   // still COM-typed; unwrap back to the original COM pointer here until that object graph is
+   // migrated too. See WBFLTools\StructuredStorageComAdapter.h.
+   auto* pAdapter = dynamic_cast<CStructuredLoad*>(pNativeStrLoad);
+   ATLASSERT(pAdapter);
+   ::IStructuredLoad* pStrLoad = pAdapter->GetComInterface();
+
    HRESULT hr = S_OK;
 
    m_bUpdateUserDefinedLoads = false; // assume we are loading a newer file and user defined loads don't need tweaking
@@ -6578,8 +6584,15 @@ WBFL::EAF::Broker::LoadResult CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    return (the_conflict_list.AreThereAnyConflicts() ? WBFL::EAF::Broker::LoadResult::Modified : WBFL::EAF::Broker::LoadResult::Success);
 }
 
-bool CProjectAgentImp::Save(IStructuredSave* pStrSave)
+bool CProjectAgentImp::Save(WBFL::System::IStructuredSave* pNativeStrSave)
 {
+   // The internal save pipeline below (library manager, psgLib data-model Save calls) is still
+   // COM-typed; unwrap back to the original COM pointer here until that object graph is migrated
+   // too. See WBFLTools\StructuredStorageComAdapter.h.
+   auto* pAdapter = dynamic_cast<CStructuredSave*>(pNativeStrSave);
+   ATLASSERT(pAdapter);
+   ::IStructuredSave* pStrSave = pAdapter->GetComInterface();
+
    HRESULT hr = S_OK;
 
    GET_IFACE( IEAFProgress, pProgress );
