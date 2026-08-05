@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -94,7 +94,7 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pEquilibriumCheckSpecBuilder(std::make_shared<CEquilibriumCheckReportSpecificationBuilder>(m_pBroker));
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pMyRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("(DEBUG) Equilibrium Check")));
    pMyRptBuilder->IncludeTimingChapter();
-   pMyRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
+   pMyRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
    pMyRptBuilder->SetReportSpecificationBuilder( pEquilibriumCheckSpecBuilder );
    pMyRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CEquilibriumCheckChapterBuilder>()) );
    pRptMgr->AddReportBuilder( pMyRptBuilder );
@@ -102,7 +102,7 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
 
    //std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pInitialStrainAnalysisSpecBuilder(new CInitialStrainAnalysisReportSpecificationBuilder(m_pBroker));
    //pMyRptBuilder = new WBFL::Reporting::ReportBuilder(_T("Initial Strain Analysis"));
-   //pMyRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
+   //pMyRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
    //pMyRptBuilder->SetReportSpecificationBuilder( pInitialStrainAnalysisSpecBuilder );
    //pMyRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(new CInitialStrainAnalysisChapterBuilder) );
    //pRptMgr->AddReportBuilder( pMyRptBuilder );
@@ -113,7 +113,7 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
 #if defined _DEBUG || defined _BETA_VERSION
    pTSRptBuilder->IncludeTimingChapter();
 #endif
-   pTSRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pTSRptBuilder->GetName())) );
+   pTSRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pTSRptBuilder->GetName())) );
    pTSRptBuilder->SetReportSpecificationBuilder( pRptSpecBuilder );
    pTSRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportReactionChapterBuilder>(true)) );
    pRptMgr->AddReportBuilder( pTSRptBuilder );
