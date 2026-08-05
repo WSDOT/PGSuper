@@ -374,7 +374,7 @@ rptRcTable* CSectionPropertiesChapterBuilder::WriteXSTable2(std::shared_ptr<WBFL
     return xs_table;
 }
 
-rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CSectionPropertiesChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSectPropRptSpec = std::dynamic_pointer_cast<const CSectionPropertiesReportSpecification>(pRptSpec);
 

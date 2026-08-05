@@ -65,7 +65,7 @@ LPCTSTR CBearingSpecCheckSummaryChapterBuilder::GetName() const
    return TEXT("Bearing Specification Check Summary");
 }
 
-rptChapter* CBearingSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
+rptChapter* CBearingSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec, Uint16 level) const
 {
 
     auto pBrgRptSpec = std::dynamic_pointer_cast<const CBearingReportSpecification>(pRptSpec);

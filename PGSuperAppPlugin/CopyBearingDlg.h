@@ -112,7 +112,7 @@ private:
 	std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    std::shared_ptr<CCopyBearingPropertiesReportSpecification> m_pRptSpec;
-   std::shared_ptr<WBFL::Reporting::ReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
+   std::shared_ptr<WBFL::ReportMgr::ReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
 
    // map from multi-select dialog
    std::vector<ReactionLocation> m_MultiDialogSelections;

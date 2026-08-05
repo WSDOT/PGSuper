@@ -68,7 +68,7 @@ LPCTSTR CDistributionFactorSummaryChapterBuilder::GetName() const
    return TEXT("Live Load Distribution Factor Summary");
 }
 
-rptChapter* CDistributionFactorSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CDistributionFactorSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    USES_CONVERSION;
 

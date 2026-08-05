@@ -45,7 +45,7 @@ LPCTSTR CEquilibriumCheckChapterBuilder::GetName() const
    return TEXT("Equilibrium Check");
 }
 
-rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CEquilibriumCheckReportSpecification>(pRptSpec);
    auto pBroker = pGdrRptSpec->GetBroker();

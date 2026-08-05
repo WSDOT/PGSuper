@@ -35,14 +35,14 @@
 #include <EAF\EAFUIIntegration.h>
 
 CPGSpliceTitlePageBuilder::CPGSpliceTitlePageBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion) :
-WBFL::Reporting::TitlePageBuilder(strTitle),
+WBFL::ReportMgr::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion)
 {
 }
 
 CPGSpliceTitlePageBuilder::CPGSpliceTitlePageBuilder(const CPGSpliceTitlePageBuilder& other) :
-WBFL::Reporting::TitlePageBuilder(other),
+WBFL::ReportMgr::TitlePageBuilder(other),
 m_pBroker(other.m_pBroker),
 m_bFullVersion(other.m_bFullVersion)
 {
@@ -53,13 +53,13 @@ CPGSpliceTitlePageBuilder::~CPGSpliceTitlePageBuilder(void)
 {
 }
 
-bool CPGSpliceTitlePageBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
+bool CPGSpliceTitlePageBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint,const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec) const
 {
    // don't let the title page control whether or not a report needs updating
    return false;
 }
 
-rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
+rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec) const
 {
    // Create a title page for the report
    rptChapter* pTitlePage = new rptChapter;
@@ -390,7 +390,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
    return pTitlePage;
 }
 
-std::unique_ptr<WBFL::Reporting::TitlePageBuilder> CPGSpliceTitlePageBuilder::Clone() const
+std::unique_ptr<WBFL::ReportMgr::TitlePageBuilder> CPGSpliceTitlePageBuilder::Clone() const
 {
    return std::make_unique<CPGSpliceTitlePageBuilder>(*this);
 }

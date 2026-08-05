@@ -43,7 +43,7 @@ CBearingTimeStepDetailsReportSpecificationBuilder::~CBearingTimeStepDetailsRepor
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CBearingTimeStepDetailsReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -129,14 +129,14 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
 
    if ( dlg.DoModal() == IDOK )
    {
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
       if(pInitRptSpec)
       {
          std::shared_ptr<CBearingTimeStepDetailsReportSpecification> pNewGRptSpec(std::make_shared<CBearingTimeStepDetailsReportSpecification>(*pInitRptSpec) );
 
          pNewGRptSpec->SetOptions(dlg.UseAllLocations(),dlg.GetReactionLocation(),dlg.GetInterval());
 
-         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<WBFL::ReportMgr::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
@@ -151,8 +151,8 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
    return nullptr;
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CBearingTimeStepDetailsReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    // always prompt
-   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>());
+   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification>());
 }

@@ -26,7 +26,7 @@
 #include <EAF/Broker.h>
 
 class REPORTINGCLASS CBrokerReportSpecification :
-   public WBFL::Reporting::ReportSpecification
+   public WBFL::ReportMgr::ReportSpecification
 {
 public:
    CBrokerReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker);

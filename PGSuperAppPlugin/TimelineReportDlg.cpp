@@ -83,10 +83,10 @@ BOOL CTimelineReportDlg::OnInitDialog()
    
    auto pBroker = m_pRptSpec->GetBroker();
 
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBrokerReportSpecification, CTimelineManagerReportSpecification>(m_pRptSpec);
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBrokerReportSpecification, CTimelineManagerReportSpecification>(m_pRptSpec);
 
    GET_IFACE2(pBroker,IEAFReportManager,pRptMgr);
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> nullSpecBuilder;
    CWnd* pWnd = GetDlgItem(IDC_BROWSER);
    m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(),0,pRptSpec,nullSpecBuilder);
 
@@ -114,7 +114,7 @@ void CTimelineReportDlg::CleanUp()
 {
    if ( m_pBrowser )
    {
-      m_pBrowser = std::shared_ptr<WBFL::Reporting::ReportBrowser>();
+      m_pBrowser = std::shared_ptr<WBFL::ReportMgr::ReportBrowser>();
    }
 
    // save the size of the window

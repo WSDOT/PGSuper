@@ -36,7 +36,7 @@ LPCTSTR CMyChapterBuilder::GetName() const
    return TEXT("Example Chapter");
 }
 
-rptChapter* CMyChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CMyChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

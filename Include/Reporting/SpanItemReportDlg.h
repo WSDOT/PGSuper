@@ -43,7 +43,7 @@ public:
 	  GroupGirderBearingAndChapters = 5
    };
    
-   CSpanItemReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_SPANITEMREPORT,CWnd* pParent = nullptr);   // standard constructor
+   CSpanItemReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::ReportMgr::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_SPANITEMREPORT,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CSpanItemReportDlg();
 
 // Dialog Data
@@ -65,11 +65,11 @@ protected:
 
    CCheckListBox	m_ChList;
 
-   const WBFL::Reporting::ReportDescription& m_RptDesc;
+   const WBFL::ReportMgr::ReportDescription& m_RptDesc;
    std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    Mode m_Mode;
 
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 
 public:
 	// Generated message map functions

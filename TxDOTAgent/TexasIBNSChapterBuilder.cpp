@@ -54,7 +54,7 @@ LPCTSTR CTexasIBNSChapterBuilder::GetName() const
    return TEXT("Girder Schedule");
 }
 
-rptChapter* CTexasIBNSChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CTexasIBNSChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
    if (pMultiGirderRptSpec != nullptr)

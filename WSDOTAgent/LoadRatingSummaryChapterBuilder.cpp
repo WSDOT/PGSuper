@@ -48,7 +48,7 @@ LPCTSTR CLoadRatingSummaryChapterBuilder::GetName() const
    return TEXT("WSDOT Load Rating Summary");
 }
 
-rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
    auto pBroker = pGdrRptSpec->GetBroker();

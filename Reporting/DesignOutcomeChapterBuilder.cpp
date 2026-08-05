@@ -176,7 +176,7 @@ LPCTSTR CDesignOutcomeChapterBuilder::GetName() const
    return TEXT("Design Outcome");
 }
 
-rptChapter* CDesignOutcomeChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CDesignOutcomeChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pReportSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
    ATLASSERT( pReportSpec != nullptr );

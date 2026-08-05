@@ -61,7 +61,7 @@ LPCTSTR CTogaCamberAndDeflectionChapterBuilder::GetName() const
    return TEXT("Camber and Deflections");
 }
 
-rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pBroker = pSpec->GetBroker();

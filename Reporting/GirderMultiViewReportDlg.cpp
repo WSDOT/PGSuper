@@ -32,8 +32,8 @@
 IMPLEMENT_DYNAMIC(CGirderMultiViewReportDlg, CMultiViewReportDlg)
 
 CGirderMultiViewReportDlg::CGirderMultiViewReportDlg(const CGirderKey& girderKey,
-    std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,
-    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec)
+    std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::ReportMgr::ReportDescription& rptDesc,
+    std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec)
     :CMultiViewReportDlg(pBroker, rptDesc, pRptSpec)
 {
    m_GirderKey = girderKey;

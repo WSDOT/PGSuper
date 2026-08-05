@@ -41,7 +41,7 @@ LPCTSTR CSegmentTendonGeometryChapterBuilder::GetName() const
    return TEXT("Segment Tendon Geometry");
 }
 
-rptChapter* CSegmentTendonGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CSegmentTendonGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 

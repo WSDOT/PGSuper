@@ -43,7 +43,7 @@ LPCTSTR COptimizedFabricationChapterBuilder::GetName() const
    return TEXT("Fabrication Options");
 }
 
-rptChapter* COptimizedFabricationChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* COptimizedFabricationChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pBroker = pGirderRptSpec->GetBroker();

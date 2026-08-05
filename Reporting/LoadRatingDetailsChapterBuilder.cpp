@@ -51,7 +51,7 @@ LPCTSTR CLoadRatingDetailsChapterBuilder::GetName() const
    return TEXT("Load Rating Details");
 }
 
-rptChapter* CLoadRatingDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CLoadRatingDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pBroker = pGirderRptSpec->GetBroker();

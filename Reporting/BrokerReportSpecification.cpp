@@ -24,7 +24,7 @@
 #include <Reporting\BrokerReportSpecification.h>
 
 CBrokerReportSpecification::CBrokerReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker) :
-WBFL::Reporting::ReportSpecification(strReportName)
+WBFL::ReportMgr::ReportSpecification(strReportName)
 {
    SetBroker(pBroker);
 }
@@ -48,5 +48,5 @@ bool CBrokerReportSpecification::IsValid() const
    if ( !GetBroker() )
       return false;
 
-   return WBFL::Reporting::ReportSpecification::IsValid();
+   return WBFL::ReportMgr::ReportSpecification::IsValid();
 }

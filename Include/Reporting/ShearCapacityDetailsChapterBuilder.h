@@ -32,7 +32,7 @@ public:
    CShearCapacityDetailsChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
 
    virtual LPCTSTR GetName() const override;
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
    // Use static to determine how POI's are to be printed. This will save many, many duplicate calls for this information
    static bool m_IncludeSpanAndGirderForPois;

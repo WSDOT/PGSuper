@@ -27,17 +27,17 @@
 
 
 class REPORTINGCLASS CPGSpliceTitlePageBuilder :
-   public WBFL::Reporting::TitlePageBuilder
+   public WBFL::ReportMgr::TitlePageBuilder
 {
 public:
    CPGSpliceTitlePageBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion=true);
    CPGSpliceTitlePageBuilder(const CPGSpliceTitlePageBuilder& other);
    ~CPGSpliceTitlePageBuilder(void);
 
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const;
-   virtual bool NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec) const;
+   virtual bool NeedsUpdate(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint,const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec) const;
 
-   std::unique_ptr<WBFL::Reporting::TitlePageBuilder> Clone() const;
+   std::unique_ptr<WBFL::ReportMgr::TitlePageBuilder> Clone() const;
 
 protected:
    std::weak_ptr<WBFL::EAF::Broker> m_pBroker;

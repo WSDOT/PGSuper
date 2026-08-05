@@ -37,7 +37,7 @@ public:
    CBridgeDescChapterBuilder& operator=(const CBridgeDescChapterBuilder&) = delete;
 
    LPCTSTR GetName() const override;
-   rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+   rptChapter* Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
    static void WriteAlignmentData(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, rptChapter* pChapter,Uint16 level);
    static void WriteProfileData(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, rptChapter* pChapter,Uint16 level);

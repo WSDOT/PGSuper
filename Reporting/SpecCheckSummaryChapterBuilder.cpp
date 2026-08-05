@@ -57,7 +57,7 @@ LPCTSTR CSpecCheckSummaryChapterBuilder::GetName() const
    return TEXT("Specification Check Summary");
 }
 
-rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    // Report for a single girder
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
@@ -130,7 +130,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const W
    return nullptr;
 }
 
-rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level, const pgsGirderArtifact* pGirderArtifact) const
+rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level, const pgsGirderArtifact* pGirderArtifact) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pBroker = pGirderRptSpec->GetBroker();

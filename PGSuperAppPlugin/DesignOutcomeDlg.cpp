@@ -242,8 +242,8 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    auto pBroker = m_pRptSpec->GetBroker();
 
    GET_IFACE2(pBroker,IEAFReportManager,pRptMgr);
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CMultiGirderReportSpecification>(m_pRptSpec);
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::ReportMgr::ReportSpecification,CMultiGirderReportSpecification>(m_pRptSpec);
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> nullSpecBuilder;
    CWnd* pWnd = GetDlgItem(IDC_BROWSER);
    m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(), WS_BORDER, pRptSpec, nullSpecBuilder);
 
@@ -286,7 +286,7 @@ void CDesignOutcomeDlg::CleanUp()
 {
    if ( m_pBrowser )
    {
-      m_pBrowser = std::shared_ptr<WBFL::Reporting::ReportBrowser>();
+      m_pBrowser = std::shared_ptr<WBFL::ReportMgr::ReportBrowser>();
    }
 
    // save the size of the window

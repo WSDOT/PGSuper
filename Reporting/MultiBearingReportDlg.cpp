@@ -46,8 +46,8 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CMultiBearingReportDlg, CDialog)
 
-CMultiBearingReportDlg::CMultiBearingReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,
-    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CMultiBearingReportDlg::CMultiBearingReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::ReportMgr::ReportDescription& rptDesc,
+    std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
    m_pBroker = pBroker;
@@ -124,13 +124,13 @@ void CMultiBearingReportDlg::UpdateChapterList()
    m_ChList.ResetContent();
 
    // Get the chapters in the report
-   std::vector<WBFL::Reporting::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
+   std::vector<WBFL::ReportMgr::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
 
    // Populate the list box with the names of the chapters
-   std::vector<WBFL::Reporting::ChapterInfo>::iterator iter;
+   std::vector<WBFL::ReportMgr::ChapterInfo>::iterator iter;
    for ( iter = chInfos.begin(); iter != chInfos.end(); iter++ )
    {
-      WBFL::Reporting::ChapterInfo chInfo = *iter;
+      WBFL::ReportMgr::ChapterInfo chInfo = *iter;
 
       int idx = m_ChList.AddString( chInfo.Name.c_str() );
       if ( idx != LB_ERR ) // no error

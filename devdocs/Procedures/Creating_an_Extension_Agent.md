@@ -82,7 +82,7 @@ own commands. See \ref WBFL_EAF_UIIntegration "UI Integration" in the WBFL EAF d
 ### Adding a new report
 `Include\EAF\EAFReportManager.h`'s `IEAFReportManager::AddReportBuilder` registers a brand new
 report. `ExampleExtensionAgent::RegisterReports()` builds a
-`WBFL::Reporting::ReportBuilder("Extension Agent Report")` with a `CMyReportSpecificationBuilder`
+`WBFL::ReportMgr::ReportBuilder("Extension Agent Report")` with a `CMyReportSpecificationBuilder`
 (`MyReportSpecificationBuilder.h`) and a `CMyChapterBuilder` (`MyChapterBuilder.h`).
 
 `CMyReportSpecificationBuilder` is the piece that actually decides what your report reports on. It
@@ -98,7 +98,7 @@ application's menus, toolbar button, and view context menus.
 ### Modifying an existing report
 To add or remove a chapter on a report *another* agent defined - rather than building your own -
 look the report up by name with `IEAFReportManager::GetReportBuilder`, then call
-`WBFL::Reporting::ReportBuilder::InsertChapterBuilder`/`RemoveChapterBuilder` on the result:
+`WBFL::ReportMgr::ReportBuilder::InsertChapterBuilder`/`RemoveChapterBuilder` on the result:
 ~~~
 GET_IFACE(IEAFReportManager, pReportMgr);
 auto pReportBuilder = pReportMgr->GetReportBuilder(_T("Some Existing Report"));

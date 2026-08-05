@@ -29,14 +29,14 @@ namespace WBFL { namespace EAF { class Broker; }; };
 
 
 class REPORTINGCLASS CBrokerReportSpecificationBuilder :
-   public WBFL::Reporting::ReportSpecificationBuilder
+   public WBFL::ReportMgr::ReportSpecificationBuilder
 {
 public:
    CBrokerReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CBrokerReportSpecificationBuilder(void);
 
-   virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
-   virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const override;
+   virtual std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec) const override;
+   virtual std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const override;
 
 protected:
    std::weak_ptr<WBFL::EAF::Broker> m_pBroker;

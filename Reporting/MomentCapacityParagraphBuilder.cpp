@@ -51,7 +51,7 @@ CMomentCapacityParagraphBuilder::CMomentCapacityParagraphBuilder()
 #pragma Reminder("UPDATE: this is weak code")
 // pass in the chapter that you want this builder to write into rather than
 // returning a paragraph... it may be useful to use multiple paragraphs
-rptParagraph* CMomentCapacityParagraphBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptParagraph* CMomentCapacityParagraphBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pBroker = pGirderRptSpec->GetBroker();

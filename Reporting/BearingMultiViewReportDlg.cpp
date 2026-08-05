@@ -49,8 +49,8 @@
 
 IMPLEMENT_DYNAMIC(CBearingMultiViewReportDlg, CMultiViewReportDlg)
 
-CBearingMultiViewReportDlg::CBearingMultiViewReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,
-    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,
+CBearingMultiViewReportDlg::CBearingMultiViewReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::ReportMgr::ReportDescription& rptDesc,
+    std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec,
                                          const CGirderKey& girderKey, const ReactionLocation& reactionLocation)
 	: 
     CMultiViewReportDlg(pBroker, rptDesc, pRptSpec)

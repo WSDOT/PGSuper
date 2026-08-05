@@ -40,7 +40,7 @@
 
 IMPLEMENT_DYNAMIC(CBridgeAnalysisReportDlg, CSpanGirderReportDlg)
 
-CBridgeAnalysisReportDlg::CBridgeAnalysisReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CBridgeAnalysisReportDlg::CBridgeAnalysisReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CSpanGirderReportDlg(pBroker,rptDesc, CSpanGirderReportDlg::Mode::GirderAndChapters,pRptSpec,nIDTemplate, pParent)
 {
    m_bDesign = true;
@@ -76,7 +76,7 @@ BOOL CBridgeAnalysisReportDlg::OnInitDialog()
 {
    if ( m_pInitRptSpec )
    {
-      std::shared_ptr<CBridgeAnalysisReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBridgeAnalysisReportSpecification,WBFL::Reporting::ReportSpecification>(m_pInitRptSpec);
+      std::shared_ptr<CBridgeAnalysisReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBridgeAnalysisReportSpecification,WBFL::ReportMgr::ReportSpecification>(m_pInitRptSpec);
       m_bDesign = pRptSpec->ReportDesignResults();
       m_bRating = pRptSpec->ReportRatingResults();
    }
@@ -120,13 +120,13 @@ void CBridgeAnalysisReportDlg::UpdateChapterList()
    m_ChList.ResetContent();
 
    // Get the chapters in the report
-   std::vector<WBFL::Reporting::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
+   std::vector<WBFL::ReportMgr::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
 
    // Populate the list box with the names of the chapters
-   std::vector<WBFL::Reporting::ChapterInfo>::iterator iter;
+   std::vector<WBFL::ReportMgr::ChapterInfo>::iterator iter;
    for ( iter = chInfos.begin(); iter != chInfos.end(); iter++ )
    {
-      WBFL::Reporting::ChapterInfo chInfo = *iter;
+      WBFL::ReportMgr::ChapterInfo chInfo = *iter;
 
       bool bIncludeChapter = false;
       if ( chInfo.Name == _T("Simple Span") && (analysisType == pgsTypes::Simple || analysisType == pgsTypes::Envelope) )

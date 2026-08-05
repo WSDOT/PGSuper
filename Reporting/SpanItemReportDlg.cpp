@@ -39,7 +39,7 @@
 
 IMPLEMENT_DYNAMIC(CSpanItemReportDlg, CDialog)
 
-CSpanItemReportDlg::CSpanItemReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CSpanItemReportDlg::CSpanItemReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::ReportMgr::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec), m_Mode(mode)
 {
    m_pBroker = pBroker;
@@ -77,7 +77,7 @@ void CSpanItemReportDlg::DoDataExchange(CDataExchange* pDX)
             // m_ChapterList needs to hold the Key name for the chapter information
             // but the chapter list box has the display name
             // Look up the chapter display name to get the chapter key
-            std::vector<WBFL::Reporting::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
+            std::vector<WBFL::ReportMgr::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
             for (const auto& chInfo : chInfos)
             {
                if (chInfo.Name == std::_tstring(strChapter))
@@ -128,13 +128,13 @@ void CSpanItemReportDlg::UpdateChapterList()
    m_ChList.ResetContent();
 
    // Get the chapters in the report
-   std::vector<WBFL::Reporting::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
+   std::vector<WBFL::ReportMgr::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
 
    // Populate the list box with the names of the chapters
-   std::vector<WBFL::Reporting::ChapterInfo>::iterator iter;
+   std::vector<WBFL::ReportMgr::ChapterInfo>::iterator iter;
    for ( iter = chInfos.begin(); iter != chInfos.end(); iter++ )
    {
-      WBFL::Reporting::ChapterInfo chInfo = *iter;
+      WBFL::ReportMgr::ChapterInfo chInfo = *iter;
 
       int idx = m_ChList.AddString( chInfo.Name.c_str() );
       if ( idx != LB_ERR ) // no error
@@ -186,11 +186,11 @@ void CSpanItemReportDlg::ClearChapterCheckMarks(BOOL bClear)
 void CSpanItemReportDlg::InitChapterListFromSpec()
 {
    ClearChapterCheckMarks();
-   std::vector<WBFL::Reporting::ChapterInfo> chInfo = m_pInitRptSpec->GetChapterInfo();
-   std::vector<WBFL::Reporting::ChapterInfo>::iterator iter;
+   std::vector<WBFL::ReportMgr::ChapterInfo> chInfo = m_pInitRptSpec->GetChapterInfo();
+   std::vector<WBFL::ReportMgr::ChapterInfo>::iterator iter;
    for ( iter = chInfo.begin(); iter != chInfo.end(); iter++ )
    {
-      WBFL::Reporting::ChapterInfo& ch = *iter;
+      WBFL::ReportMgr::ChapterInfo& ch = *iter;
       int cChapters = m_ChList.GetCount();
       for ( int idx = 0; idx < cChapters; idx++ )
       {

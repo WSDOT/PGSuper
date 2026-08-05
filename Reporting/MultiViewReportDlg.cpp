@@ -41,8 +41,8 @@
 
 IMPLEMENT_DYNAMIC(CMultiViewReportDlg, CDialog)
 
-CMultiViewReportDlg::CMultiViewReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,
-    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec, UINT nIDTemplate,CWnd* pParent)
+CMultiViewReportDlg::CMultiViewReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::ReportMgr::ReportDescription& rptDesc,
+    std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec, UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
    m_pBroker = pBroker;
@@ -178,13 +178,13 @@ void CMultiViewReportDlg::UpdateChapterList()
    m_ChList.ResetContent();
 
    // Get the chapters in the report
-   std::vector<WBFL::Reporting::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
+   std::vector<WBFL::ReportMgr::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
 
    // Populate the list box with the names of the chapters
-   std::vector<WBFL::Reporting::ChapterInfo>::iterator iter;
+   std::vector<WBFL::ReportMgr::ChapterInfo>::iterator iter;
    for ( iter = chInfos.begin(); iter != chInfos.end(); iter++ )
    {
-      WBFL::Reporting::ChapterInfo chInfo = *iter;
+      WBFL::ReportMgr::ChapterInfo chInfo = *iter;
 
       int idx = m_ChList.AddString( chInfo.Name.c_str() );
       if ( idx != LB_ERR ) // no error
@@ -223,11 +223,11 @@ void CMultiViewReportDlg::ClearChapterCheckMarks(BOOL bClear)
 void CMultiViewReportDlg::InitChapterListFromSpec()
 {
    ClearChapterCheckMarks();
-   std::vector<WBFL::Reporting::ChapterInfo> chInfo = m_pInitRptSpec->GetChapterInfo();
-   std::vector<WBFL::Reporting::ChapterInfo>::iterator iter;
+   std::vector<WBFL::ReportMgr::ChapterInfo> chInfo = m_pInitRptSpec->GetChapterInfo();
+   std::vector<WBFL::ReportMgr::ChapterInfo>::iterator iter;
    for ( iter = chInfo.begin(); iter != chInfo.end(); iter++ )
    {
-      WBFL::Reporting::ChapterInfo& ch = *iter;
+      WBFL::ReportMgr::ChapterInfo& ch = *iter;
       int cChapters = m_ChList.GetCount();
       for ( int idx = 0; idx < cChapters; idx++ )
       {

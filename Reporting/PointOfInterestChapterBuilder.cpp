@@ -40,7 +40,7 @@ LPCTSTR CPointOfInterestChapterBuilder::GetName() const
    return TEXT("Points of Interest");
 }
 
-rptChapter* CPointOfInterestChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CPointOfInterestChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
    auto pBroker = pGdrRptSpec->GetBroker();

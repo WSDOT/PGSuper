@@ -95,7 +95,7 @@ inline bool IsDifferentNumberOfGirdersPerSpan(std::shared_ptr<IBridge> pBridge)
 
 
 CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion, bool bPageBreakAfter) :
-WBFL::Reporting::TitlePageBuilder(strTitle),
+WBFL::ReportMgr::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion),
 m_bPageBreakAfter(bPageBreakAfter)
@@ -103,7 +103,7 @@ m_bPageBreakAfter(bPageBreakAfter)
 }
 
 CPGSuperTitlePageBuilder::CPGSuperTitlePageBuilder(const CPGSuperTitlePageBuilder& other) :
-WBFL::Reporting::TitlePageBuilder(other),
+WBFL::ReportMgr::TitlePageBuilder(other),
 m_pBroker(other.m_pBroker),
 m_bFullVersion(other.m_bFullVersion),
 m_bPageBreakAfter(other.m_bPageBreakAfter)
@@ -114,18 +114,18 @@ CPGSuperTitlePageBuilder::~CPGSuperTitlePageBuilder(void)
 {
 }
 
-std::unique_ptr<WBFL::Reporting::TitlePageBuilder> CPGSuperTitlePageBuilder::Clone() const
+std::unique_ptr<WBFL::ReportMgr::TitlePageBuilder> CPGSuperTitlePageBuilder::Clone() const
 {
    return std::make_unique<CPGSuperTitlePageBuilder>(*this);
 }
 
-bool CPGSuperTitlePageBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
+bool CPGSuperTitlePageBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint,const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec) const
 {
    // don't let the title page control whether or not a report needs updating
    return false;
 }
 
-rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
+rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec) const
 {
    auto broker = m_pBroker.lock();
 

@@ -49,7 +49,7 @@ LPCTSTR CDeckElevationChapterBuilder::GetName() const
    return TEXT("Roadway Elevations");
 }
 
-rptChapter* CDeckElevationChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CDeckElevationChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pBroker = pSpec->GetBroker();
@@ -67,7 +67,7 @@ rptChapter* CDeckElevationChapterBuilder::Build(const std::shared_ptr<const WBFL
 
 }
 
-rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
+rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec, Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pBroker = pSpec->GetBroker();
@@ -213,7 +213,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(const std::shared_pt
    return pChapter;
 }
 
-rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -222,7 +222,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(const std::shared_ptr<cons
    return pChapter;
 }
 
-void CDeckElevationChapterBuilder::BuildNoDeckElevationContent(rptChapter * pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+void CDeckElevationChapterBuilder::BuildNoDeckElevationContent(rptChapter * pChapter,const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pBroker = pSpec->GetBroker();

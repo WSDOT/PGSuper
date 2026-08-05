@@ -72,7 +72,7 @@ LPCTSTR CBridgeAnalysisChapterBuilder::GetName() const
    return m_strTitle.c_str();
 }
 
-rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBridgeAnalysisRptSpec = std::dynamic_pointer_cast<const CBridgeAnalysisReportSpecification>(pRptSpec);
    auto pBroker = pBridgeAnalysisRptSpec->GetBroker();

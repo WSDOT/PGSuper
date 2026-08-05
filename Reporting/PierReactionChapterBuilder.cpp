@@ -56,7 +56,7 @@ LPCTSTR CPierReactionChapterBuilder::GetName() const
    return TEXT("Pier Reactions");
 }
 
-rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
+rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec, Uint16 level) const
 {
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 

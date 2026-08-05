@@ -43,8 +43,8 @@ class CGirderMultiViewReportDlg : public CMultiViewReportDlg
 	DECLARE_DYNAMIC(CGirderMultiViewReportDlg)
 
 public:
-	CGirderMultiViewReportDlg(const CGirderKey& girderKey, std::shared_ptr<WBFL::EAF::Broker> pBroker, const WBFL::Reporting::ReportDescription& rptDesc,
-		std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec);
+	CGirderMultiViewReportDlg(const CGirderKey& girderKey, std::shared_ptr<WBFL::EAF::Broker> pBroker, const WBFL::ReportMgr::ReportDescription& rptDesc,
+		std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec);
 
 	virtual ~CGirderMultiViewReportDlg();
 

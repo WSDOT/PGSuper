@@ -58,7 +58,7 @@ LPCTSTR CTexasShearChapterBuilder::GetName() const
    return TEXT("Shear");
 }
 
-rptChapter* CTexasShearChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CTexasShearChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pBroker = pSpec->GetBroker();

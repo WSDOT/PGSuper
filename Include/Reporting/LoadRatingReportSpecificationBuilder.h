@@ -37,8 +37,8 @@ public:
    CLoadRatingReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CLoadRatingReportSpecificationBuilder(void);
 
-   virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
-   virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const override;
+   virtual std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec) const override;
+   virtual std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const override;
 };
 
 ////////////// Summary Load Rating Report //////////////////////
@@ -50,8 +50,8 @@ public:
    CLoadRatingSummaryReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    ~CLoadRatingSummaryReportSpecificationBuilder(void);
 
-   virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
-   virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const override;
+   virtual std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec) const override;
+   virtual std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const override;
 };
 
 // Base class for LoadRatingReportSpecs

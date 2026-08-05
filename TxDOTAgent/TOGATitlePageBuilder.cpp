@@ -38,14 +38,14 @@
 #include <EAF\EAFUIIntegration.h>
 
 CTOGATitlePageBuilder::CTOGATitlePageBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion) :
-WBFL::Reporting::TitlePageBuilder(strTitle),
+WBFL::ReportMgr::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion)
 {
 }
 
 CTOGATitlePageBuilder::CTOGATitlePageBuilder(const CTOGATitlePageBuilder& other) :
-WBFL::Reporting::TitlePageBuilder(other),
+WBFL::ReportMgr::TitlePageBuilder(other),
 m_pBroker(other.m_pBroker),
 m_bFullVersion(other.m_bFullVersion)
 {
@@ -55,19 +55,19 @@ CTOGATitlePageBuilder::~CTOGATitlePageBuilder(void)
 {
 }
 
-std::unique_ptr<WBFL::Reporting::TitlePageBuilder> CTOGATitlePageBuilder::Clone() const
+std::unique_ptr<WBFL::ReportMgr::TitlePageBuilder> CTOGATitlePageBuilder::Clone() const
 {
    return std::make_unique<CTOGATitlePageBuilder>(*this);
 }
 
 
-bool CTOGATitlePageBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
+bool CTOGATitlePageBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint, const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec) const
 {
    // don't let the title page control whether or not a report needs updating
    return false;
 }
 
-rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
+rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec) const
 {
    // Create a title page for the report
    rptChapter* pTitlePage = new rptChapter;

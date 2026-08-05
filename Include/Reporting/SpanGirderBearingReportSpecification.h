@@ -32,7 +32,7 @@
 
 
 
-class REPORTINGCLASS CBearingReportHint : public WBFL::Reporting::ReportHint
+class REPORTINGCLASS CBearingReportHint : public WBFL::ReportMgr::ReportHint
 {
 //public:
 //   CBearingReportHint();
@@ -44,8 +44,8 @@ class REPORTINGCLASS CBearingReportHint : public WBFL::Reporting::ReportHint
 //   void SetBearing(const CBearingData2& bearing);
 //   const CBearingData2& GetBearing() const;
 //
-//   static int IsMyBearing(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, 
-//	   const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec);
+//   static int IsMyBearing(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint, 
+//	   const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec);
 //
 //protected:
 //   CBearingData2 m_Bearing;

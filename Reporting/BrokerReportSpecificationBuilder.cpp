@@ -34,7 +34,7 @@ CBrokerReportSpecificationBuilder::~CBrokerReportSpecificationBuilder(void)
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CBrokerReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CBrokerReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -45,12 +45,12 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBrokerReportSpecification
       // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
       std::shared_ptr<CBrokerReportSpecification> pOldGRptSpec = std::dynamic_pointer_cast<CBrokerReportSpecification>(pOldRptSpec);
 
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
       if(pOldGRptSpec)
       {
          std::shared_ptr<CBrokerReportSpecification> pNewGRptSpec(std::make_shared<CBrokerReportSpecification>(*pOldGRptSpec));
 
-         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<WBFL::ReportMgr::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
@@ -66,10 +66,10 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBrokerReportSpecification
    return nullptr;
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CBrokerReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CBrokerReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    // Use all chapters at the maximum level
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec( std::make_shared<CBrokerReportSpecification>(rptDesc.GetReportName(),m_pBroker) );
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec( std::make_shared<CBrokerReportSpecification>(rptDesc.GetReportName(),m_pBroker) );
 
    rptDesc.ConfigureReportSpecification(pRptSpec);
 

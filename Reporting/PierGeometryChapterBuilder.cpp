@@ -47,7 +47,7 @@ LPCTSTR CPierGeometryChapterBuilder::GetName() const
    return TEXT("Pier Geometry");
 }
 
-rptChapter* CPierGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CPierGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pBroker = pSpec->GetBroker();

@@ -52,7 +52,7 @@ SpanIndexType CSpanReportHint::GetSpan()
    return m_SpanIdx;
 }
 
-int CSpanReportHint::IsMySpan(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec)
+int CSpanReportHint::IsMySpan(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint,const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec)
 {
    auto pSpanRptSpec = std::dynamic_pointer_cast<const CSpanReportSpecification>(pRptSpec);
    if ( pSpanRptSpec == nullptr )
@@ -102,7 +102,7 @@ GirderIndexType CGirderLineReportHint::GetGirderIndex() const
    return m_GirderIdx;
 }
 
-int CGirderLineReportHint::IsMyGirder(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec)
+int CGirderLineReportHint::IsMyGirder(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint, const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec)
 {
    auto pGirderRptHint = std::dynamic_pointer_cast<const CGirderLineReportHint>(pHint);
    if ( pGirderRptHint == nullptr )
@@ -170,7 +170,7 @@ const CGirderKey& CGirderReportHint::GetGirderKey() const
    return m_GirderKey;
 }
 
-int CGirderReportHint::IsMyGirder(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec)
+int CGirderReportHint::IsMyGirder(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint, const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec)
 {
    auto pGirderRptHint = std::dynamic_pointer_cast<const CGirderReportHint>(pHint);
    if ( pGirderRptHint == nullptr )

@@ -77,45 +77,45 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    GET_IFACE(IEAFReportManager,pRptMgr);
 
    // Update details report to contain a couple of extra chapters
-   std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
-   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSegmentTendonGeometryChapterBuilder>()), TEXT("Section Properties")));
-   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CGirderTendonGeometryChapterBuilder>()),TEXT("Segment Tendon Geometry")));
-   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CShrinkageStrainChapterBuilder>()),TEXT("Creep Coefficient Details")));
-   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationsChapterBuilder>()), TEXT("Bearing Seat Elevations")));
-   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationDetailsChapterBuilder>()), TEXT("Bearing Seat Elevation Details")));
+   std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
+   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CSegmentTendonGeometryChapterBuilder>()), TEXT("Section Properties")));
+   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CGirderTendonGeometryChapterBuilder>()),TEXT("Segment Tendon Geometry")));
+   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CShrinkageStrainChapterBuilder>()),TEXT("Creep Coefficient Details")));
+   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CTemporarySupportElevationsChapterBuilder>()), TEXT("Bearing Seat Elevations")));
+   VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CTemporarySupportElevationDetailsChapterBuilder>()), TEXT("Bearing Seat Elevation Details")));
 
    // A full timestep analysis for all girders is required for temp support elevations. Disable these chapters by default
    pRptBuilder = pRptMgr->GetReportBuilder(_T("Bridge Geometry Report"));
-   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationsChapterBuilder>(false)));
-   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationDetailsChapterBuilder>(false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CTemporarySupportElevationsChapterBuilder>(false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CTemporarySupportElevationDetailsChapterBuilder>(false)));
 
 
 #if defined _DEBUG || defined _BETA_VERSION
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pEquilibriumCheckSpecBuilder(std::make_shared<CEquilibriumCheckReportSpecificationBuilder>(m_pBroker));
-   std::shared_ptr<WBFL::Reporting::ReportBuilder> pMyRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("(DEBUG) Equilibrium Check")));
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pEquilibriumCheckSpecBuilder(std::make_shared<CEquilibriumCheckReportSpecificationBuilder>(m_pBroker));
+   std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pMyRptBuilder(std::make_shared<WBFL::ReportMgr::ReportBuilder>(_T("(DEBUG) Equilibrium Check")));
    pMyRptBuilder->IncludeTimingChapter();
-   pMyRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
+   pMyRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::ReportMgr::TitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
    pMyRptBuilder->SetReportSpecificationBuilder( pEquilibriumCheckSpecBuilder );
-   pMyRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CEquilibriumCheckChapterBuilder>()) );
+   pMyRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CEquilibriumCheckChapterBuilder>()) );
    pRptMgr->AddReportBuilder( pMyRptBuilder );
 #endif
 
-   //std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pInitialStrainAnalysisSpecBuilder(new CInitialStrainAnalysisReportSpecificationBuilder(m_pBroker));
-   //pMyRptBuilder = new WBFL::Reporting::ReportBuilder(_T("Initial Strain Analysis"));
-   //pMyRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
+   //std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pInitialStrainAnalysisSpecBuilder(new CInitialStrainAnalysisReportSpecificationBuilder(m_pBroker));
+   //pMyRptBuilder = new WBFL::ReportMgr::ReportBuilder(_T("Initial Strain Analysis"));
+   //pMyRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::ReportMgr::TitlePageBuilder>(CreateTitlePageBuilder(pMyRptBuilder->GetName())) );
    //pMyRptBuilder->SetReportSpecificationBuilder( pInitialStrainAnalysisSpecBuilder );
-   //pMyRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(new CInitialStrainAnalysisChapterBuilder) );
+   //pMyRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(new CInitialStrainAnalysisChapterBuilder) );
    //pRptMgr->AddReportBuilder( pMyRptBuilder );
 
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CGirderLineReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CGirderLineReportSpecificationBuilder>(m_pBroker) );
 
-   std::shared_ptr<WBFL::Reporting::ReportBuilder> pTSRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Temporary Support Reactions Report")));
+   std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pTSRptBuilder(std::make_shared<WBFL::ReportMgr::ReportBuilder>(_T("Temporary Support Reactions Report")));
 #if defined _DEBUG || defined _BETA_VERSION
    pTSRptBuilder->IncludeTimingChapter();
 #endif
-   pTSRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pTSRptBuilder->GetName())) );
+   pTSRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::ReportMgr::TitlePageBuilder>(CreateTitlePageBuilder(pTSRptBuilder->GetName())) );
    pTSRptBuilder->SetReportSpecificationBuilder( pRptSpecBuilder );
-   pTSRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportReactionChapterBuilder>(true)) );
+   pTSRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CTemporarySupportReactionChapterBuilder>(true)) );
    pRptMgr->AddReportBuilder( pTSRptBuilder );
 
    return S_OK;
@@ -189,7 +189,7 @@ HRESULT CPGSpliceReporterImp::OnSpecificationChanged()
 
 
    std::_tstring prinRepName(_T("Principal Web Stress Details Report"));
-   std::shared_ptr<WBFL::Reporting::ReportBuilder> pPsRptBuilder = pRptMgr->GetReportBuilder(_T("Principal Web Stress Details Report"));
+   std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pPsRptBuilder = pRptMgr->GetReportBuilder(_T("Principal Web Stress Details Report"));
    ATLASSERT(pPsRptBuilder);
    if (pPsRptBuilder != nullptr)
    {
@@ -211,7 +211,7 @@ bool CPGSpliceReporterImp::IncludeSpanAndGirder4Pois(const CGirderKey& rKey)
    return true;
 }
 
-WBFL::Reporting::TitlePageBuilder* CPGSpliceReporterImp::CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion)
+WBFL::ReportMgr::TitlePageBuilder* CPGSpliceReporterImp::CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion)
 {
    return new CPGSpliceTitlePageBuilder(m_pBroker,strReportName,bFullVersion);
 }

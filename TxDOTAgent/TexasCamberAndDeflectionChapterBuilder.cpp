@@ -65,7 +65,7 @@ LPCTSTR CTexasCamberAndDeflectionChapterBuilder::GetName() const
    return TEXT("Camber and Deflections");
 }
 
-rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

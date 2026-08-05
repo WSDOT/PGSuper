@@ -64,7 +64,7 @@ LPCTSTR CGirderGeometryChapterBuilder::GetName() const
    return TEXT("Girder Geometry");
 }
 
-rptChapter* CGirderGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CGirderGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    USES_CONVERSION;
 
@@ -86,7 +86,7 @@ rptChapter* CGirderGeometryChapterBuilder::Build(const std::shared_ptr<const WBF
 }
 
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder> CGirderGeometryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::ReportMgr::ChapterBuilder> CGirderGeometryChapterBuilder::Clone() const
 {
    return std::make_unique<CGirderGeometryChapterBuilder>();
 }

@@ -107,11 +107,11 @@ BOOL CCopyPierDlg::OnInitDialog()
 
    // set up report window
    GET_IFACE(IEAFReportManager, pReportMgr);
-   WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Pier Properties Report"));
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+   WBFL::ReportMgr::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Pier Properties Report"));
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
 
-   m_pRptSpec = std::dynamic_pointer_cast<CCopyPierPropertiesReportSpecification, WBFL::Reporting::ReportSpecification>(pRptSpec);
+   m_pRptSpec = std::dynamic_pointer_cast<CCopyPierPropertiesReportSpecification, WBFL::ReportMgr::ReportSpecification>(pRptSpec);
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_COPY_PROPERTIES),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
@@ -128,7 +128,7 @@ BOOL CCopyPierDlg::OnInitDialog()
    UpdateReportData();
 
    GET_IFACE(IEAFReportManager,pRptMgr);
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> nullSpecBuilder;
    CWnd* pWnd = GetDlgItem(IDC_BROWSER);
    m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(), WS_BORDER,pRptSpec,nullSpecBuilder);
 
@@ -305,7 +305,7 @@ void CCopyPierDlg::FillComboBoxes(CComboBox& cbPier, bool bIncludeAllPiers, Pier
 void CCopyPierDlg::UpdateReportData()
 {
    GET_IFACE(IEAFReportManager,pReportMgr);
-   std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+   std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
    PierIndexType pierIdx = GetFromPier();
    std::vector<PierIndexType> toPiers = GetToPiers();
@@ -316,8 +316,8 @@ void CCopyPierDlg::UpdateReportData()
    IndexType numchs = pBuilder->GetChapterBuilderCount();
    for (IndexType ich = 0; ich < numchs; ich++)
    {
-      std::shared_ptr<WBFL::Reporting::ChapterBuilder> pChb = pBuilder->GetChapterBuilder(ich);
-      std::shared_ptr<CCopyPierPropertiesChapterBuilder> pRptCpBuilder = std::dynamic_pointer_cast<CCopyPierPropertiesChapterBuilder,WBFL::Reporting::ChapterBuilder>(pChb);
+      std::shared_ptr<WBFL::ReportMgr::ChapterBuilder> pChb = pBuilder->GetChapterBuilder(ich);
+      std::shared_ptr<CCopyPierPropertiesChapterBuilder> pRptCpBuilder = std::dynamic_pointer_cast<CCopyPierPropertiesChapterBuilder,WBFL::ReportMgr::ChapterBuilder>(pChb);
 
       if (pRptCpBuilder)
       {
@@ -333,9 +333,9 @@ void CCopyPierDlg::UpdateReport()
       UpdateReportData();
 
       GET_IFACE(IEAFReportManager,pReportMgr);
-      std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+      std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CCopyPierPropertiesReportSpecification>(m_pRptSpec);
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::ReportMgr::ReportSpecification,CCopyPierPropertiesReportSpecification>(m_pRptSpec);
 
       std::shared_ptr<rptReport> pReport = pBuilder->CreateReport( pRptSpec );
       m_pBrowser->UpdateReport( pReport, true );
@@ -461,7 +461,7 @@ void CCopyPierDlg::CleanUp()
 {
    if ( m_pBrowser )
    {
-      m_pBrowser = std::shared_ptr<WBFL::Reporting::ReportBrowser>();
+      m_pBrowser = std::shared_ptr<WBFL::ReportMgr::ReportBrowser>();
    }
 
    // save the size of the window

@@ -40,7 +40,7 @@ CLoadRatingReportSpecificationBuilder::~CLoadRatingReportSpecificationBuilder(vo
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CLoadRatingReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    GET_IFACE2(GetBroker(),IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
@@ -67,7 +67,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecifica
       {
          girderKey = dlg.GetGirderKey();
 
-         std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+         std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
          if (dlg.IsSingleGirderLineSelected())
          {
             // girderline
@@ -100,7 +100,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecifica
    }
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CLoadRatingReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    GET_IFACE2(GetBroker(),IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
@@ -117,7 +117,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecifica
       CGirderKey girderKey = pSelection->GetSelectedGirder();
       GirderIndexType girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CGirderLineLoadRatingReportSpecification>(rptDesc.GetReportName(), m_pBroker, girderIndex, false/*quick reports... dont report at all poi*/));
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec(std::make_shared<CGirderLineLoadRatingReportSpecification>(rptDesc.GetReportName(), m_pBroker, girderIndex, false/*quick reports... dont report at all poi*/));
 
       rptDesc.ConfigureReportSpecification(pRptSpec);
 
@@ -141,7 +141,7 @@ CLoadRatingSummaryReportSpecificationBuilder::~CLoadRatingSummaryReportSpecifica
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CLoadRatingSummaryReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    GET_IFACE2(GetBroker(),IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
@@ -166,7 +166,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSp
 
       if (dlg.DoModal() == IDOK)
       {
-         std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+         std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
          if (dlg.m_bIsSingleGirderLineSelected)
          {
             pNewRptSpec = std::make_shared<CGirderLineLoadRatingReportSpecification>(rptDesc.GetReportName(), m_pBroker, dlg.m_GirderKeys.front().girderIndex, dlg.m_bReportAtAllPoi);
@@ -197,7 +197,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSp
    }
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CLoadRatingSummaryReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    GET_IFACE2(GetBroker(),IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
@@ -214,7 +214,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSp
       CGirderKey girderKey = pSelection->GetSelectedGirder();
       GirderIndexType girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CGirderLineLoadRatingReportSpecification>(rptDesc.GetReportName(), m_pBroker, girderIndex, false/*quick reports... dont report at all poi*/));
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec(std::make_shared<CGirderLineLoadRatingReportSpecification>(rptDesc.GetReportName(), m_pBroker, girderIndex, false/*quick reports... dont report at all poi*/));
 
       rptDesc.ConfigureReportSpecification(pRptSpec);
 

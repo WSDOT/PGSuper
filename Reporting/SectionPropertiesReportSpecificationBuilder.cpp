@@ -46,7 +46,7 @@ CSectionPropertiesReportSpecificationBuilder::~CSectionPropertiesReportSpecifica
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CSectionPropertiesReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CSectionPropertiesReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -141,7 +141,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSectionPropertiesReportSp
 
    if ( dlg.DoModal() == IDOK )
    {
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec;
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec;
       if (pInitRptSpec)
       {
          std::shared_ptr<CSectionPropertiesReportSpecification>pSPRptSpec(std::make_shared<CSectionPropertiesReportSpecification>(*pInitRptSpec) );
@@ -162,11 +162,11 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSectionPropertiesReportSp
    return nullptr;
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CSectionPropertiesReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CSectionPropertiesReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    // there is no default configuration for this report. The user must be prompted every time for
    // the station information.
 
    // a future improvement might be to cache the last station range used and use it again ???
-   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>());
+   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification>());
 }

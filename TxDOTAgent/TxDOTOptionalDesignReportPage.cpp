@@ -127,13 +127,13 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
             m_pRptSpec = CreateSelectedReportSpec(pReportMgr);
 
             // Already have a browser, just need to update headers and footers and re-marry report
-            std::shared_ptr<WBFL::Reporting::ReportSpecification> brRptSpec = m_pBrowser->GetReportSpecification();
+            std::shared_ptr<WBFL::ReportMgr::ReportSpecification> brRptSpec = m_pBrowser->GetReportSpecification();
             brRptSpec->SetLeftHeader(m_pRptSpec->GetLeftHeader().c_str());
             brRptSpec->SetCenterHeader(m_pRptSpec->GetCenterHeader().c_str());
             brRptSpec->SetLeftFooter(m_pRptSpec->GetLeftFooter().c_str());
             brRptSpec->SetCenterFooter(m_pRptSpec->GetCenterFooter().c_str());
 
-            std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+            std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
             std::shared_ptr<rptReport> pReport = pBuilder->CreateReport( m_pRptSpec );
             m_pBrowser->UpdateReport( pReport, true );
          }
@@ -192,14 +192,14 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(std::shared_ptr<WBFL::EAF:
    GET_IFACE2(pBroker,IEAFProgress,pProgress);
    WBFL::EAF::AutoProgress ap(pProgress);
 
-   m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),0,m_pRptSpec,std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder>());
+   m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),0,m_pRptSpec,std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder>());
    m_pBrowser->Size(rect.Size());
 
    // resize browser window
    this->SendMessage(WM_SIZE);
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CTxDOTOptionalDesignReportPage::CreateSelectedReportSpec(std::shared_ptr<IEAFReportManager> pReportMgr)
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CTxDOTOptionalDesignReportPage::CreateSelectedReportSpec(std::shared_ptr<IEAFReportManager> pReportMgr)
 {
    int curidx = m_ReportCombo.GetCurSel();
    ASSERT(curidx==0 || curidx==1);
@@ -208,10 +208,10 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CTxDOTOptionalDesignReport
    LPCTSTR spec_name = curidx==0 ? _T("TxDOT Optional Girder Analysis (TOGA) - Short Report") : _T("TxDOT Optional Girder Analysis (TOGA) - Long Report");
 
    // Get our report description
-   WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(spec_name);
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pDefRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
-   std::shared_ptr<CGirderReportSpecification> pGirderRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification,WBFL::Reporting::ReportSpecification>(pDefRptSpec);
+   WBFL::ReportMgr::ReportDescription rptDesc = pReportMgr->GetReportDescription(spec_name);
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pDefRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+   std::shared_ptr<CGirderReportSpecification> pGirderRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification,WBFL::ReportMgr::ReportSpecification>(pDefRptSpec);
    pGirderRptSpec->SetGirderKey(CGirderKey(TOGA_SPAN,TOGA_FABR_GDR));
 
    // Set report header and footer for printing

@@ -109,7 +109,7 @@ void CPGSuperReportView::OnInitialUpdate()
    CEAFReportViewCreationData* pCreateData = (CEAFReportViewCreationData*)pTemplate->GetViewCreationData();
    ASSERT(pCreateData != nullptr);
    std::vector<std::_tstring> rptNames(pCreateData->m_pRptMgr->GetReportNames());
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pCreateData->m_pRptMgr->GetReportSpecificationBuilder(rptNames[pCreateData->m_RptIdx]);
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pRptSpecBuilder = pCreateData->m_pRptMgr->GetReportSpecificationBuilder(rptNames[pCreateData->m_RptIdx]);
    CMultiViewSpanGirderReportSpecificationBuilder* pGMultiViewRptSpecBuilder(dynamic_cast<CMultiViewSpanGirderReportSpecificationBuilder*>(pRptSpecBuilder.get()));
    CMultiViewSpanGirderBearingReportSpecificationBuilder* pBMultiViewRptSpecBuilder(dynamic_cast<CMultiViewSpanGirderBearingReportSpecificationBuilder*>(pRptSpecBuilder.get()));
 
@@ -169,7 +169,7 @@ BOOL CPGSuperReportView::PreTranslateMessage(MSG* pMsg)
 	return CEAFAutoCalcReportView::PreTranslateMessage(pMsg);
 }
 
-HRESULT CPGSuperReportView::UpdateReportBrowser(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint)
+HRESULT CPGSuperReportView::UpdateReportBrowser(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint)
 {
    auto pBroker = EAFGetBroker();
 
@@ -204,7 +204,7 @@ void CPGSuperReportView::RefreshReport()
    CEAFAutoCalcReportView::RefreshReport();
 }
 
-WBFL::Reporting::ReportHint* CPGSuperReportView::TranslateHint(CView* pSender, LPARAM lHint, CObject* pHint)
+WBFL::ReportMgr::ReportHint* CPGSuperReportView::TranslateHint(CView* pSender, LPARAM lHint, CObject* pHint)
 {
    if ( lHint == HINT_GIRDERCHANGED )
    {
@@ -257,10 +257,10 @@ bool CPGSuperReportView::CreateReport(IndexType rptIdx,BOOL bPromptForSpec)
    auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFReportManager,pRptMgr);
    std::vector<std::_tstring> names = pRptMgr->GetReportNames();
-   std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(names[rptIdx]);
-   WBFL::Reporting::ReportDescription rptDesc = pRptBuilder->GetReportDescription();
+   std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(names[rptIdx]);
+   WBFL::ReportMgr::ReportDescription rptDesc = pRptBuilder->GetReportDescription();
 
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pRptBuilder->GetReportSpecificationBuilder();
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pRptSpecBuilder = pRptBuilder->GetReportSpecificationBuilder();
 
    // See if we have a CSpanGirderReportSpecificationBuilder. 
    // If so, we will cycle through creating report windows - one for each girder
@@ -270,8 +270,8 @@ bool CPGSuperReportView::CreateReport(IndexType rptIdx,BOOL bPromptForSpec)
    {
       // this is a Span spec builder
       // Create the report specification. This will define the girders/bearings to be reported on and the chapters to report
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> nullSpec;
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> rptSpec = pSGRptSpecBuilder->CreateReportSpec(rptDesc,nullSpec);
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> nullSpec;
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> rptSpec = pSGRptSpecBuilder->CreateReportSpec(rptDesc,nullSpec);
 
       if(rptSpec)
       {
@@ -308,12 +308,12 @@ bool CPGSuperReportView::CreateReport(IndexType rptIdx,BOOL bPromptForSpec)
                  // Create a CSegmentReportSpecification. A single report view news a specification for a 
                  // single segment.
                  // Set the segment to report on
-                 std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CGirderReportSpecification>(pSGRptSpec->GetReportTitle().c_str(), pBroker, girderKey));
+                 std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec(std::make_shared<CGirderReportSpecification>(pSGRptSpec->GetReportTitle().c_str(), pBroker, girderKey));
                  CGirderReportSpecification* pMyReportSpec = (CGirderReportSpecification*)pRptSpec.get();
                  pRptSpec->SetChapterInfo(pSGRptSpec->GetChapterInfo());
 
                  // Also need a SpanGirder Report Spec Builder for when the Edit button is pressed
-                 std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CGirderReportSpecificationBuilder>(pBroker, girderKey));
+                 std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CGirderReportSpecificationBuilder>(pBroker, girderKey));
 
                  if (first)
                  {
@@ -378,12 +378,12 @@ bool CPGSuperReportView::CreateReport(IndexType rptIdx,BOOL bPromptForSpec)
                  // Create a CBearingReportSpecification. A single report view news a specification for a 
                  // single bearing.
                  // Set the segment to report on
-                 std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CBearingReportSpecification>(pSGBRptSpec->GetReportTitle().c_str(), pBroker, reactionLocation));
+                 std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec(std::make_shared<CBearingReportSpecification>(pSGBRptSpec->GetReportTitle().c_str(), pBroker, reactionLocation));
                  CBearingReportSpecification* pMyReportSpec = (CBearingReportSpecification*)pRptSpec.get();
                  pRptSpec->SetChapterInfo(pSGBRptSpec->GetChapterInfo());
 
                  // Also need a SpanGirderBearing Report Spec Builder for when the Edit button is pressed
-                 std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CBearingReportSpecificationBuilder>(pBroker, reactionLocation));
+                 std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pRptSpecBuilder(std::make_shared<CBearingReportSpecificationBuilder>(pBroker, reactionLocation));
 
                  if (first)
                  {

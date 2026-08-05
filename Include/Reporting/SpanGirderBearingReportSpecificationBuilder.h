@@ -38,8 +38,8 @@ public:
 	CBearingReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker, const ReactionLocation& reactionLocation );
 	~CBearingReportSpecificationBuilder(void);
 
-	virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
-	virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const override;
+	virtual std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc, std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec) const override;
+	virtual std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const override;
 
 private:
 	mutable ReactionLocation m_ReactionLocation;
@@ -55,8 +55,8 @@ public:
 	CMultiBearingReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
 	~CMultiBearingReportSpecificationBuilder(void);
 
-	virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
-	virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const override;
+	virtual std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc, std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec) const override;
+	virtual std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const override;
 };
 
 // Allow opening of multiple view windows from a single dialog
@@ -67,8 +67,8 @@ public:
 	CMultiViewSpanGirderBearingReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker);
 	~CMultiViewSpanGirderBearingReportSpecificationBuilder(void);
 
-	virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
-	virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const override;
+	virtual std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc, std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec) const override;
+	virtual std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const override;
 
 };
 

@@ -53,7 +53,7 @@ LPCTSTR CPrincipalWebStressDetailsChapterBuilder::GetName() const
    return TEXT("Principal Web Stress Details");
 }
 
-rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;

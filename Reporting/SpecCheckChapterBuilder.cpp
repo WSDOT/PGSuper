@@ -95,7 +95,7 @@ LPCTSTR CSpecCheckChapterBuilder::GetName() const
    return TEXT("Specification Checks");
 }
 
-rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;

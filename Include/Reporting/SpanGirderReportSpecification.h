@@ -29,7 +29,7 @@
 #include <PsgLib\Keys.h>
 #include <PsgLib\PointOfInterest.h>
 
-class REPORTINGCLASS CSpanReportHint : public WBFL::Reporting::ReportHint
+class REPORTINGCLASS CSpanReportHint : public WBFL::ReportMgr::ReportHint
 {
 public:
    CSpanReportHint();
@@ -38,13 +38,13 @@ public:
    void SetSpan(SpanIndexType spanIdx);
    SpanIndexType GetSpan();
 
-   static int IsMySpan(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec);
+   static int IsMySpan(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint, const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec);
 
 protected:
    SpanIndexType m_SpanIdx;
 };
 
-class REPORTINGCLASS CGirderLineReportHint : public WBFL::Reporting::ReportHint
+class REPORTINGCLASS CGirderLineReportHint : public WBFL::ReportMgr::ReportHint
 {
 public:
    CGirderLineReportHint();
@@ -56,14 +56,14 @@ public:
    void SetGirderIndex(GirderIndexType gdrIdx);
    GirderIndexType GetGirderIndex() const;
 
-   static int IsMyGirder(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>&  pRptSpec);
+   static int IsMyGirder(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint, const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>&  pRptSpec);
 
 protected:
    GroupIndexType m_GroupIdx;
    GirderIndexType m_GirderIdx;
 };
 
-class REPORTINGCLASS CGirderReportHint : public WBFL::Reporting::ReportHint
+class REPORTINGCLASS CGirderReportHint : public WBFL::ReportMgr::ReportHint
 {
 public:
    CGirderReportHint();
@@ -75,7 +75,7 @@ public:
    void SetGirderKey(const CGirderKey& girderKey);
    const CGirderKey& GetGirderKey() const;
 
-   static int IsMyGirder(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec);
+   static int IsMyGirder(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint, const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec);
 
 protected:
    CGirderKey m_GirderKey;

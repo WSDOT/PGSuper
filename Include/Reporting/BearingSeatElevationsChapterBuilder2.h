@@ -36,7 +36,7 @@ public:
    CBearingSeatElevationsChapterBuilderBase(TableType type, bool bSelect = true);
    ~CBearingSeatElevationsChapterBuilderBase(void);
 
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
 private:
    rptRcTable* BuildTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 

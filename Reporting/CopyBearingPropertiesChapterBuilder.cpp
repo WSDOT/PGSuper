@@ -49,7 +49,7 @@ LPCTSTR CCopyBearingPropertiesChapterBuilder::GetName() const
    return TEXT("Bearing Property Comparison");
 }
 
-rptChapter* CCopyBearingPropertiesChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CCopyBearingPropertiesChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pCopyGirderPropertiesMgrRptSpec = std::dynamic_pointer_cast<const CCopyBearingPropertiesReportSpecification>(pRptSpec);

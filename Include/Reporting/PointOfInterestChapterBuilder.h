@@ -34,7 +34,7 @@ public:
    CPointOfInterestChapterBuilder(bool bSelect = true);
 
    virtual LPCTSTR GetName() const override;
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
 private:
    void ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IPointOfInterest> pPoi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const;

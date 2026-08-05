@@ -34,7 +34,7 @@ class CLoadRatingReportDlg : public CDialog
 	DECLARE_DYNAMIC(CLoadRatingReportDlg)
 
 public:
-	CLoadRatingReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_LOADRATINGREPORT,CWnd* pParent = nullptr);   // standard constructor
+	CLoadRatingReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_LOADRATINGREPORT,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CLoadRatingReportDlg();
 
 // Dialog Data
@@ -61,10 +61,10 @@ protected:
 
    CCheckListBox	m_ChList;
 
-   const WBFL::Reporting::ReportDescription& m_RptDesc;
+   const WBFL::ReportMgr::ReportDescription& m_RptDesc;
    std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 
 private:
    int m_RadioNum;

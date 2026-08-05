@@ -34,8 +34,8 @@ class CBearingMultiViewReportDlg : public CMultiViewReportDlg
 
 public:
 	CBearingMultiViewReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,
-		const WBFL::Reporting::ReportDescription& rptDesc,
-		std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,
+		const WBFL::ReportMgr::ReportDescription& rptDesc,
+		std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec,
 		const CGirderKey& girderKey, const ReactionLocation& reactionLocation);
 	virtual ~CBearingMultiViewReportDlg();
 

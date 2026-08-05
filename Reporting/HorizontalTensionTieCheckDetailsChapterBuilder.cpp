@@ -41,7 +41,7 @@ LPCTSTR CHorizontalTensionTieCheckDetailsChapterBuilder::GetName() const
    return TEXT("Horizontal Transverse Tension Tie Details");
 }
 
-rptChapter* CHorizontalTensionTieCheckDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CHorizontalTensionTieCheckDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pBroker = pGirderRptSpec->GetBroker();

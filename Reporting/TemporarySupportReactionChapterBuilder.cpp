@@ -40,7 +40,7 @@ LPCTSTR CTemporarySupportReactionChapterBuilder::GetName() const
    return TEXT("Temporary Support Reactions");
 }
 
-rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 

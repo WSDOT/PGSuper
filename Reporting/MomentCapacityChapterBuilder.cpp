@@ -73,7 +73,7 @@ LPCTSTR CMomentCapacityChapterBuilder::GetName() const
    return TEXT("Moment Capacity Details");
 }
 
-rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    USES_CONVERSION;
 

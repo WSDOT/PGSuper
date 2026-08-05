@@ -68,7 +68,7 @@ public:
 
 protected:
    // CReporterBase implementation
-   virtual WBFL::Reporting::TitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strName,bool bFullVersion=true) override;
+   virtual WBFL::ReportMgr::TitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strName,bool bFullVersion=true) override;
 
 // ISpecificationEventSink
 public:

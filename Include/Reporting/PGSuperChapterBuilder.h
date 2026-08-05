@@ -42,7 +42,7 @@ LOG
    rab : 08.25.1998 : Created file
 *****************************************************************************/
 
-class REPORTINGCLASS CPGSuperChapterBuilder : public WBFL::Reporting::ChapterBuilder
+class REPORTINGCLASS CPGSuperChapterBuilder : public WBFL::ReportMgr::ChapterBuilder
 {
 public:
    CPGSuperChapterBuilder(bool bSelect=true);
@@ -51,7 +51,7 @@ public:
    virtual Uint16 GetMaxLevel() const;
    
    // creates a new chapter object and configures it with the correct style for PGSuper reports
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
    // returns true if this chapter builder is selected by default
    // in the report definition dialog
@@ -59,7 +59,7 @@ public:
 
    virtual void SetSelect(bool bSelect);
 
-   virtual bool NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+   virtual bool NeedsUpdate(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint, const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
 protected:
    bool m_bSelect;

@@ -40,7 +40,7 @@ CEquilibriumCheckReportSpecificationBuilder::~CEquilibriumCheckReportSpecificati
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CEquilibriumCheckReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CEquilibriumCheckReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -74,14 +74,14 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CEquilibriumCheckReportSpe
    if ( dlg.DoModal() == IDOK )
    {     
 
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
       if(pOldGRptSpec)
       {
          std::shared_ptr<CEquilibriumCheckReportSpecification> pNewGRptSpec(std::make_shared<CEquilibriumCheckReportSpecification>(*pOldGRptSpec));
 
          pNewGRptSpec->SetOptions(dlg.GetPOI(),dlg.GetInterval());
 
-         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<WBFL::ReportMgr::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
@@ -96,8 +96,8 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CEquilibriumCheckReportSpe
    return nullptr;
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CEquilibriumCheckReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CEquilibriumCheckReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    // always prompt
-   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>());
+   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification>());
 }

@@ -45,7 +45,7 @@ LPCTSTR CTimelineChapterBuilder::GetName() const
    return TEXT("Construction Timeline");
 }
 
-rptChapter* CTimelineChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CTimelineChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pTimelineMgrRptSpec = std::dynamic_pointer_cast<const CTimelineManagerReportSpecification>(pRptSpec);

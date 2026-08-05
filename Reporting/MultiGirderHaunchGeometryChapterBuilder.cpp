@@ -40,7 +40,7 @@ LPCTSTR CMultiGirderHaunchGeometryChapterBuilder::GetName() const
    return TEXT("Haunch Geometry");
 }
 
-rptChapter* CMultiGirderHaunchGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CMultiGirderHaunchGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

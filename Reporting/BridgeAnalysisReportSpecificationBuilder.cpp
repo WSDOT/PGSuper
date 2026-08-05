@@ -39,7 +39,7 @@ CBridgeAnalysisReportSpecificationBuilder::~CBridgeAnalysisReportSpecificationBu
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CBridgeAnalysisReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CBridgeAnalysisReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -55,14 +55,14 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBridgeAnalysisReportSpeci
       // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
       auto pOldGRptSpec = std::dynamic_pointer_cast<CBridgeAnalysisReportSpecification>(pOldRptSpec);
 
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
       if(pOldGRptSpec)
       {
          std::shared_ptr<CBridgeAnalysisReportSpecification> pNewGRptSpec(std::make_shared<CBridgeAnalysisReportSpecification>(*pOldGRptSpec) );
          pNewGRptSpec->SetGirderIndex(dlg.m_SegmentKey.girderIndex);
          pNewGRptSpec->SetOptions(dlg.m_bDesign, dlg.m_bRating);
 
-         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<WBFL::ReportMgr::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
@@ -78,7 +78,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBridgeAnalysisReportSpeci
    return nullptr;
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CBridgeAnalysisReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CBridgeAnalysisReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
-   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>());
+   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification>());
 }

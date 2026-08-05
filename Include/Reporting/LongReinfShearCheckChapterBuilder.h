@@ -32,12 +32,12 @@ public:
    CLongReinfShearCheckChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
 
    virtual LPCTSTR GetName() const override;
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
 private:
    bool m_bDesign;
    bool m_bRating;
 
-   void BuildForDesign(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,bool bUHPC,Uint16 level) const;
-   void BuildForRating(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, bool bUHPC, Uint16 level) const;
+   void BuildForDesign(rptChapter* pChapter, const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,bool bUHPC,Uint16 level) const;
+   void BuildForRating(rptChapter* pChapter, const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec, bool bUHPC, Uint16 level) const;
 };

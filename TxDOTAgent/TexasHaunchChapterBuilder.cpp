@@ -68,7 +68,7 @@ LPCTSTR CTexasHaunchChapterBuilder::GetName() const
    return TEXT("TxDOT Haunch Summary");
 }
 
-rptChapter* CTexasHaunchChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CTexasHaunchChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    // This can be called for multi or single girders
    std::shared_ptr<WBFL::EAF::Broker> pBroker;

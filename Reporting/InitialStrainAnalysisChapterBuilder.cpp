@@ -43,7 +43,7 @@ LPCTSTR CInitialStrainAnalysisChapterBuilder::GetName() const
    return TEXT("Initial Strain Analysis");
 }
 
-rptChapter* CInitialStrainAnalysisChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CInitialStrainAnalysisChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CInitialStrainAnalysisReportSpecification>(pRptSpec);
    auto pBroker = pGdrRptSpec->GetBroker();

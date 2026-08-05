@@ -77,12 +77,12 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    //
 
    // report spec builders are objects that present a dialog that is used to
-   // define the report specification. The spec builder then creates a WBFL::Reporting::ReportSpecification objects
+   // define the report specification. The spec builder then creates a WBFL::ReportMgr::ReportSpecification objects
    // that is passed to all the chapter builders
 
    // this report spec builder prompts for span #, girder # and chapter list
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiGirderRptSpecBuilder(    std::make_shared<CMultiGirderReportSpecificationBuilder>(m_pBroker) );
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiViewRptSpecBuilder(      std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pMultiGirderRptSpecBuilder(    std::make_shared<CMultiGirderReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pMultiViewRptSpecBuilder(      std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
 
    CreateMultiGirderSpecCheckReport(pRptMgr);
 
@@ -91,23 +91,23 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    CreateMultiHaunchGeometryReport(pRptMgr);
 
    // Design Outcome
-   std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Design Outcome Report"),true)); // hidden report
+   std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pRptBuilder(std::make_shared<WBFL::ReportMgr::ReportBuilder>(_T("Design Outcome Report"),true)); // hidden report
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
    //pRptBuilder->SetTitlePageBuilder(nullptr); // no title page for this report
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CDesignOutcomeChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CDesignOutcomeChapterBuilder>()) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    // Fabrication Options Report
-   pRptBuilder = std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Fabrication Options Report"));
+   pRptBuilder = std::make_shared<WBFL::ReportMgr::ReportBuilder>(_T("Fabrication Options Report"));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
-   pRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(std::make_shared<CPGSuperTitlePageBuilder>(m_pBroker,pRptBuilder->GetName())) );
+   pRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::ReportMgr::TitlePageBuilder>(std::make_shared<CPGSuperTitlePageBuilder>(m_pBroker,pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<COptimizedFabricationChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<COptimizedFabricationChapterBuilder>()) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
    return S_OK;
@@ -192,14 +192,14 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
 
    for (const auto& strReportName : strReportNames)
    {
-      std::vector<std::shared_ptr<WBFL::Reporting::ReportBuilder>> vRptBuilders;
+      std::vector<std::shared_ptr<WBFL::ReportMgr::ReportBuilder>> vRptBuilders;
       vRptBuilders.push_back( pRptMgr->GetReportBuilder(strReportName.c_str()) );
 
-      std::vector<std::shared_ptr<WBFL::Reporting::ReportBuilder>>::iterator iter(vRptBuilders.begin());
-      std::vector<std::shared_ptr<WBFL::Reporting::ReportBuilder>>::iterator end(vRptBuilders.end());
+      std::vector<std::shared_ptr<WBFL::ReportMgr::ReportBuilder>>::iterator iter(vRptBuilders.begin());
+      std::vector<std::shared_ptr<WBFL::ReportMgr::ReportBuilder>>::iterator end(vRptBuilders.end());
       for ( ; iter != end; iter++ )
       {
-         std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(*iter);
+         std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pRptBuilder(*iter);
          pRptBuilder->Hidden(bHidden);
       }
    }
@@ -219,7 +219,7 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
    }
 
    std::_tstring prinRepName(_T("Principal Web Stress Details Report"));
-   std::shared_ptr<WBFL::Reporting::ReportBuilder> pPsRptBuilder = pRptMgr->GetReportBuilder(_T("Principal Web Stress Details Report"));
+   std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pPsRptBuilder = pRptMgr->GetReportBuilder(_T("Principal Web Stress Details Report"));
    ATLASSERT(pPsRptBuilder);
    if (pPsRptBuilder != nullptr)
    {
@@ -229,14 +229,14 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
    // Add time-step chapters the details report
    
    // Update details report to contain a couple of extra chapters
-   std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
+   std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       auto pChBuilder = pRptBuilder->GetChapterBuilder(TEXT("Shrinkage Strain Details"));
       if (pChBuilder == nullptr)
       {
          // chapter wasn't previously added
-         VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(new CShrinkageStrainChapterBuilder), TEXT("Creep Coefficient Details")/*this is the name of the chapter after which the shrinkage strain chapter will be added*/));
+         VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(new CShrinkageStrainChapterBuilder), TEXT("Creep Coefficient Details")/*this is the name of the chapter after which the shrinkage strain chapter will be added*/));
       }
    }
    else
@@ -261,7 +261,7 @@ bool CPGSuperReporterImp::IncludeSpanAndGirder4Pois(const CGirderKey& girderKey)
    return girderKey.groupIndex == ALL_GROUPS;
 }
 
-WBFL::Reporting::TitlePageBuilder* CPGSuperReporterImp::CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion)
+WBFL::ReportMgr::TitlePageBuilder* CPGSuperReporterImp::CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion)
 {
    return new CPGSuperTitlePageBuilder(m_pBroker,strReportName,bFullVersion);
 }

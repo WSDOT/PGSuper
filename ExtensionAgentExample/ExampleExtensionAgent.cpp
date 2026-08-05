@@ -216,14 +216,14 @@ void CExampleExtensionAgent::RegisterReports()
    // Create report spec builders
    //
 
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMyRptSpecBuilder(std::make_shared<CMyReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pMyRptSpecBuilder(std::make_shared<CMyReportSpecificationBuilder>(m_pBroker) );
 
    // My report
-   std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Extension Agent Report")));
+   std::shared_ptr<WBFL::ReportMgr::ReportBuilder> pRptBuilder(std::make_shared<WBFL::ReportMgr::ReportBuilder>(_T("Extension Agent Report")));
    pRptBuilder->SetMenuBitmap(&m_bmpMenu);
-   pRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(std::make_shared<CPGSuperTitlePageBuilder>(m_pBroker,pRptBuilder->GetName(),false)) );
+   pRptBuilder->SetTitlePageBuilder( std::shared_ptr<WBFL::ReportMgr::TitlePageBuilder>(std::make_shared<CPGSuperTitlePageBuilder>(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pMyRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CMyChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CMyChapterBuilder>()) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 

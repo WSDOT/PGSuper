@@ -37,21 +37,21 @@ CMyReportSpecificationBuilder::~CMyReportSpecificationBuilder(void)
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CMyReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CMyReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec) const
 {
    CString strAnswer;
    AfxQuestion(_T("My Report Specification"),_T("Enter some text to put into the report"),_T(""),strAnswer);
    std::shared_ptr<CMyReportSpecification> pSpec(std::make_shared<CMyReportSpecification>(rptDesc.GetReportName(),m_pBroker));
    pSpec->SetMessage(strAnswer);
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec(std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification>(pSpec));
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec(std::dynamic_pointer_cast<WBFL::ReportMgr::ReportSpecification>(pSpec));
 
    rptDesc.ConfigureReportSpecification(pNewRptSpec);
    return pNewRptSpec;
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CMyReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CMyReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    // there is no default configuration for this report. The user must be prompted every time
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> nullSpec;
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> nullSpec;
    return CreateReportSpec(rptDesc,nullSpec);
 }

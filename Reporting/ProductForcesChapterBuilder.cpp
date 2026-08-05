@@ -43,7 +43,7 @@ LPCTSTR CProductForcesChapterBuilder::GetName() const
 #pragma Reminder("OBSOLETE?: this chapter builder isn't used in any reports")
 // Delete this chapter builder, and the source files, if it isn't needed
 
-rptChapter* CProductForcesChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CProductForcesChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    ATLASSERT(false);
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);

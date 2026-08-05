@@ -68,7 +68,7 @@ LPCTSTR CLiveLoadDetailsChapterBuilder::GetName() const
    return TEXT("Live Load Details");
 }
 
-rptChapter* CLiveLoadDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CLiveLoadDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pBroker = pBrokerRptSpec->GetBroker();

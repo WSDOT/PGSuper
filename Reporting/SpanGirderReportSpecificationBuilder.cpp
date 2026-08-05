@@ -47,7 +47,7 @@ CSpanReportSpecificationBuilder::~CSpanReportSpecificationBuilder(void)
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CSpanReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CSpanReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -70,14 +70,14 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSpanReportSpecificationBu
       // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
       std::shared_ptr<CSpanReportSpecification> pOldGRptSpec( std::dynamic_pointer_cast<CSpanReportSpecification>(pOldRptSpec) );
 
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
       if(pOldGRptSpec)
       {
          std::shared_ptr<CSpanReportSpecification> pNewGRptSpec(std::make_shared<CSpanReportSpecification>(*pOldGRptSpec) );
 
          pNewGRptSpec->SetSpan(dlg.m_SegmentKey.groupIndex);
 
-         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<WBFL::ReportMgr::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
@@ -93,14 +93,14 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSpanReportSpecificationBu
    return nullptr;
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CSpanReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CSpanReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    // Get the selected span and girder
    GET_IFACE2(GetBroker(),ISelection,pSelection);
    SpanIndexType spanIdx = pSelection->GetSelectedSpan();
 
    spanIdx = (spanIdx == INVALID_INDEX ? 0 : spanIdx );
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec( std::make_shared<CSpanReportSpecification>(rptDesc.GetReportName(),m_pBroker,spanIdx) );
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec( std::make_shared<CSpanReportSpecification>(rptDesc.GetReportName(),m_pBroker,spanIdx) );
 
    rptDesc.ConfigureReportSpecification(pRptSpec);
 
@@ -120,7 +120,7 @@ CGirderLineReportSpecificationBuilder::~CGirderLineReportSpecificationBuilder(vo
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderLineReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CGirderLineReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -138,14 +138,14 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderLineReportSpecifica
       // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
       std::shared_ptr<CGirderLineReportSpecification> pOldGRptSpec( std::dynamic_pointer_cast<CGirderLineReportSpecification>(pOldRptSpec) );
 
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
       if(pOldGRptSpec)
       {
          std::shared_ptr<CGirderLineReportSpecification> pNewGRptSpec(std::make_shared<CGirderLineReportSpecification>(*pOldGRptSpec) );
 
          pNewGRptSpec->SetGirderIndex(dlg.m_SegmentKey.girderIndex);
 
-         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<WBFL::ReportMgr::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
@@ -161,7 +161,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderLineReportSpecifica
    return nullptr;
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderLineReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CGirderLineReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    // Get the selected span and girder
    GET_IFACE2(GetBroker(),ISelection,pSelection);
@@ -169,7 +169,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderLineReportSpecifica
    girderKey.groupIndex  = (girderKey.groupIndex  == INVALID_INDEX ? 0 : girderKey.groupIndex);
    girderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CGirderLineReportSpecification>(rptDesc.GetReportName(),m_pBroker,girderKey.girderIndex) );
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec(std::make_shared<CGirderLineReportSpecification>(rptDesc.GetReportName(),m_pBroker,girderKey.girderIndex) );
 
    rptDesc.ConfigureReportSpecification(pRptSpec);
 
@@ -190,7 +190,7 @@ CGirderReportSpecificationBuilder::~CGirderReportSpecificationBuilder(void)
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CGirderReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -214,13 +214,13 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecification
       // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
       std::shared_ptr<CGirderReportSpecification> pOldGRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification>(pOldRptSpec);
 
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
       if(pOldGRptSpec)
       {
          std::shared_ptr<CGirderReportSpecification> pNewGRptSpec( std::make_shared<CGirderReportSpecification>(*pOldGRptSpec));
          pNewGRptSpec->SetGirderKey(girderKey);
 
-         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<WBFL::ReportMgr::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
@@ -236,7 +236,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecification
    return nullptr;
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CGirderReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    // Get the selected group and girder
    GET_IFACE2(GetBroker(),ISelection,pSelection);
@@ -267,7 +267,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecification
             m_GirderKey.girderIndex = selection.GirderIdx;
          }
 
-         std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = CreateReportSpec(rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification>());
+         std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec = CreateReportSpec(rptDesc, std::shared_ptr<WBFL::ReportMgr::ReportSpecification>());
 
          // put the girder key back the way it was
          m_GirderKey = girderKey;
@@ -280,7 +280,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecification
          girderKey.girderIndex  = selection.GirderIdx;
       }
    }
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CGirderReportSpecification>(rptDesc.GetReportName(),m_pBroker,girderKey) );
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec(std::make_shared<CGirderReportSpecification>(rptDesc.GetReportName(),m_pBroker,girderKey) );
 
    rptDesc.ConfigureReportSpecification(pRptSpec);
 
@@ -302,7 +302,7 @@ CSegmentReportSpecificationBuilder::~CSegmentReportSpecificationBuilder(void)
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CSegmentReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CSegmentReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc, std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -327,13 +327,13 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSegmentReportSpecificatio
       // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
       std::shared_ptr<CSegmentReportSpecification> pOldGRptSpec = std::dynamic_pointer_cast<CSegmentReportSpecification>(pOldRptSpec);
 
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
       if (pOldGRptSpec)
       {
          std::shared_ptr<CSegmentReportSpecification> pNewGRptSpec(std::make_shared<CSegmentReportSpecification>(*pOldGRptSpec));
          pNewGRptSpec->SetSegmentKey(segmentKey);
 
-         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<WBFL::ReportMgr::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
@@ -349,7 +349,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSegmentReportSpecificatio
    return nullptr;
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CSegmentReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CSegmentReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    // Get the selected group and girder
    GET_IFACE2(GetBroker(),ISelection, pSelection);
@@ -365,11 +365,11 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSegmentReportSpecificatio
       segmentKey.girderIndex = selection.GirderIdx;
       segmentKey.segmentIndex = selection.SegmentIdx;
 
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = CreateReportSpec(rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification>());
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec = CreateReportSpec(rptDesc, std::shared_ptr<WBFL::ReportMgr::ReportSpecification>());
       return pRptSpec;
    }
 
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CSegmentReportSpecification>(rptDesc.GetReportName(), m_pBroker, segmentKey));
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec(std::make_shared<CSegmentReportSpecification>(rptDesc.GetReportName(), m_pBroker, segmentKey));
 
    rptDesc.ConfigureReportSpecification(pRptSpec);
 
@@ -390,7 +390,7 @@ CMultiGirderReportSpecificationBuilder::~CMultiGirderReportSpecificationBuilder(
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CMultiGirderReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -456,14 +456,14 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecific
    if ( dlg.DoModal() == IDOK )
    {
       // If possible, get information from old spec. Otherwise header/footer and other info will be lost
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
       if(pOldGRptSpec)
       {
          std::shared_ptr<CMultiGirderReportSpecification> pNewGRptSpec = std::make_shared<CMultiGirderReportSpecification>(*pOldGRptSpec);
 
          pNewGRptSpec->SetGirderKeys(dlg.m_GirderKeys);
 
-         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<WBFL::ReportMgr::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
@@ -479,7 +479,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecific
    return nullptr;
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CMultiGirderReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    GET_IFACE2(GetBroker(),ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
@@ -513,7 +513,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecific
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
       // we don't have a proper girder key.... prompt the user
-      std::shared_ptr<WBFL::Reporting::ReportSpecification> nullSpec;
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecification> nullSpec;
       CSpanGirderReportDlg dlg(GetBroker(), rptDesc, CSpanGirderReportDlg::Mode::GroupGirderAndChapters, nullSpec);
       dlg.m_SegmentKey.groupIndex = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
       dlg.m_SegmentKey.girderIndex = girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex;
@@ -531,7 +531,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecific
    std::vector<CGirderKey> girderKeys;
    girderKeys.push_back(girderKey);
 
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec( std::make_shared<CMultiGirderReportSpecification>(rptDesc.GetReportName(),m_pBroker, girderKeys) );
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec( std::make_shared<CMultiGirderReportSpecification>(rptDesc.GetReportName(),m_pBroker, girderKeys) );
 
    rptDesc.ConfigureReportSpecification(pRptSpec);
 
@@ -551,13 +551,13 @@ CMultiViewSpanGirderReportSpecificationBuilder::~CMultiViewSpanGirderReportSpeci
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CMultiViewSpanGirderReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc,std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    // First check if we are getting a CGirderReportSpecification. If so, use our bro to take care of this
-   std::shared_ptr<CGirderReportSpecification> pGirderRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification,WBFL::Reporting::ReportSpecification>(pOldRptSpec);
+   std::shared_ptr<CGirderReportSpecification> pGirderRptSpec = std::dynamic_pointer_cast<CGirderReportSpecification,WBFL::ReportMgr::ReportSpecification>(pOldRptSpec);
    if ( pGirderRptSpec != nullptr )
    {
-      std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder( std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,pGirderRptSpec->GetGirderKey()) );
+      std::shared_ptr<WBFL::ReportMgr::ReportSpecificationBuilder> pGirderRptSpecBuilder( std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,pGirderRptSpec->GetGirderKey()) );
       return pGirderRptSpecBuilder->CreateReportSpec(rptDesc, pOldRptSpec);
    }
    else
@@ -594,14 +594,14 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
          // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
          std::shared_ptr<CMultiViewSpanGirderReportSpecification> pOldGRptSpec = std::dynamic_pointer_cast<CMultiViewSpanGirderReportSpecification>(pOldRptSpec);
 
-         std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+         std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
          if(pOldGRptSpec)
          {
             std::shared_ptr<CMultiViewSpanGirderReportSpecification> pNewGRptSpec(std::make_shared<CMultiViewSpanGirderReportSpecification>(*pOldGRptSpec) );
 
             pNewGRptSpec->SetGirderKeys(girderKeys);
 
-            pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
+            pNewRptSpec = std::static_pointer_cast<WBFL::ReportMgr::ReportSpecification>(pNewGRptSpec);
          }
          else
          {
@@ -618,7 +618,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
    }
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CMultiViewSpanGirderReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    GET_IFACE2(GetBroker(),ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
@@ -652,7 +652,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
       // we don't have a proper girder key.... prompt the user
-      CSpanGirderReportDlg dlg(GetBroker(), rptDesc, CSpanGirderReportDlg::Mode::GroupGirderAndChapters, std::shared_ptr<WBFL::Reporting::ReportSpecification>());
+      CSpanGirderReportDlg dlg(GetBroker(), rptDesc, CSpanGirderReportDlg::Mode::GroupGirderAndChapters, std::shared_ptr<WBFL::ReportMgr::ReportSpecification>());
       dlg.m_SegmentKey.groupIndex = girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex;
       dlg.m_SegmentKey.girderIndex = girderKey.girderIndex == ALL_GIRDERS ? 0 : girderKey.girderIndex;
 
@@ -666,7 +666,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
       }
    }
 
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec( std::make_shared<CGirderReportSpecification>(rptDesc.GetReportName(),m_pBroker,girderKey) );
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec( std::make_shared<CGirderReportSpecification>(rptDesc.GetReportName(),m_pBroker,girderKey) );
 
    rptDesc.ConfigureReportSpecification(pRptSpec);
 

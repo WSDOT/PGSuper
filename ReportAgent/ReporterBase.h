@@ -36,7 +36,7 @@ public:
 
 protected:
 
-   virtual WBFL::Reporting::TitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion=true) = 0;
+   virtual WBFL::ReportMgr::TitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion=true) = 0;
    void CreateBridgeGeometryReport(std::shared_ptr<IEAFReportManager> pRptMgr);
    void CreateSectionPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr);
    void CreateDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr);

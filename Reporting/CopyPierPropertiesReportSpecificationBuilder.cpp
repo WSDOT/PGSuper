@@ -34,18 +34,18 @@ CCopyPierPropertiesReportSpecificationBuilder::~CCopyPierPropertiesReportSpecifi
 {
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CCopyPierPropertiesReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CCopyPierPropertiesReportSpecificationBuilder::CreateReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc, std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pOldRptSpec) const
 {
    // If possible, copy information from old spec. Otherwise header/footer and other info will be lost
    std::shared_ptr<CCopyPierPropertiesReportSpecification> pOldTLMRptSpec(std::dynamic_pointer_cast<CCopyPierPropertiesReportSpecification>(pOldRptSpec));
 
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pNewRptSpec;
    if (pOldTLMRptSpec)
    {
       std::shared_ptr<CCopyPierPropertiesReportSpecification> pNewTLMRptSpec(std::make_shared<CCopyPierPropertiesReportSpecification>(*pOldTLMRptSpec));
 //      pNewTLMRptSpec->SetCopyPierProperties(pOldTLMRptSpec->GetCopyPierProperties());
 
-     pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewTLMRptSpec);
+     pNewRptSpec = std::static_pointer_cast<WBFL::ReportMgr::ReportSpecification>(pNewTLMRptSpec);
    }
    else
    {
@@ -55,10 +55,10 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CCopyPierPropertiesReportS
    return pNewRptSpec;
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CCopyPierPropertiesReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
+std::shared_ptr<WBFL::ReportMgr::ReportSpecification> CCopyPierPropertiesReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::ReportMgr::ReportDescription& rptDesc) const
 {
    // Use all chapters at the maximum level
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec(std::make_shared<CCopyPierPropertiesReportSpecification>(rptDesc.GetReportName(), m_pBroker));
+   std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec(std::make_shared<CCopyPierPropertiesReportSpecification>(rptDesc.GetReportName(), m_pBroker));
 
    rptDesc.ConfigureReportSpecification(pRptSpec);
 

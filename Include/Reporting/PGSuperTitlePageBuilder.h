@@ -27,17 +27,17 @@
 
 /// @brief 
 class REPORTINGCLASS CPGSuperTitlePageBuilder :
-   public WBFL::Reporting::TitlePageBuilder
+   public WBFL::ReportMgr::TitlePageBuilder
 {
 public:
    CPGSuperTitlePageBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion=true, bool bPageBreakAfter=true);
    CPGSuperTitlePageBuilder(const CPGSuperTitlePageBuilder& other);
    ~CPGSuperTitlePageBuilder(void);
 
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const override;
-   virtual bool NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const override;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec) const override;
+   virtual bool NeedsUpdate(const std::shared_ptr<const WBFL::ReportMgr::ReportHint>& pHint,const std::shared_ptr<const WBFL::ReportMgr::ReportSpecification>& pRptSpec) const override;
 
-   virtual std::unique_ptr<WBFL::Reporting::TitlePageBuilder> Clone() const;
+   virtual std::unique_ptr<WBFL::ReportMgr::TitlePageBuilder> Clone() const;
 
 protected:
    std::weak_ptr<WBFL::EAF::Broker> m_pBroker;

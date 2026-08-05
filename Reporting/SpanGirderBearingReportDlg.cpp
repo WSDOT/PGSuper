@@ -44,7 +44,7 @@
 
  IMPLEMENT_DYNAMIC(CSpanGirderBearingReportDlg, CSpanItemReportDlg)
 
-  CSpanGirderBearingReportDlg::CSpanGirderBearingReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, const WBFL::Reporting::ReportDescription& rptDesc, Mode mode, std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec, UINT nIDTemplate, CWnd* pParent)
+  CSpanGirderBearingReportDlg::CSpanGirderBearingReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, const WBFL::ReportMgr::ReportDescription& rptDesc, Mode mode, std::shared_ptr<WBFL::ReportMgr::ReportSpecification> pRptSpec, UINT nIDTemplate, CWnd* pParent)
     :CSpanItemReportDlg(pBroker, rptDesc, mode, pRptSpec, nIDTemplate, pParent)
  {
 
