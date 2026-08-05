@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // ExtensionAgentExample - Extension Agent Example Project for PGSuper
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,6 +23,8 @@
 #pragma once
 #include <Reporting\BrokerReportSpecification.h>
 
+/// @brief Report specification for the example agent's "Extension Agent Report", built by
+/// CMyReportSpecificationBuilder. See \ref creating_an_extension_agent "Creating an Extension Agent".
 class CMyReportSpecification :
    public CBrokerReportSpecification // want the broker to be available when the report is generated
 {

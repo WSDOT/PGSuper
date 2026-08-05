@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,8 +29,9 @@ DEFINE_GUID(CATID_PGSpliceAgent,
 DEFINE_GUID(CATID_PGSpliceExtensionAgent, 
 0x5875ee83, 0x78fe, 0x4181, 0x83, 0x4a, 0xc9, 0x79, 0xfa, 0xd2, 0x42, 0x22);
 
+/// @brief Component category for PGSplice Beam Family plug-ins - see \ref creating_a_beam_type "Creating a Beam Type".
 // {505E6892-B4BC-45b5-8C67-393A1F1C8873}
-DEFINE_GUID(CATID_PGSpliceBeamFamily, 
+DEFINE_GUID(CATID_PGSpliceBeamFamily,
 0x505e6892, 0xb4bc, 0x45b5, 0x8c, 0x67, 0x39, 0x3a, 0x1f, 0x1c, 0x88, 0x73);
 
 // {6F272A25-A06B-4ee0-8593-DF4946C8AA7B}

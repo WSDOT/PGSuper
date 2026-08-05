@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // ExtensionAgentExample - Extension Agent Example Project for PGSuper
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,8 @@
 
 class CEAFGraphChildFrame;
 
+/// @brief Example graph registered by CExampleExtensionAgent::RegisterGraphs() via
+/// IEAFGraphManager::AddGraphBuilder. See \ref creating_an_extension_agent "Creating an Extension Agent".
 class CTestGraphBuilder : public CEAFGraphBuilderBase
 {
 public:

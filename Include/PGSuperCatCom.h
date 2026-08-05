@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -31,8 +31,9 @@ DEFINE_GUID(CATID_PGSuperAgent,
 DEFINE_GUID(CATID_PGSuperExtensionAgent, 
 0x4b5ad09a, 0xe616, 0x468e, 0x8f, 0x84, 0x4f, 0x9d, 0x68, 0xe7, 0xb6, 0xca);
 
+/// @brief Component category for PGSuper Beam Family plug-ins - see \ref creating_a_beam_type "Creating a Beam Type".
 // {EBFB7517-F1BB-43ff-9412-FA4E1BDEC6BA}
-DEFINE_GUID(CATID_PGSuperBeamFamily, 
+DEFINE_GUID(CATID_PGSuperBeamFamily,
 0xebfb7517, 0xf1bb, 0x43ff, 0x94, 0x12, 0xfa, 0x4e, 0x1b, 0xde, 0xc6, 0xba);
 
 // {D3E6CC1B-A7BE-4329-A30C-C8118441B418}

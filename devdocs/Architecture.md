@@ -34,7 +34,7 @@ Graphing Agent | Responsible for graphical output
 Specification Agent | Responsble for implenting the LRFD specifications
 Test Agent | Responsible for reporting regression test results using the concepts defined in NCHRP Project 12-50.
 
-PGSuper also has two default extension agents. Third-parties can also create extension agents for PGSuper.
+PGSuper also has two default extension agents.
 
 Agent | Description
 ------|------------
@@ -42,6 +42,10 @@ TxDOT Agent | Provides Texas DOT specific reports.
 WSDOT Agent | Provides Washington State DOT specific reports.
 
 The TxDOT Agent is implemented in the TxDOTAgent project. This project also contains implementations for other TxDOT extensions to PGSuper and BridgeLink include the TxDOT CAD Exporter and the TOGA application.
+
+Third-parties can also create extension agents for
+PGSuper - see \ref extensibility "Extensibility" for an overview of Extension Agents and the other
+PGSuper/PGSplice extension mechanisms.
 
 # PGSuper Support Libraries
 The PGSuper Agents depend on several support libraries.

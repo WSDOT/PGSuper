@@ -73,8 +73,11 @@ namespace PGS
       void BEAMSFUNC LayoutWebThickeningPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, Float64 Xpier, pgsPoiMgr* pPoiMgr);
 
 
-      /////////////////////////////////////////////////////////////////////////////
-      // BeamFamilyImpl
+      /// @brief Base implementation of BeamFamily - the recommended starting point for a new beam
+      /// family. Handles discovering and creating member BeamFactory components for you; a
+      /// concrete family only needs to override GetCLSID() (the family's own CLSID) and GetCATID()
+      /// (the component category its member factories are registered under), then call Init() -
+      /// see \ref creating_a_beam_type "Creating a Beam Type".
       class BEAMSCLASS BeamFamilyImpl :
          public BeamFamily
       {
@@ -87,9 +90,12 @@ namespace PGS
          std::shared_ptr<BeamFactory> CreateFactory(LPCTSTR strName) const override;
 
       protected:
+         /// @brief Call from a derived class's constructor once GetCLSID()/GetCATID() are ready to use
          void Init();
 
+         /// @brief Returns this family's own CLSID
          virtual const CLSID& GetCLSID() const = 0;
+         /// @brief Returns the component category this family's member BeamFactory objects are registered under
          virtual const CATID& GetCATID() const = 0;
 
          typedef std::map<CString, CLSID> FactoryContainer;

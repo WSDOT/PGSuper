@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // ExtensionAgentExample - Extension Agent Example Project for PGSuper
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,8 @@
 
 #include <EAF\EAFGraphControlWindow.h>
 
+/// @brief Graph control window (sine/cosine selector) shared by CTestGraphBuilder,
+/// CTestGraphBuilder2, and CTestGraphBuilder3.
 class CTestDialogBar : public CEAFGraphControlWindow
 {
 public:

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // IEPluginExample
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,9 @@
 #include <Plugins\PGSuperIEPlugin.h>
 #include <EAF\ComponentObject.h>
 
+/// @brief Example PGSuper Data Exporter. Demonstrates PGS::IDataExporter by writing pier and
+/// girder data from the currently open project to a text file - see
+/// \ref creating_a_data_plugin "Creating a Data Plugin".
 class CPGSuperDataExporter : public WBFL::EAF::ComponentObject,
    public PGS::IDataExporter
 {

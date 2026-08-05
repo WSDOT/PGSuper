@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // ExtensionAgentExample - Extension Agent Example Project for PGSuper
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -49,6 +49,9 @@ class IEditPierData;
 // once. A real extension for e.g. IEditBridgeCallback would normally follow this
 // class's shape instead, taking an IEditBridgeData* in its own constructor.
 
+/// @brief Property page returned by CExampleExtensionAgent::CreatePropertyPage(IEditPierData*) - the
+/// "fuller" tab-extension example that reads live parent-dialog data. See
+/// \ref creating_an_extension_agent "Creating an Extension Agent".
 class CEditPierPage : public CPropertyPage
 {
 	DECLARE_DYNAMIC(CEditPierPage)

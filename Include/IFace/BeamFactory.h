@@ -62,14 +62,14 @@ namespace PGS
       class DistFactorEngineer;
       class PsLossEngineerBase;
 
-      // Between PGSuper version 2.x and 3.x, all Class IDs of the beam factories where changed.
-      // Files saved with version 2.x have the old CLSIDs and we need the new CLSID to create
-      // the beam factory. This is easy to implement for our own beam factories,
-      // however, we need a way to translate CLSIDs for extension beams. That is
-      // what objects of this type do. External publishers of beam factors
-      // must register their BeamFactoryCLSIDTranslator with the BeamFactoryCLSIDTranslator
-      // category. We will discover all registered translators and include them in the
-      // CLSID translation process.
+      /// @brief Translates an old beam factory CLSID to its current one, so files saved with an
+      /// older CLSID still resolve to the right factory. Between PGSuper version 2.x and 3.x, all
+      /// class IDs of the beam factories were changed; PGSuper translates its own CLSIDs
+      /// internally, but third-party ("external") beam factory publishers need their own
+      /// translation path if they ever renumber a CLSID. A publisher who needs this registers a
+      /// `BeamFactoryCLSIDTranslator` implementation under `CATID_BeamFactoryCLSIDTranslator` (see
+      /// \ref component_manifests "Component Manifests") - every registered translator is
+      /// discovered and consulted during CLSID translation.
       class BeamFactoryCLSIDTranslator : public WBFL::EAF::ComponentObject
       {
       public:
@@ -343,6 +343,10 @@ namespace PGS
          BeamFactory() = default;
       };
 
+      /// @brief BeamFactory specialization for beam shapes that support spliced-girder
+      /// construction (segments joined by closure joints, post-tensioned, built up in stages) -
+      /// adds the additional geometric/segment-variation queries a spliced girder UI and analysis
+      /// need beyond what plain BeamFactory provides.
       class SplicedBeamFactory : public BeamFactory
       {
       public:
@@ -383,6 +387,8 @@ namespace PGS
       // and then sets it to the appropriate bridge model parameter when the method on this interface
       // is called.
 
+      /// @brief Bag of named Float64 values a BeamFactory can carry forward from an old file
+      /// format to hand off to BeamFactoryCompatibility::UpdateBridgeModel.
       class CompatibilityData
       {
       public:
@@ -409,10 +415,17 @@ namespace PGS
          std::map<std::_tstring, Float64> m_Values;
       };
 
+      /// @brief Optional interface a BeamFactory implements when data that used to live in the
+      /// girder library entry (and thus in the beam factory's own dimension set) has since moved
+      /// into the bridge model proper. Implementing this lets old files keep working: the factory
+      /// loads the old value as before, then this interface's UpdateBridgeModel is called so the
+      /// factory can push that value into its new home in the bridge model.
       class BeamFactoryCompatibility
       {
       public:
+         /// @brief Returns any legacy dimension values this factory loaded that now belong on the bridge model
          virtual std::shared_ptr<CompatibilityData> GetCompatibilityData() const = 0;
+         /// @brief Applies previously-loaded legacy values (from GetCompatibilityData) onto the bridge model
          virtual void UpdateBridgeModel(CBridgeDescription2* pBridgeDesc, const GirderLibraryEntry* pGirderEntry) const = 0;
       };
 

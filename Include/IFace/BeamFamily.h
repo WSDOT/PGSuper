@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper Beam Family
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This library is a part of the Washington Bridge Foundation Libraries
@@ -44,16 +44,14 @@ namespace PGS
    {
       class BeamFactory;
 
-      /*****************************************************************************
-      INTERFACE
-         IBeamFamily
-
-         Interface for creating a generic beam family.
-
-      DESCRIPTION
-         A beam family is a general classification of a type of precast beam.
-         Examples of beam families are I-Beam, U-Beam, and Slab
-      *****************************************************************************/
+      /// @brief A general classification of a type of precast beam - e.g. I-Beam, U-Beam, or Slab.
+      /// A BeamFamily doesn't itself describe a cross section; it's a named collection of one or
+      /// more BeamFactory implementations (the actual named shapes within that classification,
+      /// e.g. "Precast I-Beam" and "Nebraska NU Girder" within the I-Beam family), each registered
+      /// under the CATID this family reports from its own component category (see
+      /// \ref creating_a_beam_type "Creating a Beam Type"). Concrete families normally derive from
+      /// `PGS::Beams::BeamFamilyImpl` (`Include\Beams\Helper.h`) rather than implementing this
+      /// interface directly.
       class BeamFamily : public WBFL::EAF::ComponentObject
       {
       public:

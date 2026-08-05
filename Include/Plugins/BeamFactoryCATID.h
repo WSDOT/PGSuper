@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,8 +22,15 @@
 
 #pragma once
 
+/// @file BeamFactoryCATID.h
+/// @brief Component categories for PGS::Beams::BeamFactory plug-ins. Unlike the other extension
+/// mechanisms (which use one CATID per role), each PGSuper/PGSplice beam family has its own
+/// dedicated factory category here - all named shapes belonging to a given family (e.g. every
+/// I-beam variant) are registered under that one family's CATID. See
+/// \ref creating_a_beam_type "Creating a Beam Type".
+
 // {8317D6CA-D247-4661-B8AA-34A9AB5BFF7D}
-DEFINE_GUID(CATID_BeamFactoryCLSIDTranslator, 
+DEFINE_GUID(CATID_BeamFactoryCLSIDTranslator,
 0x8317d6ca, 0xd247, 0x4661, 0xb8, 0xaa, 0x34, 0xa9, 0xab, 0x5b, 0xff, 0x7d);
 
 

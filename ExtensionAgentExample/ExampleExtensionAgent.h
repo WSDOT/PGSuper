@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // ExtensionAgentExample - Extension Agent Example Project for PGSuper
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,12 @@
 #include "ExtensionPage.h"
 
 
+/// @brief Extension agent that exercises every PGSuper/PGSplice Extension Agent capability in one
+/// place: property-page tabs (the IEditXxxCallback interfaces), menu/toolbar commands, a custom
+/// view, a new report and new graphs, and persisting its own data into the project file. See
+/// \ref creating_an_extension_agent "Creating an Extension Agent" for a guided walkthrough of this
+/// class, and \ref extensibility "Extensibility" for how this mechanism compares to a Project
+/// Importer, Data Importer, or Data Exporter.
 class CExampleExtensionAgent : public CCmdTarget, // it's very important CCmdTarget is the first parent for inheritance, see Warning C4407
    public WBFL::EAF::Agent,
    public WBFL::EAF::IAgentPersist,

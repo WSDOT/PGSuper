@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // IEPluginExample
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,9 @@
 #include <Plugins\PGSuperIEPlugin.h>
 #include <EAF/ComponentObject.h>
 
+/// @brief Example PGSplice Project Importer. Demonstrates PGS::IProjectImporter for PGSplice,
+/// registered under CATID_PGSpliceProjectImporter rather than CATID_PGSuperProjectImporter - see
+/// \ref creating_a_project_importer "Creating a Project Importer".
 class CPGSpliceProjectImporter : public WBFL::EAF::ComponentObject,
    public PGS::IProjectImporter
 {

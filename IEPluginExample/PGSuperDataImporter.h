@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // IEPluginExample
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,6 +27,9 @@
 #include <Plugins\PGSuperIEPlugin.h>
 #include <EAF\ComponentObject.h>
 
+/// @brief Example PGSuper Data Importer. Demonstrates PGS::IDataImporter by changing the roadway
+/// alignment of the currently open project - see
+/// \ref creating_a_data_plugin "Creating a Data Plugin".
 class CPGSuperDataImporter : public WBFL::EAF::ComponentObject,
    public PGS::IDataImporter
 {

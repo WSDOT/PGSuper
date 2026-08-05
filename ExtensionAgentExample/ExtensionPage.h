@@ -44,6 +44,9 @@
 // deliberately minimal because CExampleExtensionAgent's non-Pier callbacks don't
 // need to demonstrate that pattern more than once.
 
+/// @brief Property page returned by every CExampleExtensionAgent::CreatePropertyPage() override
+/// except the Pier one - the "simpler" self-contained tab-extension example. See
+/// \ref creating_an_extension_agent "Creating an Extension Agent".
 class CExtensionPage : public CPropertyPage
 {
 	DECLARE_DYNAMIC(CExtensionPage)

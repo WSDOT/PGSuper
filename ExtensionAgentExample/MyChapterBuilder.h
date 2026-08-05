@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // ExtensionAgentExample - Extension Agent Example Project for PGSuper
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -39,6 +39,10 @@ LOG
    rab : 11.25.2009 : Created file
 *****************************************************************************/
 
+/// @brief Chapter builder for the example agent's own "Extension Agent Report", added via
+/// WBFL::Reporting::ReportBuilder::AddChapterBuilder. Note this example only adds a chapter to a
+/// brand-new report - see \ref creating_an_extension_agent "Creating an Extension Agent" for how
+/// InsertChapterBuilder/RemoveChapterBuilder are used to modify an *existing* report instead.
 class CMyChapterBuilder : public CPGSuperChapterBuilder
 {
 public:

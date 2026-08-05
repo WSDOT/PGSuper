@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // ExtensionAgentExample - Extension Agent Example Project for PGSuper
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,9 @@
 
 // CMyView view
 
+/// @brief Custom view registered by CExampleExtensionAgent::RegisterViews() via
+/// IEAFViewRegistrar - demonstrates an extension agent adding its own view. See
+/// \ref creating_an_extension_agent "Creating an Extension Agent".
 class CMyView : public CView
 {
 	DECLARE_DYNCREATE(CMyView)

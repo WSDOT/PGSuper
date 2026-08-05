@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // IEPluginExample
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,10 @@
 
 class CBridgeDescription2;
 
-class CPGSuperProjectImporter : public WBFL::EAF::ComponentObject, 
+/// @brief Example PGSuper Project Importer. Demonstrates PGS::IProjectImporter by building a
+/// hard-coded default bridge instead of connecting to a real external data source - see
+/// \ref creating_a_project_importer "Creating a Project Importer".
+class CPGSuperProjectImporter : public WBFL::EAF::ComponentObject,
    public PGS::IProjectImporter
 {
 public:

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -55,8 +55,12 @@ class IEditLoadRatingOptionsCallback;
 // that don't override it are unaffected.
 /////////////////////////////////////////////////////////////////////////////////////////
 
+/// @brief Where an extension page should be inserted among a dialog's existing tabs, as returned by
+/// IExtensionPageCallback::GetPropertyPagePosition().
 enum class ExtensionPagePlacement { Start, End, Before, After, AtIndex };
 
+/// @brief Requested position for an extension page. Use the static AtStart()/AtEnd()/Before()/After()/
+/// AtIndex() factory methods rather than constructing this directly.
 struct ExtensionPagePosition
 {
    ExtensionPagePlacement Placement = ExtensionPagePlacement::End;
@@ -226,7 +230,7 @@ public:
    /// otherwise return nullptr
    virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPropertyPage,IEditTemporarySupportData* pEditTemporarySupportData) = 0;
 
-   //@ brief Returns the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to the Temporary Support dialog
+   /// @brief Returns the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to the Temporary Support dialog
    virtual IDType GetEditBridgeCallbackID() = 0;
 };
 
