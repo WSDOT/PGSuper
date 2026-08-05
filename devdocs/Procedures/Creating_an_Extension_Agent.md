@@ -65,23 +65,27 @@ BEGIN_MESSAGE_MAP(CExampleExtensionAgent, CCmdTarget)
    ON_COMMAND(ID_COMMAND1, &CExampleExtensionAgent::OnCommand1)
 END_MESSAGE_MAP()
 ~~~
-(`ExampleExtensionAgent::CreateMenus()`/`CreateToolBar()`).
+(`ExampleExtensionAgent::CreateMenus()`/`CreateToolBar()`). This example only shows adding a new
+top-level menu and a new toolbar - for splicing commands into an *existing* menu, adding buttons to
+an existing toolbar, accelerator keys, and the full API, see
+\ref WBFL_EAF_UIIntegration "UI Integration" in the WBFL EAF devdocs.
 
 ## Views
 `IEAFViewRegistrar::RegisterView` registers a `CView`/`CFrameWnd` pair the same way PGSuper's own
 report and graph views are registered. `ExampleExtensionAgent::RegisterViews()` registers `CMyView`
 (`MyView.h`), which holds a `std::shared_ptr<ICommandCallback>` back to the agent for routing its
-own commands.
+own commands. See \ref WBFL_EAF_UIIntegration "UI Integration" in the WBFL EAF devdocs for the full
+`IEAFViewRegistrar` API and the related `IEAFViewController`.
 
-## Adding a new report or graph
-`Include\EAF\EAFReportManager.h`'s `IEAFReportManager::AddReportBuilder` and
-`Include\EAF\EAFGraphManager.h`'s `IEAFGraphManager::AddGraphBuilder` register a brand new report or
-graph. `ExampleExtensionAgent::RegisterReports()` builds a
+## Reports
+
+### Adding a new report
+`Include\EAF\EAFReportManager.h`'s `IEAFReportManager::AddReportBuilder` registers a brand new
+report. `ExampleExtensionAgent::RegisterReports()` builds a
 `WBFL::Reporting::ReportBuilder("Extension Agent Report")` with a `CMyReportSpecificationBuilder`
-(`MyReportSpecificationBuilder.h`) and a `CMyChapterBuilder` (`MyChapterBuilder.h`);
-`RegisterGraphs()` adds three `CTestGraphBuilder*` instances (`TestGraphBuilder.h`).
+(`MyReportSpecificationBuilder.h`) and a `CMyChapterBuilder` (`MyChapterBuilder.h`).
 
-## Modifying an existing report
+### Modifying an existing report
 To add or remove a chapter on a report *another* agent defined - rather than building your own -
 look the report up by name with `IEAFReportManager::GetReportBuilder`, then call
 `WBFL::Reporting::ReportBuilder::InsertChapterBuilder`/`RemoveChapterBuilder` on the result:
@@ -93,36 +97,65 @@ pReportBuilder->InsertChapterBuilder(std::make_shared<CMyChapterBuilder>(), _T("
 `ExtensionAgentExample` doesn't exercise this path - it only adds chapters to its own brand-new
 report via `AddChapterBuilder` - but the API is there for extending someone else's report.
 
+See \ref WBFL_EAF_Reporting "Reporting" in the WBFL EAF devdocs for the full `IEAFReportManager` API,
+including `ReportBuilder::Hidden()` versus `RemoveReportBuilder` for hiding a report without fully
+unregistering it.
+
+## Graphs
+`Include\EAF\EAFGraphManager.h`'s `IEAFGraphManager::AddGraphBuilder` registers a brand new graph.
+`ExampleExtensionAgent::RegisterGraphs()` adds three `CTestGraphBuilder*` instances
+(`TestGraphBuilder.h`). See \ref WBFL_EAF_Graphing "Graphing" in the WBFL EAF devdocs for the full
+`IEAFGraphManager` API.
+
 ## Persisting data
-Implement `IAgentPersist::Load`/`Save` (`Include\EAF\Agent.h`) using the `IStructuredLoad`/
-`IStructuredSave` COM interfaces (`Include\WBFLTools.idl`):
+Implement `IAgentPersist::Load`/`Save` (`Include\EAF\Agent.h`) using the native
+`WBFL::System::IStructuredLoad`/`IStructuredSave` interfaces:
 ~~~
-WBFL::EAF::Broker::LoadResult CExampleExtensionAgent::Load(IStructuredLoad* pStrLoad)
+WBFL::EAF::Broker::LoadResult CExampleExtensionAgent::Load(WBFL::System::IStructuredLoad* pStrLoad)
 {
-   pStrLoad->BeginUnit(_T("ExampleExtensionAgent"));
-   CComVariant var;
-   pStrLoad->get_Property(_T("SampleData"), &var);
-   m_Answer = OLE2T(var.bstrVal);
-   pStrLoad->EndUnit();
+   if (!pStrLoad->BeginUnit(_T("ExampleExtensionAgent")))
+      return WBFL::EAF::Broker::LoadResult::Error;
+
+   std::_tstring answer;
+   if (!pStrLoad->Property(_T("SampleData"), &answer))
+      return WBFL::EAF::Broker::LoadResult::Error;
+   m_Answer = answer.c_str();
+
+   if (!pStrLoad->EndUnit())
+      return WBFL::EAF::Broker::LoadResult::Error;
+
    return WBFL::EAF::Broker::LoadResult::Success;
 }
 
-bool CExampleExtensionAgent::Save(IStructuredSave* pStrSave)
+bool CExampleExtensionAgent::Save(WBFL::System::IStructuredSave* pStrSave)
 {
    pStrSave->BeginUnit(_T("ExampleExtensionAgent"), 1.0);
-   pStrSave->put_Property(_T("SampleData"), CComVariant(m_Answer));
+   pStrSave->Property(_T("SampleData"), m_Answer);
    pStrSave->EndUnit();
    return true;
 }
 ~~~
 (`ExampleExtensionAgent.cpp`). Each agent's data is wrapped by the broker in its own `"Agent"` unit
-tagged with the agent's CLSID (`Broker::SaveAgentData`, `WBFL\EAF\Broker.cpp`). This is what makes
-the "data is retained when opened without the extension agent installed" guarantee work: on load,
-if the broker finds an `"Agent"` unit whose CLSID doesn't match any currently-loaded agent (`Broker::Load`),
-it doesn't discard that data - it reads the whole unit verbatim with `IStructuredLoad::LoadRawUnit`
-and holds onto it, then writes it back out unchanged with `IStructuredSave::SaveRawUnit` the next
-time the project is saved. Your extension agent's data survives a round trip through an
-installation that doesn't have your DLL at all.
+tagged with the agent's CLSID (`Broker::SaveAgentData`, `WBFL\EAF\Broker.cpp`) - this is what makes
+the "data is retained when opened without the extension agent installed" guarantee work, by
+capturing and replaying the raw unit of any agent that isn't currently loaded. See
+\ref WBFL_EAF_DataPersistence "Data Persistence" in the WBFL EAF devdocs for the full
+`IStructuredLoad`/`IStructuredSave` API and exactly how that passthrough works.
+
+## Documentation and Help
+An extension agent can integrate its own help content with PGSuper/PGSplice's documentation system
+by implementing `WBFL::EAF::IAgentDocumentationIntegration` (`Include\EAF\Agent.h`) - see
+\ref WBFL_EAF_Documentation "Documentation and Help" in the WBFL EAF devdocs for the interface, the
+`.dm` doc-map file format, and the `PluginAppDocumentationImpl` helper. This is a different interface
+from `PGS::IPluginDocumentation` (`Include\Plugins\PGSuperIEPlugin.h`), which is the equivalent for
+Project Importer/Data Importer/Data Exporter plug-ins rather than Extension Agents.
+
+## Command Line Processing
+An extension agent - like any agent - can handle its own command-line switches by implementing
+`WBFL::EAF::IEAFProcessCommandLine` (`Include\EAF\EAFUIIntegration.h`). See
+\ref WBFL_EAF_CommandLine "Command Line Processing" in the WBFL EAF devdocs for the interface and
+how it's discovered (a plain RTTI probe over every loaded agent, not a broker interface lookup, so
+it's available to core agents and extension agents alike).
 
 # Registration
 Extension agents use the same manifest mechanism as importers/exporters - see

@@ -19,7 +19,9 @@ different kind of integration:
   commands to the menus and toolbars, can add new views, can add new reports and graphs, can modify
   reports defined by other agents (add and remove chapters), and can persist its own data into the
   PGSuper/PGSplice data file. Extension Agent persisted data is retained when the data file is
-  opened on an installation that does not have the extension agent installed.
+  opened on an installation that does not have the extension agent installed. Most of what an
+  Extension Agent does is `WBFL::EAF` framework machinery, not a PGSuper feature - see
+  \ref WBFL_EAF "WBFL EAF" for the full picture of what the framework itself provides.
 - **Beam Type** - adds a new precast beam cross-section shape, or an entirely new family of shapes,
   to the girder types PGSuper/PGSplice can model. Unlike the other four mechanisms, this is a
   structural engineering component, not just data/UI plumbing - it supplies cross-section geometry,
