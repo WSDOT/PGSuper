@@ -55,7 +55,7 @@ The thickened zone is symmetric about the pier centerline. The width increases l
 
 Item | Description
 -----|-------------
-Web Thickening Width | The additional width added to each face of the web at the pier centerline (total web increase = 2 × this value)
+Web Thickening Width | The total width of the thickened web at the pier centerline
 Pier Thickening Length | Half-length of the constant full-width zone on each side of the pier centerline
 Taper Zone Length | Half-length of the linear taper on each side of the full-width zone over which the web width transitions from the nominal value to the full thickening width
 Interior Pier Location | Distance from the start of the segment to the centerline of the interior pier (informational, read-only)

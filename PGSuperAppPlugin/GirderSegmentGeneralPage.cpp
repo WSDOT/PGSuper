@@ -172,40 +172,59 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
       pDX->Fail();
    }
 
-   if (pDX->m_bSaveAndValidate && !IsZero(pSegment->WebThickeningWidth))
+   if (pDX->m_bSaveAndValidate && (!IsZero(pSegment->WebThickeningLength) || !IsZero(pSegment->WebThickeningTransitionLength) || !IsZero(pSegment->WebThickeningWidth)))
    {
       // Find the interior pier's segment-coordinate location so we can validate
       // that the thickening zone fits within the closer half of the segment.
       Float64 minDistToPierEnd = segment_length; // fallback: no pier found
       Float64 Xpier = -1.0;
+
+      auto pBroker = EAFGetBroker();
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      const CSegmentKey& segmentKey = pParent->m_SegmentKey;
+      PierIndexType nPiers = pBridge->GetPierCount();
+      for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
       {
-         auto pBroker = EAFGetBroker();
-         GET_IFACE2(pBroker, IBridge, pBridge);
-         const CSegmentKey& segmentKey = pParent->m_SegmentKey;
-         PierIndexType nPiers = pBridge->GetPierCount();
-         for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+         if (pBridge->IsInteriorPier(pierIdx))
          {
-            if (pBridge->IsInteriorPier(pierIdx))
+            Float64 Xs;
+            if (pBridge->GetPierLocation(pierIdx, segmentKey, &Xs) && Xs > 0.0 && Xs < segment_length)
             {
-               Float64 Xs;
-               if (pBridge->GetPierLocation(pierIdx, segmentKey, &Xs) && Xs > 0.0 && Xs < segment_length)
-               {
-                  minDistToPierEnd = Min(Xs, segment_length - Xs);
-                  Xpier = Xs;
-                  break;
-               }
+               minDistToPierEnd = Min(Xs, segment_length - Xs);
+               Xpier = Xs;
+               break;
             }
          }
       }
+
       if (!pSegment->AreWebThickeningParamsValid(minDistToPierEnd))
       {
          AfxMessageBox(_T("Web thickening extent exceeds the distance from the pier to the nearer end of the segment."), MB_OK);
          pDX->Fail();
       }
+
       if (pSegment->HasWebThickeningEndBlockOverlap(segment_length, Xpier))
       {
          AfxMessageBox(_T("Web thickening zone overlaps the end block zone. Reduce the thickening length, transition length, or end block length."), MB_OK);
          pDX->Fail();
+      }
+
+      // Validate that the entered total web width exceeds the nominal (library) web width.
+      // Query web width just past the end block zone, where both end blocks and web thickening are zero.
+      Float64 ebEnd = pSegment->EndBlockLength[pgsTypes::metStart] + pSegment->EndBlockTransitionLength[pgsTypes::metStart];
+      Float64 Xs_nominal = ebEnd + 1.0e-3;
+      if (Xs_nominal < segment_length)
+      {
+         GET_IFACE2(pBroker, IGirder, pGirder);
+         const CSegmentKey& segmentKey = pParent->m_SegmentKey;
+         pgsPointOfInterest poiTest(segmentKey, Xs_nominal);
+         Float64 nominalT = pGirder->GetMinWebWidth(poiTest);
+         if (pSegment->WebThickeningWidth <= nominalT)
+         {
+            AfxMessageBox(_T("Web thickening web width at pier must exceed the nominal (library) web width."), MB_OK);
+            pDX->PrepareCtrl(IDC_WEB_THICKENING_WIDTH);
+            pDX->Fail();
+         }
       }
    }
 

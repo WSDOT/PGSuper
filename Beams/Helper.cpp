@@ -446,7 +446,7 @@ void PGS::Beams::LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentK
 
 void PGS::Beams::LayoutWebThickeningPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, Float64 Xpier, pgsPoiMgr* pPoiMgr)
 {
-   if (IsZero(pSegment->WebThickeningWidth) || Xpier < 0.0)
+   if (IsZero(pSegment->WebThickeningWidth) || IsZero(pSegment->WebThickeningLength) || Xpier < 0.0)
       return;
 
    Float64 L  = pSegment->WebThickeningLength;
@@ -459,6 +459,7 @@ void PGS::Beams::LayoutWebThickeningPointsOfInterest(const CSegmentKey& segmentK
    Float64 xt1 = Xpier - (L + Lt);
    Float64 xt2 = Xpier + (L + Lt);
 
+   // shorthand lambda's for adding transition POIs and step POIs.
    auto addTransitionPoi = [&](Float64 Xs)
    {
       if (0.0 <= Xs && Xs <= segmentLength)
@@ -468,11 +469,29 @@ void PGS::Beams::LayoutWebThickeningPointsOfInterest(const CSegmentKey& segmentK
       }
    };
 
+   auto addStepChangePoi = [&](Float64 Xs)
+   {
+      if (0.0 <= Xs && Xs <= segmentLength)
+      {
+         pgsPointOfInterest poiL(segmentKey, Xs, POI_SECTCHANGE_LEFTFACE);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiL) != INVALID_ID);
+         pgsPointOfInterest poiR(segmentKey, Xs, POI_SECTCHANGE_RIGHTFACE);
+         VERIFY(pPoiMgr->AddPointOfInterest(poiR) != INVALID_ID);
+      }
+   };
+
+   // Add the pois
    if (!IsZero(Lt))
    {
       addTransitionPoi(xt1);
       addTransitionPoi(xt2);
+
+      addTransitionPoi(xs1);
+      addTransitionPoi(xs2);
    }
-   addTransitionPoi(xs1);
-   addTransitionPoi(xs2);
+   else
+   {  
+      addStepChangePoi(xs1);
+      addStepChangePoi(xs2);
+   }
 }

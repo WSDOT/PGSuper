@@ -230,21 +230,28 @@ void SplicedIBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> 
 
    if (!IsZero(pSegment->WebThickeningWidth))
    {
-      const CSegmentKey& sk = pSegment->GetSegmentKey();
-      Float64 segmentLength = pBridge->GetSegmentLength(sk);
-      PierIndexType nPiers = pBridge->GetPierCount();
-      for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+      Float64 T1; beam->get_T1(&T1);
+      Float64 T2; beam->get_T2(&T2);
+      Float64 T = max(T1, T2);
+      Float64 maxDeltaW = (pSegment->WebThickeningWidth - T) / 2.0;
+      if (maxDeltaW > 0.0)
       {
-         if (pBridge->IsInteriorPier(pierIdx))
+         const CSegmentKey& sk = pSegment->GetSegmentKey();
+         Float64 segmentLength = pBridge->GetSegmentLength(sk);
+         PierIndexType nPiers = pBridge->GetPierCount();
+         for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
          {
-            Float64 Xpier;
-            if (pBridge->GetPierLocation(pierIdx, sk, &Xpier) && Xpier > 0.0 && Xpier < segmentLength)
+            if (pBridge->IsInteriorPier(pierIdx))
             {
-               Float64 deltaW;
-               ::GetWebThickeningWidth(Xs, Xpier, pSegment->WebThickeningWidth,
-                  pSegment->WebThickeningLength, pSegment->WebThickeningTransitionLength, &deltaW);
-               ::AdjustForWebThickening(beam, deltaW);
-               break;
+               Float64 Xpier;
+               if (pBridge->GetPierLocation(pierIdx, sk, &Xpier) && Xpier > 0.0 && Xpier < segmentLength)
+               {
+                  Float64 deltaW;
+                  ::GetWebThickeningWidth(Xs, Xpier, maxDeltaW,
+                     pSegment->WebThickeningLength, pSegment->WebThickeningTransitionLength, &deltaW);
+                  ::AdjustForWebThickening(beam, deltaW);
+                  break;
+               }
             }
          }
       }

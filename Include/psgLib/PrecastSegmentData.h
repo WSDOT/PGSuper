@@ -98,7 +98,7 @@ public:
    bool AreEndBlocksValid(Float64 segmentFramingLength) const;
 
    // Web thickening at interior pier (zero width = disabled)
-   Float64 WebThickeningWidth;            // added width per web face at pier
+   Float64 WebThickeningWidth;            // total web width at pier (0 = disabled)
    Float64 WebThickeningLength;           // full-width zone half-length from pier
    Float64 WebThickeningTransitionLength; // linear taper half-length from pier
    bool AreWebThickeningParamsValid(Float64 minDistFromPierToSegmentEnd) const;
