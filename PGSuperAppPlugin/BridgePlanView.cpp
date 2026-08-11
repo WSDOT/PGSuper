@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright Â© 1999-2026  Washington State Department of Transportation
+// Copyright © 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -1639,7 +1639,7 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
                doText2->SetPosition(geomUtil::GetPoint(pntText2));
 
                CComBSTR bstrBearing;
-               direction_formatter->Format(dir,CComBSTR("Â°,\',\""),&bstrBearing);
+               direction_formatter->Format(dir,CComBSTR("°,\',\""),&bstrBearing);
                doText2->SetText(OLE2T(bstrBearing));
                doText2->SetAngle(angle);
                doText2->SetTextAlign(TA_BOTTOM | TA_LEFT);
