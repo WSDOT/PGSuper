@@ -158,8 +158,11 @@ void CTemporarySupportDlg::CreateExtensionPages()
       {
          m_ExtensionPages.emplace_back(pEditTemporarySupportCallback,pPage);
 
-         CString name;
-         name.Format(_T("Extension%d"), callbackIter->first);
+         CString name(pEditTemporarySupportCallback->GetPropertyPageName().c_str());
+         if ( name.IsEmpty() )
+         {
+            name.Format(_T("Extension%d"), callbackIter->first);
+         }
          m_PageManager.InsertExtensionPage(name, pPage, pEditTemporarySupportCallback->GetPropertyPagePosition());
       }
    }
@@ -203,8 +206,11 @@ void CTemporarySupportDlg::CreateExtensionPages(const std::vector<EditBridgeExte
       {
          m_ExtensionPages.emplace_back(pEditTemporarySupportCallback,pPage);
 
-         CString name;
-         name.Format(_T("Extension%d"), callbackIter->first);
+         CString name(pEditTemporarySupportCallback->GetPropertyPageName().c_str());
+         if ( name.IsEmpty() )
+         {
+            name.Format(_T("Extension%d"), callbackIter->first);
+         }
          m_PageManager.InsertExtensionPage(name, pPage, pEditTemporarySupportCallback->GetPropertyPagePosition());
       }
    }

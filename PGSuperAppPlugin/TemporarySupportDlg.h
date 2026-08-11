@@ -56,6 +56,8 @@ public:
    // for all the extension pages. The caller is responsble for deleting this object
    std::unique_ptr<WBFL::EAF::Transaction> GetExtensionPageTransaction();
 
+   CPropertyPage* FindPage(LPCTSTR name) const { return m_PageManager.FindPage(name); }
+
 protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);

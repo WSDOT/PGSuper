@@ -60,9 +60,9 @@ public:
 #endif
 
    // Return true if the edit was completed, otherwise return false (return false if the edit was cancelled)
-   virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage) override;
-   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey, int nPage) override;
-   virtual bool EditClosureJointDescription(const CClosureKey& closureKey, int nPage) override;
+   virtual bool EditGirderDescription(const CGirderKey& girderKey, LPCTSTR pageName) override;
+   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey, LPCTSTR pageName) override;
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey, LPCTSTR pageName) override;
 
    virtual UINT GetStandardToolbarResourceID() override;
 

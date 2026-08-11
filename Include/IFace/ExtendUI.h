@@ -81,7 +81,22 @@ class IExtensionPageCallback
 {
 public:
    virtual ExtensionPagePosition GetPropertyPagePosition() { return ExtensionPagePosition::AtEnd(); }
+
+   /// @brief Lets an extension name its own page, so it can be found later (e.g. by
+   /// IEditByUI::EditAlignmentDescription's pageName parameter) without relying on the
+   /// framework's auto-generated "ExtensionN" name. Not pure virtual - the default leaves
+   /// today's behavior in place for callbacks that don't need to be addressed by name.
+   virtual std::_tstring GetPropertyPageName() { return std::_tstring(); }
 };
+
+// KNOWN LIMITATION: transaction execution order does not follow tab (visual) order.
+// A dialog's own built-in-tab edit is always one atomic transaction (e.g. txnEditBridge), and it
+// always executes before any extension page's transaction, regardless of whether that extension's
+// tab (via ExtensionPagePosition) is positioned before, after, or between the built-in tabs.
+// Multiple extension pages on the same dialog execute in the order their callbacks were
+// registered (see GetEditXxxCallbacks()), not the left-to-right order their tabs appear on
+// screen. Undo reverses whatever order Execute used. Fixing this properly would require splitting
+// each dialog's core transaction into one piece per built-in page, which is a larger change.
 
 class CPierData2;
 class rptParagraph;
@@ -172,9 +187,9 @@ public:
    /// @brief Called by the framework when you need to create a transaction object that will cause your Pier data to be copied.
    virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
 
-   /// @brief UI has an edit button for this callback. 
-   /// @return Returns the tab index that will be opened
-   virtual UINT GetPierEditorTabIndex() = 0;
+   /// @brief UI has an edit button for this callback.
+   /// @return Returns the name (PIERDLG_PAGE_xxx) of the page that will be opened
+   virtual LPCTSTR GetPierEditorPageName() = 0;
 
    /// @brief Returns new paragraph to be inserted into Pier comparison report
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
@@ -200,7 +215,7 @@ public:
 
    /// @brief UI has an edit button for this callback. 
    /// @return Returns the tab index that will be opened
-   virtual UINT GetTempSupportEditorTabIndex() = 0;
+   virtual LPCTSTR GetTempSupportEditorPageName() = 0;
 
    /// @brief Returns new paragraph to be inserted into TempSupport comparison report
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) = 0;
@@ -432,7 +447,7 @@ public:
 
    /// @brief UI has an edit button for this callback. 
    /// @return Returns the tab index that will be opened
-   virtual UINT GetGirderEditorTabIndex() = 0;
+   virtual LPCTSTR GetGirderEditorPageName() = 0;
 
    /// @brief Returns new paragraph to be inserted into girder comparison report
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) = 0;
@@ -463,11 +478,66 @@ public:
 // Well-known names of CAlignmentDescriptionDlg's built-in pages, as registered with
 // its CExtensionPageManager (PGSuperAppPlugin\AlignmentDescriptionDlg.cpp). Used with
 // ExtensionPagePosition::Before()/After() to position an extension page relative to
-// a specific built-in one, and by CPGSDocBase::EditAlignmentDescription to resolve
-// EAD_ROADWAY/EAD_PROFILE/EAD_SECTION to a page by name instead of by index.
+// a specific built-in one, and passed directly to IEditByUI::EditAlignmentDescription
+// to select which page is active when the dialog opens.
 #define ALIGNMENTDLG_PAGE_HORIZONTAL_ALIGNMENT _T("HorizontalAlignment")
 #define ALIGNMENTDLG_PAGE_PROFILE              _T("Profile")
 #define ALIGNMENTDLG_PAGE_SUPERELEVATION       _T("Superelevation")
+
+// Well-known names of CBridgeDescDlg's built-in pages (PGSuperAppPlugin\BridgeDescDlg.cpp).
+#define BRIDGEDLG_PAGE_GENERAL     _T("General")
+#define BRIDGEDLG_PAGE_FRAMING     _T("Framing")
+#define BRIDGEDLG_PAGE_RAILING     _T("RailingSystem")
+#define BRIDGEDLG_PAGE_DECK        _T("DeckDetails")
+#define BRIDGEDLG_PAGE_DECKREBAR   _T("DeckRebar")
+#define BRIDGEDLG_PAGE_BEARINGS    _T("Bearings")
+#define BRIDGEDLG_PAGE_ENVIRONMENT _T("Environmental")
+
+// Well-known names of CPierDetailsDlg's built-in pages (PGSuperAppPlugin\PierDetailsDlg.cpp).
+#define PIERDLG_PAGE_LOCATION               _T("Location")
+#define PIERDLG_PAGE_LAYOUT                 _T("Layout")
+#define PIERDLG_PAGE_GIRDERSPACING          _T("GirderSpacing")
+#define PIERDLG_PAGE_CONNECTIONS            _T("Connections")
+#define PIERDLG_PAGE_CLOSUREJOINTGEOMETRY   _T("ClosureJointGeometry")
+#define PIERDLG_PAGE_GIRDERSEGMENTSPACING   _T("GirderSegmentSpacing")
+#define PIERDLG_PAGE_BEARINGS               _T("Bearings")
+
+// Well-known names of CSpanDetailsDlg's built-in pages (PGSuperAppPlugin\SpanDetailsDlg.cpp).
+#define SPANDLG_PAGE_LAYOUT                _T("Layout")
+#define SPANDLG_PAGE_GIRDERLAYOUT          _T("GirderLayout")
+#define SPANDLG_PAGE_STARTPIERCONNECTIONS  _T("StartPierConnections")
+#define SPANDLG_PAGE_ENDPIERCONNECTIONS    _T("EndPierConnections")
+#define SPANDLG_PAGE_BEARINGS              _T("Bearings")
+
+// Well-known names of CGirderDescDlg's built-in pages, PGSuper (PGSuperAppPlugin\GirderDescDlg.cpp).
+#define GIRDERDLG_PAGE_GENERAL        _T("General")
+#define GIRDERDLG_PAGE_PRESTRESS      _T("Prestress")
+#define GIRDERDLG_PAGE_STRANDEXT      _T("StrandExtensionAndDebond")
+#define GIRDERDLG_PAGE_LONGREBAR      _T("LongRebar")
+#define GIRDERDLG_PAGE_SHEAR          _T("Shear")
+#define GIRDERDLG_PAGE_LIFTING        _T("Lifting")
+#define GIRDERDLG_PAGE_BEARINGS       _T("Bearings")
+
+// Well-known names of CTemporarySupportDlg's built-in pages (PGSuperAppPlugin\TemporarySupportDlg.cpp).
+#define TSDLG_PAGE_GENERAL   _T("General")
+#define TSDLG_PAGE_GEOMETRY  _T("Geometry")
+#define TSDLG_PAGE_SPACING   _T("Spacing")
+
+// Well-known names of CGirderSegmentDlg's built-in pages, PGSplice (PGSuperAppPlugin\GirderSegmentDlg.cpp).
+#define SEGMENTDLG_PAGE_GENERAL  _T("General")
+#define SEGMENTDLG_PAGE_STRANDS  _T("Strands")
+#define SEGMENTDLG_PAGE_TENDONS  _T("Tendons")
+#define SEGMENTDLG_PAGE_REBAR    _T("Rebar")
+#define SEGMENTDLG_PAGE_STIRRUPS _T("Stirrups")
+#define SEGMENTDLG_PAGE_LIFTING  _T("Lifting")
+
+// Well-known name of CSplicedGirderDescDlg's one built-in page (PGSuperAppPlugin\SplicedGirderDescDlg.cpp).
+#define SPLICEDGIRDERDLG_PAGE_GENERAL _T("General")
+
+// Well-known names of CClosureJointDlg's built-in pages (PGSuperAppPlugin\ClosureJointDlg.cpp).
+#define CLOSUREJOINTDLG_PAGE_GENERAL      _T("General")
+#define CLOSUREJOINTDLG_PAGE_LONGITUDINAL _T("Longitudinal")
+#define CLOSUREJOINTDLG_PAGE_STIRRUPS     _T("Stirrups")
 
 /// @brief Interface that provides information to the IEditAlignmentCallback::CreatePropertyPage method
 class IEditAlignmentData

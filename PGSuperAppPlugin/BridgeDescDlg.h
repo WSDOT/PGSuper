@@ -91,6 +91,8 @@ public:
    const std::vector<EditBridgeExtension>& GetExtensionPages() const;
    std::vector<EditBridgeExtension>& GetExtensionPages();
 
+   CPropertyPage* FindPage(LPCTSTR name) const { return m_PageManager.FindPage(name); }
+
 	// Generated message map functions
 protected:
    void Init();

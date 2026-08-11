@@ -430,7 +430,7 @@ void CPGSDocBase::GetDocUnitSystem(IDocUnitSystem** ppDocUnitSystem)
    (*ppDocUnitSystem)->AddRef();
 }
 
-bool CPGSDocBase::EditAlignmentDescription(int nPage)
+bool CPGSDocBase::EditAlignmentDescription(LPCTSTR pageName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -441,20 +441,26 @@ bool CPGSDocBase::EditAlignmentDescription(int nPage)
    dlg.m_ProfilePage.m_ProfileData = pAlignment->GetProfileData2();
    dlg.m_CrownSlopePage.m_RoadwaySectionData = pAlignment->GetRoadwaySectionData();
 
-   // nPage is one of EAD_ROADWAY/EAD_PROFILE/EAD_SECTION (IFace\EditByUI.h). Resolve it to
-   // the actual page by name rather than trusting it's a raw tab index - an extension page
-   // (see CExtensionPageManager) can now be inserted before any of these built-in ones.
-   static const LPCTSTR pageNames[] = { ALIGNMENTDLG_PAGE_HORIZONTAL_ALIGNMENT, ALIGNMENTDLG_PAGE_PROFILE, ALIGNMENTDLG_PAGE_SUPERELEVATION };
-   if ( CPropertyPage* pActivePage = dlg.FindPage(pageNames[nPage]) )
+   if ( CPropertyPage* pActivePage = dlg.FindPage(pageName) )
    {
       dlg.SetActivePage(pActivePage);
    }
 
    if ( dlg.DoModal() == IDOK )
    {
-      std::unique_ptr<txnEditAlignment> pTxn(std::make_unique<txnEditAlignment>(pAlignment->GetAlignmentData2(),     dlg.m_AlignmentPage.m_AlignmentData,
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditAlignment>(pAlignment->GetAlignmentData2(),     dlg.m_AlignmentPage.m_AlignmentData,
                                                     pAlignment->GetProfileData2(),       dlg.m_ProfilePage.m_ProfileData,
                                                     pAlignment->GetRoadwaySectionData(), dlg.m_CrownSlopePage.m_RoadwaySectionData ));
+
+      auto pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
+      {
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+         pMacro->Name(pTxn->Name());
+         pMacro->AddTransaction(std::move(pTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn)); // see ordering limitation note in IFace\ExtendUI.h
+         pTxn = std::move(pMacro);
+      }
 
       GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
@@ -467,7 +473,7 @@ bool CPGSDocBase::EditAlignmentDescription(int nPage)
    }
 }
 
-bool CPGSDocBase::EditBridgeDescription(int nPage)
+bool CPGSDocBase::EditBridgeDescription(LPCTSTR pageName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -485,7 +491,10 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
    dlg.m_EnvironmentalPage.m_Climate = oldClimateCondition == pgsTypes::ClimateCondition::Cold ? 0 : 1;
    dlg.m_EnvironmentalPage.m_RelHumidity = oldRelHumidity;
 
-   dlg.SetActivePage(nPage);
+   if ( CPropertyPage* pActivePage = dlg.FindPage(pageName) )
+   {
+      dlg.SetActivePage(pActivePage);
+   }
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -502,7 +511,7 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
          std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
-         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn)); // see ordering limitation note in IFace\ExtendUI.h
          pTxn = std::move(pMacro);
       }
 
@@ -517,7 +526,7 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
    }
 }
 
-bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
+bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, LPCTSTR pageName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -528,7 +537,10 @@ bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
    // If the user presses the Cancel button, we don't have to figure out
    // what got changed.
    CPierDetailsDlg dlg(pBridgeDesc,pierIdx);
-   dlg.SetActivePage(nPage);
+   if ( CPropertyPage* pActivePage = dlg.FindPage(pageName) )
+   {
+      dlg.SetActivePage(pActivePage);
+   }
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -539,7 +551,7 @@ bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
          std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
-         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn)); // see ordering limitation note in IFace\ExtendUI.h
          pTxn = std::move(pMacro);
       }
 
@@ -550,12 +562,12 @@ bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
    return true;
 }
 
-bool CPGSDocBase::EditTemporarySupportDescription(PierIndexType pierIdx, int nPage)
+bool CPGSDocBase::EditTemporarySupportDescription(PierIndexType pierIdx, LPCTSTR pageName)
 {
    return false;
 }
 
-bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
+bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, LPCTSTR pageName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -566,7 +578,10 @@ bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
    // If the user presses the Cancel button, we don't have to figure out
    // what got changed.
    CSpanDetailsDlg dlg(pBridgeDesc,spanIdx);
-   dlg.SetActivePage(nPage);
+   if ( CPropertyPage* pActivePage = dlg.FindPage(pageName) )
+   {
+      dlg.SetActivePage(pActivePage);
+   }
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -578,7 +593,7 @@ bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
          std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
-         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn)); // see ordering limitation note in IFace\ExtendUI.h
          pTxn = std::move(pMacro);
       }
       GET_IFACE(IEAFTransactions,pTransactions);
@@ -3022,7 +3037,7 @@ void CPGSDocBase::OnRatingSpec()
             std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
             pMacro->Name(pTxn->Name());
             pMacro->AddTransaction(std::move(pTxn));
-            pMacro->AddTransaction(std::move(pExtensionTxn));
+            pMacro->AddTransaction(std::move(pExtensionTxn)); // see ordering limitation note in IFace\ExtendUI.h
             pTxn = std::move(pMacro);
          }
 
@@ -3903,17 +3918,17 @@ void CPGSDocBase::OnConstructionLoads()
 
 void CPGSDocBase::OnProjectAlignment() 
 {
-   EditAlignmentDescription(EAD_ROADWAY);
+   EditAlignmentDescription(ALIGNMENTDLG_PAGE_HORIZONTAL_ALIGNMENT);
 }
 
 void CPGSDocBase::OnProjectBarriers()
 {
-   EditBridgeDescription(EBD_RAILING);
+   EditBridgeDescription(BRIDGEDLG_PAGE_RAILING);
 }
 
 void CPGSDocBase::OnProjectProfile()
 {
-   EditAlignmentDescription(EAD_PROFILE);
+   EditAlignmentDescription(ALIGNMENTDLG_PAGE_PROFILE);
 }
 
 void CPGSDocBase::OnLiveLoads() 
@@ -4153,7 +4168,7 @@ void CPGSDocBase::OnEditPier()
       }
    }
 
-   EditPierDescription(editPierIdx, EPD_GENERAL);
+   EditPierDescription(editPierIdx, PIERDLG_PAGE_LOCATION);
 }
 
 void CPGSDocBase::OnCopyBearingProps()
@@ -4207,7 +4222,7 @@ void CPGSDocBase::OnEditSpan()
       }
    }
 
-   EditSpanDescription(editSpanIdx, ESD_GENERAL);
+   EditSpanDescription(editSpanIdx, SPANDLG_PAGE_LAYOUT);
 }
 
 void CPGSDocBase::DeletePier(PierIndexType pierIdx)

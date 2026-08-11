@@ -705,16 +705,16 @@ void pgsDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,CObject* pHint)
 
 ///////////////////////////////////////////////////////////////////////////////////
 // IEditByUI
-void pgsDocProxyAgent::EditBridgeDescription(int nPage)
+void pgsDocProxyAgent::EditBridgeDescription(LPCTSTR pageName)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pDoc->EditBridgeDescription(nPage);
+   m_pDoc->EditBridgeDescription(pageName);
 }
 
-void pgsDocProxyAgent::EditAlignmentDescription(int nPage)
+void pgsDocProxyAgent::EditAlignmentDescription(LPCTSTR pageName)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   m_pDoc->EditAlignmentDescription(nPage);
+   m_pDoc->EditAlignmentDescription(pageName);
 }
 
 bool pgsDocProxyAgent::EditGirderDescription(SpanIndexType span,GirderIndexType girder, int nPage)
@@ -723,16 +723,16 @@ bool pgsDocProxyAgent::EditGirderDescription(SpanIndexType span,GirderIndexType 
    return m_pDoc->EditGirderDescription(span,girder,nPage);
 }
 
-bool pgsDocProxyAgent::EditSpanDescription(SpanIndexType spanIdx, int nPage)
+bool pgsDocProxyAgent::EditSpanDescription(SpanIndexType spanIdx, LPCTSTR pageName)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   return m_pDoc->EditSpanDescription(spanIdx,nPage);
+   return m_pDoc->EditSpanDescription(spanIdx,pageName);
 }
 
-bool pgsDocProxyAgent::EditPierDescription(PierIndexType pierIdx, int nPage)
+bool pgsDocProxyAgent::EditPierDescription(PierIndexType pierIdx, LPCTSTR pageName)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   return m_pDoc->EditPierDescription(pierIdx,nPage);
+   return m_pDoc->EditPierDescription(pierIdx,pageName);
 }
 
 void pgsDocProxyAgent::EditLiveLoads()

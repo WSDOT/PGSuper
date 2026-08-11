@@ -41,6 +41,7 @@
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\EditByUI.h>
+#include <IFace\ExtendUI.h>
 #include <IFace/PointOfInterest.h>
 
 #include <EAF\EAFGraphView.h>
@@ -114,7 +115,7 @@ bool CSegmentGraphBuilderBase::HandleDoubleClick(UINT nFlags,CPoint point)
    const CSegmentKey segmentKey(m_pGraphController->GetSegmentKey());
 
    GET_IFACE(IEditByUI,pEditByUI);
-   pEditByUI->EditSegmentDescription(segmentKey,EGS_GENERAL);
+   pEditByUI->EditSegmentDescription(segmentKey,SEGMENTDLG_PAGE_GENERAL);
 
    return true;
 }

@@ -27,6 +27,7 @@
 
 #include <IFace/Tools.h>
 #include <IFace\EditByUI.h>
+#include <IFace\ExtendUI.h>
 #include <IFace/Project.h>
 #include <EAF\EAFTransactions.h>
 
@@ -321,7 +322,7 @@ void pgsProjectCriteriaStatusCallback::Execute(std::shared_ptr<WBFL::EAF::Status
 
 ////////////////
 
-pgsGirderDescriptionStatusItem::pgsGirderDescriptionStatusItem(const CSegmentKey& segmentKey,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
+pgsGirderDescriptionStatusItem::pgsGirderDescriptionStatusItem(const CSegmentKey& segmentKey,LPCTSTR page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 pgsSegmentRelatedStatusItem(statusGroupID,callbackID,strDescription,segmentKey), m_SegmentKey(segmentKey), m_Page(page)
 {
 }
@@ -463,32 +464,32 @@ void pgsBridgeDescriptionStatusCallback::Execute(std::shared_ptr<WBFL::EAF::Stat
    auto pItem = std::dynamic_pointer_cast<pgsBridgeDescriptionStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
-   long dlgPage;
+   LPCTSTR dlgPage = nullptr;
    switch(pItem->m_IssueType)
    {
    case pgsBridgeDescriptionStatusItem::General:
-      dlgPage = 0;
+      dlgPage = BRIDGEDLG_PAGE_GENERAL;
       break;
 
    case pgsBridgeDescriptionStatusItem::Framing:
-      dlgPage = 1;
+      dlgPage = BRIDGEDLG_PAGE_FRAMING;
       break;
 
    case pgsBridgeDescriptionStatusItem::Railing:
-      dlgPage = 2;
+      dlgPage = BRIDGEDLG_PAGE_RAILING;
       break;
 
    case pgsBridgeDescriptionStatusItem::Deck:
-      dlgPage = 3;
+      dlgPage = BRIDGEDLG_PAGE_DECK;
       break;
 
    default:
-      dlgPage = -1;
+      dlgPage = nullptr;
    }
 
    auto broker = EAFGetBroker();
 
-   if (0 <= dlgPage)
+   if (dlgPage)
    {
       GET_IFACE2(broker,IEditByUI,pEdit);
       pEdit->EditBridgeDescription(dlgPage);
@@ -761,7 +762,7 @@ void pgsConnectionGeometryStatusCallback::Execute(std::shared_ptr<WBFL::EAF::Sta
    auto broker = EAFGetBroker();
    GET_IFACE2(broker,IEditByUI, pEdit);
 
-   if (pEdit->EditPierDescription(pItem->m_PierIdx,EPD_CONNECTION))
+   if (pEdit->EditPierDescription(pItem->m_PierIdx,PIERDLG_PAGE_CONNECTIONS))
    {
       // assume that edit took care of status
       StatusItemIDType id = pItem->GetID();

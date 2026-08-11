@@ -231,7 +231,7 @@ void CPGSpliceDoc::OnEditSegment(UINT nID)
 
    CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
 
-   EditGirderSegmentDescription(segmentKey,EGS_GENERAL);
+   EditGirderSegmentDescription(segmentKey,SEGMENTDLG_PAGE_GENERAL);
 }
 
 void CPGSpliceDoc::OnEditSegment()
@@ -262,7 +262,7 @@ void CPGSpliceDoc::OnEditSegment()
 
    if ( bEdit )
    {
-      EditGirderSegmentDescription(segmentKey,EGS_GENERAL);
+      EditGirderSegmentDescription(segmentKey,SEGMENTDLG_PAGE_GENERAL);
    }
 }
 
@@ -366,7 +366,7 @@ void CPGSpliceDoc::OnEditClosureJoint()
       }
    }
 
-   EditClosureJointDescription(closureKey,EGS_GENERAL);
+   EditClosureJointDescription(closureKey,CLOSUREJOINTDLG_PAGE_GENERAL);
 }
 
 void CPGSpliceDoc::OnEditGirder()
@@ -405,7 +405,7 @@ void CPGSpliceDoc::OnEditGirder()
 
    if ( bEdit )
    {
-      EditGirderDescription(CGirderKey(selection.GroupIdx,selection.GirderIdx),EGS_GENERAL);
+      EditGirderDescription(CGirderKey(selection.GroupIdx,selection.GirderIdx),SPLICEDGIRDERDLG_PAGE_GENERAL);
    }
 }
 
@@ -450,7 +450,7 @@ void CPGSpliceDoc::OnEditTemporarySupport()
 
    if ( tsID != INVALID_ID )
    {
-      EditTemporarySupportDescription(tsID,ETSD_GENERAL);
+      EditTemporarySupportDescription(tsID,TSDLG_PAGE_GENERAL);
    }
 }
 
@@ -599,16 +599,20 @@ BOOL CPGSpliceDoc::OnCopyTempSupportPropsTb(NMHDR* pnmhdr,LRESULT* plr)
 
 void CPGSpliceDoc::OnEditBridgeDescription() 
 {
-   EditBridgeDescription(0); // open to first page
+   EditBridgeDescription(BRIDGEDLG_PAGE_GENERAL); // open to first page
 }
 
-bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage)
+bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,LPCTSTR pageName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   CGirderSegmentDlg dlg(pBridgeDesc,segmentKey,EAFGetMainFrame(),nPage);
+   CGirderSegmentDlg dlg(pBridgeDesc,segmentKey,EAFGetMainFrame());
+   if ( CPropertyPage* pActivePage = dlg.FindPage(pageName) )
+   {
+      dlg.SetActivePage(pActivePage);
+   }
 
 
 #pragma Reminder("UPDATE: Clean up handling of shear data")
@@ -645,7 +649,7 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
          std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
-         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn)); // see ordering limitation note in IFace\ExtendUI.h
          pTxn = std::move(pMacro);
       }
 
@@ -657,12 +661,17 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
    return bRetVal;
 }
 
-bool CPGSpliceDoc::EditClosureJointDescription(const CClosureKey& closureKey,int nPage)
+bool CPGSpliceDoc::EditClosureJointDescription(const CClosureKey& closureKey,LPCTSTR pageName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    CClosureJointDlg dlg(pIBridgeDesc->GetBridgeDescription(),closureKey);
+
+   if ( CPropertyPage* pActivePage = dlg.FindPage(pageName) )
+   {
+      dlg.SetActivePage(pActivePage);
+   }
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -686,7 +695,7 @@ bool CPGSpliceDoc::EditClosureJointDescription(const CClosureKey& closureKey,int
          std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
-         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn)); // see ordering limitation note in IFace\ExtendUI.h
          pTxn = std::move(pMacro);
       }
 
@@ -697,13 +706,18 @@ bool CPGSpliceDoc::EditClosureJointDescription(const CClosureKey& closureKey,int
    return true;
 }
 
-bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
+bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,LPCTSTR pageName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    bool bRetVal = false;
 
    CSplicedGirderDescDlg dlg(girderKey);
+
+   if ( CPropertyPage* pActivePage = dlg.FindPage(pageName) )
+   {
+      dlg.SetActivePage(pActivePage);
+   }
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -718,7 +732,7 @@ bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
          std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<WBFL::EAF::MacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
-         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn)); // see ordering limitation note in IFace\ExtendUI.h
          pTxn = std::move(pMacro);
       }
 
@@ -747,7 +761,7 @@ void CPGSpliceDoc::DeleteTemporarySupport(SupportIDType tsID)
    pTransactions->Execute(std::move(pTxn));
 }
 
-bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
+bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,LPCTSTR pageName)
 {
    // NOTE: in the future, if we handle temporary shorting towers in PGSuper,
    // we will want to move this to the base document class so that one
@@ -762,7 +776,10 @@ bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
    SupportIndexType tsIdx = pTS->GetIndex();
 
    CTemporarySupportDlg dlg(pBridgeDesc,tsIdx);
-   dlg.SetActivePage(nPage);
+   if ( CPropertyPage* pActivePage = dlg.FindPage(pageName) )
+   {
+      dlg.SetActivePage(pActivePage);
+   }
    if ( dlg.DoModal() == IDOK )
    {
       std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditTemporarySupport>(tsIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
@@ -773,7 +790,7 @@ bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
          std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<WBFL::EAF::MacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
-         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn)); // see ordering limitation note in IFace\ExtendUI.h
          pTxn = std::move(pMacro);
       }
 

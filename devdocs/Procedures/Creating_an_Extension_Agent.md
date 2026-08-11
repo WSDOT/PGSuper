@@ -53,6 +53,51 @@ existing extension agents that don't override it keep today's append-only behavi
 live data through the `IEditPierData*` its constructor is given, while `CExtensionPage`
 (`ExtensionPage.h`) is a deliberately simpler, self-contained page used by every other callback.
 
+### Naming your tab, and opening a dialog straight to it
+`IExtensionPageCallback` also has `GetPropertyPageName()`, which lets your page be found by name
+later - e.g. by a menu command you add that should open the host dialog directly to your tab,
+rather than to whatever tab the dialog opens on by default. It's not pure virtual; the default
+returns an empty string, in which case the framework falls back to an internal auto-generated name
+(`"ExtensionN"`) that isn't predictable from outside, so override it whenever you need to address
+your own page:
+~~~
+std::_tstring GetPropertyPageName() override { return _T("Georeferencing"); }
+~~~
+(`PGSuperIfcExtensions\IfcExtensionAgent.h` - the real example this pattern was built for: it adds
+its own "Georeferencing" tab to the Alignment dialog via `AtStart()`, then adds an **Edit >
+Georeferencing...** menu command that jumps straight to it.)
+
+Every `IEditByUI::EditXxxDescription(...)` method that opens a tabbed dialog (`EditAlignmentDescription`,
+`EditBridgeDescription`, `EditPierDescription`, `EditSpanDescription`, `EditGirderDescription`,
+`EditSegmentDescription`, `EditTemporarySupportDescription`, `EditClosureJointDescription`) takes the
+target page as an `LPCTSTR pageName`, not a numeric index - tab *position* is no longer a reliable
+way to identify a tab, because your extension page (or another extension's) can be inserted before
+or between the built-in ones via `ExtensionPagePosition`. Built-in page names are the
+`XXXDLG_PAGE_*` constants next to `ExtensionPagePosition` in `Include\IFace\ExtendUI.h` (e.g.
+`ALIGNMENTDLG_PAGE_HORIZONTAL_ALIGNMENT`, `BRIDGEDLG_PAGE_FRAMING`, `PIERDLG_PAGE_CONNECTIONS`) -
+use the same constants with `ExtensionPagePosition::Before()`/`After()` to position your tab
+relative to a specific built-in one. To open a dialog directly to your own tab, call the matching
+`IEditByUI` method with the name you returned from `GetPropertyPageName()`:
+~~~
+GET_IFACE(IEditByUI, pEditByUI);
+pEditByUI->EditAlignmentDescription(_T("Georeferencing"));
+~~~
+If the name doesn't match any page currently in the dialog (e.g. a stale name, or the callback
+wasn't registered), the dialog just opens on its normal default tab instead of failing.
+
+### A known limitation: transaction execution order doesn't follow tab order
+When such a dialog closes with OK, the transaction representing "what you edited" is built by
+`OnOK(...)` returning a `WBFL::EAF::Transaction` (or `nullptr` for no undo/redo support - don't
+return `nullptr` unless your page genuinely has nothing to undo). The host merges that with its own
+built-in-tabs transaction into a macro transaction - but **always** in the same fixed order (the
+built-in edit first, then every extension's edit in callback-registration order), regardless of
+where your tab actually sits among the built-in ones. An extension page positioned with `AtStart()`
+still has its edit undo/redo *after* the built-in tabs' edit, not before, and two extensions on the
+same dialog undo/redo in registration order, not left-to-right tab order. See the longer comment
+next to `IExtensionPageCallback` in `Include\IFace\ExtendUI.h` for the full explanation and why it
+hasn't been fixed yet (it would require splitting each dialog's built-in-tabs transaction into one
+piece per page).
+
 ## Menu and toolbar commands
 `Include\EAF\EAFUIIntegration.h` declares `IEAFMainMenu` (get the main menu / build a context menu)
 and `IEAFToolbars` (create/get/destroy a toolbar). Commands you add are routed back to your agent

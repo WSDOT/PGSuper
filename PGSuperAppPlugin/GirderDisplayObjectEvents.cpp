@@ -959,7 +959,7 @@ void CGirderElevationViewSegmentDisplayObjectEvents::EditSegment(std::shared_ptr
    
    auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEditByUI, pEdit);
-   pEdit->EditSegmentDescription(m_SegmentKey, EGD_GENERAL);
+   pEdit->EditSegmentDescription(m_SegmentKey, GIRDERDLG_PAGE_GENERAL);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1097,7 +1097,7 @@ void CGirderSectionViewSegmentDisplayObjectEvents::EditSegment(std::shared_ptr<i
    
    auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker, IEditByUI, pEdit);
-   pEdit->EditGirderDescription(m_POI.GetSegmentKey(), EGD_GENERAL);
+   pEdit->EditGirderDescription(m_POI.GetSegmentKey(), GIRDERDLG_PAGE_GENERAL);
 }
 
 /////////////////////////////////////////////////////////////////////////////

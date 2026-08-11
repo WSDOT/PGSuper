@@ -144,8 +144,11 @@ void CClosureJointDlg::CreateExtensionPages()
       {
          m_ExtensionPages.emplace_back(pCallback,pPage);
 
-         CString name;
-         name.Format(_T("Extension%d"), callbackIter->first);
+         CString name(pCallback->GetPropertyPageName().c_str());
+         if ( name.IsEmpty() )
+         {
+            name.Format(_T("Extension%d"), callbackIter->first);
+         }
          m_PageManager.InsertExtensionPage(name, pPage, pCallback->GetPropertyPagePosition());
       }
    }
@@ -189,8 +192,11 @@ void CClosureJointDlg::CreateExtensionPages(const std::vector<EditSplicedGirderE
       {
          m_ExtensionPages.emplace_back(pEditClosureJointCallback,pPage);
 
-         CString name;
-         name.Format(_T("Extension%d"), callbackIter->first);
+         CString name(pEditClosureJointCallback->GetPropertyPageName().c_str());
+         if ( name.IsEmpty() )
+         {
+            name.Format(_T("Extension%d"), callbackIter->first);
+         }
          m_PageManager.InsertExtensionPage(name, pPage, pEditClosureJointCallback->GetPropertyPagePosition());
       }
    }

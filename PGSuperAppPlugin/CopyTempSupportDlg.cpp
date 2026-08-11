@@ -417,14 +417,14 @@ void CCopyTempSupportDlg::OnEdit()
    PierIndexType fromIdx = GetFromTempSupport();
 
    GET_IFACE(IEditByUI, pEditByUI);
-   UINT tab = 0; // use if nothing is selected
+   LPCTSTR pageName = TSDLG_PAGE_GENERAL; // use if nothing is selected
    std::vector<ICopyTemporarySupportPropertiesCallback*> callbacks = GetSelectedCopyTempSupportPropertiesCallbacks();
    if (!callbacks.empty())
    {
-      tab = callbacks.front()->GetTempSupportEditorTabIndex();
+      pageName = callbacks.front()->GetTempSupportEditorPageName();
    }
 
-   pEditByUI->EditTemporarySupportDescription(fromIdx, tab);
+   pEditByUI->EditTemporarySupportDescription(fromIdx, pageName);
 
    UpdateReport(); // we update whether any changes are made or not
 

@@ -661,9 +661,9 @@ std::unique_ptr<WBFL::EAF::Transaction> CCopyPierAllProperties::CreateCopyTransa
    return std::make_unique<txnCopyPierAllProperties>(fromPierIdx, toPiers);
 }
 
-UINT CCopyPierAllProperties::GetPierEditorTabIndex()
+LPCTSTR CCopyPierAllProperties::GetPierEditorPageName()
 {
-   return EPD_GENERAL;
+   return PIERDLG_PAGE_LOCATION;
 }
 
 rptParagraph* CCopyPierAllProperties::BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
@@ -697,9 +697,9 @@ std::unique_ptr<WBFL::EAF::Transaction> CCopyPierConnectionProperties::CreateCop
    return std::make_unique<txnCopyPierConnectionProperties>(fromPierIdx, toPiers);
 }
 
-UINT CCopyPierConnectionProperties::GetPierEditorTabIndex()
+LPCTSTR CCopyPierConnectionProperties::GetPierEditorPageName()
 {
-   return EPD_CONNECTION;
+   return PIERDLG_PAGE_CONNECTIONS;
 }
 
 rptParagraph* CCopyPierConnectionProperties::BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
@@ -733,9 +733,9 @@ std::unique_ptr<WBFL::EAF::Transaction> CCopyPierDiaphragmProperties::CreateCopy
    return std::make_unique<txnCopyPierDiaphragmProperties>(fromPierIdx, toPiers);
 }
 
-UINT CCopyPierDiaphragmProperties::GetPierEditorTabIndex()
+LPCTSTR CCopyPierDiaphragmProperties::GetPierEditorPageName()
 {
-   return EPD_CONNECTION;
+   return PIERDLG_PAGE_CONNECTIONS;
 }
 
 rptParagraph* CCopyPierDiaphragmProperties::BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
@@ -770,9 +770,9 @@ std::unique_ptr<WBFL::EAF::Transaction> CCopyPierModelProperties::CreateCopyTran
    return std::make_unique<txnCopyPierModelProperties>(fromPierIdx, toPiers);
 }
 
-UINT CCopyPierModelProperties::GetPierEditorTabIndex()
+LPCTSTR CCopyPierModelProperties::GetPierEditorPageName()
 {
-   return EPD_LAYOUT;
+   return PIERDLG_PAGE_LAYOUT;
 }
 
 rptParagraph* CCopyPierModelProperties::BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)

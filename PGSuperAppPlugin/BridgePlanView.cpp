@@ -1047,7 +1047,7 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
 void CBridgePlanView::OnEditDeck() 
 {
-   ((CPGSDocBase*)GetDocument())->EditBridgeDescription(EBD_DECK);
+   ((CPGSDocBase*)GetDocument())->EditBridgeDescription(BRIDGEDLG_PAGE_DECK);
 }
 
 void CBridgePlanView::OnViewSettings() 

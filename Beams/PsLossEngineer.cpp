@@ -26,6 +26,7 @@
 #include <Beams/PsLossEngineer.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\ExtendUI.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\AnalysisResults.h>
 #include <EAF/EAFStatusCenter.h>
@@ -508,13 +509,13 @@ void PsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const p
          {
             msg += _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) + _T("\nAdjust the prestress jacking forces");
          }
-         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_PRESTRESS, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
       }
       else if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg += _T("Concrete strength is out of range per LRFD 5.4.2.1 and ") +  std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.1"),_T("5.9.3.1")));
-         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 2, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_STRANDEXT, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
       }
       else
       {
@@ -846,19 +847,19 @@ void PsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoin
          {
             msg += _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) + _T("\nAdjust the prestress jacking forces");
          }
-         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_PRESTRESS, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
       }
       else if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::StrandType )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg += _T("The relaxation loss of 1.2 ksi can only be used with low relaxation strands (see Article ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) +_T("\nChange the strand type or select a different method for computing losses");
-         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_PRESTRESS, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
       }
       else if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg += _T("Concrete strength is out of range per LRFD 5.4.2.1 and ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.1"),_T("5.9.3.1")));
-         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 2, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_STRANDEXT, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
       }
       else
       {
@@ -1094,7 +1095,7 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod PsLossEngineer::LossesByRef
          GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
          std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": ");
          msg += _T("Either the Jacking stress is not equal to 0.75Fpu, or Debonded strands are present, or Temporary strands are present, or the girder is Not Prismatic. Therefore, for the calculation of elastic shortening; an iterative solution was used to find Fcgp after release rather than assuming 0.7*Fpu per the TxDOT design manual.");
-         pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str()));
+         pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_PRESTRESS, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str()));
       }
    }
    catch( const WBFL::LRFD::XPsLosses& e )
@@ -1115,13 +1116,13 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod PsLossEngineer::LossesByRef
          {
             msg += _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article %s\nAdjust the prestress jacking forces") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2c"), _T("5.9.3.4.2c")));
          }
-         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_PRESTRESS, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
       }
       else if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg += _T("Concrete strength is out of range per LRFD 5.4.2.1 and ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.1"), _T("5.9.3.1")));
-         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 2, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_STRANDEXT, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
       }
       else
       {
@@ -1430,13 +1431,13 @@ void PsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfInt
          {
             msg += _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article ") +  std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) +_T(")\nAdjust the prestress jacking forces");
          }
-         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_PRESTRESS, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
       }
       else if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg += _T("Concrete strength is out of range per LRFD 5.4.2.1 and ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.1"),_T("5.9.3.1")));
-         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 0, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_GENERAL, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
       }
       else
       {

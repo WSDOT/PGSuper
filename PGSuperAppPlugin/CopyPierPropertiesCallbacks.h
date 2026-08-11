@@ -251,7 +251,7 @@ public:
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
    virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
-   virtual UINT GetPierEditorTabIndex() override;
+   virtual LPCTSTR GetPierEditorPageName() override;
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
 };
 
@@ -262,7 +262,7 @@ public:
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
    virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
-   virtual UINT GetPierEditorTabIndex() override;
+   virtual LPCTSTR GetPierEditorPageName() override;
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
 };
 
@@ -273,7 +273,7 @@ public:
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
    virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
-   virtual UINT GetPierEditorTabIndex() override;
+   virtual LPCTSTR GetPierEditorPageName() override;
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
 };
 
@@ -284,6 +284,6 @@ public:
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
    virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
-   virtual UINT GetPierEditorTabIndex() override;
+   virtual LPCTSTR GetPierEditorPageName() override;
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) override;
 };

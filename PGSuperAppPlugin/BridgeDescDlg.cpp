@@ -114,8 +114,11 @@ void CBridgeDescDlg::CreateExtensionPages()
          extension.pPage = pPage;
          m_ExtensionPages.push_back(extension);
 
-         CString name;
-         name.Format(_T("Extension%d"), callbackIter->first);
+         CString name(pCallback->GetPropertyPageName().c_str());
+         if ( name.IsEmpty() )
+         {
+            name.Format(_T("Extension%d"), callbackIter->first);
+         }
          m_PageManager.InsertExtensionPage(name, pPage, pCallback->GetPropertyPagePosition());
       }
    }

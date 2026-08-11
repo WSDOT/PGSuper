@@ -24,6 +24,7 @@
 #include "EngAgent.h"
 #include "StatusItems.h"
 #include <IFace\EditByUI.h>
+#include <IFace\ExtendUI.h>
 #include <IFace\Views.h>
 #include <EAF/EAFUtilities.h>
 
@@ -90,7 +91,7 @@ void pgsLiftingSupportLocationStatusCallback::Execute(std::shared_ptr<WBFL::EAF:
    auto broker = EAFGetBroker();
    GET_IFACE2(broker, IEditByUI, pEdit);
 
-   pEdit->EditSegmentDescription(pItem->m_SegmentKey,EGD_TRANSPORTATION);
+   pEdit->EditSegmentDescription(pItem->m_SegmentKey,GIRDERDLG_PAGE_LIFTING);
 }
 
 
@@ -157,6 +158,6 @@ void pgsBunkPointLocationStatusCallback::Execute(std::shared_ptr<WBFL::EAF::Stat
 
    auto broker = EAFGetBroker();
    GET_IFACE2(broker, IEditByUI, pEdit);
-   pEdit->EditSegmentDescription(pItem->m_SegmentKey,EGD_TRANSPORTATION);
+   pEdit->EditSegmentDescription(pItem->m_SegmentKey,GIRDERDLG_PAGE_LIFTING);
 }
 

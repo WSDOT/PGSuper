@@ -612,14 +612,14 @@ void CCopyGirderDlg::OnEdit()
    CGirderKey fromKey = GetFromGirder();
 
    GET_IFACE(IEditByUI, pEditByUI);
-   UINT tab = 0; // use if nothing is selected
+   LPCTSTR pageName = GIRDERDLG_PAGE_GENERAL; // use if nothing is selected
    std::vector<ICopyGirderPropertiesCallback*> callbacks = GetSelectedCopyGirderPropertiesCallbacks();
    if (!callbacks.empty())
    {
-      tab = callbacks.front()->GetGirderEditorTabIndex();
+      pageName = callbacks.front()->GetGirderEditorPageName();
    }
 
-   pEditByUI->EditGirderDescription(fromKey, tab);
+   pEditByUI->EditGirderDescription(fromKey, pageName);
 
    UpdateReport(); // we update whether any changes are made or not
    EnableCopyNow();

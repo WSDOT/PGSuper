@@ -158,7 +158,7 @@ public:
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
    virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
-   virtual UINT GetGirderEditorTabIndex() override;
+   virtual LPCTSTR GetGirderEditorPageName() override;
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
 
@@ -169,7 +169,7 @@ public:
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
    virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
-   virtual UINT GetGirderEditorTabIndex() override;
+   virtual LPCTSTR GetGirderEditorPageName() override;
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
 
@@ -180,7 +180,7 @@ public:
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
    virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
-   virtual UINT GetGirderEditorTabIndex() override;
+   virtual LPCTSTR GetGirderEditorPageName() override;
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
 
@@ -191,7 +191,7 @@ public:
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
    virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
-   virtual UINT GetGirderEditorTabIndex() override;
+   virtual LPCTSTR GetGirderEditorPageName() override;
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
 
@@ -202,7 +202,7 @@ public:
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
    virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
-   virtual UINT GetGirderEditorTabIndex() override;
+   virtual LPCTSTR GetGirderEditorPageName() override;
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };
 
@@ -213,6 +213,6 @@ public:
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
    virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) override;
-   virtual UINT GetGirderEditorTabIndex() override;
+   virtual LPCTSTR GetGirderEditorPageName() override;
    virtual rptParagraph* BuildComparisonReportParagraph(const CGirderKey& fromGirderKey) override;
 };

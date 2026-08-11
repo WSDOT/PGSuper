@@ -207,8 +207,11 @@ void CPierDetailsDlg::CreateExtensionPages()
       CPropertyPage* pPage = pEditPierCallback->CreatePropertyPage(this);
       m_ExtensionPages.emplace_back(pEditPierCallback,pPage);
 
-      CString name;
-      name.Format(_T("Extension%d"), callbackIter->first);
+      CString name(pEditPierCallback->GetPropertyPageName().c_str());
+      if ( name.IsEmpty() )
+      {
+         name.Format(_T("Extension%d"), callbackIter->first);
+      }
       m_PageManager.InsertExtensionPage(name, pPage, pEditPierCallback->GetPropertyPagePosition());
    }
 }
@@ -249,8 +252,11 @@ void CPierDetailsDlg::CreateExtensionPages(const std::vector<EditBridgeExtension
 
       m_ExtensionPages.emplace_back(pEditPierCallback,pPage);
 
-      CString name;
-      name.Format(_T("Extension%d"), callbackIter->first);
+      CString name(pEditPierCallback->GetPropertyPageName().c_str());
+      if ( name.IsEmpty() )
+      {
+         name.Format(_T("Extension%d"), callbackIter->first);
+      }
       m_PageManager.InsertExtensionPage(name, pPage, pEditPierCallback->GetPropertyPagePosition());
    }
 }

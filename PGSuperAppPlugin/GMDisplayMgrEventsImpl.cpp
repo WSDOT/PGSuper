@@ -55,7 +55,7 @@ bool CGMDisplayMgrEventsImpl::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDis
    if (m_bGirderElevation) return false;
    
    auto poi = m_pFrame->GetCutLocation();
-   m_pDoc->EditGirderDescription(poi.GetSegmentKey(), EGD_GENERAL);
+   m_pDoc->EditGirderDescription(poi.GetSegmentKey(), GIRDERDLG_PAGE_GENERAL);
 
    return true;
 }

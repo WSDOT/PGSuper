@@ -33,6 +33,7 @@
 #include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
+#include <IFace\ExtendUI.h>
 
 #include <PsgLib\BridgeDescription2.h>
 
@@ -59,8 +60,8 @@ CAlignmentDisplayObjectEvents::~CAlignmentDisplayObjectEvents()
 void CAlignmentDisplayObjectEvents::EditAlignment()
 {
    GET_IFACE(IEditByUI, pEditByUI);
-   int page = (m_ViewType == BridgePlan || m_ViewType == Alignment ? EAD_ROADWAY : EAD_SECTION);
-   pEditByUI->EditAlignmentDescription(page);
+   LPCTSTR pageName = (m_ViewType == BridgePlan || m_ViewType == Alignment ? ALIGNMENTDLG_PAGE_HORIZONTAL_ALIGNMENT : ALIGNMENTDLG_PAGE_SUPERELEVATION);
+   pEditByUI->EditAlignmentDescription(pageName);
 }
 
 /////////////////////////////////////////////////////////////////////////////

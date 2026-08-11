@@ -58,7 +58,7 @@ void CPierDisplayObjectEvents::EditPier(std::shared_ptr<WBFL::DManip::iDisplayOb
    auto pView = pDispMgr->GetView();
    CDocument* pDoc = pView->GetDocument();
 
-   ((CPGSDocBase*)pDoc)->EditPierDescription(m_PierIdx,EPD_GENERAL);
+   ((CPGSDocBase*)pDoc)->EditPierDescription(m_PierIdx,PIERDLG_PAGE_LOCATION);
 }
 
 void CPierDisplayObjectEvents::SelectPier(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)

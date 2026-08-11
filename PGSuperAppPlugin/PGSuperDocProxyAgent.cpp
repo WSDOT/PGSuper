@@ -1051,19 +1051,19 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,std::shared_pt
 
 ///////////////////////////////////////////////////////////////////////////////////
 // IEditByUI
-void CPGSuperDocProxyAgent::EditBridgeDescription(int nPage)
+void CPGSuperDocProxyAgent::EditBridgeDescription(LPCTSTR pageName)
 {
-   m_pMyDocument->EditBridgeDescription(nPage);
+   m_pMyDocument->EditBridgeDescription(pageName);
 }
 
-void CPGSuperDocProxyAgent::EditAlignmentDescription(int nPage)
+void CPGSuperDocProxyAgent::EditAlignmentDescription(LPCTSTR pageName)
 {
-   m_pMyDocument->EditAlignmentDescription(nPage);
+   m_pMyDocument->EditAlignmentDescription(pageName);
 }
 
-bool CPGSuperDocProxyAgent::EditSegmentDescription(const CSegmentKey& segmentKey, int nPage)
+bool CPGSuperDocProxyAgent::EditSegmentDescription(const CSegmentKey& segmentKey, LPCTSTR pageName)
 {
-   return m_pMyDocument->EditGirderSegmentDescription(segmentKey,nPage);
+   return m_pMyDocument->EditGirderSegmentDescription(segmentKey,pageName);
 }
 
 bool CPGSuperDocProxyAgent::EditSegmentDescription()
@@ -1071,14 +1071,14 @@ bool CPGSuperDocProxyAgent::EditSegmentDescription()
    return m_pMyDocument->EditGirderSegmentDescription();
 }
 
-bool CPGSuperDocProxyAgent::EditClosureJointDescription(const CClosureKey& closureKey, int nPage)
+bool CPGSuperDocProxyAgent::EditClosureJointDescription(const CClosureKey& closureKey, LPCTSTR pageName)
 {
-   return m_pMyDocument->EditClosureJointDescription(closureKey,nPage);
+   return m_pMyDocument->EditClosureJointDescription(closureKey,pageName);
 }
 
-bool CPGSuperDocProxyAgent::EditGirderDescription(const CGirderKey& girderKey, int nPage)
+bool CPGSuperDocProxyAgent::EditGirderDescription(const CGirderKey& girderKey, LPCTSTR pageName)
 {
-   return m_pMyDocument->EditGirderDescription(girderKey,nPage);
+   return m_pMyDocument->EditGirderDescription(girderKey,pageName);
 }
 
 bool CPGSuperDocProxyAgent::EditGirderDescription()
@@ -1086,17 +1086,17 @@ bool CPGSuperDocProxyAgent::EditGirderDescription()
    return m_pMyDocument->EditGirderDescription();
 }
 
-bool CPGSuperDocProxyAgent::EditSpanDescription(SpanIndexType spanIdx, int nPage)
+bool CPGSuperDocProxyAgent::EditSpanDescription(SpanIndexType spanIdx, LPCTSTR pageName)
 {
-   return m_pMyDocument->EditSpanDescription(spanIdx,nPage);
+   return m_pMyDocument->EditSpanDescription(spanIdx,pageName);
 }
 
-bool CPGSuperDocProxyAgent::EditPierDescription(PierIndexType pierIdx, int nPage)
+bool CPGSuperDocProxyAgent::EditPierDescription(PierIndexType pierIdx, LPCTSTR pageName)
 {
-   return m_pMyDocument->EditPierDescription(pierIdx,nPage);
+   return m_pMyDocument->EditPierDescription(pierIdx,pageName);
 }
 
-bool CPGSuperDocProxyAgent::EditTemporarySupportDescription(PierIndexType pierIdx, int nPage)
+bool CPGSuperDocProxyAgent::EditTemporarySupportDescription(PierIndexType pierIdx, LPCTSTR pageName)
 {
    if (IsPGSpliceDocument())
    {
@@ -1109,7 +1109,7 @@ bool CPGSuperDocProxyAgent::EditTemporarySupportDescription(PierIndexType pierId
 
       PierIndexType tsid = pTsData->GetID();
 
-      return pPGSplice->EditTemporarySupportDescription(tsid, nPage);
+      return pPGSplice->EditTemporarySupportDescription(tsid, pageName);
    }
    else
    {

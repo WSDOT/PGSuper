@@ -208,16 +208,16 @@ public:
 
 // IEditByUI
 public:
-   void EditBridgeDescription(int nPage) override;
-   void EditAlignmentDescription(int nPage) override;
-   bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage) override;
+   void EditBridgeDescription(LPCTSTR pageName) override;
+   void EditAlignmentDescription(LPCTSTR pageName) override;
+   bool EditSegmentDescription(const CSegmentKey& segmentKey, LPCTSTR pageName) override;
    bool EditSegmentDescription() override;
-   bool EditClosureJointDescription(const CClosureKey& closureKey, int nPage) override;
-   bool EditGirderDescription(const CGirderKey& girderKey, int nPage) override;
+   bool EditClosureJointDescription(const CClosureKey& closureKey, LPCTSTR pageName) override;
+   bool EditGirderDescription(const CGirderKey& girderKey, LPCTSTR pageName) override;
    bool EditGirderDescription() override;
-   bool EditSpanDescription(SpanIndexType spanIdx, int nPage) override;
-   bool EditPierDescription(PierIndexType pierIdx, int nPage) override;
-   bool EditTemporarySupportDescription(PierIndexType pierIdx, int nPage) override; 
+   bool EditSpanDescription(SpanIndexType spanIdx, LPCTSTR pageName) override;
+   bool EditPierDescription(PierIndexType pierIdx, LPCTSTR pageName) override;
+   bool EditTemporarySupportDescription(PierIndexType pierIdx, LPCTSTR pageName) override; 
    void EditLiveLoads() override;
    void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,WBFL::LRFD::RangeOfApplicabilityAction roaAction) override;
    bool EditPointLoad(IndexType loadIdx) override;

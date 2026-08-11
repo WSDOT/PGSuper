@@ -554,10 +554,10 @@ void CGirderModelElevationView::OnSize(UINT nType, int cx, int cy)
 
 void CGirderModelElevationView::OnEditPrestressing() 
 {
-   int page = EGS_PRESTRESSING;
+   LPCTSTR page = SEGMENTDLG_PAGE_STRANDS;
    if ( GetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
-      page = EGD_PRESTRESSING;
+      page = GIRDERDLG_PAGE_PRESTRESS;
    }
 
    pgsPointOfInterest poi = GetCutLocation();
@@ -566,10 +566,10 @@ void CGirderModelElevationView::OnEditPrestressing()
 
 void CGirderModelElevationView::OnEditStirrups() 
 {
-   int page = EGS_STIRRUPS;
+   LPCTSTR page = SEGMENTDLG_PAGE_STIRRUPS;
    if ( GetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
-      page = EGD_STIRRUPS;
+      page = GIRDERDLG_PAGE_SHEAR;
    }
 
    pgsPointOfInterest poi = GetCutLocation();

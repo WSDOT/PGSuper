@@ -737,9 +737,9 @@ std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderAllProperties::CreateCopyTran
    return std::make_unique<txnCopyGirderAllProperties>(fromGirderKey,toGirderKeys);
 }
 
-UINT CCopyGirderAllProperties::GetGirderEditorTabIndex()
+LPCTSTR CCopyGirderAllProperties::GetGirderEditorPageName()
 {
-   return EGD_GENERAL;
+   return GIRDERDLG_PAGE_GENERAL;
 }
 
 rptParagraph* CCopyGirderAllProperties::BuildComparisonReportParagraph(const CGirderKey& fromGirderKey)
@@ -773,9 +773,9 @@ std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderMaterial::CreateCopyTransacti
    return std::make_unique<txnCopyGirderMaterial>(fromGirderKey,toGirderKeys);
 }
 
-UINT CCopyGirderMaterial::GetGirderEditorTabIndex()
+LPCTSTR CCopyGirderMaterial::GetGirderEditorPageName()
 {
-   return EGD_CONCRETE;
+   return GIRDERDLG_PAGE_GENERAL;
 }
 
 rptParagraph* CCopyGirderMaterial::BuildComparisonReportParagraph(const CGirderKey& fromGirderKey)
@@ -834,9 +834,9 @@ std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderRebar::CreateCopyTransaction(
    return std::make_unique<txnCopyGirderRebar>(fromGirderKey,toGirderKeys);
 }
 
-UINT CCopyGirderRebar::GetGirderEditorTabIndex()
+LPCTSTR CCopyGirderRebar::GetGirderEditorPageName()
 {
-   return EGD_LONG_REINF;
+   return GIRDERDLG_PAGE_LONGREBAR;
 }
 
 rptParagraph* CCopyGirderRebar::BuildComparisonReportParagraph(const CGirderKey& fromGirderKey)
@@ -873,9 +873,9 @@ std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderStirrups::CreateCopyTransacti
    return std::make_unique<txnCopyGirderStirrups>(fromGirderKey,toGirderKeys);
 }
 
-UINT CCopyGirderStirrups::GetGirderEditorTabIndex()
+LPCTSTR CCopyGirderStirrups::GetGirderEditorPageName()
 {
-   return EGD_STIRRUPS;
+   return GIRDERDLG_PAGE_SHEAR;
 }
 
 rptParagraph* CCopyGirderStirrups::BuildComparisonReportParagraph(const CGirderKey& fromGirderKey)
@@ -938,9 +938,9 @@ std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderPrestressing::CreateCopyTrans
    return std::make_unique<txnCopyGirderPrestressing>(fromGirderKey,toGirderKeys);
 }
 
-UINT CCopyGirderPrestressing::GetGirderEditorTabIndex()
+LPCTSTR CCopyGirderPrestressing::GetGirderEditorPageName()
 {
-   return EGD_PRESTRESSING;
+   return GIRDERDLG_PAGE_PRESTRESS;
 }
 
 rptParagraph* CCopyGirderPrestressing::BuildComparisonReportParagraph(const CGirderKey& fromGirderKey)
@@ -990,9 +990,9 @@ std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderHandling::CreateCopyTransacti
    return std::make_unique<txnCopyGirderHandling>(fromGirderKey, toGirderKeys);
 }
 
-UINT CCopyGirderHandling::GetGirderEditorTabIndex()
+LPCTSTR CCopyGirderHandling::GetGirderEditorPageName()
 {
-   return EGD_TRANSPORTATION;
+   return GIRDERDLG_PAGE_LIFTING;
 }
 
 rptParagraph* CCopyGirderHandling::BuildComparisonReportParagraph(const CGirderKey& fromGirderKey)

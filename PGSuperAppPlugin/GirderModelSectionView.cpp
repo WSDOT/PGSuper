@@ -1690,10 +1690,10 @@ int CGirderModelSectionView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 void CGirderModelSectionView::OnEditPrestressing() 
 {
-   int page = EGS_PRESTRESSING;
+   LPCTSTR page = SEGMENTDLG_PAGE_STRANDS;
    if ( GetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
-      page = EGD_PRESTRESSING;
+      page = GIRDERDLG_PAGE_PRESTRESS;
    }
 
    pgsPointOfInterest poi(m_pFrame->GetCutLocation());
@@ -1702,10 +1702,10 @@ void CGirderModelSectionView::OnEditPrestressing()
 
 void CGirderModelSectionView::OnEditStirrups() 
 {
-   int page = EGS_STIRRUPS;
+   LPCTSTR page = SEGMENTDLG_PAGE_STIRRUPS;
    if ( GetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
    {
-      page = EGD_STIRRUPS;
+      page = GIRDERDLG_PAGE_SHEAR;
    }
 
    pgsPointOfInterest poi(m_pFrame->GetCutLocation());

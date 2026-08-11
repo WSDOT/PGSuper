@@ -42,6 +42,7 @@
 #include <LRFD\StrandPool.h>
 
 #include <IFace\PrestressForce.h>
+#include <IFace\ExtendUI.h>
 #include <EAF/EAFStatusCenter.h>
 #include <IFace\UpdateTemplates.h>
 #include <IFace\AnalysisResults.h>
@@ -12221,7 +12222,7 @@ void CProjectAgentImp::AddSegmentStatusItem(const CSegmentKey& segmentKey,const 
 {
    // first post message
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   StatusItemIDType st_id = pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 0, m_StatusGroupID, m_scidGirderDescriptionWarning, message.c_str()));
+   StatusItemIDType st_id = pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_GENERAL, m_StatusGroupID, m_scidGirderDescriptionWarning, message.c_str()));
 
    // then store message id's for a segment
    StatusIterator iter = m_CurrentGirderStatusItems.find(segmentKey);

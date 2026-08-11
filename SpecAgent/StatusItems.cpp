@@ -25,6 +25,7 @@
 #include "StatusItems.h"
 
 #include <IFace\EditByUI.h>
+#include <IFace\ExtendUI.h>
 #include <EAF/EAFStatusCenter.h>
 #include <IFace\DocumentType.h>
 
@@ -68,10 +69,10 @@ void pgsHaulTruckStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> 
    GET_IFACE2(broker,IEditByUI,pEdit);
    if (pDocType->IsPGSuperDocument())
    {
-      pEdit->EditGirderDescription(pItem->m_SegmentKey, EGD_TRANSPORTATION);
+      pEdit->EditGirderDescription(pItem->m_SegmentKey, GIRDERDLG_PAGE_LIFTING);
    }
    else
    {
-      pEdit->EditSegmentDescription(pItem->m_SegmentKey, EGS_TRANSPORTATION);
+      pEdit->EditSegmentDescription(pItem->m_SegmentKey, SEGMENTDLG_PAGE_LIFTING);
    }
 }

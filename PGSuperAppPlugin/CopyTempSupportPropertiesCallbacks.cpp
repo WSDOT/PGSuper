@@ -235,9 +235,9 @@ std::unique_ptr<WBFL::EAF::Transaction> CCopyTempSupportConnectionProperties::Cr
    return std::make_unique<txnCopyTempSupportConnectionProperties>(fromTempSupportIdx, toTempSupports);
 }
 
-UINT CCopyTempSupportConnectionProperties::GetTempSupportEditorTabIndex()
+LPCTSTR CCopyTempSupportConnectionProperties::GetTempSupportEditorPageName()
 {
-   return ETS_CONNECTION;
+   return TSDLG_PAGE_GEOMETRY;
 }
 
 rptParagraph* CCopyTempSupportConnectionProperties::BuildComparisonReportParagraph(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)

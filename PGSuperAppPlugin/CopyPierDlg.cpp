@@ -414,14 +414,14 @@ void CCopyPierDlg::OnEdit()
    PierIndexType fromIdx = GetFromPier();
 
    GET_IFACE(IEditByUI, pEditByUI);
-   UINT tab = 0; // use if nothing is selected
+   LPCTSTR pageName = PIERDLG_PAGE_LOCATION; // use if nothing is selected
    std::vector<ICopyPierPropertiesCallback*> callbacks = GetSelectedCopyPierPropertiesCallbacks();
    if (!callbacks.empty())
    {
-      tab = callbacks.front()->GetPierEditorTabIndex();
+      pageName = callbacks.front()->GetPierEditorPageName();
    }
 
-   pEditByUI->EditPierDescription(fromIdx, tab);
+   pEditByUI->EditPierDescription(fromIdx, pageName);
 
    UpdateReport(); // we update whether any changes are made or not
    EnableCopyNow();

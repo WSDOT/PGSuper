@@ -79,6 +79,7 @@
 #include <EAF/EAFStatusCenter.h>
 #include <IFace\BeamFactory.h>
 #include <IFace\EditByUI.h>
+#include <IFace\ExtendUI.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\AgeAdjustedMaterial.h>
 #include <IFace\DocumentType.h>
@@ -2084,7 +2085,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                os << _T("The central angle of horizontal curve ") << curveID << _T(" is 0 or 180 degrees. Horizontal curve was modeled as a single point at the PI location.");
                std::_tstring strMsg = os.str();
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
-               pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentError, 0, strMsg.c_str()));
+               pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentError, ALIGNMENTDLG_PAGE_HORIZONTAL_ALIGNMENT, strMsg.c_str()));
                
                m_CogoModel->StorePointEx(pointID, pi);
                m_CogoModel->AddPathElementToAlignmentByID(CBridgeGeometryModelBuilder::AlignmentID, petPoint, pointID);
@@ -2158,7 +2159,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                      std::_tstring strMsg = os.str();
                      
                      GET_IFACE(IEAFStatusCenter,pStatusCenter);
-                     pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentWarning, 0, strMsg.c_str()));
+                     pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentWarning, ALIGNMENTDLG_PAGE_HORIZONTAL_ALIGNMENT, strMsg.c_str()));
 
                      strMsg += std::_tstring(_T("\nSee Status Center for Details"));
                   }
@@ -2169,7 +2170,7 @@ bool CBridgeAgentImp::BuildCogoModel()
                      std::_tstring strMsg = os.str();
                      
                      GET_IFACE(IEAFStatusCenter,pStatusCenter);
-                     pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentError, 0, strMsg.c_str()));
+                     pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentError, ALIGNMENTDLG_PAGE_HORIZONTAL_ALIGNMENT, strMsg.c_str()));
 
                      strMsg += std::_tstring(_T("\nSee Status Center for Details"));
                   }
@@ -2189,7 +2190,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
                std::_tstring strMsg = os.str();
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
-               pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentError, 0, strMsg.c_str()));
+               pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentError, ALIGNMENTDLG_PAGE_HORIZONTAL_ALIGNMENT, strMsg.c_str()));
 
                continue;
             }
@@ -2307,7 +2308,7 @@ bool CBridgeAgentImp::BuildCogoModel()
             std::_tstring strMsg = os.str();
 
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
-            pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentWarning, 1, strMsg.c_str()));
+            pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentWarning, ALIGNMENTDLG_PAGE_PROFILE, strMsg.c_str()));
          }
 
          // add a vertical curve
@@ -2341,7 +2342,7 @@ bool CBridgeAgentImp::BuildCogoModel()
             std::_tstring strMsg = os.str();
 
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
-            pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentError, 1, strMsg.c_str()));
+            pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentError, ALIGNMENTDLG_PAGE_PROFILE, strMsg.c_str()));
 
             strMsg += std::_tstring(_T("\nSee Status Center for Details"));
 //            THROW_UNWIND(strMsg.c_str(),-1);
@@ -2378,7 +2379,7 @@ bool CBridgeAgentImp::BuildCogoModel()
             std::_tstring strMsg = os.str();
 
             GET_IFACE(IEAFStatusCenter,pStatusCenter);
-            pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentWarning, 1, strMsg.c_str()));
+            pStatusCenter->Add(std::make_shared<pgsAlignmentDescriptionStatusItem>(m_StatusGroupID, m_scidAlignmentWarning, ALIGNMENTDLG_PAGE_PROFILE, strMsg.c_str()));
          }
 
          pbg_station   = pvi_station;
@@ -4286,7 +4287,7 @@ void CBridgeAgentImp::ValidateGirders()
                if ((start_slope != Float64_Max && 0.0 < start_slope) || (end_slope != Float64_Max && end_slope < 0.0))
                {
                   std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Strand drape is upside down");
-                  pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 0, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str()));
+                  pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_GENERAL, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str()));
                }
             }
 
@@ -4295,7 +4296,7 @@ void CBridgeAgentImp::ValidateGirders()
             if ( !pSegment->AreSegmentVariationsValid(framing_length) )
             {
                std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Segment variation dimensions are invalid.");
-               pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 0, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str()));
+               pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_GENERAL, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str()));
 
                //strMsg += _T("See Status Center for Details");
                //THROW_UNWIND(os.str().c_str(),XREASON_INVALID_SEGMENT_VARIATION);
@@ -4318,7 +4319,7 @@ void CBridgeAgentImp::ValidateGirders()
                            std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey))
                               + _T(": Web thickening zone overlaps end block zone. Reduce the thickening length, transition length, or end block length.");
                            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(
-                              segmentKey, EGD_GENERAL, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str()));
+                              segmentKey, GIRDERDLG_PAGE_GENERAL, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str()));
                         }
                         break;
                      }
@@ -4332,7 +4333,7 @@ void CBridgeAgentImp::ValidateGirders()
                GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEither) > 0)
             {
                std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Has a mix of Harped and Debonded strands. Specification checks for debond constructability may be inaccurate.");
-               pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str()));
+               pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_PRESTRESS, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str()));
             }
 
             // validate connection geometry (segment end must be at or into continuous diaphragms)
@@ -14706,7 +14707,7 @@ ZoneIndexType CBridgeAgentImp::GetPrimaryZoneCount(const CSegmentKey& segmentKey
                   {
                      strMsg.Format(_T("Group %d Girder %s Segment %d: %s is shorter than the stirrup layout. For symmetrical stirrup zones, the zones beyond mid-point are ignored"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),strGirderLabel);
                   }
-                  pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, EGD_STIRRUPS, m_StatusGroupID, m_scidGirderDescriptionWarning, strMsg));
+                  pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_SHEAR, m_StatusGroupID, m_scidGirderDescriptionWarning, strMsg));
                }
                return 2*(zoneIdx+1)-1;
             }
@@ -14736,7 +14737,7 @@ ZoneIndexType CBridgeAgentImp::GetPrimaryZoneCount(const CSegmentKey& segmentKey
                   {
                      strMsg.Format(_T("Group %d Girder %s Segment %d: %s is shorter than the stirrup layout. Stirrup zones beyond the end of the %s are ignored"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),strGirderLabel,strGirderLabel);
                   }
-                  pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, EGD_STIRRUPS, m_StatusGroupID, m_scidGirderDescriptionInform, strMsg));
+                  pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_SHEAR, m_StatusGroupID, m_scidGirderDescriptionInform, strMsg));
                }
                return (zoneIdx+1);
             }
@@ -27721,7 +27722,7 @@ std::pair<Float64, Float64> CBridgeAgentImp::GetSegmentLiftingLoopLocations(cons
       GET_IFACE(IEAFStatusCenter, pStatusCenter);
       CString strMsg;
       strMsg.Format(_T("Lifting loop locations are past the center of the girder for %s. Lifting loops assumed to be at the ends of the girder."), SEGMENT_LABEL(segmentKey));
-      pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, EGD_TRANSPORTATION, m_HandlingParametersGroupID, m_scidGirderDescriptionWarning, strMsg));
+      pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_LIFTING, m_HandlingParametersGroupID, m_scidGirderDescriptionWarning, strMsg));
    }
    return { Loh,Roh };
 }
@@ -27740,7 +27741,7 @@ std::pair<Float64, Float64> CBridgeAgentImp::GetSegmentBunkPointLocations(const 
       GET_IFACE(IEAFStatusCenter, pStatusCenter);
       CString strMsg;
       strMsg.Format(_T("Bunk point locations are past the center of the girder for %s. Bunk points are assumed to be at the ends of the girder."), SEGMENT_LABEL(segmentKey));
-      pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, EGD_TRANSPORTATION, m_HandlingParametersGroupID, m_scidGirderDescriptionWarning, strMsg));
+      pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_LIFTING, m_HandlingParametersGroupID, m_scidGirderDescriptionWarning, strMsg));
    }
    return { Loh,Roh };
 }
@@ -32782,7 +32783,7 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
                os << SEGMENT_LABEL(segmentKey)
                   << _T(": Clearance between longitudinal bars in row ") << LABEL_INDEX(idx) << _T(" is less than the nominal diameter of the bar (See LRFD 5.10.3.1.2)") << std::endl;
 
-               pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, EGD_LONG_REINF, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str()));
+               pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_LONGREBAR, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str()));
             }
             else if ( clear < 1.33*max_aggregate_size )
             {
@@ -32790,7 +32791,7 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
                os << SEGMENT_LABEL(segmentKey)
                   << _T(": Clearance between longitudinal bars in row ") << LABEL_INDEX(idx) << _T(" is less than 1.33 times the maximum size of the coarse aggregate (See LRFD 5.10.3.1.2)") << std::endl;
 
-               pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, EGD_LONG_REINF, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str()));
+               pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_LONGREBAR, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str()));
             }
             else if ( clear < WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch) )
             {
@@ -32798,7 +32799,7 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
                os << SEGMENT_LABEL(segmentKey)
                   << _T(": Clearance between longitudinal bars in row ") << LABEL_INDEX(idx) << _T(" is less than 1.0 inch (See LRFD 5.10.3.1.2)") << std::endl;
 
-               pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, EGD_LONG_REINF, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str()));
+               pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_LONGREBAR, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str()));
             }
             else if (concreteType == pgsTypes::PCI_UHPC && clear < 1.0*fiber_length)
             {
@@ -32806,7 +32807,7 @@ void CBridgeAgentImp::LayoutSegmentRebar(const CSegmentKey& segmentKey)
                os << SEGMENT_LABEL(segmentKey)
                   << _T(": Clearance between longitudinal bars in row ") << LABEL_INDEX(idx) << _T(" is less than the fiber length (See PCI UHPC SDG E.10.2)") << std::endl;
 
-               pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, EGD_LONG_REINF, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str()));
+               pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_LONGREBAR, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str()));
             }
          }
 
@@ -33096,7 +33097,7 @@ void CBridgeAgentImp::LayoutClosureJointRebar(const CClosureKey& closureKey)
             os << CLOSURE_LABEL(closureKey)
                << _T(": bars in row ") << LABEL_INDEX(idx) << _T(" are outside of the girder section. These bars will be ignored.") << std::endl;
 
-            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(closureKey, EGD_LONG_REINF, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str()));
+            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(closureKey, GIRDERDLG_PAGE_LONGREBAR, m_StatusGroupID, m_scidGirderDescriptionWarning, os.str().c_str()));
 
             continue;
          }
@@ -35560,7 +35561,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
          GET_IFACE(IEAFStatusCenter, pStatusCenter);
          CString strMsg;
          strMsg.Format(_T("%s, Span %s, Duct %d: Start to Low segment is invalid. Correct duct definition."), LABEL_GIRDER(girderKey), LABEL_SPAN(startSpanIdx), LABEL_DUCT(ductIdx));
-         pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg));
+         pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), GIRDERDLG_PAGE_GENERAL, m_StatusGroupID, m_scidGirderDescriptionError, strMsg));
 
          break; // get the heck outta here
       }
@@ -35639,7 +35640,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
             GET_IFACE(IEAFStatusCenter, pStatusCenter);
             CString strMsg;
             strMsg.Format(_T("%s, Span %s, Duct %d: Low to IP segment is invalid. Correct duct definition."), LABEL_GIRDER(girderKey), LABEL_SPAN(prevSpanIdx), LABEL_DUCT(ductIdx));
-            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg));
+            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), GIRDERDLG_PAGE_GENERAL, m_StatusGroupID, m_scidGirderDescriptionError, strMsg));
 
             break; // get the heck outta here
          }
@@ -35682,7 +35683,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
             GET_IFACE(IEAFStatusCenter, pStatusCenter);
             CString strMsg;
             strMsg.Format(_T("%s, Span %s, Duct %d: IP to High segment is invalid. Correct duct definition."), LABEL_GIRDER(girderKey), LABEL_SPAN(prevSpanIdx), LABEL_DUCT(ductIdx));
-            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg));
+            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), GIRDERDLG_PAGE_GENERAL, m_StatusGroupID, m_scidGirderDescriptionError, strMsg));
 
             break; // get the heck outta here
          }
@@ -35735,7 +35736,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
             GET_IFACE(IEAFStatusCenter, pStatusCenter);
             CString strMsg;
             strMsg.Format(_T("%s, Span %s, Duct %d: High to IP segment is invalid. Correct duct definition."), LABEL_GIRDER(girderKey), LABEL_SPAN(nextSpanIdx), LABEL_DUCT(ductIdx));
-            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg));
+            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), GIRDERDLG_PAGE_GENERAL, m_StatusGroupID, m_scidGirderDescriptionError, strMsg));
 
             break; // get the heck outta here
          }
@@ -35771,7 +35772,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
             GET_IFACE(IEAFStatusCenter, pStatusCenter);
             CString strMsg;
             strMsg.Format(_T("%s, Span %s, Duct %d: IP to Low segment is invalid. Correct duct definition."), LABEL_GIRDER(girderKey), LABEL_SPAN(nextSpanIdx), LABEL_DUCT(ductIdx));
-            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg));
+            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), GIRDERDLG_PAGE_GENERAL, m_StatusGroupID, m_scidGirderDescriptionError, strMsg));
 
             break; // get the heck outta here
          }
@@ -35871,7 +35872,7 @@ void CBridgeAgentImp::CreateParabolicTendon(const CGirderKey& girderKey, DuctInd
          GET_IFACE(IEAFStatusCenter, pStatusCenter);
          CString strMsg;
          strMsg.Format(_T("%s, Span %s, Duct %d: Low to End segment is invalid. Correct duct definition."), LABEL_GIRDER(girderKey), LABEL_SPAN(endSpanIdx), LABEL_DUCT(ductIdx));
-         pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionError, strMsg));
+         pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), GIRDERDLG_PAGE_GENERAL, m_StatusGroupID, m_scidGirderDescriptionError, strMsg));
 
          break; // get the heck outta here
       }
@@ -35984,7 +35985,7 @@ void CBridgeAgentImp::CreateLinearTendon(const CGirderKey& girderKey, DuctIndexT
             GET_IFACE(IEAFStatusCenter, pStatusCenter);
             CString strMsg;
             strMsg.Format(_T("%s, Duct %d: Point %d is beyond the end of the girder. This point has been ignored. Correct duct definition."),LABEL_GIRDER(girderKey),LABEL_DUCT(ductIdx),LABEL_INDEX(pointIdx));
-            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), 0, m_StatusGroupID, m_scidGirderDescriptionWarning, strMsg));
+            pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(CSegmentKey(girderKey, ALL_SEGMENTS), GIRDERDLG_PAGE_GENERAL, m_StatusGroupID, m_scidGirderDescriptionWarning, strMsg));
             continue; // skip to next point
          }
 

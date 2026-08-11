@@ -30,10 +30,10 @@
 class pgsAlignmentDescriptionStatusItem : public WBFL::EAF::StatusItem
 {
 public:
-   pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,LPCTSTR strDescription);
+   pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR dlgPage,LPCTSTR strDescription);
    bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
-   long m_DlgPage;
+   CString m_DlgPage;
 };
 
 ///////////////////////////

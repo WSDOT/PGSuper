@@ -99,7 +99,7 @@ public:
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) override;
    virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) override;
-   virtual UINT GetTempSupportEditorTabIndex() override;
+   virtual LPCTSTR GetTempSupportEditorPageName() override;
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) override;
 };
 

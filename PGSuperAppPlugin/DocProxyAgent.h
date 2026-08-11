@@ -180,11 +180,11 @@ public:
    virtual Float64 GetSectionCutStation();
 
    // IEditByUI
-   virtual void EditBridgeDescription(int nPage);
-   virtual void EditAlignmentDescription(int nPage);
+   virtual void EditBridgeDescription(LPCTSTR pageName);
+   virtual void EditAlignmentDescription(LPCTSTR pageName);
    virtual bool EditGirderDescription(SpanIndexType span,GirderIndexType girder, int nPage);
-   virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
-   virtual bool EditPierDescription(PierIndexType pierIdx, int nPage);
+   virtual bool EditSpanDescription(SpanIndexType spanIdx, LPCTSTR pageName);
+   virtual bool EditPierDescription(PierIndexType pierIdx, LPCTSTR pageName);
    virtual void EditLiveLoads();
    virtual void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction);
    virtual bool EditPointLoad(CollectionIndexType loadIdx);

@@ -61,7 +61,7 @@ CBridgePlanViewSlabDisplayObjectEvents::CBridgePlanViewSlabDisplayObjectEvents(C
 
 void CBridgePlanViewSlabDisplayObjectEvents::EditSlab()
 {
-   m_pDoc->EditBridgeDescription(EBD_DECK);
+   m_pDoc->EditBridgeDescription(BRIDGEDLG_PAGE_DECK);
 }
 
 void CBridgePlanViewSlabDisplayObjectEvents::SelectPrev()
@@ -269,7 +269,7 @@ CBridgeSectionViewSlabDisplayObjectEvents::CBridgeSectionViewSlabDisplayObjectEv
 
 void CBridgeSectionViewSlabDisplayObjectEvents::EditSlab()
 {
-   m_pDoc->EditBridgeDescription(EBD_DECK);
+   m_pDoc->EditBridgeDescription(BRIDGEDLG_PAGE_DECK);
 }
 
 void CBridgeSectionViewSlabDisplayObjectEvents::SelectPrev()

@@ -33,9 +33,6 @@
 #include <EAF\PluginManagerBase.h>
 typedef WBFL::EAF::PluginManagerBase<IPGSpliceComponentInfo,CPGSpliceDoc> CPGSpliceComponentInfoManager;
 
-#define ETSD_GENERAL       0
-#define ETSD_CONNECTION    1
-
 class CPGSpliceDoc : public CPGSDocBase
 {
 protected: // create from serialization only
@@ -48,12 +45,12 @@ protected: // create from serialization only
 	//{{AFX_VIRTUAL(CPGSpliceDoc)
 	//}}AFX_VIRTUAL
 
-   bool EditTemporarySupportDescription(SupportIDType tsID,int nPage);
+   bool EditTemporarySupportDescription(SupportIDType tsID,LPCTSTR pageName);
    
    // Return true if the edit was completed, otherwise return false (return false if the edit was cancelled)
-   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) override;
-   virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage) override;
-   virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) override;
+   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,LPCTSTR pageName) override;
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey,LPCTSTR pageName) override;
+   virtual bool EditGirderDescription(const CGirderKey& girderKey,LPCTSTR pageName) override;
    
 
    void DeleteTemporarySupport(SupportIDType tsID);

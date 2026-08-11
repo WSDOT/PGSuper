@@ -118,7 +118,7 @@ void CPGSuperDoc::Dump(CDumpContext& dc) const
 
 void CPGSuperDoc::OnEditBridgeDescription() 
 {
-   EditBridgeDescription(0); // open to first page
+   EditBridgeDescription(BRIDGEDLG_PAGE_GENERAL); // open to first page
 }
 
 void CPGSuperDoc::OnEditGirder() 
@@ -156,16 +156,16 @@ void CPGSuperDoc::OnEditGirder()
 
    if ( bEdit )
    {
-      EditGirderSegmentDescription(CSegmentKey(selection.GroupIdx,selection.GirderIdx,0),EGD_GENERAL);
+      EditGirderSegmentDescription(CSegmentKey(selection.GroupIdx,selection.GirderIdx,0),GIRDERDLG_PAGE_GENERAL);
    }
 }
 
-bool CPGSuperDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
+bool CPGSuperDoc::EditGirderDescription(const CGirderKey& girderKey,LPCTSTR pageName)
 {
-   return EditGirderSegmentDescription(CSegmentKey(girderKey,0),nPage);
+   return EditGirderSegmentDescription(CSegmentKey(girderKey,0),pageName);
 }
 
-bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage)
+bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,LPCTSTR pageName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -180,15 +180,11 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment    = pGirder->GetSegment(segmentKey.segmentIndex);
 
-   // resequence page if no debonding
-   bool bExtraPage = pSegment->Strands.IsSymmetricDebond();
-   if (EGD_DEBONDING <= nPage  && !bExtraPage)
-   {
-      nPage--;
-   }
-
    CGirderDescDlg dlg(pBridgeDesc,segmentKey);
-   dlg.SetActivePage(nPage);
+   if ( CPropertyPage* pActivePage = dlg.FindPage(pageName) )
+   {
+      dlg.SetActivePage(pActivePage);
+   }
 
    INT_PTR st = dlg.DoModal();
    if ( st == IDOK )
@@ -269,7 +265,7 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
          std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
-         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn)); // see ordering limitation note in IFace\ExtendUI.h
          pTxn = std::move(pMacro);
       }
 
@@ -284,7 +280,7 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
    }
 }
 
-bool CPGSuperDoc::EditClosureJointDescription(const CClosureKey& closureKey,int nPage)
+bool CPGSuperDoc::EditClosureJointDescription(const CClosureKey& closureKey,LPCTSTR pageName)
 {
    // there aren't any closure joints in a PGSuper model... do nothing
    return true;

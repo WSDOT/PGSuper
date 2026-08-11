@@ -60,7 +60,7 @@ void CBridgePlanViewSpanDisplayObjectEvents::EditSpan(std::shared_ptr<WBFL::DMan
    auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
    CDocument* pDoc = pView->GetDocument();
 
-   ((CPGSDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,ESD_GENERAL);
+   ((CPGSDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,SPANDLG_PAGE_LAYOUT);
 }
 
 void CBridgePlanViewSpanDisplayObjectEvents::SelectSpan(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
@@ -287,7 +287,7 @@ void CBridgeSectionViewSpanDisplayObjectEvents::EditSpan(std::shared_ptr<WBFL::D
    auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
    CDocument* pDoc = pView->GetDocument();
 
-   ((CPGSDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,ESD_GENERAL);
+   ((CPGSDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,SPANDLG_PAGE_LAYOUT);
 }
 
 void CBridgeSectionViewSpanDisplayObjectEvents::SelectSpan(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)

@@ -27,13 +27,14 @@
 #include "DealWithLoadDlg.h"
 
 #include <IFace\EditByUI.h>
+#include <IFace\ExtendUI.h>
 #include <IFace\Project.h>
 #include <EAF/EAFStatusCenter.h>
 
 #include <EAF\EAFTransactions.h>
 #include <EAF\EAFUtilities.h>
 
-pgsAlignmentDescriptionStatusItem::pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,LPCTSTR strDescription) :
+pgsAlignmentDescriptionStatusItem::pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR dlgPage,LPCTSTR strDescription) :
 WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription), m_DlgPage(dlgPage)
 {
 }
@@ -123,19 +124,19 @@ void pgsConcreteStrengthStatusCallback::Execute(std::shared_ptr<WBFL::EAF::Statu
 
    if ( pItem->m_ConcreteType == pgsConcreteStrengthStatusItem::Slab )
    {
-      pEdit->EditBridgeDescription(EBD_DECK);
+      pEdit->EditBridgeDescription(BRIDGEDLG_PAGE_DECK);
    }
    else if ( pItem->m_ConcreteType == pgsConcreteStrengthStatusItem::GirderSegment )
    {
-      pEdit->EditSegmentDescription(pItem->m_SegmentKey,EGD_CONCRETE);
+      pEdit->EditSegmentDescription(pItem->m_SegmentKey,GIRDERDLG_PAGE_GENERAL);
    }
    else if ( pItem->m_ConcreteType == pgsConcreteStrengthStatusItem::ClosureJoint )
    {
-      pEdit->EditClosureJointDescription(pItem->m_SegmentKey,EGD_CONCRETE);
+      pEdit->EditClosureJointDescription(pItem->m_SegmentKey,CLOSUREJOINTDLG_PAGE_GENERAL);
    }
    else
    {
-      pEdit->EditBridgeDescription(EBD_RAILING);
+      pEdit->EditBridgeDescription(BRIDGEDLG_PAGE_RAILING);
    }
 }
 

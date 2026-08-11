@@ -27,6 +27,7 @@
 #include <PGSuperException.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace\ExtendUI.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\PrestressForce.h> 
@@ -165,7 +166,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
       GET_IFACE2(GetBroker(),IEAFStatusCenter,pStatusCenter);
 
       std::_tstring msg =  std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": An error occurred while computing shear capacity");
-      pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, EGD_STIRRUPS, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str()));
+      pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_SHEAR, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str()));
 
       msg += std::_tstring(_T("\nSee Status Center for Details"));
       THROW_UNWIND(msg.c_str(),-1);
@@ -1103,7 +1104,7 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
          GET_IFACE2(GetBroker(),IEAFStatusCenter,pStatusCenter);
 
          std::_tstring msg(std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Error computing shear capacity - could not converge on a solution"));
-         pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 2, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str()));
+         pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, GIRDERDLG_PAGE_STRANDEXT, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str()));
 
          msg += std::_tstring(_T("\nSee Status Center for Details"));
          THROW_UNWIND(msg.c_str(),-1);

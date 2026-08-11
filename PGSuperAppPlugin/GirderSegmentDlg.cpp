@@ -157,8 +157,11 @@ void CGirderSegmentDlg::CreateExtensionPages()
       {
          m_ExtensionPages.emplace_back(pCallback,pPage);
 
-         CString name;
-         name.Format(_T("Extension%d"), callbackIter->first);
+         CString name(pCallback->GetPropertyPageName().c_str());
+         if ( name.IsEmpty() )
+         {
+            name.Format(_T("Extension%d"), callbackIter->first);
+         }
          m_PageManager.InsertExtensionPage(name, pPage, pCallback->GetPropertyPagePosition());
       }
    }
@@ -202,8 +205,11 @@ void CGirderSegmentDlg::CreateExtensionPages(const std::vector<EditSplicedGirder
       {
          m_ExtensionPages.emplace_back(pEditSegmentCallback,pPage);
 
-         CString name;
-         name.Format(_T("Extension%d"), callbackIter->first);
+         CString name(pEditSegmentCallback->GetPropertyPageName().c_str());
+         if ( name.IsEmpty() )
+         {
+            name.Format(_T("Extension%d"), callbackIter->first);
+         }
          m_PageManager.InsertExtensionPage(name, pPage, pEditSegmentCallback->GetPropertyPagePosition());
       }
    }

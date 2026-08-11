@@ -266,11 +266,11 @@ public:
    WBFL::Library::LibraryManager* GetLibraryManager(IndexType num) override;
    WBFL::Library::LibraryManager* GetTargetLibraryManager() override;
 
-   bool EditBridgeDescription(int nPage);
-   bool EditAlignmentDescription(int nPage);
-   bool EditSpanDescription(SpanIndexType spanIdx, int nPage);
-   bool EditPierDescription(PierIndexType pierIdx, int nPage);
-   bool EditTemporarySupportDescription(PierIndexType pierIdx, int nPage);
+   bool EditBridgeDescription(LPCTSTR pageName);
+   bool EditAlignmentDescription(LPCTSTR pageName);
+   bool EditSpanDescription(SpanIndexType spanIdx, LPCTSTR pageName);
+   bool EditPierDescription(PierIndexType pierIdx, LPCTSTR pageName);
+   bool EditTemporarySupportDescription(PierIndexType pierIdx, LPCTSTR pageName);
    bool EditDirectSelectionPrestressing(const CSegmentKey& segmentKey);
    bool EditDirectRowInputPrestressing(const CSegmentKey& segmentKey);
    bool EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey);
@@ -279,9 +279,9 @@ public:
    bool EditGirderSegmentDescription();
 
    // Return true if the edit was completed, otherwise return false (return false if the edit was canceled)
-   virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) = 0;
-   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) = 0;
-   virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage) = 0;
+   virtual bool EditGirderDescription(const CGirderKey& girderKey,LPCTSTR pageName) = 0;
+   virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,LPCTSTR pageName) = 0;
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey,LPCTSTR pageName) = 0;
 
    void AddPointLoad(const CPointLoadData& loadData);
    bool EditPointLoad(IndexType loadIdx);

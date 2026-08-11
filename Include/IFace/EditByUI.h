@@ -28,53 +28,6 @@
 #include <PsgLib\DistributedLoadData.h>
 #include <PsgLib\MomentLoadData.h>
 
-#define EAD_ROADWAY        0
-#define EAD_PROFILE        1
-#define EAD_SECTION        2
-
-#define EBD_GENERAL        0
-#define EBD_FRAMING        1
-#define EBD_RAILING        2
-#define EBD_DECK           3
-#define EBD_DECKREBAR      4
-#define EBD_ENVIRONMENT    5
-
-// Pier Editing
-#define EPD_GENERAL        0
-#define EPD_LAYOUT         1
-#define EPD_SPACING        2
-#define EPD_CONNECTION     3
-#define EPD_BEARINGS       4
-
-// Temporary support editing
-#define ETS_GENERAL        0
-#define ETS_CONNECTION     1
-#define ETS_SPACING        2
-
-// Span Editing
-#define ESD_GENERAL        0
-#define ESD_CONNECTION     1
-#define ESD_SPACING        2
-
-
-// PGSuper Edit Girder Details Pages
-#define EGD_GENERAL        0
-#define EGD_CONCRETE       EGD_GENERAL
-#define EGD_PRESTRESSING   1
-#define EGD_DEBONDING      2
-#define EGD_LONG_REINF     3
-#define EGD_STIRRUPS       4
-#define EGD_TRANSPORTATION 5
-#define EGD_CONDITION      6
-
-// PGSplice Edit Girder Segment Pages
-#define EGS_GENERAL        0
-#define EGS_PRESTRESSING   1
-#define EGS_TENDONS        2
-#define EGS_LONG_REINF     3
-#define EGS_STIRRUPS       4
-#define EGS_TRANSPORTATION 5
-
 /*****************************************************************************
 INTERFACE
    IEditByUI
@@ -86,18 +39,28 @@ DESCRIPTION
    Interface used to invoke elements of the user interface so that the user
    can edit input data.
 
-   Methods on this interface should only be called by core agents (not extension agents)
+   Most of these methods were originally intended for use by core agents only. The EditXxxDescription
+   methods that open a tabbed dialog (EditAlignmentDescription, EditBridgeDescription,
+   EditPierDescription, EditSpanDescription, EditGirderDescription, EditSegmentDescription,
+   EditTemporarySupportDescription, EditClosureJointDescription) are also safe for an extension
+   agent to call, e.g. to add a menu command that opens straight to the agent's own extension page -
+   pass the page name returned from your IExtensionPageCallback::GetPropertyPageName() override.
+   See \ref creating_an_extension_agent "Creating an Extension Agent" for the pattern. The remaining
+   methods on this interface (loads, timeline, live load factors, etc.) are still core-agent-only.
 
    Future versions of PGSuper will permit Agents to supply their own user interface
    and this will likely eliminate the need for this interface. This interface
    may be removed in the future.
 *****************************************************************************/
 // {E1CF3EAA-3E85-450a-9A67-D68FF321DC16}
-DEFINE_GUID(IID_IEditByUI, 
+DEFINE_GUID(IID_IEditByUI,
 0xe1cf3eaa, 0x3e85, 0x450a, 0x9a, 0x67, 0xd6, 0x8f, 0xf3, 0x21, 0xdc, 0x16);
 /// @brief Interface used to invoke elements of the user interface so that the user can edit input data.
 ///
-/// Methods on this interface should only be called by core agents(not extension agents)
+/// Most methods are intended for core-agent use only. The EditXxxDescription methods that open a
+/// tabbed dialog are also safe for an extension agent to call directly with a page name (its own,
+/// via IExtensionPageCallback::GetPropertyPageName(), or one of the built-in XXXDLG_PAGE_* constants
+/// in ExtendUI.h) - see \ref creating_an_extension_agent "Creating an Extension Agent".
 ///
 /// Future versions of PGSuper will permit Agents to supply their own user interface
 /// and this will likely eliminate the need for this interface. This interface
@@ -105,15 +68,20 @@ DEFINE_GUID(IID_IEditByUI,
 class __declspec(uuid("{E1CF3EAA-3E85-450a-9A67-D68FF321DC16}")) IEditByUI
 {
 public:
-   /// @brief Opens the Bridge Description dialog to the specified page number
-   virtual void EditBridgeDescription(int nPage) = 0;
+   /// @brief Opens the Bridge Description dialog with the named page active (BRIDGEDLG_PAGE_xxx
+   /// constants, IFace\ExtendUI.h, or an extension's own page name).
+   virtual void EditBridgeDescription(LPCTSTR pageName) = 0;
 
-   /// @brief Opens the Alignment Description dialog to the specifed page number
-   virtual void EditAlignmentDescription(int nPage) = 0;
+   /// @brief Opens the Alignment Description dialog with the named page active. Built-in pages
+   /// are named by the ALIGNMENTDLG_PAGE_xxx constants (IFace\ExtendUI.h); an extension agent's
+   /// own page can be addressed the same way, by the name it was given when it was inserted
+   /// (see CAlignmentDescriptionDlg::CreateExtensionPages).
+   virtual void EditAlignmentDescription(LPCTSTR pageName) = 0;
 
-   /// @brief Opens the Segment Description dialog
+   /// @brief Opens the Segment Description dialog with the named page active (GIRDERDLG_PAGE_xxx
+   /// for PGSuper, SEGMENTDLG_PAGE_xxx for PGSplice, IFace\ExtendUI.h)
    /// @return Returns true if editing was successful
-   virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, int nPage) = 0;
+   virtual bool EditSegmentDescription(const CSegmentKey& segmentKey, LPCTSTR pageName) = 0;
 
    /// @brief Opens the Segment Description dialog for the currently selected segment
    /// @return Returns true if editing was successful
@@ -121,11 +89,12 @@ public:
 
    /// @brief Opens the Closure Joint Description dialog for the specifed closure joint
    /// @return Returns true if editing was successful
-   virtual bool EditClosureJointDescription(const CClosureKey& closureKey, int nPage) = 0;
+   virtual bool EditClosureJointDescription(const CClosureKey& closureKey, LPCTSTR pageName) = 0;
 
-   /// @brief Opens the Girder Description dialog for the specified girder
+   /// @brief Opens the Girder Description dialog for the specified girder, with the named page
+   /// active (GIRDERDLG_PAGE_xxx for PGSuper, SPLICEDGIRDERDLG_PAGE_xxx for PGSplice, IFace\ExtendUI.h)
    /// @return Returns true if editing was successful
-   virtual bool EditGirderDescription(const CGirderKey& girderKey, int nPage) = 0;
+   virtual bool EditGirderDescription(const CGirderKey& girderKey, LPCTSTR pageName) = 0;
 
    /// @brief Opens the Girder Description dialog for the currently selected girder
    /// @return Returns true if editing was successful
@@ -133,15 +102,15 @@ public:
 
    /// @brief Opens the Span Description dialog for the specified span
    /// @return Returns true if editing was successful
-   virtual bool EditSpanDescription(SpanIndexType spanIdx, int nPage) = 0;
+   virtual bool EditSpanDescription(SpanIndexType spanIdx, LPCTSTR pageName) = 0;
 
    /// @brief Opens the Pier Description dialog for the specified pier
    /// @return Returns true if editing was successful
-   virtual bool EditPierDescription(PierIndexType pierIdx, int nPage) = 0;
+   virtual bool EditPierDescription(PierIndexType pierIdx, LPCTSTR pageName) = 0;
 
    /// @brief Opens the Temporary Support Dialog for the specified temporary support
    /// @return Returns true if editing was successful
-   virtual bool EditTemporarySupportDescription(SupportIndexType tsIdx, int nPage) = 0;
+   virtual bool EditTemporarySupportDescription(SupportIndexType tsIdx, LPCTSTR pageName) = 0;
 
    /// @brief Opens the Live Load editing dialog
    virtual void EditLiveLoads() = 0;

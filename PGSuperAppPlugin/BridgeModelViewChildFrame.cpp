@@ -681,7 +681,7 @@ void CBridgeModelViewChildFrame::OnEditSpan()
    if ( GetBridgePlanView()->GetSelectedSpan(&spanIdx) )
    {
       CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
-      pDoc->EditSpanDescription(spanIdx,ESD_GENERAL);
+      pDoc->EditSpanDescription(spanIdx,SPANDLG_PAGE_LAYOUT);
    }
 }
 
@@ -691,7 +691,7 @@ void CBridgeModelViewChildFrame::OnEditPier()
    if ( GetBridgePlanView()->GetSelectedPier(&pierIdx) )
    {
       CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
-      pDoc->EditPierDescription(pierIdx,EPD_GENERAL);
+      pDoc->EditPierDescription(pierIdx,PIERDLG_PAGE_LOCATION);
    }
 }
 

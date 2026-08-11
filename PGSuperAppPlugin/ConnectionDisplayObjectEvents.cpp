@@ -44,7 +44,7 @@ void CConnectionDisplayObjectEvents::EditPier(std::shared_ptr<WBFL::DManip::iDis
    auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
    CDocument* pDoc = pView->GetDocument();
 
-   ((CPGSuperDoc*)pDoc)->EditPierDescription(m_PierIdx,EPD_CONNECTION);
+   ((CPGSuperDoc*)pDoc)->EditPierDescription(m_PierIdx,PIERDLG_PAGE_CONNECTIONS);
 }
 
 /////////////////////////////////////////////////////////////////////////////

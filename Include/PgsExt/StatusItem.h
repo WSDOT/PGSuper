@@ -129,11 +129,11 @@ private:
 class PGSEXTCLASS pgsGirderDescriptionStatusItem : public pgsSegmentRelatedStatusItem
 {
 public:
-   pgsGirderDescriptionStatusItem(const CSegmentKey& segmentKey,Uint16 page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
+   pgsGirderDescriptionStatusItem(const CSegmentKey& segmentKey,LPCTSTR page,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
    bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    CSegmentKey m_SegmentKey;
-   Uint16 m_Page; // page of girder input wizard
+   CString m_Page; // name of the page to activate in the girder/segment input wizard
 };
 
 
