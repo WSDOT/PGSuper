@@ -1747,7 +1747,7 @@ public:
 
    // Returns the extra web width (per face) at the given poi due to web thickening at an interior pier
    virtual Float64 GetWebThickening(const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetWebThickening(const CSegmentKey& segmentKey, Float64 Xpoi) const = 0;
+   virtual Float64 GetWebThickening(const CSegmentKey& segmentKey, Float64 Xpoi, pgsTypes::SectionBias sectionBias) const = 0;
 
    // Returns the number of bottom flanges
    virtual FlangeIndexType GetBottomFlangeCount(const CGirderKey& girderKey) const = 0;

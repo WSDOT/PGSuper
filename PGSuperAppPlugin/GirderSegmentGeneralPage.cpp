@@ -33,6 +33,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
+#include <Beams\Helper.h>
 
 #include <PgsExt\ConcreteDetailsDlg.h>
 
@@ -174,28 +175,13 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate && (!IsZero(pSegment->WebThickeningLength) || !IsZero(pSegment->WebThickeningTransitionLength) || !IsZero(pSegment->WebThickeningWidth)))
    {
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      const CSegmentKey& segmentKey = pParent->m_SegmentKey;
       // Find the interior pier's segment-coordinate location so we can validate
       // that the thickening zone fits within the closer half of the segment.
       Float64 minDistToPierEnd = segment_length; // fallback: no pier found
-      Float64 Xpier = -1.0;
 
-      auto pBroker = EAFGetBroker();
-      GET_IFACE2(pBroker, IBridge, pBridge);
-      const CSegmentKey& segmentKey = pParent->m_SegmentKey;
-      PierIndexType nPiers = pBridge->GetPierCount();
-      for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
-      {
-         if (pBridge->IsInteriorPier(pierIdx))
-         {
-            Float64 Xs;
-            if (pBridge->GetPierLocation(pierIdx, segmentKey, &Xs) && Xs > 0.0 && Xs < segment_length)
-            {
-               minDistToPierEnd = Min(Xs, segment_length - Xs);
-               Xpier = Xs;
-               break;
-            }
-         }
-      }
+      Float64 Xpier = PGS::Beams::GetWebThickeningPierLocation(pBridge, segmentKey, segment_length);
 
       if (!pSegment->AreWebThickeningParamsValid(minDistToPierEnd))
       {

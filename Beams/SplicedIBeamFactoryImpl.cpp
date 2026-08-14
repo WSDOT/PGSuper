@@ -162,29 +162,6 @@ void SplicedIBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBrok
    segment->put_EndBlockTransitionLength(etEnd,pSegment->EndBlockTransitionLength[pgsTypes::metEnd]);
    segment->put_EndBlockWidth(           etEnd,pSegment->EndBlockWidth[pgsTypes::metEnd]);
 
-   // set web thickening at interior pier
-   // NOTE: CreateSegment is called during bridge model construction, before girder line geometry
-   // is available. IBridge methods that need GetGirderLine cannot be used here. Station arithmetic
-   // on the real bridge description segment (not a dialog copy) is safe and correct.
-   {
-      Float64 segStartStation, segEndStation;
-      pSegment->GetStations(&segStartStation, &segEndStation);
-      Float64 Xpier = -1.0;
-      for (const auto* pPier : pSegment->GetPiers())
-      {
-         Float64 ps = pPier->GetStation();
-         if (segStartStation < ps && ps < segEndStation)
-         {
-            Xpier = ps - segStartStation;
-            break;
-         }
-      }
-      segment->put_InteriorPierXs(Xpier);
-      segment->put_WebThickeningWidth(pSegment->WebThickeningWidth);
-      segment->put_WebThickeningLength(pSegment->WebThickeningLength);
-      segment->put_WebThickeningTransitionLength(pSegment->WebThickeningTransitionLength);
-   }
-
    // set the segment parameters
    pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();
    segment->put_VariationType((SegmentVariationType)variationType);
@@ -238,21 +215,16 @@ void SplicedIBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> 
       {
          const CSegmentKey& sk = pSegment->GetSegmentKey();
          Float64 segmentLength = pBridge->GetSegmentLength(sk);
-         PierIndexType nPiers = pBridge->GetPierCount();
-         for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+         const CSegmentKey& segmentKey = pSegment->GetSegmentKey();
+         GET_IFACE2(pBroker, IBridge, pBridge);
+         Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
+         Float64 Xpier = PGS::Beams::GetWebThickeningPierLocation(pBridge, segmentKey, segment_length);
+         if (Xpier > 0.0)
          {
-            if (pBridge->IsInteriorPier(pierIdx))
-            {
-               Float64 Xpier;
-               if (pBridge->GetPierLocation(pierIdx, sk, &Xpier) && Xpier > 0.0 && Xpier < segmentLength)
-               {
-                  Float64 deltaW;
-                  ::GetWebThickeningWidth(Xs, Xpier, maxDeltaW,
-                     pSegment->WebThickeningLength, pSegment->WebThickeningTransitionLength, &deltaW);
-                  ::AdjustForWebThickening(beam, deltaW);
-                  break;
-               }
-            }
+            Float64 deltaW;
+            ::GetWebThickeningWidth(Xs, Xpier, (SectionBias)sectionBias, maxDeltaW,
+               pSegment->WebThickeningLength, pSegment->WebThickeningTransitionLength, &deltaW);
+            ::AdjustForWebThickening(beam, deltaW);
          }
       }
    }
@@ -304,7 +276,32 @@ Float64 SplicedIBeamFactory::GetBottomFlangeDepth(std::shared_ptr<WBFL::EAF::Bro
 
 void SplicedIBeamFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
-   // do nothing... all the configuration was done in CreateSegment
+   // Set web thickening at interior pier
+   // NOTE: CreateSegment is called during bridge model construction, before girder line geometry
+   // is available, so this call must be made here.
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
+   const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+   const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
+
+   Float64 segStartStation, segEndStation;
+   pSegment->GetStations(&segStartStation, &segEndStation);
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
+
+   Float64 Xpier = GetWebThickeningPierLocation(pBridge, segmentKey, segment_length);
+   if (Xpier > 0.0)
+   {
+      CComPtr<ISplicedGirderSegment> segment;
+      pSSMbrSegment->QueryInterface(&segment);
+
+      segment->put_InteriorPierXs(Xpier);
+      segment->put_WebThickeningWidth(pSegment->WebThickeningWidth);
+      segment->put_WebThickeningLength(pSegment->WebThickeningLength);
+      segment->put_WebThickeningTransitionLength(pSegment->WebThickeningTransitionLength);
+   }
 }
 
 void SplicedIBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
@@ -346,7 +343,6 @@ void SplicedIBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WB
    VERIFY(pPoiMgr->AddPointOfInterest(poiStart) != INVALID_ID);
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
-
    //
    // end block transition points
    //
@@ -355,23 +351,7 @@ void SplicedIBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WB
    //
    // web thickening transition points
    //
-   {
-      Float64 Xpier = -1.0;
-      PierIndexType nPiers = pBridge->GetPierCount();
-      for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
-      {
-         if (pBridge->IsInteriorPier(pierIdx))
-         {
-            Float64 Xs;
-            if (pBridge->GetPierLocation(pierIdx, segmentKey, &Xs) && Xs > 0.0 && Xs < segment_length)
-            {
-               Xpier = Xs;
-               break;
-            }
-         }
-      }
-      LayoutWebThickeningPointsOfInterest(segmentKey, pSegment, segment_length, Xpier, pPoiMgr);
-   }
+   LayoutWebThickeningPointsOfInterest(pBridge, segmentKey, pSegment, segment_length, pPoiMgr);
 
    // POI for transition points
    pgsTypes::SegmentVariationType variationType = pSegment->GetVariationType();

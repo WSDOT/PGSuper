@@ -444,8 +444,30 @@ void PGS::Beams::LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentK
    }
 }
 
-void PGS::Beams::LayoutWebThickeningPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, Float64 Xpier, pgsPoiMgr* pPoiMgr)
+Float64 BEAMSFUNC PGS::Beams::GetWebThickeningPierLocation(std::shared_ptr<IBridge> pBridge, const CSegmentKey& segmentKey, Float64 segmentLength)
 {
+   Float64 Xpier = -1.0;
+   PierIndexType nPiers = pBridge->GetPierCount();
+   for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
+   {
+      if (pBridge->IsInteriorPier(pierIdx))
+      {
+         Float64 Xs;
+         if (pBridge->GetPierLocation(pierIdx, segmentKey, &Xs) && Xs > 0.0 && Xs < segmentLength)
+         {
+            Xpier = Xs;
+            break;
+         }
+      }
+   }
+
+   return Xpier;
+}
+
+void PGS::Beams::LayoutWebThickeningPointsOfInterest(std::shared_ptr<IBridge> pBridge, const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, pgsPoiMgr* pPoiMgr)
+{
+   Float64 Xpier = GetWebThickeningPierLocation(pBridge, segmentKey, segmentLength);
+
    if (IsZero(pSegment->WebThickeningWidth) || IsZero(pSegment->WebThickeningLength) || Xpier < 0.0)
       return;
 

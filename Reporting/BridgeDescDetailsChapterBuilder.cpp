@@ -316,7 +316,7 @@ void write_segment_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::share
       pWTtable->EnableRowStriping(false);
       *pWTTablePara << pWTtable;
       RowIndexType wtrow = 0;
-      (*pWTtable)(wtrow, 0) << _T("Web Thickening Width (each face)");
+      (*pWTtable)(wtrow, 0) << _T("Width of Thickened Web");
       (*pWTtable)(wtrow++, 1) << dim.SetValue(pSegment->WebThickeningWidth);
       (*pWTtable)(wtrow, 0) << _T("Full-Width Zone Half-Length");
       (*pWTtable)(wtrow++, 1) << len.SetValue(pSegment->WebThickeningLength);

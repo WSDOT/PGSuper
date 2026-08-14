@@ -43,6 +43,7 @@
 #define REPORT_LLDF_INTOVERRIDE(p) if (p.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE) { (*pPara) << rptNewLine << LLDF_INTOVERRIDE_STR << rptNewLine; }
 
 
+class IBridge;
 class rptParagraph;
 class pgsPoiMgr;
 
@@ -70,7 +71,9 @@ namespace PGS
 
       void BEAMSFUNC LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, pgsPoiMgr* pPoiMgr);
 
-      void BEAMSFUNC LayoutWebThickeningPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, Float64 Xpier, pgsPoiMgr* pPoiMgr);
+      // Pier location in segment coordinates (Xs) for web thickening. Returns -1 if no web thickening is present in the segment.
+      Float64 BEAMSFUNC GetWebThickeningPierLocation(std::shared_ptr<IBridge> pBridge, const CSegmentKey& segmentKey, Float64 segmentLength);
+      void BEAMSFUNC LayoutWebThickeningPointsOfInterest(std::shared_ptr<IBridge> pBridge, const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, pgsPoiMgr* pPoiMgr);
 
 
       /// @brief Base implementation of BeamFamily - the recommended starting point for a new beam

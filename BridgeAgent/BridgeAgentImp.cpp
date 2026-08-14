@@ -25713,10 +25713,11 @@ bool CBridgeAgentImp::CanWebBeThickened(const CSegmentKey& segmentKey) const
 Float64 CBridgeAgentImp::GetWebThickening(const pgsPointOfInterest& poi) const
 {
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
-   return GetWebThickening(segmentKey, poi.GetDistFromStart());
+   pgsTypes::SectionBias sectionBias = (pgsTypes::SectionBias)GetSectionBias(poi);
+   return GetWebThickening(segmentKey, poi.GetDistFromStart(), sectionBias);
 }
 
-Float64 CBridgeAgentImp::GetWebThickening(const CSegmentKey& segmentKey, Float64 Xpoi) const
+Float64 CBridgeAgentImp::GetWebThickening(const CSegmentKey& segmentKey, Float64 Xpoi, pgsTypes::SectionBias sectionBias) const
 {
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -25736,7 +25737,7 @@ Float64 CBridgeAgentImp::GetWebThickening(const CSegmentKey& segmentKey, Float64
          if (GetPierLocation(pierIdx, segmentKey, &Xpier) && Xpier > 0.0 && Xpier < segmentLength)
          {
             Float64 deltaW;
-            ::GetWebThickeningWidth(Xpoi, Xpier, pSegment->WebThickeningWidth,
+            ::GetWebThickeningWidth(Xpoi, Xpier, (SectionBias)sectionBias, pSegment->WebThickeningWidth,
                pSegment->WebThickeningLength, pSegment->WebThickeningTransitionLength, &deltaW);
             return deltaW;
          }

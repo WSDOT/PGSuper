@@ -1057,7 +1057,7 @@ public:
    Float64 GetTopFlangeThickening(const CPrecastSegmentData* pSegment, Float64 Xs) const override;
    bool CanWebBeThickened(const CSegmentKey& segmentKey) const override;
    Float64 GetWebThickening(const pgsPointOfInterest& poi) const override;
-   Float64 GetWebThickening(const CSegmentKey& segmentKey, Float64 Xpoi) const override;
+   Float64 GetWebThickening(const CSegmentKey& segmentKey, Float64 Xpoi, pgsTypes::SectionBias sectionBias) const override;
    Float64 GetTopFlangeWidth(const pgsPointOfInterest& poi) const override;
    Float64 GetTopWidth(const pgsPointOfInterest& poi, Float64* pLeft=nullptr, Float64* pRight=nullptr) const override;
    FlangeIndexType GetBottomFlangeCount(const CGirderKey& girderKey) const override;
