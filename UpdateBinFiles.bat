@@ -20,6 +20,7 @@ REM - TXDOT
 xcopy /Y /d %REGFREECOM%\x64\Release\TxDOTAgent.dll	%BINTARGET%\Extensions\TxDOT\x64\
 xcopy /Y /d %REGFREECOM%\x64\Release\TxDOT.Manifest.PGSuper	%BINTARGET%\Extensions\TxDOT\x64\
 xcopy /Y /d %REGFREECOM%\x64\Release\Extensions.Manifest.TOGA	%BINTARGET%\Extensions\TxDOT\x64\
+xcopy /Y /d %REGFREECOM%\x64\Release\TOGA.Manifest.BridgeLink         %BINTARGET%\Extensions\TxDOT\x64\
 
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.pgs		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
 xcopy /Y /d TxDOTAgent\TogaTemplates\*.togt		%BINTARGET%\Extensions\TxDOT\TogaTemplates\
@@ -43,7 +44,8 @@ xcopy /Y /d %REGFREECOM%\x64\Release\MakePgz.exe  	%BINTARGET%\App\x64\
 xcopy /Y /d PGSuper.tip				%BINTARGET%\App\
 xcopy /Y /d License.txt				%BINTARGET%\App\
 xcopy /Y /d Trucks.pgs				%BINTARGET%\App\
-xcopy /Y /d %REGFREECOM%\x64\Release\Application.Manifest.PGSuper		%BINTARGET%\App
+xcopy /Y /d %REGFREECOM%\x64\Release\Application.Manifest.PGSuper		%BINTARGET%\App\
+xcopy /Y /d %REGFREECOM%\x64\Release\PGSuper.Manifest.BridgeLink        %BINTARGET%\App\
 
 REM - Configuration Files
 xcopy /Y /d Configurations\WSDOT.lbr				%BINTARGET%\Configurations\
