@@ -1163,7 +1163,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
     if (pDetails->bPedLoading)
     {
-        pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, maxBAT, bIncludeImpact, true, &R1min, &R2max);
+        pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, maxBAT, bIncludeImpact, true, &R1min, &R1max);
         pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, minBAT, bIncludeImpact, true, &R2min, &R2max);
         pDetails->maxPedReaction = Max(R1max, R2max);
         pDetails->minPedReaction = Min(R1min, R2min);
