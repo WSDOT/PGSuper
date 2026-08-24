@@ -2901,10 +2901,14 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
       GET_IFACE(ILongRebarGeometry, pRebarGeom);
 
       pgsPointOfInterest barCutPoi(poi);
-      if (IsNonstructuralDeck(deckType) && !bPositiveMoment && !bIsOnSegment)
+      if ( (bIncludeRebar && !bIsOnSegment) // girder rebar is included, but the section is not on the girder
+         || // OR
+         (IsNonstructuralDeck(deckType) && !bPositiveMoment && !bIsOnSegment) // Negaive moment, nonstructural deck, and not on girder
+         )
       {
-         // we are doing girder rebar for negative moment for a "no deck" bridge and the current POI is not on the segment
-         // this happens when the POI is in the pier... In this case, use the POI at the face of the segment
+      	 // We are including girder rebar and the POI is not on the segment
+      	 // or we are doing negative moment capacity for a "no deck" bridge and the current POI is not on the segment.
+         // In this case, use the POI at the face of the segment
          // The development length factor will be zero at the face of the segment, so the only bars
          // that will get modeled are extended bars, which is what we want
          if (poi.HasAttribute(POI_SPAN | POI_0L))
