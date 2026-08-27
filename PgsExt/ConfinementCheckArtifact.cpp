@@ -206,7 +206,7 @@ bool pgsConfinementCheckArtifact::StartPassed() const
          return false;
       }
 
-      if (m_pStartRebar->GetNominalDimension() < m_pMinRebar->GetNominalDimension())
+      if (::IsGT(m_pStartRebar->GetNominalDimension(),m_pMinRebar->GetNominalDimension()))
       {
          return false;
       }
@@ -244,7 +244,7 @@ bool pgsConfinementCheckArtifact::EndPassed() const
          return false;
       }
 
-      if (m_pEndRebar->GetNominalDimension() < m_pMinRebar->GetNominalDimension())
+      if (::IsGT(m_pEndRebar->GetNominalDimension(),m_pMinRebar->GetNominalDimension()))
       {
          return false;
       }
