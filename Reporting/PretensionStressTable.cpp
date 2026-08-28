@@ -121,7 +121,7 @@ rptRcTable* CPretensionStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBr
       nColumns = nRatingColumns;
    }
 
-   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nColumns,_T("Girder Stresses"));
+   rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nColumns);
 
    if ( segmentKey.groupIndex == ALL_GROUPS )
    {
@@ -215,6 +215,7 @@ rptRcTable* CPretensionStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBr
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, &vPoi);
    pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT, &vPoi);
+   pPoi->GetPointsOfInterest(segmentKey, POI_SPAN, &vPoi);
    pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE | POI_HARPINGPOINT | POI_PSXFER | POI_DEBOND, &vPoi, POIFIND_OR);
    pPoi->GetCriticalSections(pgsTypes::StrengthI, segmentKey, &vPoi);
    pPoi->SortPoiList(&vPoi);
@@ -234,12 +235,14 @@ rptRcTable* CPretensionStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBr
       {
          (*p_table)(row,col++) << rptReleasePoi.SetValue( POI_RELEASED_SEGMENT, poi );
       }
-      (*p_table)(row,col++) << rptErectedPoi.SetValue( POI_ERECTED_SEGMENT, poi  );
+      (*p_table)(row,col++) << rptErectedPoi.SetValue( bTimeStepAnalysis ? POI_SPAN : POI_ERECTED_SEGMENT, poi  );
 
       if ( bDesign )
       {
          for (auto intervalIdx : vIntervals)
          {
+            bool bIncludeLiveLoad = (vIntervals.back() == intervalIdx ? true : false);
+
             if ( bTimeStepAnalysis )
             {
                // if we are doing a time-step analysis the stress in the girder
@@ -247,16 +250,10 @@ rptRcTable* CPretensionStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBr
                // include time-dependent effects (CR, SH, RE). We don't want to
                // report stresses in the girder computed using an effective prestress
                // that also includes (is reduced by) creep, shrinkage, and relaxation
-               intervalIdx = releaseIntervalIdx;
+               intervalIdx = (intervalIdx < tsRemovalIntervalIdx ? releaseIntervalIdx : tsRemovalIntervalIdx);
             }
 
-            if (intervalIdx < liveLoadIntervalIdx)
-            {
-               auto [fTop, fBot] = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder,true/*include live load if applicable*/, pgsTypes::ServiceI, INVALID_INDEX/*controlling vehicle*/);
-               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
-               (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot);
-            }
-            else
+            if (bIncludeLiveLoad)
             {
                auto [fTop, fBot] = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceI, INVALID_INDEX/*controlling vehicle*/);
                (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
@@ -275,6 +272,12 @@ rptRcTable* CPretensionStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBr
                std::tie(fTop,fBot) = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, ls, INVALID_INDEX/*controlling vehicle*/);
                (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
+            }
+            else
+            {
+               auto [fTop, fBot] = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceI, INVALID_INDEX/*controlling vehicle*/);
+               (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
+               (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot);
             }
 
             col++;

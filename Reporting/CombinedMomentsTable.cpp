@@ -1095,47 +1095,21 @@ void GetCombinedResultsPoi(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGir
    IntervalIndexType storageIntervalIdx = pIntervals->GetFirstStorageInterval(girderKey);
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
-   PoiAttributeType poiRefAttribute;
-   if ( girderKey.groupIndex == ALL_GROUPS )
-   {
-      poiRefAttribute = POI_SPAN;
-   }
-   else
-   {
-      if (intervalIdx == releaseIntervalIdx)
-      {
-         poiRefAttribute = POI_RELEASED_SEGMENT;
-      }
-      else if ( intervalIdx == storageIntervalIdx )
-      {
-         poiRefAttribute = POI_STORAGE_SEGMENT;
-      }
-      else if ( storageIntervalIdx < intervalIdx && intervalIdx < lastCompositeDeckIntervalIdx )
-      {
-         poiRefAttribute = POI_ERECTED_SEGMENT;
-      }
-      else
-      {
-         poiRefAttribute = POI_SPAN;
-      }
-   }
-
+   PoiAttributeType poiRefAttribute = POI_SPAN;
    *pRefAttribute = poiRefAttribute;
 
    GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),poiRefAttribute,pPoi);
-   PoiList vPoi2;
-   pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPECIAL | POI_SECTCHANGE, &vPoi2, POIFIND_OR);
-   pIPoi->MergePoiLists(*pPoi, vPoi2, pPoi);
-
-   if (poiRefAttribute == POI_SPAN)
-   {
-      PoiList csPois;
-      pIPoi->GetCriticalSections(pgsTypes::StrengthI, girderKey, &csPois);
-
-      pIPoi->MergePoiLists(*pPoi, csPois, pPoi);
-   }
+   PoiList vPoi;
+   CSegmentKey segmentKey(girderKey, ALL_SEGMENTS);
+   pIPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, &vPoi);
+   pIPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT, &vPoi);
+   pIPoi->GetPointsOfInterest(segmentKey, POI_SPAN, &vPoi);
+   pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPECIAL | POI_SECTCHANGE, &vPoi, POIFIND_OR);
+   pIPoi->GetCriticalSections(pgsTypes::StrengthI, segmentKey, &vPoi);
+   pIPoi->SortPoiList(&vPoi);
 
    if(!bMoment)
-      pIPoi->RemovePointsOfInterestOffGirder(*pPoi);
+      pIPoi->RemovePointsOfInterestOffGirder(vPoi);
+
+   *pPoi = vPoi;
 }

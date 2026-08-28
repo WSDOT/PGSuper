@@ -2510,6 +2510,7 @@ void TimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalId
 
    IntervalIndexType stressStrandsIntervalIdx = m_pIntervals->GetStressStrandInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx       = m_pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType tsRemovalIntervalIdx     = m_pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    IntervalIndexType storageIntervalIdx       = m_pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx      = m_pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType compositeDeckIntervalIdx = m_pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
@@ -3331,6 +3332,7 @@ void TimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalId
                {
                   tsDetails.Strands[strandType].Pi[pfType] += prevTimeStepDetails.Strands[strandType].Pi[pfType] + tsDetails.Strands[strandType].dPi[pfType];
                }
+
                tsDetails.Strands[strandType].dP += tsDetails.Strands[strandType].dPi[pfType];
                tsDetails.Strands[strandType].P += tsDetails.Strands[strandType].dPi[pfType];
 
@@ -3340,6 +3342,10 @@ void TimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalId
 
                // Losses and effective prestress
                tsDetails.Strands[strandType].dfpei[pfType] += IsZero(tsDetails.Strands[strandType].As) ? 0 : tsDetails.Strands[strandType].dPi[pfType] / tsDetails.Strands[strandType].As;
+               if (strandType == pgsTypes::Temporary && pfType == pgsTypes::pftPretension && intervalIdx == tsRemovalIntervalIdx)
+               {
+                  tsDetails.Strands[strandType].dfpei[pfType] -= prevTimeStepDetails.Strands[strandType].fpe;
+               }
                tsDetails.Strands[strandType].fpei[pfType] = prevTimeStepDetails.Strands[strandType].fpei[pfType] + tsDetails.Strands[strandType].dfpei[pfType];
                tsDetails.Strands[strandType].dfpe += tsDetails.Strands[strandType].dfpei[pfType];
                if (i == 0)

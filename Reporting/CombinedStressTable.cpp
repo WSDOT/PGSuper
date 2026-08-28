@@ -236,7 +236,6 @@ void CCombinedStressTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Bro
       PoiAttributeType poiRefAttribute;
       PoiList vPoi;
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,false,&vPoi,&poiRefAttribute);
-      poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       pForces2->GetStress( intervalIdx, lcDC, vPoi, bat, rtIncremental, topLocation, botLocation, &fTopDCinc, &fBotDCinc);
       pForces2->GetStress( intervalIdx, lcDW, vPoi, bat, rtIncremental, topLocation, botLocation, &fTopDWinc, &fBotDWinc);
@@ -275,7 +274,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Bro
 
          col = 0;
 
-         (*pTable)(row,col++) << location.SetValue( poiRefAttribute, poi );
+         (*pTable)(row,col++) << location.SetValue( POI_SPAN, poi );
          (*pTable)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopDCinc[index]) << rptNewLine;
          (*pTable)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotDCinc[index]);
 

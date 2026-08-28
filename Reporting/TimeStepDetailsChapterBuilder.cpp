@@ -1478,7 +1478,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(std::shar
    (*pTable)(rowIdx, colIdx++) << _T("");
 
    pTable->SetColumnSpan(rowIdx, colIdx, nLoads);
-   (*pTable)(rowIdx, colIdx) << _T("Loading");
+   (*pTable)(rowIdx, colIdx) << _T("Incremental component force due to External Loading");
    colIdx += nLoads;
 
    colIdx = 2;
@@ -1812,7 +1812,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(std::sha
    (*pTable)(rowIdx,colIdx++) << _T("Component");
 
    pTable->SetColumnSpan(rowIdx,colIdx,nLoads);
-   (*pTable)(rowIdx,colIdx) << _T("Loading");
+   (*pTable)(rowIdx,colIdx) << _T("Incremental component stress due to ExternalLoading");
    colIdx += nLoads;
    
    rowIdx++;
