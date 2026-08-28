@@ -15688,7 +15688,7 @@ void CBridgeAgentImp::GetStartConfinementBarInfo(const CSegmentKey& segmentKey, 
          primZonL = ezloc;
       }
 
-      if (IsGE(requiredZoneLength,ezloc))
+      if (IsGT(requiredZoneLength,ezloc))
       {
          break; // actual zone length exceeds required - we are done
       }
@@ -15745,7 +15745,7 @@ void CBridgeAgentImp::GetEndConfinementBarInfo( const CSegmentKey& segmentKey, F
          primZonL = ezloc;
       }
 
-      if (IsGE(requiredZoneLength,ezloc))
+      if (IsGT(requiredZoneLength,ezloc))
       {
          break; // actual zone length exceeds required - we are done
       }

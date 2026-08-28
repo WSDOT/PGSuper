@@ -334,7 +334,7 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
 
    p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << p;
-   p->SetName(_T("Stress due to Prestress"));
+   p->SetName(_T("Girder Concrete Stress due to Prestress"));
    *p << p->GetName() << rptNewLine;
    GroupIndexType nGroups_Reported = vGirderKeys.back().groupIndex - vGirderKeys.front().groupIndex + 1;
 
@@ -361,7 +361,10 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
 
          p = new rptParagraph;
          *pChapter << p;
-         *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + GetImage(pBroker)) << rptNewLine;
+         if (!bIsSplicedGirder)
+         {
+            *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + GetImage(pBroker)) << rptNewLine;
+         }
          *p << CPretensionStressTable().Build(pBroker,segmentKey,bDesign,pDisplayUnits) << rptNewLine;
       }
    }
@@ -372,7 +375,7 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
       GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
-      p->SetName(_T("Stresses due to Post-tensioning"));
+      p->SetName(_T("Concrete Stress due to Post-tensioning"));
       *p << p->GetName() << rptNewLine;
       for(const auto& thisGirderKey : vGirderKeys)
       {
@@ -382,6 +385,12 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
             *pChapter << p;
             *p << CPosttensionStressTable().Build(pBroker,thisGirderKey,bDesign,pDisplayUnits,true /*girder stresses*/) << rptNewLine;
             *p << CPosttensionStressTable().Build(pBroker,thisGirderKey,bDesign,pDisplayUnits,false/*deck stresses*/) << rptNewLine;
+         }
+         else
+         {
+            p = new rptParagraph;
+            *pChapter << p;
+            *p << _T("No post-tensioning defined for this girder.") << rptNewLine;
          }
       }
    }

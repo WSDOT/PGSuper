@@ -2093,11 +2093,14 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
    const pgsPointOfInterest& midsegment_poi(poiList.front());
    ATLASSERT(midsegment_poi.IsMidSpan(POI_RELEASED_SEGMENT));
 
-   // For time-step analysis, pretension stresses are taken from the release interval, otherwise the are taken from the task interval.
+   // For time-step analysis, pretension stresses are taken from the interval when the prestress is applied or removed (temporary strands),
+   // otherwise the are taken from the task interval.
    // We do this because in time-step analysis girder stresses include the effect of creep, shrinkage, and relaxation. We don't
    // want to include CR, SH, and RE again by computing the stress in the girder due to prestressing with an effective prestress
    // force that includes CR, SH, and RE.
-   IntervalIndexType pretensionIntervalIdx = (bTimeStepAnalysis ? releaseIntervalIdx : task.intervalIdx);
+   IntervalIndexType pretensionIntervalIdx = (bTimeStepAnalysis ? 
+      releaseIntervalIdx <= task.intervalIdx && task.intervalIdx < tsRemovalIntervalIdx ? releaseIntervalIdx : tsRemovalIntervalIdx 
+      : task.intervalIdx);
 
    GET_IFACE2(GetBroker(),IDocumentType, pDocType);
    bool bCheckTemporaryStresses = false;
@@ -2311,7 +2314,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	         // get segment stress due to prestressing
 	         std::array<Float64,2> fPretension{ 0,0 };
             std::tie(fPretension[TOP],fPretension[BOT]) = pPretensionStresses->GetStress(pretensionIntervalIdx, poi, topStressLocation, botStressLocation, task.bIncludeLiveLoad, limitState, INVALID_INDEX/*controlling live load*/);
-	
+
 	         // get segment stress due to external loads
 	         std::array<Float64,2> fLimitStateMin{ 0,0 }, fLimitStateMax{ 0,0 };
 	         pLimitStateForces->GetStress(task.intervalIdx,limitState,poi,batTop,false/*exclude prestress*/,topStressLocation,&fLimitStateMin[TOP],&fLimitStateMax[TOP]);

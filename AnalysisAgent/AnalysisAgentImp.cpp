@@ -7867,12 +7867,30 @@ void CAnalysisAgentImp::GetPrecamber(const pgsPointOfInterest& poi, pgsTypes::Pr
 //
 Float64 CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx,const GDRCONFIG* pConfig) const
 {
-   return m_pGirderModelManager->GetStress(intervalIdx,poi,stressLocation,stressLocation,bIncludeLiveLoad,limitState,vehicleIdx,pConfig).first;
+   GET_IFACE(ILossParameters, pLossParams);
+   if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
+   {
+      CHECK(pConfig == nullptr);
+      return GetTimeStepStress(intervalIdx, poi, stressLocation, stressLocation, bIncludeLiveLoad, limitState, vehicleIdx).first;
+   }
+   else
+   {
+      return m_pGirderModelManager->GetStress(intervalIdx, poi, stressLocation, stressLocation, bIncludeLiveLoad, limitState, vehicleIdx, pConfig).first;
+   }
 }
 
-std::pair<Float64,Float64> CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc,bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx,const GDRCONFIG* pConfig) const
+std::pair<Float64, Float64> CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc,bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx,const GDRCONFIG* pConfig) const
 {
-   return m_pGirderModelManager->GetStress(intervalIdx,poi,topLoc,botLoc,bIncludeLiveLoad,limitState,vehicleIdx,pConfig);
+   GET_IFACE(ILossParameters, pLossParams);
+   if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
+   {
+      CHECK(pConfig == nullptr);
+      return GetTimeStepStress(intervalIdx, poi, topLoc, botLoc, bIncludeLiveLoad, limitState, vehicleIdx);
+   }
+   else
+   {
+      return m_pGirderModelManager->GetStress(intervalIdx, poi, topLoc, botLoc, bIncludeLiveLoad, limitState, vehicleIdx, pConfig);
+   }
 }
 
 void CAnalysisAgentImp::GetStress(IntervalIndexType intervalIdx, const PoiList& vPoi, pgsTypes::StressLocation stressLocation, bool bIncludeLiveLoad, pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx, std::vector<Float64>* pStresses) const
@@ -11206,6 +11224,29 @@ void CAnalysisAgentImp::IsGirderInPrecompressedTensileZone(const pgsPointOfInter
 
    *pbTopPTZ = 0 < fMax[TOP] && fPS[TOP] < 0 ? true : false;
    *pbBotPTZ = 0 < fMax[BOT] && fPS[BOT] < 0 ? true : false;
+}
+
+std::pair<Float64, Float64> CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation topLoc, pgsTypes::StressLocation botLoc, bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const
+{
+   GET_IFACE(IPointOfInterest, pPoi);
+   if (pPoi->IsOnGirder(poi))
+   {
+      pgsTypes::FaceType topFace = (IsTopStressLocation(topLoc) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+      pgsTypes::FaceType botFace = (IsTopStressLocation(botLoc) ? pgsTypes::TopFace : pgsTypes::BottomFace);
+
+      GET_IFACE(ILosses, pLosses);
+      const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi, intervalIdx);
+      const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
+      const TIME_STEP_CONCRETE* pTopConcreteElement = (IsGirderStressLocation(topLoc) ? &tsDetails.Girder : &tsDetails.Deck);
+      const TIME_STEP_CONCRETE* pBotConcreteElement = (IsGirderStressLocation(botLoc) ? &tsDetails.Girder : &tsDetails.Deck);
+      auto fTop = pTopConcreteElement->stress_by_load_type[topFace][pgsTypes::pftPretension][rtCumulative];
+      auto fBot = pBotConcreteElement->stress_by_load_type[botFace][pgsTypes::pftPretension][rtCumulative];
+      return { fTop, fBot };
+   }
+   else
+   {
+      return { 0.0, 0.0 };
+   }
 }
 
 void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const
