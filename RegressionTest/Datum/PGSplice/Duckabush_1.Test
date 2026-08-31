@@ -4,10 +4,17 @@
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Apply User Defined Loads for Segment 1
 Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Apply User Defined Loads for Segment 2
+Tension stress check failed for Service I Limit State in Interval 11 Remove temporary strands for Segment 3
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Apply User Defined Loads for Segment 3
 Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Apply User Defined Loads for Segment 4
 Compression stress check failed for Service I Limit State in Interval 20 Cast deck regions 1, 7 for Segment 4
+Tension stress check failed for Service I Limit State in Interval 11 Remove temporary strands for Segment 5
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Apply User Defined Loads for Segment 5
 Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Apply User Defined Loads for Segment 6
+Tension stress check failed for Service I Limit State in Interval 11 Remove temporary strands for Segment 7
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Apply User Defined Loads for Segment 7
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Minimum deck reinforcement in negative moment region failed.
 Lifting checks failed for Segment 7.
@@ -20,10 +27,14 @@ Finished elevation check failed
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service I Limit State in Interval 11 Remove temporary strands for Segment 1
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Apply User Defined Loads for Segment 1
 Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Apply User Defined Loads for Segment 2
 Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Apply User Defined Loads for Segment 4
 Compression stress check failed for Service I Limit State in Interval 20 Cast deck regions 1, 7 for Segment 4
 Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Apply User Defined Loads for Segment 6
+Tension stress check failed for Service I Limit State in Interval 11 Remove temporary strands for Segment 7
+Tension stress check failed for Service I Limit State in Interval 15 Cast Closure Joint, Apply User Defined Loads for Segment 7
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Lifting checks failed for Segment 1.
 Lifting checks failed for Segment 7.
