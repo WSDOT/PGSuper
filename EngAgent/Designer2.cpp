@@ -7658,21 +7658,67 @@ void pgsDesigner2::DesignSlabOffset(std::shared_ptr<IEAFProgress> pProgress) con
 
       if (m_StrandDesignTool->IsDesignExcessCamber())
       {
+         // ctoler serves two roles here: it is the acceptance criterion - the assumed camber is
+         // good enough when it sits within ctoler of the computed camber, the same test the
+         // haunch geometry check applies - and it is the increment the delivered value is
+         // rounded to, 1/2 in being the AEC output standard for this number. 
+         //
+         // Known limitation. Converging on "within tolerance" rather than "closest increment"
+         // lets the delivered camber sit almost a full ctoler away from the computed camber,
+         // and the haunch geometry spec check spends that same budget. Rounding the computed
+         // value instead - what this code did before - held the gap to half an increment and so
+         // nearly always passed that check, but it often did not converge.
+         //
+         // The exposure is worst where the assumed camber does more than set the haunch load.
+         // Under HaunchAnalysisSectionPropertiesType == hspDetailedDescription
+         // (IsAssumedExcessCamberForSectProps) the haunch depth follows a parabola fitted to the
+         // slab offset and the assumed camber, so the camber also sets the composite section
+         // properties along the girder. The computed camber then answers to a stiffness feedback
+         // on top of the load feedback, which makes the map steeper and less stable - and with
+         // transformed section properties the camber this loop computes and the camber the spec
+         // check reports diverge further still. Tx54_ParabolicTransformed span 1 girder 2 designs
+         // successfully and then failed the excess camber check for exactly this reason: it
+         // settles at an assumed 1.5 in against a computed 1.11837 in, spending 0.382 of the
+         // 0.5 in budget before the check has looked at it.
+         //
+         // Note also that m_bIsDesignExcessCamber (StrandDesignTool) keys off
+         // IsAssumedExcessCamberForLoad() alone. A project that uses the assumed camber for
+         // section properties but not for haunch load never designs the value here at all.
          Float64 ctoler = m_StrandDesignTool->GetAssumedExcessCamberTolerance();
          Float64 computed_camber = slab_offset_details.SlabOffset.at(idx).CamberEffect;
          LOG(_T("Excess Camber Computed = ") << WBFL::Units::ConvertFromSysUnits(computed_camber, WBFL::Units::Measure::Inch) << _T(" in"));
          if (IsZero(assumedExcessCamberOld - computed_camber, ctoler))
          {
-            Float64 c;
-            c = RoundOff(computed_camber, ctoler);
-            LOG(_T("Excess camber converged."));
-            m_StrandDesignTool->SetAssumedExcessCamber(c);
+            // The assumed camber satisfies the tolerance criterion - the same criterion the
+            // haunch geometry check applies - so it is an acceptable answer. Keep it rather
+            // than replacing it with RoundOff(computed_camber): that asks the camber to be a
+            // fixed point on the rounding increment, and one does not always exist. When the
+            // true fixed point falls near a bin boundary the two adjacent increments map to
+            // each other (e.g., assume 1.5 -> compute 1.93 -> store 2.0 -> compute 1.62 -> store 1.5)
+            // and the design never settles, even though both values are within tolerance.
+            Float64 c = RoundOff(assumedExcessCamberOld, ctoler);
+            if (IsEqual(c, assumedExcessCamberOld))
+            {
+               LOG(_T("Excess camber converged."));
 
-            bDone &= true;
+               bDone &= true;
+            }
+            else
+            {
+               // Within tolerance, but not on the rounding increment - this only happens when
+               // the design started from an off-increment value. Move onto the increment and
+               // verify there.
+               m_StrandDesignTool->SetAssumedExcessCamber(c);
+               LOG(_T("Excess camber is within tolerance but not on the rounding increment."));
+               bDone = false;
+            }
          }
          else
          {
-            m_StrandDesignTool->SetAssumedExcessCamber(computed_camber);
+            // Store the computed camber rounded to the increment, not the raw value. Every
+            // value the design is verified at is then a value that can be delivered, so the
+            // haunch load used for design is the haunch load the final configuration has.
+            m_StrandDesignTool->SetAssumedExcessCamber(RoundOff(computed_camber, ctoler));
             LOG(_T("Excess camber does not match within tolerance."));
             bDone = false;
          }
