@@ -1048,14 +1048,14 @@ void CBearingPierGrid::OnClickedButtonRowCol(ROWCOL nRow, ROWCOL nCol)
                 .SetValue(FormatDimension(brg_details.Width, *m_pCompUnit, false))
             );
 
-            m_BearingPierDetailData[0].ElastomerThickness = brg_details.ElastomerThickness;
-            m_BearingPierDetailData[0].CoverThickness = brg_details.CoverThickness;
-            m_BearingPierDetailData[0].ShimThickness = brg_details.ShimThickness;
-            m_BearingPierDetailData[0].NumIntLayers = brg_details.NumIntLayers;
-            m_BearingPierDetailData[0].UseExtPlates = brg_details.UseExtPlates;
-            m_BearingPierDetailData[0].FixedX = brg_details.FixedX;
-            m_BearingPierDetailData[0].FixedY = brg_details.FixedY;
-            m_BearingPierDetailData[0].ShearDeformationOverride = brg_details.ShearDeformationOverride;
+            m_BearingPierDetailData[nRow - 1].ElastomerThickness = brg_details.ElastomerThickness;
+            m_BearingPierDetailData[nRow - 1].CoverThickness = brg_details.CoverThickness;
+            m_BearingPierDetailData[nRow - 1].ShimThickness = brg_details.ShimThickness;
+            m_BearingPierDetailData[nRow - 1].NumIntLayers = brg_details.NumIntLayers;
+            m_BearingPierDetailData[nRow - 1].UseExtPlates = brg_details.UseExtPlates;
+            m_BearingPierDetailData[nRow - 1].FixedX = brg_details.FixedX;
+            m_BearingPierDetailData[nRow - 1].FixedY = brg_details.FixedY;
+            m_BearingPierDetailData[nRow - 1].ShearDeformationOverride = brg_details.ShearDeformationOverride;
 
 
         }
