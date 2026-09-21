@@ -145,6 +145,9 @@
     <ClCompile Include="GirderGeometryChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DeckOverhangChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="GirderSeedDataComparisonParagraph.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1250,6 +1253,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\GirderGeometryChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\DeckOverhangChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\ReinforcementFatigueCheck.h">

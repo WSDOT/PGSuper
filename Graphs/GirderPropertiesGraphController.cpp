@@ -33,6 +33,8 @@
 #include <IFace\Selection.h>
 #include <IFace\Bridge.h>
 
+#include <Hints.h>
+
 #include <EAF\EAFGraphBuilderBase.h>
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFDocument.h>
@@ -97,6 +99,12 @@ bool CGirderPropertiesGraphController::SetPropertyType(CGirderPropertiesGraphBui
    if (bPGSuperDoc && (propertyType == CGirderPropertiesGraphBuilder::TendonEccentricity || propertyType == CGirderPropertiesGraphBuilder::TendonProfile))
    {
       return false; // invalid property type
+   }
+
+   GET_IFACE(IBridge, pBridge);
+   if (propertyType == CGirderPropertiesGraphBuilder::DeckOverhang && !pBridge->HasDeckOverhang())
+   {
+      return false; // there isn't a deck overhang to graph
    }
 
    if (m_PropertyType != propertyType)
@@ -265,12 +273,20 @@ void CGirderPropertiesGraphController::FillPropertyCtrl()
    GET_IFACE(IDocumentType,pDocType);
    bool bPGSuperDoc = pDocType->IsPGSuperDocument();
 
+   GET_IFACE(IBridge,pBridge);
+   bool bHasDeckOverhang = pBridge->HasDeckOverhang();
+
    int idx;
    for ( int i = 0; i < int(CGirderPropertiesGraphBuilder::PropertyTypeCount); i++ )
    {
       CGirderPropertiesGraphBuilder::PropertyType propertyType = (CGirderPropertiesGraphBuilder::PropertyType)i;
 
       if ( bPGSuperDoc && (propertyType == CGirderPropertiesGraphBuilder::TendonEccentricity || propertyType == CGirderPropertiesGraphBuilder::TendonProfile) )
+      {
+         continue;
+      }
+
+      if ( !bHasDeckOverhang && propertyType == CGirderPropertiesGraphBuilder::DeckOverhang )
       {
          continue;
       }
@@ -288,12 +304,40 @@ bool CGirderPropertiesGraphController::IsInvariantProperty(CGirderPropertiesGrap
       propertyType == CGirderPropertiesGraphBuilder::TendonProfile ||
       propertyType == CGirderPropertiesGraphBuilder::EffectiveFlangeWidth ||
       propertyType == CGirderPropertiesGraphBuilder::Fc ||
-      propertyType == CGirderPropertiesGraphBuilder::Ec
+      propertyType == CGirderPropertiesGraphBuilder::Ec ||
+      propertyType == CGirderPropertiesGraphBuilder::DeckOverhang
       )
    {
       return true;
    }
    return false;
+}
+
+void CGirderPropertiesGraphController::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
+{
+   CIntervalGirderGraphControllerBase::OnUpdate(pSender,lHint,pHint);
+
+   if ( lHint == HINT_BRIDGECHANGED )
+   {
+      // the deck overhang item comes and goes with the girder type and deck type
+      FillPropertyCtrl();
+
+      CComboBox* pcbProperties = (CComboBox*)GetDlgItem(IDC_PROPERTY);
+      int curSel = 0;
+      int count = pcbProperties->GetCount();
+      for ( int i = 0; i < count; i++ )
+      {
+         if ( (CGirderPropertiesGraphBuilder::PropertyType)(pcbProperties->GetItemData(i)) == m_PropertyType )
+         {
+            curSel = i;
+            break;
+         }
+      }
+
+      pcbProperties->SetCurSel(curSel);
+      m_PropertyType = (CGirderPropertiesGraphBuilder::PropertyType)(pcbProperties->GetItemData(curSel));
+      UpdateSectionPropertyTypeControls();
+   }
 }
 
 void CGirderPropertiesGraphController::UpdateSectionPropertyTypeControls()
@@ -314,6 +358,12 @@ void CGirderPropertiesGraphController::UpdateSectionPropertyTypeControls()
    {
       GetDlgItem(IDC_NET_DECK)->EnableWindow(FALSE);
    }
+
+   // deck overhangs are always graphed along the exterior girders and do not depend on interval,
+   // so the girder and interval selections do not apply
+   int nShow = (m_PropertyType == CGirderPropertiesGraphBuilder::DeckOverhang ? SW_HIDE : SW_SHOW);
+   GetDlgItem(IDC_GIRDER)->ShowWindow(nShow);
+   GetDlgItem(IDC_INTERVAL)->ShowWindow(nShow);
 }
 
 #ifdef _DEBUG

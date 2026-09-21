@@ -160,6 +160,20 @@ struct InterfaceShearWidthDetails
    MatingSurfaceIndexType nMatingSurfaces{ 0 };
 };
 
+struct DeckOverhangDetails
+{
+   Float64 Overhang{ 0.0 };             // horizontal distance from CL of the exterior web of the exterior girder to the edge of deck
+   Float64 OverhangFromCLGirder{ 0.0 }; // horizontal distance from the CL girder to the edge of deck
+   Float64 WebOffset{ 0.0 };            // horizontal distance from the CL girder to the CL of the exterior web,
+                                        // measured along the same line as the overhang
+   Float64 WebThickness{ 0.0 };         // thickness of the exterior web, measured along the same line
+                                        // as the overhang
+   bool bExists{ true };                // false when Overhang <= WebThickness/2, that is, when the edge of deck
+                                        // does not reach past the exterior face of the exterior web
+   CComPtr<IPoint2d> pntDeckEdge;       // point where the measurement line intersects the edge of deck
+   pgsPointOfInterest Poi;              // point of interest on the exterior girder where the overhang was measured
+};
+
 /*****************************************************************************
 INTERFACE
    IBridge
@@ -521,6 +535,16 @@ public:
    // distFromStartOfSpan is measured along the alignment and can be easily determined by station
    // at the section where the overhang is desired and the station of the pier at the start of the span
    virtual Float64 GetRightSlabOverhang(SpanIndexType spanIdx,Float64 distFromStartOfSpan) const = 0;
+
+   // Returns the deck overhang at poi, measured to the side indicated, along a line that is
+   // normal to the alignment or normal to the CL girder. The overhang is measured from the CL
+   // of the exterior web of the exterior girder. For sections with a single web, the CL of the
+   // beam is the reference. poi must be on the exterior girder for the side indicated.
+   virtual DeckOverhangDetails GetDeckOverhangDetails(const pgsPointOfInterest& poi,pgsTypes::SideType side,pgsTypes::DeckOverhangMeasurementType measure) const = 0;
+
+   // Returns false when the bridge does not have a deck overhang. This is the case when there
+   // is no deck and the exterior girders are solid sections (e.g., slab beams)
+   virtual bool HasDeckOverhang() const = 0;
 
    // Returns distance from the alignment to the left slab edge, measured normal to the alignment
    // Xb is measured in Bridge Line Coordinates and can be easily determined by station

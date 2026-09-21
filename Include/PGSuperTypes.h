@@ -477,6 +477,12 @@ typedef struct pgsTypes
       dotBottomTopFlange = 2   // Taper overhang to bottom of girder top flange
    } DeckOverhangTaper;
 
+   typedef enum DeckOverhangMeasurementType
+   {
+      domtNormalToAlignment = 0, // overhang is measured normal to the alignment
+      domtNormalToGirder    = 1  // overhang is measured normal to the CL girder
+   } DeckOverhangMeasurementType;
+
    typedef enum OffsetMeasurementType
    {
       omtAlignment,  // offset measured from alignment

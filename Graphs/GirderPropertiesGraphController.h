@@ -46,6 +46,7 @@ protected:
 
    virtual void DoDataExchange(CDataExchange* pDX);
    virtual BOOL OnInitDialog() override;
+   virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
 
 	//{{AFX_MSG(CGirderPropertiesGraphController)
    afx_msg void OnPropertyChanged();

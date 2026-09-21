@@ -259,6 +259,7 @@
     <ClCompile Include="FlexuralStressCheckTable.cpp" />
     <ClCompile Include="GirderDetailingCheck.cpp" />
     <ClCompile Include="GirderGeometryChapterBuilder.cpp" />
+    <ClCompile Include="DeckOverhangChapterBuilder.cpp" />
     <ClCompile Include="GirderSeedDataComparisonParagraph.cpp">
       <DeploymentContent>true</DeploymentContent>
     </ClCompile>
@@ -475,6 +476,7 @@
     <ClInclude Include="..\Include\Reporting\FlexuralStressCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\GirderDetailingCheck.h" />
     <ClInclude Include="..\Include\Reporting\GirderGeometryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\DeckOverhangChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\GirderSeedDataComparisonParagraph.h" />
     <ClInclude Include="..\Include\Reporting\HaulingCheck.h" />
     <ClInclude Include="..\Include\Reporting\HaulingCheckChapterBuilder.h" />

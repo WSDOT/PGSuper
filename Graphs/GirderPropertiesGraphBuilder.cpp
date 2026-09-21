@@ -257,6 +257,16 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
       break;
       }
 
+   case DeckOverhang:
+      {
+      const WBFL::Units::LengthData& overhangUnit = pDisplayUnits->GetAlignmentLengthUnit();
+      m_pYFormat = new WBFL::Units::LengthTool(overhangUnit);
+      m_Graph.SetYAxisValueFormat(m_pYFormat);
+      std::_tstring strYAxisTitle = _T("Deck Overhang (") + ((WBFL::Units::LengthTool*)m_pYFormat)->UnitTag() + _T(")");
+      m_Graph.SetYAxisTitle(strYAxisTitle.c_str());
+      break;
+      }
+
    case Fc:
       {
       const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
@@ -288,7 +298,27 @@ void CGirderPropertiesGraphBuilder::UpdateGraphTitle(const CGirderKey& girderKey
    CString strInterval( pIntervals->GetDescription(intervalIdx).c_str() );
 
    CString strGraphTitle;
-   if ( girderKey.groupIndex == ALL_GROUPS )
+   if ( propertyType == DeckOverhang )
+   {
+      // deck overhangs are graphed along the exterior girders, so the title doesn't name a girder
+      if ( girderKey.groupIndex == ALL_GROUPS )
+      {
+         strGraphTitle.Format(_T("All Spans - %s"),GetPropertyLabel(propertyType));
+      }
+      else
+      {
+         GET_IFACE(IDocumentType,pDocType);
+         if (pDocType->IsPGSuperDocument())
+         {
+            strGraphTitle.Format(_T("Span %s - %s"), LABEL_SPAN(girderKey.groupIndex), GetPropertyLabel(propertyType));
+         }
+         else
+         {
+            strGraphTitle.Format(_T("Group %d - %s"), LABEL_GROUP(girderKey.groupIndex), GetPropertyLabel(propertyType));
+         }
+      }
+   }
+   else if ( girderKey.groupIndex == ALL_GROUPS )
    {
       strGraphTitle.Format(_T("Girder Line %s - %s - Interval %d: %s"),LABEL_GIRDER(girderKey.girderIndex),GetPropertyLabel(propertyType),LABEL_INTERVAL(intervalIdx),strInterval);
    }
@@ -306,12 +336,29 @@ void CGirderPropertiesGraphBuilder::UpdateGraphTitle(const CGirderKey& girderKey
    }
    
    m_Graph.SetTitle(strGraphTitle);
+
+   if ( propertyType == DeckOverhang )
+   {
+      m_Graph.SetSubtitle(_T("Overhang is measured normal to the alignment, from the CL of the exterior web of the exterior girder to the edge of deck"));
+   }
+   else
+   {
+      m_Graph.SetSubtitle(_T(""));
+   }
 }
 
 void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,IntervalIndexType intervalIdx,PropertyType propertyType,pgsTypes::SectionPropertyType sectPropType)
 {
    // clear graph
    m_Graph.ClearData();
+
+   // Deck overhangs are graphed along the exterior girders, not the selected girder...
+   if ( propertyType == DeckOverhang )
+   {
+      // ... deal with it and return
+      UpdateDeckOverhangGraph(girderKey);
+      return;
+   }
 
    // Get the points of interest we need.
    GET_IFACE(IPointOfInterest,pPoi);
@@ -693,6 +740,61 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
    } // next group
 }
 
+void CGirderPropertiesGraphBuilder::UpdateDeckOverhangGraph(const CGirderKey& girderKey)
+{
+   GET_IFACE(IBridge,pBridge);
+   if ( !pBridge->HasDeckOverhang() )
+   {
+      return; // there isn't anything to graph
+   }
+
+   GET_IFACE(IPointOfInterest,pPoi);
+
+   // deck overhangs are geometric and do not depend on interval
+   IndexType dataSeries1, dataSeries2, dataSeries3, dataSeries4;
+   InitializeGraph(DeckOverhang,girderKey,INVALID_INDEX,&dataSeries1,&dataSeries2,&dataSeries3,&dataSeries4);
+
+   GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : startGroupIdx);
+
+   for ( int i = 0; i < 2; i++ )
+   {
+      // the left overhang is graphed along the left exterior girder and the right
+      // overhang along the right exterior girder
+      pgsTypes::SideType side = (i == 0 ? pgsTypes::stLeft : pgsTypes::stRight);
+      IndexType dataSeries = (i == 0 ? dataSeries1 : dataSeries2);
+
+      PoiList vPoi;
+      for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+      {
+         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
+         GirderIndexType gdrIdx = (side == pgsTypes::stLeft ? 0 : nGirders-1);
+
+         PoiList vSegmentPoi;
+         pPoi->GetPointsOfInterest(CSegmentKey(grpIdx,gdrIdx,ALL_SEGMENTS), &vSegmentPoi);
+         vPoi.insert(std::end(vPoi),std::begin(vSegmentPoi),std::end(vSegmentPoi));
+      }
+
+      if ( vPoi.empty() )
+      {
+         continue;
+      }
+
+      std::vector<Float64> xVals;
+      GetXValues(vPoi,&xVals);
+
+      auto iter(vPoi.cbegin());
+      auto end(vPoi.cend());
+      auto xIter(xVals.cbegin());
+      for ( ; iter != end; iter++, xIter++ )
+      {
+         const pgsPointOfInterest& poi(*iter);
+         Float64 overhang = pBridge->GetDeckOverhangDetails(poi,side,pgsTypes::domtNormalToAlignment).Overhang;
+         AddGraphPoint(dataSeries,*xIter,overhang);
+      }
+   }
+}
+
 LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyType)
 {
    switch(propertyType)
@@ -747,6 +849,10 @@ LPCTSTR CGirderPropertiesGraphBuilder::GetPropertyLabel(PropertyType propertyTyp
 
    case Ec:
       return _T("Ec");
+      break;
+
+   case DeckOverhang:
+      return _T("Deck Overhang");
       break;
 
    default:
@@ -859,6 +965,40 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
       *pGraph3 = m_Graph.CreateDataSeries(strPropertyLabel3.c_str(), PS_SOLID, GRAPH_PEN_WEIGHT, GREEN);
       break;
    }
+
+   case DeckOverhang:
+   {
+      // the overhangs are measured along the exterior girders... the left exterior girder is always
+      // Girder A, but the right exterior girder can change from group to group
+      GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+      GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount()-1 : startGroupIdx);
+      std::set<GirderIndexType> rightGirders;
+      for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+      {
+         rightGirders.insert(pBridge->GetGirderCount(grpIdx)-1);
+      }
+
+      std::_tostringstream osLeft;
+      osLeft << _T("Left ") << strPropertyLabel1 << _T(" - measured along girder ") << LABEL_GIRDER(0);
+      strPropertyLabel1 = osLeft.str();
+
+      std::_tostringstream osRight;
+      osRight << _T("Right ") << strPropertyLabel2 << _T(" - measured along girder");
+      if ( 1 < rightGirders.size() )
+      {
+         osRight << _T("s");
+      }
+      bool bFirst = true;
+      for ( GirderIndexType gdrIdx : rightGirders )
+      {
+         osRight << (bFirst ? _T(" ") : _T(", ")) << LABEL_GIRDER(gdrIdx);
+         bFirst = false;
+      }
+      strPropertyLabel2 = osRight.str();
+   }
+      *pGraph1 = m_Graph.CreateDataSeries(strPropertyLabel1.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,ORANGE);
+      *pGraph2 = m_Graph.CreateDataSeries(strPropertyLabel2.c_str(),PS_SOLID,GRAPH_PEN_WEIGHT,BLUE);
+      break;
 
    case SectionModulus:
    case KernPoint:

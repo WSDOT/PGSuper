@@ -10867,6 +10867,159 @@ Float64 CBridgeAgentImp::GetRightSlabOverhang(SpanIndexType spanIdx,Float64 Xspa
    return GetRightSlabOverhang(Xb);
 }
 
+DeckOverhangDetails CBridgeAgentImp::GetDeckOverhangDetails(const pgsPointOfInterest& poi,pgsTypes::SideType side,pgsTypes::DeckOverhangMeasurementType measure) const
+{
+   VALIDATE( BRIDGE );
+
+   DeckOverhangDetails details;
+
+   DirectionType dtSide = (side == pgsTypes::stLeft ? qcbLeft : qcbRight);
+
+   // poi must be on the exterior girder for the side that is being measured
+   const CSegmentKey& extSegmentKey = poi.GetSegmentKey();
+   ATLASSERT(extSegmentKey.girderIndex == (side == pgsTypes::stLeft ? 0 : GetGirderCount(extSegmentKey.groupIndex)-1));
+
+   details.Poi = poi;
+
+   Float64 station, offset;
+   GetStationAndOffset(poi,&station,&offset);
+
+   // The bridge geometry tool measures the overhang along a line that passes through the alignment
+   // at a station, in a given direction. Determine the direction of the measurement line and the
+   // station where it crosses the alignment so that the line passes through poi.
+   CComPtr<IDirection> direction;
+   Float64 measureStation = station;
+   if ( measure == pgsTypes::domtNormalToAlignment )
+   {
+      // a line normal to the alignment at the station of poi passes through poi
+      GetBearingNormal(station,&direction);
+   }
+   else
+   {
+      GetSegmentNormal(extSegmentKey,&direction);
+
+      // A line normal to the girder through the alignment point at the station of poi does not pass
+      // through poi when the girder isn't parallel to the alignment (e.g., chorded girders on a curve).
+      // Measuring along that line gives a dimension that varies along a prismatic girder and, near the
+      // ends of the girder, can reach the deck edge of the adjacent span. Find the station where the
+      // line normal to the girder, passing through poi, crosses the alignment.
+      CComPtr<IPoint2d> pntPoi;
+      GetPoint(poi,pgsTypes::pcLocal,&pntPoi);
+
+      Float64 dir;
+      direction->get_Value(&dir);
+
+      CComPtr<ILine2d> measureLine;
+      measureLine.CoCreateInstance(CLSID_Line2d);
+      CComPtr<IPoint2d> p;
+      CComPtr<IVector2d> v;
+      measureLine->GetExplicit(&p,&v);
+      v->put_Direction(dir);
+      measureLine->SetExplicit(pntPoi,v);
+
+      CComPtr<IAlignment> alignment;
+      m_Bridge->get_Alignment(&alignment);
+
+      CComPtr<IPoint2d> pntAlignment;
+      alignment->Intersect(measureLine,pntPoi,&pntAlignment);
+      ATLASSERT(pntAlignment != nullptr);
+      if ( pntAlignment )
+      {
+         CComPtr<IStation> objStation;
+         Float64 alignmentOffset;
+         alignment->StationAndOffset(pntAlignment,&objStation,&alignmentOffset);
+         objStation->get_Value(&measureStation);
+      }
+   }
+
+   GirderIDType ssMbrID = ::GetSuperstructureMemberID(extSegmentKey.groupIndex,extSegmentKey.girderIndex);
+
+   HRESULT hr = m_BridgeGeometryTool->DeckOverhang(m_Bridge,measureStation,ssMbrID,direction,dtSide,&details.OverhangFromCLGirder);
+   ATLASSERT(SUCCEEDED(hr));
+
+   // get the deck edge point from the same line so the reported point is the one the dimension was measured to
+   GetSlabEdgePoint(measureStation,direction,dtSide,pgsTypes::pcGlobal,&details.pntDeckEdge);
+
+   // The CL girder to CL exterior web distance and the web thickness are dimensions in the plane
+   // of the girder section, which is normal to the girder. When the overhang is measured normal to
+   // the alignment and the girder isn't parallel to the alignment, those dimensions have to be
+   // projected onto the measurement line. The projection is 1/cos of the angle between the
+   // measurement line and the normal to the girder.
+   Float64 webAdjustment = 1.0;
+   if ( measure == pgsTypes::domtNormalToAlignment )
+   {
+      CComPtr<IDirection> girderNormal;
+      GetSegmentNormal(extSegmentKey,&girderNormal);
+
+      Float64 dirMeasure, dirGirderNormal;
+      direction->get_Value(&dirMeasure);
+      girderNormal->get_Value(&dirGirderNormal);
+
+      Float64 cosSkew = fabs(cos(dirMeasure - dirGirderNormal));
+      if ( !IsZero(cosSkew) )
+      {
+         webAdjustment = 1.0/cosSkew;
+      }
+   }
+
+   // shift the reference from the CL girder to the CL of the exterior web.
+   // GetCL2ExteriorWebDistance returns 0.0 for sections with a single web, so for those
+   // sections the CL of the beam is the reference.
+   details.WebOffset = webAdjustment*GetCL2ExteriorWebDistance(details.Poi);
+   details.Overhang = details.OverhangFromCLGirder - details.WebOffset;
+
+   WebIndexType nWebs = GetWebCount(extSegmentKey);
+   WebIndexType webIdx = (side == pgsTypes::stLeft ? 0 : nWebs-1);
+   details.WebThickness = webAdjustment*GetWebThickness(details.Poi,webIdx);
+
+   // there is no overhang when the edge of deck does not reach past the exterior face of the
+   // exterior web
+   details.bExists = (details.WebThickness/2 < details.Overhang);
+
+   return details;
+}
+
+bool CBridgeAgentImp::HasDeckOverhang() const
+{
+   VALIDATE( BRIDGE );
+
+   if ( GetDeckType() != pgsTypes::sdtNone )
+   {
+      return true;
+   }
+
+   // Without a deck, the top edge of the exterior girder is the edge of deck. When the exterior
+   // girder is a solid section (e.g., a slab beam) the whole section is the web, so the edge of
+   // deck never reaches past the exterior face of the web and there is no overhang
+   GroupIndexType nGroups = GetGirderGroupCount();
+   for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
+   {
+      GirderIndexType nGirders = GetGirderCount(grpIdx);
+      std::array<GirderIndexType,2> exteriorGirders{ 0, nGirders-1 };
+      for ( GirderIndexType gdrIdx : exteriorGirders )
+      {
+         CGirderKey girderKey(grpIdx,gdrIdx);
+         if ( 1 < GetWebCount(girderKey) )
+         {
+            return true; // not a solid section
+         }
+
+         SegmentIndexType nSegments = GetSegmentCount(girderKey);
+         for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         {
+            CSegmentKey segmentKey(girderKey,segIdx);
+            pgsPointOfInterest poi = GetPointOfInterest(segmentKey,GetSegmentLength(segmentKey)/2);
+            if ( ::IsLT(GetWebThickness(poi,0),GetTopWidth(poi)) )
+            {
+               return true; // the top of the section is wider than the web (e.g., decked I-beam)
+            }
+         }
+      }
+   }
+
+   return false;
+}
+
 Float64 CBridgeAgentImp::GetLeftSlabEdgeOffset(PierIndexType pierIdx) const
 {
    VALIDATE( BRIDGE );

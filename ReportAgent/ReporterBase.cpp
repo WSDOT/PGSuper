@@ -39,6 +39,7 @@
 #include <Reporting\DeckElevationChapterBuilder.h>
 #include <Reporting\PierGeometryChapterBuilder.h>
 #include <Reporting\GirderGeometryChapterBuilder.h>
+#include <Reporting\DeckOverhangChapterBuilder.h>
 #include "Reporting\BearingSeatElevationsChapterBuilder2.h"
 
 #include <Reporting\BridgeDescChapterBuilder.h>
@@ -189,6 +190,7 @@ void CReporterBase::CreateBridgeGeometryReport(std::shared_ptr<IEAFReportManager
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CDeckElevationChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CPierGeometryChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CGirderGeometryChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CDeckOverhangChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CBearingSeatElevationsChapterBuilder2>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::ReportMgr::ChapterBuilder>(std::make_shared<CBearingSeatElevationsDetailsChapterBuilder2>()) );
    pRptMgr->AddReportBuilder( pRptBuilder );

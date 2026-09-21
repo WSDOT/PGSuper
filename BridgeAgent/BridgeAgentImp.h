@@ -306,6 +306,8 @@ public:
    Float64 GetRightSlabOverhang(Float64 Xb) const override;
    Float64 GetLeftSlabOverhang(SpanIndexType spanIdx,Float64 Xspan) const override;
    Float64 GetRightSlabOverhang(SpanIndexType spanIdx,Float64 Xspan) const override;
+   DeckOverhangDetails GetDeckOverhangDetails(const pgsPointOfInterest& poi,pgsTypes::SideType side,pgsTypes::DeckOverhangMeasurementType measure) const override;
+   bool HasDeckOverhang() const override;
    Float64 GetLeftSlabEdgeOffset(PierIndexType pierIdx) const override;
    Float64 GetRightSlabEdgeOffset(PierIndexType pierIdx) const override;
    Float64 GetLeftCurbOffset(Float64 Xb) const override;
