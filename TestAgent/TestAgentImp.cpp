@@ -592,15 +592,18 @@ BOOL CTestAgentImp::ProcessCommandLineOptions(CEAFCommandLineInfo & cmdInfo)
    CTestCommandLineInfo txCmdInfo;
 
    EAFGetApp()->ParseCommandLine(txCmdInfo);
+
+   // Only claim the command line if it is one of our commands. Other agents and extensions
+   // have their own command lines (e.g. ones that start with a file name) that we must not claim.
+   if (!txCmdInfo.m_DoTxCadReport)
+      return FALSE;
+
    cmdInfo = txCmdInfo;
 
-   if (txCmdInfo.m_DoTxCadReport && !txCmdInfo.m_bError)
-   {
+   if (!txCmdInfo.m_bError)
       ProcessTestReport(txCmdInfo);
-      return TRUE;
-   }
 
-   return (txCmdInfo.m_bError ? TRUE : FALSE);
+   return TRUE; // our command line, the application reports any error
 }
    
 
