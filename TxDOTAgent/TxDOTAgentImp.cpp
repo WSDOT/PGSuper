@@ -234,15 +234,18 @@ BOOL CTxDOTAgentImp::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
    CTxDOTCommandLineInfo txCmdInfo;
 
    EAFGetApp()->ParseCommandLine(txCmdInfo);
+
+   // Only claim the command line if it is our command. Other agents and extensions
+   // have their own command lines (e.g. ones that start with a file name) that we must not claim.
+   if (!txCmdInfo.m_DoTogaTest)
+      return FALSE;
+
    cmdInfo = txCmdInfo;
 
-    if (txCmdInfo.m_DoTogaTest && !txCmdInfo.m_bError)
-   {
+   if (!txCmdInfo.m_bError)
       ProcessTOGAReport(txCmdInfo);
-      return TRUE;
-   }
 
-   return (txCmdInfo.m_bError ? TRUE : FALSE);
+   return TRUE; // our command line, the application reports any error
 }
 
 void CTxDOTAgentImp::ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo)
