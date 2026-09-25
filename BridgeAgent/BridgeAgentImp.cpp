@@ -24093,6 +24093,20 @@ void CBridgeAgentImp::GetSlabShape(Float64 station,IDirection* pDirection,bool b
    }
 }
 
+void CBridgeAgentImp::GetSlabShapeWithoutHaunches(Float64 station,IDirection* pDirection,IShape** ppShape) const
+{
+   VALIDATE(BRIDGE);
+   HRESULT hr = m_SectCutTool->CreateSlabShapeWithoutHaunches(m_Bridge,station,pDirection,ppShape);
+   ATLASSERT(SUCCEEDED(hr));
+}
+
+void CBridgeAgentImp::GetHaunchShape(const CSegmentKey& segmentKey,Float64 Xs,MatingSurfaceIndexType msIdx,IShape** ppShape) const
+{
+   VALIDATE(BRIDGE);
+   HRESULT hr = m_SectCutTool->CreateHaunchShape(m_Bridge,::GetSuperstructureMemberID(segmentKey.groupIndex,segmentKey.girderIndex),segmentKey.segmentIndex,Xs,msIdx,ppShape);
+   ATLASSERT(SUCCEEDED(hr));
+}
+
 void CBridgeAgentImp::GetLeftTrafficBarrierShape(Float64 station,IDirection* pDirection,IShape** ppShape) const
 {
    VALIDATE(BRIDGE);

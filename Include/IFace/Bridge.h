@@ -1557,6 +1557,18 @@ public:
    // if bFollowMatingSurfaceProfile is true, the bottom of the haunch will follow the mating surface profile
    // regardless of haunchDepth
    virtual void GetSlabAnalysisShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 haunchDepth,bool bFollowMatingSurfaceProfile,IShape** ppShape) const = 0;
+
+   // Returns the shape of the deck slab with the haunches left out, in the same coordinates as GetSlabShape. Between the girders,
+   // the bottom of the slab is the gross depth below the top of the deck. The overhang soffit ends at the outer top corner of the
+   // exterior girders and the bottom of the slab goes from there to the inner fillet of the girder. The shape has the same points
+   // at every station, even where the station is beyond the ends of the girders, so the shapes at a series of stations can be
+   // joined into a solid. The haunch shapes (GetHaunchShape) fill the space between this shape and the girders.
+   virtual void GetSlabShapeWithoutHaunches(Float64 station,IDirection* pDirection,IShape** ppShape) const = 0;
+
+   // Returns the shape of the haunch over a mating surface of a segment (see IGirder::GetMatingSurfaceCount) in a section normal
+   // to the segment at Xs. X is measured from the CL of the segment, normal to the segment, positive to the right looking from
+   // the start to the end of the segment. Y is elevation.
+   virtual void GetHaunchShape(const CSegmentKey& segmentKey,Float64 Xs,MatingSurfaceIndexType msIdx,IShape** ppShape) const = 0;
 };
 
 /*****************************************************************************
