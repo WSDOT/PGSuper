@@ -63,6 +63,15 @@ public:
       return m_Outcomes[outcome];
    }
 
+   // Unsets a single outcome bit without disturbing the others. Only safe for outcomes that are
+   // never read individually (only through an aggregate like DidConcreteChange()) - otherwise a
+   // caller elsewhere could be surprised that a bit it expects to still be set has been cleared.
+   void ClearOutcome(OutcomeType outcome)
+   {
+      ATLASSERT(outcome<XXBogusOutcome);
+      m_Outcomes.reset(outcome);
+   }
+
    bool DidGirderChange() const
    {
       return DidConcreteChange() || DidStrandsChange();

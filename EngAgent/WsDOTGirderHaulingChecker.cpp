@@ -352,6 +352,10 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::Design
             }
 
             FSr = 0; // don't want to pass the test below
+            FSr_prev = 0.0; // the next trial is at a smaller overhang than the one we just backed
+                            // up from and is expected to score lower - don't compare it against
+                            // the coarser step's value, or the finer step's forward sweep breaks
+                            // after a single trial instead of searching the backed-up range
          }
 
          if ( FSrMin <= FSr )

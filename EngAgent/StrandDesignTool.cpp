@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -363,6 +363,17 @@ void pgsStrandDesignTool::InitFinalStrength(Float64 fc,IntervalIndexType interva
    m_bConfigDirty = true; // cache is dirty
 }
 
+void pgsStrandDesignTool::LockConcreteStrengthAt(Float64 fc, Float64 fci)
+{
+   m_FcControl.LockCurrentValue(fc);
+   m_pArtifact->SetConcreteStrength(fc);
+
+   m_FciControl.LockCurrentValue(fci);
+   m_pArtifact->SetReleaseStrength(fci);
+
+   m_bConfigDirty = true; // cache is dirty
+}
+
 
 void pgsStrandDesignTool::RestoreDefaults(bool retainProportioning, bool justAddedRaisedStrands)
 {
@@ -619,7 +630,25 @@ bool pgsStrandDesignTool::SetNumStraightHarped(StrandIndexType ns, StrandIndexTy
 
    // Make sure we are within offset bounds. Force if necessary
    LOG(_T("** Set Np=")<<GetNumPermanentStrands()<<_T(", Ns=")<<GetNs()<<_T(", Nh=")<<GetNh());
-   return KeepHarpedStrandsInBounds();
+   if (!KeepHarpedStrandsInBounds())
+   {
+      return false;
+   }
+
+   // Changing the harped/straight split changes the strand slope even when harped strands were
+   // already present, unlike the nh_old==0 case above (which only re-verifies slope when harped
+   // strands are introduced from none). Re-verify it here so a caller trading harped for straight
+   // to gain eccentricity (e.g. for lifting/hauling) can't silently end up with an out-of-range
+   // slope - satisfying the slope limit takes priority over that eccentricity gain.
+   if (m_StrandSlopeCriteria.bDesign)
+   {
+      if (!AdjustForStrandSlope())
+      {
+         return false;
+      }
+   }
+
+   return true;
 }
 
 StrandIndexType pgsStrandDesignTool::GetNumPermanentStrands() const
@@ -1338,11 +1367,20 @@ bool pgsStrandDesignTool::AdjustForStrandSlope()
 
    GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
    const GDRCONFIG& config = GetSegmentConfiguration();
+
+   // Check slope at the harping points, not at the literal girder ends - GetHarpingPointLocations()
+   // (used below in AdjustStrandsForSlope, and by IStrandGeometry::GetMaxStrandSlope(segmentKey),
+   // the authoritative check the final spec check uses) defines the sloped run as [X1,X2]/[X3,X4],
+   // and X1/X4 are not necessarily 0/m_SegmentLength. Checking at 0.0/m_SegmentLength let a design
+   // pass here while still failing the final spec check.
+   Float64 lhp, rhp;
+   pStrandGeom->GetHarpingPointLocations(m_SegmentKey, &lhp, &rhp);
+
    for ( int i = 0; i < 2; i++ )
    {
       pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
 
-      pgsPointOfInterest poi(m_SegmentKey, endType == pgsTypes::metStart ? 0.0 : m_SegmentLength);
+      pgsPointOfInterest poi(m_SegmentKey, endType == pgsTypes::metStart ? lhp : rhp);
       Float64 slope = pStrandGeom->GetMaxStrandSlope(poi, &config);
 
 #if defined _DEBUG
@@ -2009,6 +2047,11 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    }
 
    return true;
+}
+
+void pgsStrandDesignTool::ClearReleaseStrengthDecreaseHistory(const StressCheckTask& task, pgsTypes::StressLocation stressLocation)
+{
+   m_FciControl.ClearDecreaseHistory(task, stressLocation);
 }
 
 ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Float64 fControl,const StressCheckTask& task,Float64* pfc) const

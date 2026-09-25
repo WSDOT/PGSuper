@@ -24,7 +24,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 38.00    7   5.67  FM 388 Overpass    2     1     C             34  1/2  270  12.62   6.97   8.00   8.00                                               8  32.0  8.0  5.700  5.900   3.802    -3.973     3491   0.500  0.682   4.361 -1.658 -0.105 -0.093 -1.856 107.79  292.83    1.00    1.00    1.00    1.70    1.96    2.21    2.73    1.13 
+ 38.00    7   5.67  FM 388 Overpass    2     1     C             34  1/2  270  12.62   6.97   8.00   8.00                                               8  32.0  8.0  5.600  5.900   3.802    -3.973     3491   0.500  0.682   4.413 -1.658 -0.105 -0.093 -1.856 108.56  293.32    1.00    1.00    1.00    1.70    1.96    2.21    2.73    1.13 
 
 
 The Specification Check was Not Successful

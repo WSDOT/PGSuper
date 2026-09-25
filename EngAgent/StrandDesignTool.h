@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -114,6 +114,13 @@ public:
 
    void InitReleaseStrength(Float64 fci,IntervalIndexType intervalIdx);
    void InitFinalStrength(Float64 fc,IntervalIndexType intervalIdx);
+
+   // Forces f'c and f'ci to the given values and locks both so ConcreteStrengthController::DoUpdate will
+   // never change them again (reuses the same "never update" state DoUpdate already uses once shear has
+   // controlled strength - see fciSetShear). For breaking out of a detected oscillation: the caller is
+   // expected to have picked fc/fci as a safe upper bound over whatever was cycling, so locking here is
+   // conservative, not arbitrary.
+   void LockConcreteStrengthAt(Float64 fc, Float64 fci);
 
    void RestoreDefaults(bool retainProportioning, bool justAddedRaisedStrands);
 
@@ -295,6 +302,7 @@ public:
 
    bool UpdateConcreteStrength(Float64 fcRequired, const StressCheckTask& task,pgsTypes::StressLocation StressLocation);
    bool UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult, const StressCheckTask& task,pgsTypes::StressLocation StressLocation);
+   void ClearReleaseStrengthDecreaseHistory(const StressCheckTask& task, pgsTypes::StressLocation stressLocation);
    bool Bump500(const StressCheckTask& task,pgsTypes::StressLocation stressLocation);
    bool UpdateConcreteStrengthForShear(Float64 fcRequired,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState);
 
@@ -493,8 +501,14 @@ private:
             else if ( ConditionsMatchCurrent(task, stressLocation) )
             {
                // Controlling state matches current state. We can potentially store a decrease.
-               // Update only if new value is more than 150 psi less than current
-               if ( strength < (m_CurrentState.m_Strength-WBFL::Units::ConvertToSysUnits(0.15,WBFL::Units::Measure::KSI)) )
+               // Callers round every strength to the nearest 100 psi before calling DoUpdate, so a
+               // real decrease is always a multiple of 100 psi. The old 150 psi gate here (bigger than
+               // that 100 psi grid) meant an exact one-increment decrease - the most common case - could
+               // never pass, permanently locking in a value that was one increment too high (e.g. holding
+               // f'ci at 5.0 ksi when 4.9 ksi was genuinely sufficient). Use a gate smaller than one
+               // increment (50 psi) so any real decrease is honored; the exponential-backoff logic below
+               // still guards against a value that keeps getting proposed and reverted (true oscillation).
+               if ( strength < (m_CurrentState.m_Strength-WBFL::Units::ConvertToSysUnits(0.05,WBFL::Units::Measure::KSI)) )
                {
                   // We have a decrease, see if it's been stored before
                   Int16 incr; // note assignment below - a bit tricky
@@ -550,6 +564,22 @@ private:
          {
             retval = false; // never update if shear strength has previously controlled
          }
+         else if (m_Control==fciLocked)
+         {
+            // Locking (see LockCurrentValue) only means "never go below this again" - a later,
+            // genuinely higher requirement from some other, unrelated check is still real and still
+            // needs to be honored, exactly like the fciSetOnce/fciSetDecrease "new high" case above.
+            // Only decreases (and no-ops) are refused.
+            if (m_CurrentState.m_Strength < strength)
+            {
+               StoreCurrent(strength, task, stressLocation);
+               retval = true;
+            }
+            else
+            {
+               retval = false;
+            }
+         }
          else
          {
             ATLASSERT(false); // bad condition??
@@ -567,6 +597,32 @@ private:
          m_CurrentState.m_Strength = strength;
          m_CurrentState.m_Task.intervalIdx = intervalIdx;
          m_CurrentState.m_Task.limitState = limitState;
+      }
+
+      // Forces the controlling strength to a caller-chosen value and locks it - DoUpdate will never
+      // change it again, regardless of what's requested (see fciLocked above). Meant for breaking out of
+      // a detected cycle: the caller picks strength as a safe upper bound over whatever was oscillating.
+      void LockCurrentValue(Float64 strength)
+      {
+         m_Control = fciLocked;
+         m_CurrentState.m_Strength = strength;
+      }
+
+      // Forget any decreases recorded for this task/location, without disturbing the current
+      // controlling value. Some callers recompute a check from scratch and know their new result
+      // is authoritative rather than competing with their own earlier estimate for the same task/
+      // location (e.g. lifting phase 2 vs. phase 1 - see DesignForLiftingHarping) - in that case a
+      // lower result isn't the kind of back-and-forth the exponential backoff above exists to catch,
+      // and forgetting the history lets the new value be honored in full instead of being damped.
+      void ClearDecreaseHistory(const StressCheckTask& task, pgsTypes::StressLocation stressLocation)
+      {
+         m_Decreases.remove_if([&task, stressLocation](const DesignState& ds)
+         {
+            return ds.m_Task.intervalIdx == task.intervalIdx &&
+                   ds.m_Task.stressType  == task.stressType &&
+                   ds.m_Task.limitState  == task.limitState &&
+                   ds.m_StressLocation   == stressLocation;
+         });
       }
 
 private:
@@ -610,7 +666,8 @@ private:
          fciInitial,
          fciSetOnce,     // have a current value, but no decreases
          fciSetDecrease, // have current and decreases
-         fciSetShear     // shear controlled - we cannot change strength anymore
+         fciSetShear,    // shear controlled - we cannot change strength anymore
+         fciLocked       // forced to a caller-chosen value (see LockCurrentValue) - we cannot change strength anymore
       };
 
       fciControl               m_Control; // state we are in

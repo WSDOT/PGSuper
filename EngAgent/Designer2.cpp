@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -161,10 +161,14 @@ const std::_tstring g_LimitState[] =
    std::_tstring(_T("FatigueI"))
 };
 
-const std::_tstring g_Type[] = 
+// order must match pgsTypes::StressType { Compression, Tension } (PGSuperTypes.h) - this was previously
+// {Tension, Compression}, backwards, silently mislabeling every Tension/Compression LOG() header in
+// Designer_x64.log. Purely cosmetic (task.stressType == pgsTypes::Compression comparisons elsewhere in
+// this file use the enum directly and were never affected), but very misleading when reading the log.
+const std::_tstring g_Type[] =
 {
-   std::_tstring(_T("Tension")),
-   std::_tstring(_T("Compression"))
+   std::_tstring(_T("Compression")),
+   std::_tstring(_T("Tension"))
 };
 
 inline std::_tstring StrTopBot(pgsTypes::StressLocation sl)
@@ -874,6 +878,12 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey) const
          os << _T("Checking ") << GetStressTypeString(task.stressType) << _T(" stress for ") << GetLimitStateString(task.limitState) << _T(" for Interval ") << LABEL_INTERVAL(task.intervalIdx) << _T(": ") << pIntervals->GetDescription(task.intervalIdx) << std::endl;
          pProgress->UpdateMessage(os.str().c_str());
 
+         // TEMPORARY - for comparing against the design-time RefineDesignForAllowableStress numbers
+         // in Designer_x64.log while tracking down the reg021 girder-B compression discrepancy. Remove
+         // once that's resolved.
+         LOG(_T(""));
+         LOG(_T("*** Final Check for Interval ") << LABEL_INTERVAL(task.intervalIdx) << _T(", ") << pIntervals->GetDescription(task.intervalIdx) << _T(" ") << g_LimitState[task.limitState] << _T(" ") << g_Type[task.stressType]);
+
          CheckSegmentStresses(segmentKey, vPoi, task, pSegmentArtifact);
       } // next stress check task
 
@@ -1210,6 +1220,12 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       Int16 cIter = -1;
       Int16 nIterMax = 30;
       bool bDone = false;
+      // (f'c, f'ci) seen at the start of each outer iteration - detects the case below where design
+      // cycles between two or more marginally-different requirements (typically because a pick-point or
+      // POI search is itself unstable near a rounding boundary) instead of converging. The
+      // exponential-backoff logic in ConcreteStrengthController::DoUpdate exists to damp exactly this
+      // kind of thrash, but isn't guaranteed to catch every case it can arise in.
+      std::vector<std::pair<Float64,Float64>> fcHistory;
       do
       {
          CHECK_PROGRESS;
@@ -1221,6 +1237,49 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
          os2 << _T("Design Iteration ")<<cIter+1<<_T(" for Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << std::ends;
 
          pProgress->UpdateMessage(os2.str().c_str());
+
+         if (options.doDesignForFlexure != dtNoDesign)
+         {
+            // Only treat this as evidence about concrete-strength cycling if the PREVIOUS iteration's
+            // restart was actually triggered by a concrete strength change. Plenty of ordinary restarts
+            // (slab offset converging, raised strands added, etc.) leave f'c/f'ci untouched and quite
+            // normally recur across iterations while something unrelated iterates - that's not a cycle,
+            // and must not be recorded as one, or every such restart would look like the first half of
+            // an oscillation. m_DesignerOutcome still reflects the prior iteration here; it isn't reset
+            // until just below.
+            if (m_DesignerOutcome.DidConcreteChange())
+            {
+               Float64 fc_now  = m_StrandDesignTool->GetConcreteStrength();
+               Float64 fci_now = m_StrandDesignTool->GetReleaseStrength();
+               auto cycleStart = std::find(fcHistory.begin(), fcHistory.end(), std::make_pair(fc_now, fci_now));
+               if (cycleStart != fcHistory.end())
+               {
+                  // Rather than burn the rest of the iteration budget and abort the whole design over a
+                  // cycle, lock concrete strength at the highest f'c and f'ci seen anywhere in the cycle.
+                  // That's safe for every check that contributed to it - more strength only ever helps a
+                  // stress check pass, never hurts - and guarantees this loop terminates from here (either
+                  // converging normally, or failing on some other, genuinely separate issue). Locking
+                  // still permits later, genuinely higher requirements from unrelated checks to raise it
+                  // further (see ConcreteStrengthController::DoUpdate's fciLocked case) - it only stops
+                  // it from being pulled back down into the cycle again.
+                  Float64 fc_safe = fc_now, fci_safe = fci_now;
+                  for (auto it = cycleStart; it != fcHistory.end(); ++it)
+                  {
+                     fc_safe  = Max(fc_safe,  it->first);
+                     fci_safe = Max(fci_safe, it->second);
+                  }
+                  LOG(_T("Concrete strength cycling between previously-seen values without converging - locking at the safe (highest) f'c = ")
+                     << WBFL::Units::ConvertFromSysUnits(fc_safe,WBFL::Units::Measure::KSI) << _T(" KSI, f'ci = ")
+                     << WBFL::Units::ConvertFromSysUnits(fci_safe,WBFL::Units::Measure::KSI) << _T(" KSI"));
+                  m_StrandDesignTool->LockConcreteStrengthAt(fc_safe, fci_safe);
+                  fcHistory.clear();
+               }
+               else
+               {
+                  fcHistory.emplace_back(fc_now, fci_now);
+               }
+            }
+         }
 
          if (options.doDesignForFlexure!=dtNoDesign)
          {
@@ -1284,6 +1343,18 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
             else if( m_DesignerOutcome.DidRaiseStraightStrands() )
             {
                LOG(_T("Raised Straight strands were added - Restarting algorithm"));
+               continue;
+            }
+            else if ( m_DesignerOutcome.GetOutcome(pgsDesignCodes::TemporaryStrandsChanged) )
+            {
+               // DesignForShipping added temporary strands because no concrete strength could
+               // satisfy the hauling tension limit, and asked for a restart. Honor it: the hauling
+               // design that motivated them ran without them, and the mid-zone strand count was
+               // sized before they existed, so both have to be redone with the new configuration.
+               // This terminates - Nt only increases (RestoreDefaults does not reset it and
+               // AddTempStrands fails at the girder maximum) and nIterMax bounds the outer loop.
+               LOG(_T("Temporary strands were added during shipping design - Restarting algorithm"));
+               LOG(_T("========================================================================="));
                continue;
             }
 
@@ -1497,6 +1568,22 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
       // We need to check this, and if there was not, the design failed; with caveats.
       bool needsAdditionalRebar(false);
       GDRCONFIG config = artifact.GetSegmentConfiguration();
+
+      // The iterative design check (RefineDesignForAllowableStress) only evaluates a sparse set of
+      // critical-section POIs for speed. That's normally sufficient, but for some harped-strand
+      // geometries the true peak service-limit-state stress falls between those points (see
+      // CheckFinalConcreteStrengthAgainstFullPoiGrid). Catch that here with one bounded, full-POI-grid
+      // re-check, and bump the final concrete strength once if it finds a shortfall.
+      if (options.doDesignForFlexure != dtNoDesign)
+      {
+         Float64 fc_bumped = CheckFinalConcreteStrengthAgainstFullPoiGrid(segmentKey, config);
+         if (0 < fc_bumped)
+         {
+            artifact.SetConcreteStrength(fc_bumped);
+            config.fc = fc_bumped;
+         }
+      }
+
       if (options.doDesignForFlexure != dtNoDesign &&
          artifact.GetReleaseDesignState().GetRequiredAdditionalRebar())
       {
@@ -2126,6 +2213,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 
       pgsFlexuralStressArtifact artifact(poi,task);
 
+      LOG(_T("Checking at ") << WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(),WBFL::Units::Measure::Feet) << _T(" ft") << _T(" (POI ID ") << poi.GetID() << _T(")"));
+
       if(releaseIntervalIdx <= task.intervalIdx)
       {
 	      for ( int i = 0; i < nElementsToCheck; i++ )
@@ -2315,6 +2404,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	         std::array<Float64,2> fPretension{ 0,0 };
             std::tie(fPretension[TOP],fPretension[BOT]) = pPretensionStresses->GetStress(pretensionIntervalIdx, poi, topStressLocation, botStressLocation, task.bIncludeLiveLoad, limitState, INVALID_INDEX/*controlling live load*/);
 
+            LOG(_T("Prestress Stress     :: Top = ") << WBFL::Units::ConvertFromSysUnits(fPretension[TOP],WBFL::Units::Measure::KSI) << _T(" KSI") << _T("    Bot = ") << WBFL::Units::ConvertFromSysUnits(fPretension[BOT],WBFL::Units::Measure::KSI) << _T(" KSI"));
+
 	         // get segment stress due to external loads
 	         std::array<Float64,2> fLimitStateMin{ 0,0 }, fLimitStateMax{ 0,0 };
 	         pLimitStateForces->GetStress(task.intervalIdx,limitState,poi,batTop,false/*exclude prestress*/,topStressLocation,&fLimitStateMin[TOP],&fLimitStateMax[TOP]);
@@ -2411,17 +2502,15 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	         std::array<Float64,2> fLimitState{ 0,0 };
 	         fLimitState[TOP] = (task.stressType == pgsTypes::Compression ? fLimitStateMin[TOP] : fLimitStateMax[TOP] );
 	         fLimitState[BOT] = (task.stressType == pgsTypes::Compression ? fLimitStateMin[BOT] : fLimitStateMax[BOT] );
-	
-	         Float64 k;
-	         if (limitState == pgsTypes::ServiceIA || limitState == pgsTypes::FatigueI)
-	         {
-	            k = 0.5; // Use half prestress stress if service IA  (See Tbl 5.9.4.2.1-1 2008 or before) or Fatigue I (LRFD 5.5.3.1 2009)
-	         }
-	         else
-	         {
-	            k = 1.0;
-	         }
-	         
+
+            LOG(_T("External Stress      :: Top = ") << WBFL::Units::ConvertFromSysUnits(fLimitState[TOP],WBFL::Units::Measure::KSI) << _T(" KSI") << _T("    Bot = ") << WBFL::Units::ConvertFromSysUnits(fLimitState[BOT],WBFL::Units::Measure::KSI) << _T(" KSI"));
+
+	         // Use the DC load factor for the applicable limit state (e.g. 0.5 for Service IA per Tbl 5.9.4.2.1-1
+	         // 2008 or before, or Fatigue I per LRFD 5.5.3.1 2009) rather than hard-coding it, so this respects
+	         // load factors the user has customized in the Load Factors library (see LoadFactorsDlg) and stays
+	         // consistent with the k-factor used elsewhere in the designer (e.g. RefineDesignForAllowableStress).
+	         Float64 k = pLoadFactors->GetDCMax(limitState);
+
 	         std::array<Float64,2> f{ 0,0 };
 	         f[TOP] = fLimitState[TOP] + k*fPretension[TOP];
 	         f[BOT] = fLimitState[BOT] + k*fPretension[BOT];
@@ -2443,6 +2532,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	         f[TOP] = (IsZero(f[TOP]) ? 0 : f[TOP]);
 	         f[BOT] = (IsZero(f[BOT]) ? 0 : f[BOT]);
 
+            LOG(_T("Resultant Stress     :: Top = ") << WBFL::Units::ConvertFromSysUnits(f[TOP],WBFL::Units::Measure::KSI) << _T(" KSI") << _T("    Bot = ") << WBFL::Units::ConvertFromSysUnits(f[BOT],WBFL::Units::Measure::KSI) << _T(" KSI"));
+
             artifact.SetDemand(             topStressLocation, f[TOP] );
 	         artifact.SetExternalEffects(    topStressLocation, fLimitState[TOP]);
 	         artifact.SetPretensionEffects(  topStressLocation, fPretension[TOP]);
@@ -2456,7 +2547,9 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 #pragma Reminder("Computation of required concrete strength below and later in this function has duplicate logic with IAllowableConcreteStress::ComputeRequiredConcreteStrength(). Much of this was fixed in mantis 1334, but not here due to complexity. Consider consolidating this.")
 	         ComputeConcreteStrength(artifact,topStressLocation,task);
 	         ComputeConcreteStrength(artifact,botStressLocation,task);
-	
+
+            LOG(_T("Allowable Stress     :: Top = ") << WBFL::Units::ConvertFromSysUnits(artifact.GetCapacity(topStressLocation),WBFL::Units::Measure::KSI) << _T(" KSI") << _T("    Bot = ") << WBFL::Units::ConvertFromSysUnits(artifact.GetCapacity(botStressLocation),WBFL::Units::Measure::KSI) << _T(" KSI"));
+
 	         // compute the "with rebar" allowable tensile stress
             //
 
@@ -2870,6 +2963,8 @@ void pgsDesigner2::ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,p
 {
    bool bIsApplicable = artifact.IsApplicable(stressLocation);
 
+   LOG(_T("ComputeConcreteStrength :: stressLocation = ") << (int)stressLocation << _T(" task.stressType = ") << g_Type[task.stressType] << _T(" bIsApplicable = ") << bIsApplicable);
+
    if (bIsApplicable)
    {
       const auto& poi(artifact.GetPointOfInterest());
@@ -2878,17 +2973,21 @@ void pgsDesigner2::ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,p
       if (task.stressType == pgsTypes::Compression)
       {
          Float64 fLimit = pLimits->GetConcreteCompressionStressLimit(poi, stressLocation, task);
+         LOG(_T("   GetConcreteCompressionStressLimit = ") << WBFL::Units::ConvertFromSysUnits(fLimit,WBFL::Units::Measure::KSI) << _T(" KSI"));
          artifact.SetCapacity(stressLocation, fLimit);
       }
       else
       {
          bIsInPTZ = artifact.IsInPrecompressedTensileZone(stressLocation);
          Float64 fLimit = pLimits->GetConcreteTensionStressLimit(poi, stressLocation, task, false/*without rebar*/, bIsInPTZ); // this accounts for UHPC and returns the correct tension stress limit
+         LOG(_T("   GetConcreteTensionStressLimit = ") << WBFL::Units::ConvertFromSysUnits(fLimit,WBFL::Units::Measure::KSI) << _T(" KSI") << _T(" bIsInPTZ = ") << bIsInPTZ);
          artifact.SetCapacity(stressLocation, fLimit);
       }
 
       Float64 fc_reqd = pLimits->ComputeRequiredConcreteStrength(poi, stressLocation, artifact.GetDemand(stressLocation), task, false/*inadequate rebar*/, bIsInPTZ);
       artifact.SetRequiredConcreteStrength(task.stressType, stressLocation, fc_reqd);
+
+      LOG(_T("   fc_reqd = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" KSI"));
    }
 }
 
@@ -6412,7 +6511,7 @@ void pgsDesigner2::CheckMinimumDeckReinforcement(const CGirderKey& girderKey, pg
 {
    ASSERT_GIRDER_KEY(girderKey);
 
-   // Check LRFD 9.7.1.6—Minimum Deck Reinforcement in Negative Moment Region. 
+   // Check LRFD 9.7.1.6ï¿½Minimum Deck Reinforcement in Negative Moment Region. 
    GET_IFACE2(GetBroker(),ISpecification, pSpec);
    GET_IFACE2_NOCHECK(GetBroker(), IBridge, pBridge);
    GET_IFACE2(GetBroker(), IIntervals, pIntervals);
@@ -6775,6 +6874,16 @@ void pgsDesigner2::DesignEndZoneHarping(arDesignOptions options, pgsSegmentDesig
 
    pgsDesignCodes lifting_design_outcome;
 
+   // Captured before phase 1 runs, so it can be compared against the release strength after phase 2
+   // completes. Phase 1's harped/straight strand trading falls back to bumping the release strength
+   // (see DesignForLiftingHarping) when it can't reach the target eccentricity, using whatever
+   // no-temporary-strand configuration is current; phase 2 then makes the real, final determination
+   // for the with-temporary-strand configuration. For this segment those two determinations can be
+   // stable, reproducible, and genuinely different from each other every time - if so, phase 2 will
+   // undo phase 1's bump back to the same value this function started with, and that is not a change
+   // worth restarting the whole outer design loop over.
+   Float64 fci_on_entry = m_StrandDesignTool->GetReleaseStrength();
+
    if (options.doDesignLifting)
    {
       LOG(_T("*** Start Lifting design."));
@@ -6851,9 +6960,25 @@ void pgsDesigner2::DesignEndZoneHarping(arDesignOptions options, pgsSegmentDesig
       }
       else if ( m_DesignerOutcome.DidConcreteChange() )
       {
-         LOG(_T("Lifting Design changed concrete strength - Restart"));
-         LOG(_T("=================================================="));
-         return;
+         if ( !IsEqual(m_StrandDesignTool->GetReleaseStrength(), fci_on_entry) )
+         {
+            LOG(_T("Lifting Design changed concrete strength - Restart"));
+            LOG(_T("=================================================="));
+            return;
+         }
+         else
+         {
+            // Phase 1's fallback bump (if any) and phase 2's final determination netted out to
+            // exactly the release strength this function started with - nothing downstream of here
+            // was verified against a value that's actually changing, so there's nothing to restart
+            // the outer design loop for. Clear the outcome bits so the outer loop doesn't restart
+            // for this either - FciIncreased/FciDecreased are only ever read in aggregate via
+            // DidConcreteChange()/DidFinalConcreteStrengthChange(), never individually, so clearing
+            // just these two is safe.
+            LOG(_T("Lifting Design's release strength change netted out to no change - continuing"));
+            m_DesignerOutcome.ClearOutcome(pgsDesignCodes::FciIncreased);
+            m_DesignerOutcome.ClearOutcome(pgsDesignCodes::FciDecreased);
+         }
       }
    }
 
@@ -8843,6 +8968,12 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
 
    pgsGirderLiftingChecker checker(m_pBroker,m_StatusGroupID); // this guy can do the stability design!
 
+   // Captured before bProportioningStrands can be reassigned below (see "Can't adjust strands so adjust
+   // concrete strength" further down) - true only when we were called to proportion strands (the
+   // separate, later "after shipping" call always passes false) and fell through to a concrete-strength
+   // fallback because strand-trading couldn't reach the target eccentricity without TTS.
+   const bool bWasProportioningStrands = bProportioningStrands;
+
    GDRCONFIG config = m_StrandDesignTool->GetSegmentConfiguration();
    if ( bProportioningStrands )
    {
@@ -9092,18 +9223,22 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
          if (m_StrandDesignTool->GetOriginalStrandFillType() == ftMinimizeHarping)
          {
             LOG(_T("Try to increase end eccentricity by trading harped to straight"));
-            if (m_StrandDesignTool->ComputeMinHarpedForEndZoneEccentricity(poi_control, required_eccentricity, liftSegmentIntervalIdx, &ns_reqd, &nh_reqd))
+            if (m_StrandDesignTool->ComputeMinHarpedForEndZoneEccentricity(poi_control, required_eccentricity, liftSegmentIntervalIdx, &ns_reqd, &nh_reqd)
+                && m_StrandDesignTool->SetNumStraightHarped(ns_reqd, nh_reqd))
             {
                // number of straight/harped were changed. Set them
                LOG(_T("Number of Straight/Harped were changed from ")<<Ns<<_T("/")<<Nh<<_T(" to ")<<ns_reqd<<_T("/")<<nh_reqd);
-               m_StrandDesignTool->SetNumStraightHarped(ns_reqd, nh_reqd);
 
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::PermanentStrandsChanged);
                m_DesignerOutcome.SetOutcome(pgsDesignCodes::RetainStrandProportioning);
             }
             else
             {
-               // Can't adjust strands so adjust concrete strength - this is what phase 2 does
+               // Either no trade could reach the required eccentricity, or reaching it would
+               // violate the strand slope limit (SetNumStraightHarped enforces that limit itself,
+               // and won't leave the strand count changed if it can't be satisfied) - restore the
+               // original count and adjust concrete strength instead, same as phase 2 does.
+               m_StrandDesignTool->SetNumStraightHarped(Ns, Nh);
                bProportioningStrands = false; // causes phase 2 design below
             }
          }
@@ -9144,6 +9279,14 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
       // This is phase 2 design - the goal is to determine the lifting location and the required release strength.
       // This is done in phase 2 because the shipping analysis will set the number of required temporary
       // strands. Phase 2 lifting finds the best lifting options when TTS are used.
+
+      // Phase 2's release strength is expected to come out lower than phase 1's (see the comment at
+      // the top of this function) - that is a normal outcome here, not the kind of back-and-forth the
+      // decrease-history/exponential-backoff logic in ConcreteStrengthController::DoUpdate exists to
+      // catch. Forget phase 1's decrease history for these checks so phase 2's authoritative result
+      // isn't damped by it.
+      m_StrandDesignTool->ClearReleaseStrengthDecreaseHistory(StressCheckTask(liftSegmentIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression), pgsTypes::BottomGirder);
+      m_StrandDesignTool->ClearReleaseStrengthDecreaseHistory(StressCheckTask(liftSegmentIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension), pgsTypes::TopGirder);
 
       // The lifting points required for stability have already been determined above. Now we have to
       // find the release strength required to satisfy the allowable stress requirements
@@ -9208,8 +9351,92 @@ void pgsDesigner2::DesignForLiftingHarping(const arDesignOptions& options, bool 
       // Set the concrete strength. Set it once for tension and once for compression. The controlling value will stick.
       Float64 fci_old = m_StrandDesignTool->GetReleaseStrength();
 
+      // fci_old is the release strength that was in effect when checker.DesignLifting (above) chose
+      // liftConfig's pick points. If the stress-based requirement below is lower than that, see
+      // whether some pick point - not necessarily the one already chosen - is stable at (or near)
+      // that lower value: a lower f'ci lowers the modulus of rupture and hence the cracking moment,
+      // so the pick points chosen for a higher f'ci are not guaranteed to still be stable at a lower
+      // one, but different (typically wider) pick points very well may be.
+      Float64 fci_target = Max(fci_tens, fci_comp);
+      if (fci_target < fci_old)
+      {
+         LOG(_T("Stress-based release strength of ") << WBFL::Units::ConvertFromSysUnits(fci_target, WBFL::Units::Measure::KSI)
+            << _T(" KSI is lower than the ") << WBFL::Units::ConvertFromSysUnits(fci_old, WBFL::Units::Measure::KSI)
+            << _T(" KSI the current pick points were chosen against - searching for pick points stable at the lower strength"));
+
+         bool bFoundFeasible = false;
+         HANDLINGCONFIG bestConfig;
+         Float64 bestFciComp = 0, bestFciTens = 0, bestFciTensWRebar = 0;
+
+         Float64 fciTrial = fci_target;
+         for (int i = 0; i < 5; i++)
+         {
+            HANDLINGCONFIG trialConfig(liftConfig);
+            trialConfig.GdrConfig.fci = fciTrial;
+            auto [trialResult, trialArtifact] = checker.DesignLifting(segmentKey, trialConfig, pPoiLd, &pStabilityProblem, LOGGER);
+            if (trialResult != pgsDesignCodes::LiftingConfigChanged)
+            {
+               LOG(_T("No pick point within range is stable at ") << WBFL::Units::ConvertFromSysUnits(fciTrial, WBFL::Units::Measure::KSI) << _T(" KSI - stopping search"));
+               break;
+            }
+
+            Float64 trialFciComp = trialArtifact->RequiredFcCompression();
+            Float64 trialFciTens = trialArtifact->RequiredFcTensionWithoutRebar();
+            Float64 trialFciTensWRebar = trialArtifact->RequiredFcTensionWithRebar();
+            Float64 trialDemand = Max(trialFciTens, trialFciTensWRebar, trialFciComp);
+
+            LOG(_T("At ") << WBFL::Units::ConvertFromSysUnits(fciTrial, WBFL::Units::Measure::KSI)
+               << _T(" KSI, pick points of ") << WBFL::Units::ConvertFromSysUnits(trialConfig.LeftOverhang, WBFL::Units::Measure::Feet)
+               << _T("/") << WBFL::Units::ConvertFromSysUnits(trialConfig.RightOverhang, WBFL::Units::Measure::Feet)
+               << _T(" ft are stable; stress demand there is ") << WBFL::Units::ConvertFromSysUnits(trialDemand, WBFL::Units::Measure::KSI) << _T(" KSI"));
+
+            bFoundFeasible = true;
+            bestConfig = trialConfig;
+            bestFciComp = trialFciComp;
+            bestFciTens = trialFciTens;
+            bestFciTensWRebar = trialFciTensWRebar;
+
+            if (trialDemand <= fciTrial)
+            {
+               // self-consistent: the pick points found at this strength don't need any more of it
+               break;
+            }
+
+            fciTrial = trialDemand; // these pick points want more - try again at that higher strength
+         }
+
+         if (bFoundFeasible)
+         {
+            liftConfig = bestConfig;
+            fci_comp = bestFciComp;
+            fci_tens = bestFciTens;
+            fci_tens_wrebar = bestFciTensWRebar;
+            m_StrandDesignTool->SetLiftingLocations(liftConfig.LeftOverhang, liftConfig.RightOverhang);
+         }
+         // else: no feasible pick point was found below fci_old - fall through with the original
+         // fci_comp/fci_tens/liftConfig, exactly as if this search had never run.
+      }
+
+      // Phase 1 (proportioning, without TTS) falling back to a concrete-strength fix here because
+      // strand-trading couldn't reach the target eccentricity is a genuinely different scenario from
+      // the girder's actual, as-lifted condition whenever temporary strands are used - the separate,
+      // later "after shipping" call (bProportioningStrands=false) redoes this WITH TTS and is documented
+      // to normally come out lower (see the comment above ClearReleaseStrengthDecreaseHistory). Writing
+      // Phase 1's without-TTS requirement through to the persistent, cross-iteration
+      // ConcreteStrengthController here - just to have Phase 2 supersede it every single outer iteration
+      // - is what was defeating that controller's oscillation detection: it cleared the decrease history
+      // needed to recognize the repeat, every time, so the exponential backoff never got a chance to
+      // fire. Compute the requirement (needed above to decide lifting pick points) but leave persisting
+      // it to Phase 2 when Phase 2 is going to run anyway.
+      bool bPersistReleaseStrength = !(bWasProportioningStrands && 0 < m_StrandDesignTool->GetNt());
+
       bool bFciUpdated = false;
-      if (fci_tens < fci_comp)
+      if (!bPersistReleaseStrength)
+      {
+         LOG(_T("Phase 1 fallback (without TTS) requires f'ci = ") << WBFL::Units::ConvertFromSysUnits(Max(fci_tens,fci_comp),WBFL::Units::Measure::KSI)
+            << _T(" KSI, but temporary strands are used in the final design - leaving this to Phase 2's authoritative with-TTS determination"));
+      }
+      else if (fci_tens < fci_comp)
       {
          LOG(_T("Update f'ci based on compression stress"));
          bFciUpdated = m_StrandDesignTool->UpdateReleaseStrength(fci_comp, rebar_reqd, StressCheckTask(liftSegmentIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression), pgsTypes::BottomGirder);
@@ -9717,6 +9944,33 @@ void pgsDesigner2::DesignForShipping(std::shared_ptr<IEAFProgress> pProgress) co
 
    if (bResult && bPassedStressChecks)
    {
+      // Everything already passes at the current concrete strength, but that strength may be a
+      // leftover from an earlier iteration's configuration (different overhangs, strand
+      // proportions, etc.) that no longer needs to be this high. Check whether a lower value also
+      // works for the current configuration; UpdateConcreteStrength only acts on genuine decreases
+      // (through its usual controller), so this is a no-op if the current value is already the
+      // minimum.
+      Float64 fc_max_check = m_StrandDesignTool->GetMaximumConcreteStrength();
+      Float64 fc_comp1_check(0.0), fc_comp2_check(0.0), fc_tens_check(0.0), fc_tens_wrebar1_check(0.0), fc_tens_wrebar2_check(0.0);
+      artifact->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::CrownSlope, &fc_comp1_check, &fc_tens_check, &fc_tens_wrebar1_check);
+      artifact->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::Superelevation, &fc_comp2_check, &fc_tens_check, &fc_tens_wrebar2_check);
+      Float64 fc_comp_check = Max(fc_comp1_check, fc_comp2_check);
+      Float64 fc_tens_check_final = Max(fc_tens_wrebar1_check, fc_tens_wrebar2_check);
+
+      if (fc_tens_check_final <= fc_max_check && fc_comp_check <= fc_max_check && fc_tens_check_final <= fc_comp_check)
+      {
+         Float64 fc_old = m_StrandDesignTool->GetConcreteStrength();
+         bool bFcUpdated = m_StrandDesignTool->UpdateConcreteStrength(fc_tens_check_final, StressCheckTask(haulSegmentIntervalIdx, pgsTypes::ServiceI, pgsTypes::Tension), pgsTypes::TopGirder);
+         bFcUpdated |= m_StrandDesignTool->UpdateConcreteStrength(fc_comp_check, StressCheckTask(haulSegmentIntervalIdx, pgsTypes::ServiceI, pgsTypes::Compression), pgsTypes::BottomGirder);
+         if (bFcUpdated)
+         {
+            Float64 fc_new = m_StrandDesignTool->GetConcreteStrength();
+            LOG(_T("Hauling already passed, but a lower concrete strength also works for the current configuration - Restart"));
+            m_DesignerOutcome.SetOutcome(fc_old < fc_new ? pgsDesignCodes::FcIncreased : pgsDesignCodes::FcDecreased);
+            return;
+         }
+      }
+
       m_StrandDesignTool->SetOutcome(pgsSegmentDesignArtifact::Success);
       return;
    }
@@ -9756,6 +10010,19 @@ void pgsDesigner2::DesignForShipping(std::shared_ptr<IEAFProgress> pProgress) co
    }
 
    CHECK_PROGRESS;
+
+   if (bPassedStressChecks)
+   {
+      // The hauling stresses are already satisfied by the current concrete strength. Reaching
+      // here means UpdateConcreteStrength returned false because there was nothing to update
+      // (the required strength is at or below the current value, or below the minimum) - not
+      // because no strength can work. Adding temporary strands cannot improve a stress check
+      // that already passes, and because DesignHauling can report failure for configuration
+      // reasons that strands do not affect, doing so escalates Nt to the girder maximum on
+      // every restart for no benefit.
+      LOG(_T("Hauling stresses are satisfied by the current concrete strength - no temporary strands needed"));
+      return;
+   }
 
    // there isn't a concrete strength that will work (because of tension limit)
 
@@ -9812,6 +10079,160 @@ bool pgsDesigner2::CheckShippingStressDesign(const CSegmentKey& segmentKey,const
    auto artifact( hauling_checker->AnalyzeHauling(segmentKey,ship_config,pPoiLd) );
 
    return artifact->PassedStressCheck(WBFL::Stability::HaulingSlope::CrownSlope) && artifact->PassedStressCheck(WBFL::Stability::HaulingSlope::Superelevation);
+}
+
+// Evaluates one stress check task, config-aware (see CheckFinalConcreteStrengthAgainstFullPoiGrid), over
+// whatever POI list the caller supplies, and returns the concrete strength required to satisfy it, or 0
+// if none is needed. This mirrors RefineDesignForAllowableStress(task,...)'s own math line-for-line -
+// same GetDesignStress/GetStress(...,&config) calls, same k-factor, same controlling-stress tracking -
+// so it is exactly as correct as the check the design loop already trusts every iteration; the only
+// difference is the POI list passed in. It never touches m_StrandDesignTool's ratchet controller or ANY
+// other state - it's a pure, read-only "what would be required" query.
+Float64 pgsDesigner2::CheckAllowableStressFullPoiGrid(const StressCheckTask& task,const PoiList& vPoi) const
+{
+   const CSegmentKey& segmentKey = m_StrandDesignTool->GetSegmentKey();
+   IntervalIndexType intervalIdx = task.intervalIdx;
+
+   const GDRCONFIG& config = m_StrandDesignTool->GetSegmentConfiguration();
+   Float64 fcgdr = config.fc;
+
+   GET_IFACE2(GetBroker(),IConcreteStressLimits,pLimits);
+   GET_IFACE2(GetBroker(),ILimitStateForces,pLimitStateForces);
+   GET_IFACE2(GetBroker(),IPretensionStresses,pPsStress);
+
+   Float64 fLimit;
+   pgsPointOfInterest dummyPOI(segmentKey,0.0);
+   if ( task.stressType == pgsTypes::Compression )
+   {
+      fLimit = pLimits->GetSegmentConcreteCompressionStressLimit(dummyPOI,task,fcgdr);
+   }
+   else
+   {
+      fLimit = pLimits->GetSegmentConcreteTensionStressLimit(dummyPOI,task,fcgdr,false/*without rebar*/);
+   }
+
+   bool adj_strength = false;
+   Float64 fControl = task.stressType == pgsTypes::Tension ? -Float64_Max : Float64_Max;
+
+   pgsTypes::BridgeAnalysisType batTop, batBottom;
+   GetBridgeAnalysisType(segmentKey.girderIndex,task,batTop,batBottom);
+
+   GET_IFACE2(GetBroker(),ILoadFactors,pLF);
+   const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
+   Float64 k = pLoadFactors->GetDCMax(task.limitState);
+
+   for (const pgsPointOfInterest& poi : vPoi)
+   {
+      Float64 fTopMinExt, fTopMaxExt;
+      Float64 fBotMinExt, fBotMaxExt;
+      pLimitStateForces->GetDesignStress(task,poi,pgsTypes::TopGirder,   &config,batTop,   &fTopMinExt,&fTopMaxExt);
+      pLimitStateForces->GetDesignStress(task,poi,pgsTypes::BottomGirder,&config,batBottom,&fBotMinExt,&fBotMaxExt);
+
+      auto [fTopPre, fBotPre] = pPsStress->GetStress(intervalIdx,poi,pgsTypes::TopGirder, pgsTypes::BottomGirder, task.bIncludeLiveLoad, task.limitState, INVALID_INDEX, &config);
+
+      Float64 fTopMin = fTopMinExt + k*fTopPre;
+      Float64 fTopMax = fTopMaxExt + k*fTopPre;
+      Float64 fBotMin = fBotMinExt + k*fBotPre;
+      Float64 fBotMax = fBotMaxExt + k*fBotPre;
+
+      if ( task.stressType == pgsTypes::Tension )
+      {
+         if ( fLimit < fTopMax && !IsEqual(fLimit,fTopMax) )
+         {
+            fControl = Max(fControl, fTopMax);
+            adj_strength = true;
+         }
+         if ( fLimit < fBotMax && !IsEqual(fLimit,fBotMax) )
+         {
+            fControl = Max(fControl, fBotMax);
+            adj_strength = true;
+         }
+      }
+      else
+      {
+         if ( fTopMin < fLimit && !IsEqual(fTopMin,fLimit,0.001) )
+         {
+            fControl = Min(fControl, fTopMin);
+            adj_strength = true;
+         }
+         if ( fBotMin < fLimit && !IsEqual(fBotMin,fLimit,0.001) )
+         {
+            fControl = Min(fControl, fBotMin);
+            adj_strength = true;
+         }
+      }
+   }
+
+   if ( adj_strength )
+   {
+      Float64 fc_reqd;
+      ConcStrengthResultType result = m_StrandDesignTool->ComputeRequiredConcreteStrength(fControl,task,&fc_reqd);
+      if ( result != ConcFailed && 0 < fc_reqd )
+      {
+         return fc_reqd;
+      }
+   }
+
+   return 0;
+}
+
+Float64 pgsDesigner2::CheckFinalConcreteStrengthAgainstFullPoiGrid(const CSegmentKey& segmentKey,const GDRCONFIG& config) const
+{
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
+   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   IntervalIndexType releaseIntervalIdx      = pIntervals->GetPrestressReleaseInterval(segmentKey);
+   IntervalIndexType tsRemovalIntervalIdx    = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+
+   GET_IFACE2(GetBroker(),IConcreteStressLimits,pLimits);
+   GET_IFACE2(GetBroker(),IPointOfInterest,pPoi);
+
+   Float64 fc_reqd_max = 0;
+
+   for (const auto& task : m_StressCheckTasks)
+   {
+      if (task.intervalIdx < erectSegmentIntervalIdx || task.intervalIdx == releaseIntervalIdx)
+      {
+         // release/lifting/hauling are governed by f'ci and already independently verified by the
+         // caller (CheckSegmentStressesAtRelease, CheckLiftingStressDesign, CheckShippingStressDesign) -
+         // this is scoped to final concrete strength (f'c), i.e. the post-erection service checks
+         continue;
+      }
+
+      if ( !pLimits->IsConcreteStressLimitApplicable(segmentKey,task) )
+      {
+         continue;
+      }
+
+      if ( task.intervalIdx == tsRemovalIntervalIdx && m_StrandDesignTool->GetNt() == 0 )
+      {
+         continue;
+      }
+
+      // Full analysis grid for this task's erection state - same POI set CheckSegmentStresses's caller
+      // uses for the real, final spec check, not the sparse critical-section set
+      // RefineDesignForAllowableStress uses during iteration.
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT, &vPoi);
+
+      Float64 fc_reqd = CheckAllowableStressFullPoiGrid(task, vPoi);
+      fc_reqd_max = Max(fc_reqd_max, fc_reqd);
+   }
+
+   if ( 0 < fc_reqd_max && config.fc < fc_reqd_max )
+   {
+      Float64 fc_max = m_StrandDesignTool->GetMaximumConcreteStrength();
+      Float64 fc_new = CeilOff(fc_reqd_max, m_StrandDesignTool->GetConcreteAccuracy());
+      if ( fc_new <= fc_max )
+      {
+         LOG(_T("Full-POI-grid final check found a shortfall the sparse design-time check missed - f'c required = ")
+            << WBFL::Units::ConvertFromSysUnits(fc_reqd_max,WBFL::Units::Measure::KSI) << _T(" KSI, rounded up to ")
+            << WBFL::Units::ConvertFromSysUnits(fc_new,WBFL::Units::Measure::KSI) << _T(" KSI (was ")
+            << WBFL::Units::ConvertFromSysUnits(config.fc,WBFL::Units::Measure::KSI) << _T(" KSI)"));
+         return fc_new;
+      }
+   }
+
+   return 0;
 }
 
 void pgsDesigner2::RefineDesignForAllowableStress(std::shared_ptr<IEAFProgress> pProgress) const

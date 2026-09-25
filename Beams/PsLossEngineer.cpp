@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -214,13 +214,7 @@ LOSSDETAILS PsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInte
 
 LOSSDETAILS PsLossEngineer::ComputeLossesForDesign(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config)
 {
-   LOSSDETAILS details;
-
-   m_bComputingLossesForDesign = true;
-   details = ComputeLosses(beamType,poi, &config);
-   m_bComputingLossesForDesign = false;
-
-   return details;
+   return ComputeLosses(beamType,poi, &config);
 }
 
 void PsLossEngineer::BuildReport(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
@@ -3224,10 +3218,13 @@ void PsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDRC
 
 
 
-   if (m_bComputingLossesForDesign)
+   if (pConfig)
    {
       // get the additional moment caused by the difference in input and design "A" dimension
-      ATLASSERT(pConfig != nullptr); // if we are designing, we must be using a config object
+      // pConfig is only ever non-null when computing losses for a design trial (see ComputeLossesForDesign) -
+      // this used to be tracked with a separate m_bComputingLossesForDesign member flag, but that duplicated
+      // what pConfig already tells us and, being instance state rather than a parameter, would have been a
+      // problem for running girder designs concurrently on multiple threads.
       Float64 Mslab = pProdForces->GetDesignSlabMomentAdjustment(poi, pConfig);
       Float64 Mslabpad = pProdForces->GetDesignSlabPadMomentAdjustment(poi, pConfig);
 

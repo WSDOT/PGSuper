@@ -16646,12 +16646,14 @@ Float64 CBridgeAgentImp::GetMaxStrandSlope(const pgsPointOfInterest& poi,const G
       // use continuous interface to compute
       CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
 
-      StrandIndexType Nh = GetStrandCount(segmentKey, pgsTypes::Harped, pConfig);
+      // Use the fill the trial config actually specifies (same as GetStrandPositions[Ex] above does
+      // for a trial config) rather than recomputing a generic fill from just the strand count - a
+      // "what if" trial config and the real, committed strand data must agree on which grid
+      // positions are filled, or this "what if" slope can silently disagree with the slope the
+      // final spec check computes from the real, committed strand model.
+      CIndexArrayWrapper fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Harped));
 
-      CComPtr<IIndexArray> fill;
-      m_StrandFillers[segmentKey].ComputeHarpedStrandFill(strandGridModel, Nh, &fill);
-
-      strandGridModel->ComputeMaxHarpedStrandSlopeEx(poi.GetDistFromStart(), fill, pConfig->PrestressConfig.EndOffset[pgsTypes::metStart], pConfig->PrestressConfig.HpOffset[pgsTypes::metStart], pConfig->PrestressConfig.HpOffset[pgsTypes::metEnd], pConfig->PrestressConfig.EndOffset[pgsTypes::metEnd], &slope);
+      strandGridModel->ComputeMaxHarpedStrandSlopeEx(poi.GetDistFromStart(), &fill, pConfig->PrestressConfig.EndOffset[pgsTypes::metStart], pConfig->PrestressConfig.HpOffset[pgsTypes::metStart], pConfig->PrestressConfig.HpOffset[pgsTypes::metEnd], pConfig->PrestressConfig.EndOffset[pgsTypes::metEnd], &slope);
    }
    else
    {
@@ -16704,12 +16706,11 @@ Float64 CBridgeAgentImp::GetAvgStrandSlope(const pgsPointOfInterest& poi,const G
    {
       CComQIPtr<IStrandGridModel> strandGridModel(strandModel);
 
-      StrandIndexType Nh = GetStrandCount(segmentKey, pgsTypes::Harped, pConfig);
+      // See the matching comment in GetMaxStrandSlope() above - use the trial config's actual fill,
+      // not a generic one recomputed from just the strand count.
+      CIndexArrayWrapper fill(pConfig->PrestressConfig.GetStrandFill(pgsTypes::Harped));
 
-      CComPtr<IIndexArray> fill;
-      m_StrandFillers[segmentKey].ComputeHarpedStrandFill(strandGridModel, Nh, &fill);
-
-      strandGridModel->ComputeAvgHarpedStrandSlopeEx(poi.GetDistFromStart(), fill, pConfig->PrestressConfig.EndOffset[pgsTypes::metStart], pConfig->PrestressConfig.HpOffset[pgsTypes::metStart], pConfig->PrestressConfig.HpOffset[pgsTypes::metEnd], pConfig->PrestressConfig.EndOffset[pgsTypes::metEnd], &slope);
+      strandGridModel->ComputeAvgHarpedStrandSlopeEx(poi.GetDistFromStart(), &fill, pConfig->PrestressConfig.EndOffset[pgsTypes::metStart], pConfig->PrestressConfig.HpOffset[pgsTypes::metStart], pConfig->PrestressConfig.HpOffset[pgsTypes::metEnd], pConfig->PrestressConfig.EndOffset[pgsTypes::metEnd], &slope);
    }
    else
    {

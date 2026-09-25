@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright ï¿½ 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -446,6 +446,15 @@ private:
    void GetControllingHarpedEccentricity(IntervalIndexType interval, const GDRCONFIG& config, pgsPointOfInterest* pTopPoi, pgsPointOfInterest* pBotPoi,
                                          Float64* pEccTens, Float64* pEccComp, Float64* pFeTop, Float64* pFeBot, std::shared_ptr<IEAFProgress> pProgress) const;
    bool CheckLiftingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config) const;
+
+   // RefineDesignForAllowableStress only evaluates a sparse "critical section" POI set (ends, transfer
+   // length, harp points, midspan) for the sake of iteration speed, which normally captures the true
+   // peak service-limit-state stress but is not guaranteed to for every harped-strand geometry. This
+   // does one bounded, full-POI-grid re-check of the "at service" (post-erection) compression/tension
+   // tasks after design has converged, and returns the concrete strength needed to close any shortfall
+   // it finds, or 0 if none is needed. Never loops or restarts the design.
+   Float64 CheckFinalConcreteStrengthAgainstFullPoiGrid(const CSegmentKey& segmentKey,const GDRCONFIG& config) const;
+   Float64 CheckAllowableStressFullPoiGrid(const StressCheckTask& task,const PoiList& vPoi) const;
 
    void DesignEndZoneDebonding(bool firstPass, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact, std::shared_ptr<IEAFProgress> pProgress) const;
    std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, std::shared_ptr<IEAFProgress> pProgress) const;
