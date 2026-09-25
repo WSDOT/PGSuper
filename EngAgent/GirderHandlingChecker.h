@@ -24,6 +24,7 @@
 
 #include <PgsExt\PgsExtExp.h>
 #include "EngAgent.h"
+#include "DesignLog.h"
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\PoiMap.h>
 #include <PgsExt\GirderModelFactory.h>
@@ -34,11 +35,11 @@
 class pgsGirderHaulingChecker
 {
 public:
-   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> CheckHauling(const CSegmentKey& segmentKey, DESIGN_SHARED_LOGFILE DESIGN_LOGFILE) = 0;
    virtual std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey) = 0;
    virtual std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) = 0;
    virtual std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId) = 0;
-   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId, bool* bSuccess, SHARED_LOGFILE LOGFILE) = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId, bool* bSuccess, DESIGN_SHARED_LOGFILE DESIGN_LOGFILE) = 0;
 };
 
 /*****************************************************************************

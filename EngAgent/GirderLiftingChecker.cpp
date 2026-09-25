@@ -111,7 +111,7 @@ std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> pgsGirderLiftingChecker::
    return std::make_shared<WBFL::Stability::LiftingCheckArtifact>(engineer.CheckLifting(pStabilityModel,pStabilityProblem,criteria));
 }
 
-std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>> pgsGirderLiftingChecker::DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPoiD,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem,SHARED_LOGFILE LOGFILE)
+std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>> pgsGirderLiftingChecker::DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPoiD,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem,DESIGN_SHARED_LOGFILE DESIGN_LOGFILE)
 {
    //
    // Range of lifting loop locations and step increment
@@ -155,8 +155,8 @@ std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingC
    std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> artifact;
    while ( loc <= maxLoc )
    {
-      LOG(_T(""));
-      LOG(_T("Trying location ") << WBFL::Units::ConvertFromSysUnits(loc,WBFL::Units::Measure::Feet) << _T(" ft"));
+      DLOG(_T(""));
+      DLOG(_T("Trying location ") << WBFL::Units::ConvertFromSysUnits(loc,WBFL::Units::Measure::Feet) << _T(" ft"));
 
       config.LeftOverhang = loc;
       config.RightOverhang = loc;
@@ -164,7 +164,7 @@ std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingC
       auto curr_artifact = AnalyzeLifting(segmentKey,config,pPoiD,ppStabilityProblem);
       FSf = curr_artifact->GetLiftingResults().MinAdjFsFailure;
 
-      LOG(_T("FSf = ") << FSf);
+      DLOG(_T("FSf = ") << FSf);
 
       if ( 0.95*FSfMin < FSf && bLargeStepSize)
       {
@@ -175,7 +175,7 @@ std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingC
          if ( 1.05*FSfMin <= FSf )
          {
             // We went past the solution... back up
-            LOG(_T("Went past the solution... backup"));
+            DLOG(_T("Went past the solution... backup"));
             loc -= oldInc;
 
             if ( loc < min_location )
@@ -197,9 +197,9 @@ std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingC
    if ( maxLoc < loc )
    {
       // Temporary strands are required... 
-      LOG(_T("Cannot find a pick point to satisfy FSf"));
-      LOG(_T("Temporary strands required"));
-      LOG(_T("Move on to Shipping Design"));
+      DLOG(_T("Cannot find a pick point to satisfy FSf"));
+      DLOG(_T("Temporary strands required"));
+      DLOG(_T("Move on to Shipping Design"));
       return { pgsDesignCodes::LiftingRedesignAfterShipping,artifact };
    }
 

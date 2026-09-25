@@ -268,8 +268,8 @@ private:
 CLASS
    pgsShearDesignTool
 ****************************************************************************/
-pgsShearDesignTool::pgsShearDesignTool(SHARED_LOGFILE lf):
-LOGFILE(lf),
+pgsShearDesignTool::pgsShearDesignTool(DESIGN_SHARED_LOGFILE lf):
+DESIGN_LOGFILE(lf),
 m_pArtifact(nullptr),
 m_StatusGroupID(INVALID_ID)
 {
@@ -483,19 +483,19 @@ void pgsShearDesignTool::DumpDesignParameters()
 
    StrandIndexType Nh = m_pArtifact->GetNumHarpedStrands();
 
-   LOG(_T(""));
-   LOG(_T("---------------------------------------------------------------"));
-   LOG(_T("pgsShearDesignTool: Current Shear design parameters"));
-   LOG(_T(""));
-   LOG(_T("f'c  = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetConcreteStrength(),WBFL::Units::Measure::KSI) << _T(" KSI"));
-   LOG(_T("f'ci = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetReleaseStrength(),WBFL::Units::Measure::KSI) <<_T(" KSI"));
-   LOG(_T("Np = ") << m_pArtifact->GetNumStraightStrands()+ m_pArtifact->GetNumHarpedStrands());
-   LOG(_T("Ns = ") << m_pArtifact->GetNumStraightStrands() << _T("   Pjack = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetPjackStraightStrands(), WBFL::Units::Measure::Kip) << _T(" Kip"));
-   LOG(_T("Nh = ") << m_pArtifact->GetNumHarpedStrands() << _T("   Pjack = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetPjackHarpedStrands(), WBFL::Units::Measure::Kip) << _T(" Kip"));
-   LOG(_T("Nt = ") << m_pArtifact->GetNumTempStrands() << _T("   Pjack = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetPjackTempStrands(), WBFL::Units::Measure::Kip) << _T(" Kip"));
+   DLOG(_T(""));
+   DLOG(_T("---------------------------------------------------------------"));
+   DLOG(_T("pgsShearDesignTool: Current Shear design parameters"));
+   DLOG(_T(""));
+   DLOG(_T("f'c  = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetConcreteStrength(),WBFL::Units::Measure::KSI) << _T(" KSI"));
+   DLOG(_T("f'ci = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetReleaseStrength(),WBFL::Units::Measure::KSI) <<_T(" KSI"));
+   DLOG(_T("Np = ") << m_pArtifact->GetNumStraightStrands()+ m_pArtifact->GetNumHarpedStrands());
+   DLOG(_T("Ns = ") << m_pArtifact->GetNumStraightStrands() << _T("   Pjack = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetPjackStraightStrands(), WBFL::Units::Measure::Kip) << _T(" Kip"));
+   DLOG(_T("Nh = ") << m_pArtifact->GetNumHarpedStrands() << _T("   Pjack = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetPjackHarpedStrands(), WBFL::Units::Measure::Kip) << _T(" Kip"));
+   DLOG(_T("Nt = ") << m_pArtifact->GetNumTempStrands() << _T("   Pjack = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetPjackTempStrands(), WBFL::Units::Measure::Kip) << _T(" Kip"));
 
-   LOG(_T("---------------------------------------------------------------"));
-   LOG(_T(""));
+   DLOG(_T("---------------------------------------------------------------"));
+   DLOG(_T(""));
 #endif
 }
 
@@ -759,9 +759,9 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
    ATLASSERT(numpois>0);
 
    // Build envelope of strengthI and strengthII
-   LOG(_T("----------------------------------------------------"));
-   LOG(_T("Raw Vertical Av/S values at ")<<numpois<<_T(" pois"));
-   LOG(_T("Location, avsStrengthI, avsStrengthII"));
+   DLOG(_T("----------------------------------------------------"));
+   DLOG(_T("Raw Vertical Av/S values at ")<<numpois<<_T(" pois"));
+   DLOG(_T("Location, avsStrengthI, avsStrengthII"));
 
    m_VertShearAvsDemandAtPois.clear();
    m_VertShearAvsDemandAtPois.reserve(numpois);
@@ -830,7 +830,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
 
             FcRequiredForStrutTieStress = Max(FcRequiredForStrutTieStress, fcreq);
 
-            LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val<<_T(", ")<<avs_II);
+            DLOG(poi.GetDistFromStart()<<_T(", ")<<avs_val<<_T(", ")<<avs_II);
 
             if (avs_val < avs_II)
             {
@@ -841,7 +841,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::ValidateVerticalAvsDe
          else
          {
             // Str I is only load case
-            LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val);
+            DLOG(poi.GetDistFromStart()<<_T(", ")<<avs_val);
          }
 
          if (avs_val<SPACING_TOL) // weed out noise
@@ -984,10 +984,12 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& 
       }
 
       // Dump Log of final values
-#if defined ENABLE_LOGGING
-      LOG(_T("----------------------------------------------------"));
-      LOG(_T("Mirrored generic Av/S values at ")<<numpois<<_T(" pois"));
-      LOG(_T("Location, mirror_avs, processed_avs"));
+#if defined ENABLE_DESIGN_LOGGING
+      if (pgsDesignLog::IsEnabled())
+      {
+      DLOG(_T("----------------------------------------------------"));
+      DLOG(_T("Mirrored generic Av/S values at ")<<numpois<<_T(" pois"));
+      DLOG(_T("Location, mirror_avs, processed_avs"));
       idx = 0;
       for ( const pgsPointOfInterest& poi : m_DesignPois)
       {
@@ -995,8 +997,9 @@ void pgsShearDesignTool::ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& 
          Float64 ry  = rDemandAtPois[idx].first;
          Float64 mry = mirror_avs.Evaluate(x);
 
-         LOG( x << _T(", ") << mry <<_T(", ") << ry);
+         DLOG( x << _T(", ") << mry <<_T(", ") << ry);
          idx++;
+      }
       }
 #endif
    }
@@ -1063,9 +1066,9 @@ void pgsShearDesignTool::ValidateHorizontalAvsDemand() const
    ATLASSERT(numpois>0);
 
    // Build envelope of strengthI and strengthII
-   LOG(_T("----------------------------------------------------"));
-   LOG(_T("Raw Horizontal Av/S values at ")<<numpois<<_T(" pois"));
-   LOG(_T("Location, avsStrengthI, avsStrengthII"));
+   DLOG(_T("----------------------------------------------------"));
+   DLOG(_T("Raw Horizontal Av/S values at ")<<numpois<<_T(" pois"));
+   DLOG(_T("Location, avsStrengthI, avsStrengthII"));
 
    m_HorizShearAvsDemandAtPois.clear();
    m_HorizShearAvsDemandAtPois.reserve(numpois);
@@ -1092,14 +1095,14 @@ void pgsShearDesignTool::ValidateHorizontalAvsDemand() const
             const pgsHorizontalShearArtifact* phorizart = pStrII_artf->GetHorizontalShearArtifact();
             Float64 avs_II = phorizart->GetAvOverSReqd();
 
-            LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val<<_T(", ")<<avs_II);
+            DLOG(poi.GetDistFromStart()<<_T(", ")<<avs_val<<_T(", ")<<avs_II);
 
             avs_val = Max( avs_val, avs_II );
          }
          else
          {
             // Str I is only load case
-            LOG(poi.GetDistFromStart()<<_T(", ")<<avs_val);
+            DLOG(poi.GetDistFromStart()<<_T(", ")<<avs_val);
          }
       }
 
@@ -2224,7 +2227,7 @@ bool pgsShearDesignTool::DetailAdditionalConfinement() const
 
 pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear() const
 {
-   LOG(_T("*** Entering pgsShearDesignTool::DesignLongReinfShear **"));
+   DLOG(_T("*** Entering pgsShearDesignTool::DesignLongReinfShear **"));
 
    // The method here is to perform a check on the current design and use check
    // results to compute if additional long reinf is needed
@@ -2283,7 +2286,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
    Float64 As = 0.0;
    for(Int32 ils = 0; ils < nls; ils++)
    {
-      LOG(_T("Checking LRS (failures reported only) at ")<<vPoi.size()<<_T(" Pois, ils = ")<<ils);
+      DLOG(_T("Checking LRS (failures reported only) at ")<<vPoi.size()<<_T(" Pois, ils = ")<<ils);
 
       for (const pgsPointOfInterest& poi : vPoi)
       {
@@ -2333,7 +2336,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                         ATLASSERT(false);
                      }
    
-                     LOG(_T("location = ")<< WBFL::Units::ConvertFromSysUnits(location,WBFL::Units::Measure::Feet)<<_T(" demand = ")<< WBFL::Units::ConvertFromSysUnits(demand,WBFL::Units::Measure::Kip)<<_T(", capacity = ")<< WBFL::Units::ConvertFromSysUnits(capacity,WBFL::Units::Measure::Kip)<<_T(", additional as rebar needed = ")<< WBFL::Units::ConvertFromSysUnits(as,WBFL::Units::Measure::Inch2));
+                     DLOG(_T("location = ")<< WBFL::Units::ConvertFromSysUnits(location,WBFL::Units::Measure::Feet)<<_T(" demand = ")<< WBFL::Units::ConvertFromSysUnits(demand,WBFL::Units::Measure::Kip)<<_T(", capacity = ")<< WBFL::Units::ConvertFromSysUnits(capacity,WBFL::Units::Measure::Kip)<<_T(", additional as rebar needed = ")<< WBFL::Units::ConvertFromSysUnits(as,WBFL::Units::Measure::Inch2));
 
                      if (b9thEdition)
                      {
@@ -2369,7 +2372,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                      }
    
                      Float64 as = (demand-capacity)/fps;
-                     LOG(_T("location = ")<< WBFL::Units::ConvertFromSysUnits(location,WBFL::Units::Measure::Feet)<<_T(" demand = ")<< WBFL::Units::ConvertFromSysUnits(demand,WBFL::Units::Measure::Kip)<<_T(", capacity = ")<< WBFL::Units::ConvertFromSysUnits(capacity,WBFL::Units::Measure::Kip)<<_T(", additional as strand needed = ")<< WBFL::Units::ConvertFromSysUnits(as,WBFL::Units::Measure::Inch2));
+                     DLOG(_T("location = ")<< WBFL::Units::ConvertFromSysUnits(location,WBFL::Units::Measure::Feet)<<_T(" demand = ")<< WBFL::Units::ConvertFromSysUnits(demand,WBFL::Units::Measure::Kip)<<_T(", capacity = ")<< WBFL::Units::ConvertFromSysUnits(capacity,WBFL::Units::Measure::Kip)<<_T(", additional as strand needed = ")<< WBFL::Units::ConvertFromSysUnits(as,WBFL::Units::Measure::Inch2));
 
                      if (b9thEdition)
                      {
@@ -2382,7 +2385,7 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
                         if (aps_fps < as_fy)
                         {
                            as = as_fy / fps - aps;
-                           LOG(_T("ApsFps < AsFy so add more Aps = ") << ConvertFromSysUnits(as, WBFL::Units::Measure::Inch2));
+                           DLOG(_T("ApsFps < AsFy so add more Aps = ") << ConvertFromSysUnits(as, WBFL::Units::Measure::Inch2));
                         }
                      }
                      As = Max(As, as);
@@ -2403,19 +2406,19 @@ pgsShearDesignTool::ShearDesignOutcome pgsShearDesignTool::DesignLongReinfShear(
       {
          // Can't increase rebar because project criteria won't use it
          m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::ConflictWithLongReinforcementShearSpec);
-         LOG(_T("*** Exiting pgsShearDesignTool::DesignLongReinfShear - sdFail **"));
+         DLOG(_T("*** Exiting pgsShearDesignTool::DesignLongReinfShear - sdFail **"));
          return sdFail;
       }
       else
       {
          m_LongReinfShearAs = As;
-         LOG(_T("*** Exiting pgsShearDesignTool::DesignLongReinfShear - As =")<<  WBFL::Units::ConvertFromSysUnits(m_LongReinfShearAs,WBFL::Units::Measure::Inch2));
+         DLOG(_T("*** Exiting pgsShearDesignTool::DesignLongReinfShear - As =")<<  WBFL::Units::ConvertFromSysUnits(m_LongReinfShearAs,WBFL::Units::Measure::Inch2));
          return (m_LongShearCapacityIncreaseMethod == GirderLibraryEntry::isAddingRebar) ? sdRestartWithAdditionalLongRebar : sdRestartWithAdditionalStrands;
       }
    }
    else
    {
-      LOG(_T("*** Exiting pgsShearDesignTool::DesignLongReinfShear - sdSuccess **"));
+      DLOG(_T("*** Exiting pgsShearDesignTool::DesignLongReinfShear - sdSuccess **"));
       return sdSuccess;
    }
 }

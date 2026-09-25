@@ -23,6 +23,7 @@
 #pragma once
 
 #include <IFace/Tools.h>
+#include "DesignLog.h"
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
@@ -108,7 +109,7 @@ public:
       TensBotBtwnHp
    };
 
-   pgsStrandDesignTool(SHARED_LOGFILE lf);
+   pgsStrandDesignTool(DESIGN_SHARED_LOGFILE lf);
    
    void Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact);
 
@@ -342,7 +343,11 @@ public:
    pgsSegmentDesignArtifact::ConcreteStrengthDesignState GetReleaseConcreteDesignState() const;
    pgsSegmentDesignArtifact::ConcreteStrengthDesignState GetFinalConcreteDesignState() const;
 
-   void DumpDesignParameters() const;
+   // Logs the current design parameters. lpszWhen describes the point in the design (e.g. "before end-zone design")
+   void DumpDesignParameters(LPCTSTR lpszWhen = nullptr) const;
+
+   // One line summary of the current design state (f'c, f'ci, strands, slab offset) for log messages
+   std::_tstring GetDesignStateSummary() const;
 
 private:
    // updates jacking forces with current design information
@@ -458,6 +463,27 @@ private:
          return m_Control==fciSetShear ? pgsSegmentDesignArtifact::ConcreteStrengthDesignState::actShear : 
                                       pgsSegmentDesignArtifact::ConcreteStrengthDesignState::actStress;
       }
+      // Describes the controller state for the log, so it is clear why a requested strength was or was not accepted
+      std::_tstring Describe() const
+      {
+         static LPCTSTR states[] = { _T("Initial"), _T("SetOnce"), _T("SetDecrease"), _T("SetShear (shear controls - locked)"), _T("Locked") };
+         static LPCTSTR limitStates[] = { _T("ServiceI"), _T("ServiceIA"), _T("ServiceIII"), _T("StrengthI"), _T("StrengthII"), _T("FatigueI") };
+         std::_tostringstream os;
+         os << _T("controller state = ") << states[m_Control] << _T(", controlling strength = ") << pgsDesignLog::ksi(m_CurrentState.m_Strength) << _T(" ksi");
+         if (m_Control != fciInitial && m_CurrentState.m_Task.intervalIdx != INVALID_INDEX)
+         {
+            os << _T(" set by interval ") << m_CurrentState.m_Task.intervalIdx + 1 // +1 to match interval labels in the UI and elsewhere in the log
+               << _T(" ") << ((size_t)m_CurrentState.m_Task.limitState < sizeof(limitStates)/sizeof(limitStates[0]) ? limitStates[m_CurrentState.m_Task.limitState] : _T("?"))
+               << (m_CurrentState.m_Task.stressType == pgsTypes::Tension ? _T(" tension") : _T(" compression"))
+               << (m_CurrentState.m_StressLocation == pgsTypes::BottomGirder ? _T(" at bottom") : _T(" at top"));
+         }
+         if (!m_Decreases.empty())
+         {
+            os << _T(", ") << m_Decreases.size() << _T(" recorded decrease(s)");
+         }
+         return os.str();
+      }
+
       Float64    Strength() const {return m_CurrentState.m_Strength;}
       IntervalIndexType Interval() const {return m_CurrentState.m_Task.intervalIdx;}
       pgsTypes::StressType StressType() const {return m_CurrentState.m_Task.stressType;}
@@ -750,7 +776,7 @@ private:
       void Init(Float64 Hg,IPoint2dCollection* strandLocations);
       // Stress relief from debonding at this level
       Float64 ComputeReliefStress(Float64 pePerStrandFullyBonded, Float64 pePerStrandDebonded, StrandIndexType nperm, StrandIndexType ntemp, Float64 cgtot, Float64 Hg, 
-                                  Float64 Yb, Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy, SHARED_LOGFILE LOGFILE) const;
+                                  Float64 Yb, Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy, DESIGN_SHARED_LOGFILE DESIGN_LOGFILE) const;
    };
 
    typedef std::vector<DebondLevel>                DebondLevelCollection;
@@ -778,5 +804,5 @@ private:
 
 
 private:
-	DECLARE_SHARED_LOGFILE;
+	DECLARE_DESIGN_SHARED_LOGFILE;
 };

@@ -3565,7 +3565,7 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       lift_config.bIgnoreGirderConfig = false;
       lift_config.GdrConfig = config;
       const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem;
-      auto [result,artifact1] = lifting_checker.DesignLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&pStabilityProblem,LOGGER);
+      auto [result,artifact1] = lifting_checker.DesignLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&pStabilityProblem,AGENT_LOGGER_FOR_DESIGN_TOOLS);
       pDetails->L[PS_TTS] = lift_config.LeftOverhang;
    
       Float64 fci;
@@ -3587,7 +3587,7 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       config.PrestressConfig.Pjack[pgsTypes::Temporary] = 0;
 
       lift_config.GdrConfig = config;
-      auto [result2,artifact2] = lifting_checker.DesignLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&pStabilityProblem,LOGGER);
+      auto [result2,artifact2] = lifting_checker.DesignLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&pStabilityProblem,AGENT_LOGGER_FOR_DESIGN_TOOLS);
       pDetails->L[NO_TTS] = lift_config.LeftOverhang;
    
       fci_comp = artifact2->RequiredFcCompression();
@@ -3737,7 +3737,7 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    haulConfig.bIgnoreGirderConfig = false;
    haulConfig.GdrConfig = config;
    bool bResult;
-   auto hauling_artifact_base ( hauling_checker->DesignHauling(segmentKey,haulConfig,true,pSegmentHaulingPointsOfInterest,&bResult,LOGGER));
+   auto hauling_artifact_base ( hauling_checker->DesignHauling(segmentKey,haulConfig,true,pSegmentHaulingPointsOfInterest,&bResult,AGENT_LOGGER_FOR_DESIGN_TOOLS));
 
    // Constructibility is wsdot-based. Cast artifact
    pgsWsdotHaulingAnalysisArtifact* hauling_artifact = dynamic_cast<pgsWsdotHaulingAnalysisArtifact*>(hauling_artifact_base.get());

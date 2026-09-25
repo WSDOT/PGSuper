@@ -362,7 +362,7 @@ private:
    mutable std::map<CSegmentKey,std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>> m_LiftingCheckArtifacts;
    mutable std::map<CSegmentKey,std::shared_ptr<const pgsHaulingAnalysisArtifact>> m_HaulingAnalysisArtifacts;
 
-   std::shared_ptr<const pgsHaulingAnalysisArtifact> CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) const;
+   std::shared_ptr<const pgsHaulingAnalysisArtifact> CheckHauling(const CSegmentKey& segmentKey, DESIGN_SHARED_LOGFILE DESIGN_LOGFILE) const;
 
    mutable std::vector<StressCheckTask> m_StressCheckTasks;
    void ConfigureStressCheckTasks(const CSegmentKey& segmentKey) const;
@@ -512,7 +512,10 @@ private:
 
    void CheckConfinement(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig, pgsConfinementCheckArtifact* pArtifact) const;
 
-   DECLARE_LOGFILE;
+   DECLARE_DESIGN_LOGFILE;
+
+   // Opens the designer log, if requested and not already open (see DesignLog.h)
+   void OpenDesignLog() const;
 
    bool CollapseZoneData(CShearZoneData zoneData[MAX_ZONES], ZoneIndexType numZones) const;
 

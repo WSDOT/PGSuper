@@ -193,6 +193,7 @@
     <ClCompile Include="AlternativeTensileStressCalculator.cpp" />
     <ClCompile Include="BearingDesignEngineer.cpp" />
     <ClCompile Include="Designer2.cpp" />
+    <ClCompile Include="DesignLog.cpp" />
     <ClCompile Include="DevelopmentLengthEngineer.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="EngAgentImp.cpp" />
@@ -239,6 +240,7 @@
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="DesignCodes.h" />
     <ClInclude Include="Designer2.h" />
+    <ClInclude Include="DesignLog.h" />
     <ClInclude Include="DevelopmentLengthEngineer.h" />
     <ClInclude Include="EngAgent.h" />
     <ClInclude Include="EngAgentImp.h" />

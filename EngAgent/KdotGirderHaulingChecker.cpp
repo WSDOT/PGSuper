@@ -65,7 +65,7 @@ pgsKdotGirderHaulingChecker::pgsKdotGirderHaulingChecker(std::weak_ptr<WBFL::EAF
    m_scidBunkPointLocation  = pStatusCenter->RegisterCallback( std::make_shared<pgsBunkPointLocationStatusCallback>() );
 }
 
-std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE)
+std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::CheckHauling(const CSegmentKey& segmentKey, DESIGN_SHARED_LOGFILE DESIGN_LOGFILE)
 {
    GET_IFACE2(GetBroker(),ISegmentHaulingSpecCriteria,pHaulingSpecCriteria);
 
@@ -90,7 +90,7 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::CheckHa
       bool success;
 
       // Design
-      auto dartifact( DesignHauling( segmentKey, config, true, pPOId,  &success, LOGFILE) );
+      auto dartifact( DesignHauling( segmentKey, config, true, pPOId,  &success, DESIGN_LOGFILE) );
 
       auto dkart = std::dynamic_pointer_cast<pgsKdotHaulingAnalysisArtifact>(dartifact);
 
@@ -211,9 +211,9 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,b
    ComputeHaulingStresses(segmentKey, bUseConfig, haulConfig, vPoi, vMoment, pArtifact);
 }
 
-std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& shipping_config,bool bIgnoreConfigurationLimits,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE)
+std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& shipping_config,bool bIgnoreConfigurationLimits,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,bool* bSuccess, DESIGN_SHARED_LOGFILE DESIGN_LOGFILE)
 {
-   LOG(_T("Entering pgsKdotGirderHaulingChecker::DesignHauling"));
+   DLOG(_T("Entering pgsKdotGirderHaulingChecker::DesignHauling"));
 
    // Assume the best
    *bSuccess = true;
@@ -244,8 +244,8 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::DesignH
    Float64 inc = bigInc;
    bool bLargeStepSize = true;
 
-   LOG(_T("softMinHaulingDistance = ") << WBFL::Units::ConvertFromSysUnits(softMinHaulingDistance, WBFL::Units::Measure::Feet)<<_T(" ft"));
-   LOG(_T("hardMinHaulingDistance = ") << WBFL::Units::ConvertFromSysUnits(hardMinHaulingDistance, WBFL::Units::Measure::Feet)<<_T(" ft"));
+   DLOG(_T("softMinHaulingDistance = ") << WBFL::Units::ConvertFromSysUnits(softMinHaulingDistance, WBFL::Units::Measure::Feet)<<_T(" ft"));
+   DLOG(_T("hardMinHaulingDistance = ") << WBFL::Units::ConvertFromSysUnits(hardMinHaulingDistance, WBFL::Units::Measure::Feet)<<_T(" ft"));
 
    Float64 loc = hardMinHaulingDistance;
 
@@ -265,7 +265,7 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::DesignH
          *pArtifact = temp_artifact; // last artifact that passed
       }
 
-      LOG(_T("Iteration; overhang = ")<<loc<<_T(" passed = ")<<passed);
+      DLOG(_T("Iteration; overhang = ")<<loc<<_T(" passed = ")<<passed);
 
       if (!did_pass)
       {
@@ -306,19 +306,19 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::DesignH
    if (!did_pass)
    {
       *bSuccess = false;
-      LOG(_T("Design failed at first iteration - there is no hope"));
+      DLOG(_T("Design failed at first iteration - there is no hope"));
       pArtifact->SetDesignOutcome(pgsKdotHaulingAnalysisArtifact::doFailed);
    }
    else
    {
       if (loc < softMinHaulingDistance)
       {
-         LOG(_T("Design succeeded, but overhang is within soft limits"));
+         DLOG(_T("Design succeeded, but overhang is within soft limits"));
          pArtifact->SetDesignOutcome(pgsKdotHaulingAnalysisArtifact::doSuccessInSoftZone);
       }
       else
       {
-         LOG(_T("Design succeeded within limits"));
+         DLOG(_T("Design succeeded within limits"));
          pArtifact->SetDesignOutcome(pgsKdotHaulingAnalysisArtifact::doSuccessInSoftZone);
       }
    }
@@ -328,7 +328,7 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::DesignH
    pArtifact->SetOverhangs(loc, loc);
    pArtifact->SetDesignOverhang(loc);
 
-   LOG(_T("Exiting pgsKdotGirderHaulingChecker::DesignHauling. Overhang location is ")<<WBFL::Units::ConvertFromSysUnits(loc, WBFL::Units::Measure::Feet)<<_T(" ft"));
+   DLOG(_T("Exiting pgsKdotGirderHaulingChecker::DesignHauling. Overhang location is ")<<WBFL::Units::ConvertFromSysUnits(loc, WBFL::Units::Measure::Feet)<<_T(" ft"));
 
    return pArtifact;
 }

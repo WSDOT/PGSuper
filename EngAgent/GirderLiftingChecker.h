@@ -24,6 +24,7 @@
 
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\PoiMap.h>
+#include "DesignLog.h"
 #include <IFace\PointOfInterest.h>
 
 /*****************************************************************************
@@ -52,7 +53,7 @@ public:
    std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> CheckLifting(const CSegmentKey& segmentKey);
    std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc);
    std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPOId, const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem = nullptr);
-   std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>> DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPOId,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem,SHARED_LOGFILE LOGFILE);
+   std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>> DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPOId,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem,DESIGN_SHARED_LOGFILE DESIGN_LOGFILE);
 
 private:
    std::weak_ptr<WBFL::EAF::Broker> m_pBroker;

@@ -23,6 +23,7 @@
 #pragma once
 
 #include <IFace\Artifact.h>
+#include "DesignLog.h"
 #include <IFace\PointOfInterest.h>
 #include <PgsExt\PgsExt.h>
 #include <psgLib\GirderLibraryEntry.h>
@@ -114,7 +115,7 @@ public:
       sdDesignFailedFromShearStress  // Shear stress exceeded 0.18f'c. Tool will compute required f'c
    };
 
-   pgsShearDesignTool(SHARED_LOGFILE lf);
+   pgsShearDesignTool(DESIGN_SHARED_LOGFILE lf);
    
    void Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, const LongReinfShearChecker* pLongShearChecker,
                    StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact, 
@@ -359,5 +360,5 @@ private:
    void ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& rDemandAtPois, WBFL::Math::PiecewiseFunction& rDemandAtLocations) const;
 
 private:
-	DECLARE_SHARED_LOGFILE;
+	DECLARE_DESIGN_SHARED_LOGFILE;
 };

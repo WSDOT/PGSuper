@@ -23,6 +23,7 @@
 #pragma once
 
 #include <IFace/Tools.h>
+#include "DesignLog.h"
 #include <IFace\Artifact.h>
 #include <PgsExt\PoiMgr.h>
 
@@ -123,7 +124,7 @@ private:
 class pgsRaisedStraightStrandDesignTool
 {
 public:
-   pgsRaisedStraightStrandDesignTool(SHARED_LOGFILE lf, const GirderLibraryEntry* pGdrEntry);
+   pgsRaisedStraightStrandDesignTool(DESIGN_SHARED_LOGFILE lf, const GirderLibraryEntry* pGdrEntry);
 
    ~pgsRaisedStraightStrandDesignTool() = default;
    
@@ -209,5 +210,5 @@ private:
    GridIndexType          m_UsedRaisedStrandLocations;      // number we have used
 
 private:
-	DECLARE_SHARED_LOGFILE;
+	DECLARE_DESIGN_SHARED_LOGFILE;
 };

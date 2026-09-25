@@ -348,8 +348,8 @@ StrandIndexType pgsStrandResequencer::GetPermanentStrandCountFromPermGridIndex(G
 }
 
 
-pgsRaisedStraightStrandDesignTool::pgsRaisedStraightStrandDesignTool(SHARED_LOGFILE lf, const GirderLibraryEntry* pGdrEntry):
-LOGFILE(lf),
+pgsRaisedStraightStrandDesignTool::pgsRaisedStraightStrandDesignTool(DESIGN_SHARED_LOGFILE lf, const GirderLibraryEntry* pGdrEntry):
+DESIGN_LOGFILE(lf),
 m_StatusGroupID(INVALID_ID),
 m_pGdrEntry(pGdrEntry),
 m_StrandResequencer(pGdrEntry)
@@ -456,8 +456,8 @@ void pgsRaisedStraightStrandDesignTool::Initialize(std::weak_ptr<WBFL::EAF::Brok
 // minimum required number of strands as well
 bool pgsRaisedStraightStrandDesignTool::AddRaisedStraightStrands()
 {
-   LOG(_T("Entering  pgsRaisedStraightStrandDesignTool::AddRaisedStraightStrands"));
-   LOG(_T("  m_UsedRaisedStrandLocations = ") << m_UsedRaisedStrandLocations << _T("m_RaisedStrandPotentialLocations.size() = ") << m_RaisedStrandPotentialLocations.size());
+   DESIGN_LOG_SCOPE(_T("AddRaisedStraightStrands"));
+   DLOG(_T("  m_UsedRaisedStrandLocations = ") << m_UsedRaisedStrandLocations << _T("m_RaisedStrandPotentialLocations.size() = ") << m_RaisedStrandPotentialLocations.size());
 
    if (m_UsedRaisedStrandLocations < m_RaisedStrandPotentialLocations.size())
    {
@@ -471,12 +471,12 @@ bool pgsRaisedStraightStrandDesignTool::AddRaisedStraightStrands()
       m_StrandResequencer.MovePermLibraryIndexToNewLocation(riter->m_PermLibraryFillIdx, m_UsedRaisedStrandLocations);
 
       m_UsedRaisedStrandLocations++;
-      LOG(_T("  Succeeded adding raised straight strand at permanent index = ") << riter->m_PermLibraryFillIdx );
+      DLOG(_T("  Succeeded adding raised straight strand at permanent index = ") << riter->m_PermLibraryFillIdx );
       return true;
    }
    else
    {
-      LOG(_T("  Failed to add raised strands in pgsRaisedStraightStrandDesignTool::AddRaisedStraightStrands"));
+      DLOG(_T("  Failed to add raised strands in pgsRaisedStraightStrandDesignTool::AddRaisedStraightStrands"));
       return false;
    }
 }

@@ -115,6 +115,49 @@ public:
       return m_Abort;
    }
 
+   // Names of the outcomes that are set, e.g. "FcIncreased, PermanentStrandsChanged". Used for logging.
+   std::_tstring ToString() const
+   {
+      static LPCTSTR names[] =
+      {
+         _T("PermanentStrandsChanged"),
+         _T("TemporaryStrandsChanged"),
+         _T("ShearDesignChanged"),
+         _T("FcIncreased"),
+         _T("FcDecreased"),
+         _T("FciIncreased"),
+         _T("FciDecreased"),
+         _T("LiftingConfigChanged"),
+         _T("HaulingConfigChanged"),
+         _T("SlabOffsetChanged"),
+         _T("LiftingRedesignAfterShipping"),
+         _T("RetainStrandProportioning"),
+         _T("ChangedForUltimate"),
+         _T("RaisedStraightStrands"),
+      };
+      static_assert(sizeof(names) / sizeof(names[0]) == XXBogusOutcome, "names is out of sync with OutcomeType");
+
+      std::_tstring str;
+      for (int i = 0; i < XXBogusOutcome; i++)
+      {
+         if (m_Outcomes[i])
+         {
+            if (!str.empty())
+            {
+               str += _T(", ");
+            }
+            str += names[i];
+         }
+      }
+
+      if (m_Abort)
+      {
+         str += str.empty() ? _T("Aborted") : _T(", Aborted");
+      }
+
+      return str.empty() ? std::_tstring(_T("none")) : str;
+   }
+
 private:
    bool m_Abort;
    std::bitset<XXBogusOutcome> m_Outcomes;

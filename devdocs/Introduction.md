@@ -19,4 +19,8 @@ PGSuper/PGSplice Developer Documentation
 
 @subpage minimum_radius_of_curvature
 
+@subpage designer_log
+
+@subpage designer_refinements
+
 @subpage procedures

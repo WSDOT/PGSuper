@@ -109,7 +109,7 @@ pgsWsdotGirderHaulingChecker::pgsWsdotGirderHaulingChecker(std::weak_ptr<WBFL::E
    m_scidHaulTruck         = pStatusCenter->RegisterCallback( std::make_shared<pgsHaulTruckStatusCallback>() );
 }
 
-std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE)
+std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::CheckHauling(const CSegmentKey& segmentKey, DESIGN_SHARED_LOGFILE DESIGN_LOGFILE)
 {
    GET_IFACE2(GetBroker(),ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
 
@@ -169,9 +169,9 @@ void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,
    pArtifact.SetHaulingCheckArtifact(artifact);
 }
 
-std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& shipping_config,bool bIgnoreConfigurationLimits,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE)
+std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& shipping_config,bool bIgnoreConfigurationLimits,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,bool* bSuccess, DESIGN_SHARED_LOGFILE DESIGN_LOGFILE)
 {
-   LOG(_T("Entering pgsWsdotGirderHaulingChecker::DesignHauling"));
+   DLOG(_T("Entering pgsWsdotGirderHaulingChecker::DesignHauling"));
    auto artifact(std::make_shared<pgsWsdotHaulingAnalysisArtifact>());
 
    // Get all of the haul trucks that have sufficient capacity to carry the girder
@@ -210,7 +210,7 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::Design
 
    if ( vHaulTrucks.size() == 0 )
    {
-      LOG(_T("There aren't any trucks capable of hauling this girder - using the truck with the maximum haul capacity"));
+      DLOG(_T("There aren't any trucks capable of hauling this girder - using the truck with the maximum haul capacity"));
       vHaulTrucks.push_back(pMaxCapacityTruck);
    }
 
@@ -224,7 +224,7 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::Design
 
    GET_IFACE2(GetBroker(),ISegmentHaulingSpecCriteria,pCriteria);
    Float64 FSrMin = pCriteria->GetHaulingRolloverFs();
-   LOG(_T("Allowable FS rollover FSrMin = ")<<FSrMin);
+   DLOG(_T("Allowable FS rollover FSrMin = ")<<FSrMin);
 
    Float64 location_accuracy = pCriteria->GetHaulingSupportLocationAccuracy();
    const Float64 bigInc = Max(10*location_accuracy,ConvertToSysUnits(5.0,WBFL::Units::Measure::Feet));
@@ -246,7 +246,7 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::Design
    {
       const auto& pHaulTruck = (*iter);
 
-      LOG(_T("Attempting design for haul truck ") << pHaulTruck->GetName().c_str());
+      DLOG(_T("Attempting design for haul truck ") << pHaulTruck->GetName().c_str());
       shipping_config.pHaulTruckEntry = pHaulTruck;
 
       Float64 maxDistanceBetweenSupports = pHaulTruck->GetMaxDistanceBetweenBunkPoints();
@@ -289,7 +289,7 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::Design
 
       while ( loc < maxOverhang )
       {
-         LOG(_T(""));
+         DLOG(_T(""));
 
          if ( maxLeadingOverhang < loc && !bIgnoreConfigurationLimits)
          {
@@ -310,12 +310,12 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::Design
          }
 #endif
 
-         LOG(_T("Trying Trailing Overhang = ") << WBFL::Units::ConvertFromSysUnits(shipping_config.LeftOverhang,WBFL::Units::Measure::Feet) << _T(" ft") << _T("      Leading Overhang = ") << WBFL::Units::ConvertFromSysUnits(shipping_config.RightOverhang,WBFL::Units::Measure::Feet) << _T(" ft"));
+         DLOG(_T("Trying Trailing Overhang = ") << WBFL::Units::ConvertFromSysUnits(shipping_config.LeftOverhang,WBFL::Units::Measure::Feet) << _T(" ft") << _T("      Leading Overhang = ") << WBFL::Units::ConvertFromSysUnits(shipping_config.RightOverhang,WBFL::Units::Measure::Feet) << _T(" ft"));
 
          AnalyzeHauling(segmentKey,true,shipping_config,pPOId,*artifact);
 
          Float64 FSr = Min(artifact->GetFsRollover(WBFL::Stability::HaulingSlope::CrownSlope),artifact->GetFsRollover(WBFL::Stability::HaulingSlope::Superelevation));
-         LOG(_T("FSr = ") << FSr);
+         DLOG(_T("FSr = ") << FSr);
          if (FSr < FSr_prev || FSr == 0.0)
             break; // FS is going down, not up... break and try the next haul truck
 
@@ -334,13 +334,13 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::Design
             Float64 oldInc = inc;
             if (stepSize == bigStep)
             {
-               LOG(_T("Switching to medium step size and backing up"));
+               DLOG(_T("Switching to medium step size and backing up"));
                inc = mediumInc;
                stepSize = mediumStep;
             }
             else
             {
-               LOG(_T("Switching to small step size and backing up"));
+               DLOG(_T("Switching to small step size and backing up"));
                inc = smallInc;
                stepSize = smallStep;
             }
@@ -360,7 +360,7 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::Design
 
          if ( FSrMin <= FSr )
          {
-            LOG(_T("Found a stable hauling configuration"));
+            DLOG(_T("Found a stable hauling configuration"));
             bRollover = true;
             break;
          }
@@ -368,14 +368,14 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::Design
          loc += inc;
       } // next bunk point location
 
-      LOG(_T("")); // blank line before starting next truck
+      DLOG(_T("")); // blank line before starting next truck
    } // next haul truck
 
-   LOG(_T("Check FS cracking"));
+   DLOG(_T("Check FS cracking"));
    Float64 FScrMin = pCriteria->GetHaulingCrackingFs();
-   LOG(_T("Allowable FS cracking FScrMin = ") << FScrMin);
+   DLOG(_T("Allowable FS cracking FScrMin = ") << FScrMin);
    Float64 FScr = Min(artifact->GetMinFsForCracking(WBFL::Stability::HaulingSlope::CrownSlope), artifact->GetMinFsForCracking(WBFL::Stability::HaulingSlope::Superelevation));
-   LOG(_T("FScr = ") << FScr);
+   DLOG(_T("FScr = ") << FScr);
    if (FScrMin <= FScr)
    {
       bCracking = true;
@@ -384,7 +384,7 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsWsdotGirderHaulingChecker::Design
    *bSuccess = bRollover && bCracking;
    if (!*bSuccess)
    {
-      LOG(_T("A successful design could not be found with any of the haul trucks. Add temporary strands and try again"));
+      DLOG(_T("A successful design could not be found with any of the haul trucks. Add temporary strands and try again"));
    }
    return artifact;
 }

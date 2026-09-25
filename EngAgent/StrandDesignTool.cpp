@@ -85,8 +85,8 @@ void SortDebondLevels(std::vector<DebondLevelType>& rDebondLevelsAtSections)
 // starting default to use about 2/3 straight and 1/3 harped, and if not possible; use whatever fits
 static const Float64 DefaultHarpedRatio = 1.0/3.0;
 
-pgsStrandDesignTool::pgsStrandDesignTool(SHARED_LOGFILE lf) :
-LOGFILE(lf),
+pgsStrandDesignTool::pgsStrandDesignTool(DESIGN_SHARED_LOGFILE lf) :
+DESIGN_LOGFILE(lf),
 m_pArtifact(nullptr),
 m_StatusGroupID(INVALID_ID),
 m_MinimumFinalMzEccentricity(Float64_Max),
@@ -140,7 +140,7 @@ void pgsStrandDesignTool::Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, S
    if( m_DesignOptions.doDesignForFlexure == dtDesignFullyBondedRaised ||
        m_DesignOptions.doDesignForFlexure == dtDesignForDebondingRaised )
    {
-      m_pRaisedStraightStrandDesignTool = std::shared_ptr<pgsRaisedStraightStrandDesignTool>(new pgsRaisedStraightStrandDesignTool(LOGGER,m_pGirderEntry));
+      m_pRaisedStraightStrandDesignTool = std::shared_ptr<pgsRaisedStraightStrandDesignTool>(new pgsRaisedStraightStrandDesignTool(DESIGN_LOGGER,m_pGirderEntry));
       m_pRaisedStraightStrandDesignTool->Initialize(m_pBroker,m_StatusGroupID,m_pArtifact);
    }
    else if (m_pRaisedStraightStrandDesignTool)
@@ -150,10 +150,10 @@ void pgsStrandDesignTool::Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, S
    }
 
    // Initialize concrete strength range
-   LOG(_T("Initializing concrete strength range"));
+   DLOG(_T("Initializing concrete strength range"));
    if (m_DesignOptions.doDesignConcreteStrength == cdPreserveStrength)
    {
-      LOG(_T("Concrete strengths are fixed"));
+      DLOG(_T("Concrete strengths are fixed"));
       m_MinFci = pSegmentMaterial->Concrete.Fci;
       m_MaxFci = pSegmentMaterial->Concrete.Fci;
       m_MinFc = pSegmentMaterial->Concrete.Fc;
@@ -163,7 +163,7 @@ void pgsStrandDesignTool::Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, S
    {
       if (pSegmentMaterial->Concrete.Type == pgsTypes::PCI_UHPC)
       {
-         LOG(_T("PCI-UHPC Concrete"));
+         DLOG(_T("PCI-UHPC Concrete"));
          GET_IFACE2(GetBroker(),IEAFDisplayUnits, pDisplayUnits);
          m_MinFci = IS_SI_UNITS(pDisplayUnits) ? WBFL::Units::ConvertToSysUnits(28.0, WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(4.0, WBFL::Units::Measure::KSI); // minimum per LRFD 5.4.2.1
          m_MaxFci = m_DesignOptions.maxFci; // this is from the design strategy defined in the girder
@@ -178,7 +178,7 @@ void pgsStrandDesignTool::Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, S
          ATLASSERT(false); // not supporting UHPC design yet
          // need to look at concrete strength range requirements for UHPC - there is a min f'ci hard limit that PCI UHPC does not have
          // this is just cobbled together - still needs to be reviewed for accuracy
-         LOG(_T("UHPC Concrete"));
+         DLOG(_T("UHPC Concrete"));
          GET_IFACE2(GetBroker(),IEAFDisplayUnits, pDisplayUnits);
          m_MinFci = WBFL::Units::ConvertToSysUnits(14.0, WBFL::Units::Measure::KSI); // minimum per GS 1.9.1.2 (but could be override by owner - override not implemented yet)
          m_MaxFci = m_DesignOptions.maxFci; // this is from the design strategy defined in the girder
@@ -190,7 +190,7 @@ void pgsStrandDesignTool::Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, S
       }
       else
       {
-         LOG(_T("Conventional Concrete"));
+         DLOG(_T("Conventional Concrete"));
          GET_IFACE2(GetBroker(),IEAFDisplayUnits, pDisplayUnits);
          m_MinFci = IS_SI_UNITS(pDisplayUnits) ? WBFL::Units::ConvertToSysUnits(28.0, WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(4.0, WBFL::Units::Measure::KSI); // minimum per LRFD 5.4.2.1
          m_MaxFci = m_DesignOptions.maxFci; // this is from the design strategy defined in the girder
@@ -199,8 +199,8 @@ void pgsStrandDesignTool::Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, S
       }
    }
 
-   LOG(_T("fci = ") << WBFL::Units::ConvertFromSysUnits(m_MinFci, WBFL::Units::Measure::KSI) << _T(" ksi - ") << WBFL::Units::ConvertFromSysUnits(m_MaxFci, WBFL::Units::Measure::KSI) << _T(" ksi"));
-   LOG(_T("fc  = ") << WBFL::Units::ConvertFromSysUnits(m_MinFc,  WBFL::Units::Measure::KSI) << _T(" ksi - ") << WBFL::Units::ConvertFromSysUnits(m_MaxFc,  WBFL::Units::Measure::KSI) << _T(" ksi"));
+   DLOG(_T("fci = ") << WBFL::Units::ConvertFromSysUnits(m_MinFci, WBFL::Units::Measure::KSI) << _T(" ksi - ") << WBFL::Units::ConvertFromSysUnits(m_MaxFci, WBFL::Units::Measure::KSI) << _T(" ksi"));
+   DLOG(_T("fc  = ") << WBFL::Units::ConvertFromSysUnits(m_MinFc,  WBFL::Units::Measure::KSI) << _T(" ksi - ") << WBFL::Units::ConvertFromSysUnits(m_MaxFc,  WBFL::Units::Measure::KSI) << _T(" ksi"));
 
    // Set concrete strength 
    Float64 ifc = GetMinimumConcreteStrength();
@@ -481,7 +481,7 @@ bool pgsStrandDesignTool::SetNumPermanentStrands(StrandIndexType numPerm)
       UpdateJackingForces();
       m_bConfigDirty = true; // cache is dirty
 
-      LOG(_T("** Set Np=0"));
+      DLOG(_T("Set Np=0"));
       return true;
    }
    else if (m_pRaisedStraightStrandDesignTool)
@@ -489,7 +489,7 @@ bool pgsStrandDesignTool::SetNumPermanentStrands(StrandIndexType numPerm)
       // Raised strand design - let tool do work
       StrandIndexType ns, nh;
       m_pRaisedStraightStrandDesignTool->ComputeNumStrands(numPerm, &ns, &nh);
-      LOG (_T("Using raised re-sequenced fill order to make Ns=")<<ns<<_T(", Nh=")<<nh<<_T(" from ")<< numPerm << _T(" with ")<<m_pRaisedStraightStrandDesignTool->GetNumUsedRaisedStrandLocations()<<_T(" raised grid locations"));
+      LOG_DETAIL(_T("Using raised re-sequenced fill order to make Ns=")<<ns<<_T(", Nh=")<<nh<<_T(" from ")<< numPerm << _T(" with ")<<m_pRaisedStraightStrandDesignTool->GetNumUsedRaisedStrandLocations()<<_T(" raised grid locations"));
 
       m_bConfigDirty = true; // cache is dirty
 
@@ -519,7 +519,7 @@ bool pgsStrandDesignTool::SetNumPermanentStrands(StrandIndexType numPerm)
          ns = uns;
          nh = unh;
 
-         LOG (_T("Using grid fill order to make Ns=")<<ns<<_T(", Nh=")<<nh<<_T(" from ")<< numPerm);
+         LOG_DETAIL(_T("Using grid fill order to make Ns=")<<ns<<_T(", Nh=")<<nh<<_T(" from ")<< numPerm);
       }
       else if (m_StrandFillType == ftMinimizeHarping)
       {
@@ -529,7 +529,7 @@ bool pgsStrandDesignTool::SetNumPermanentStrands(StrandIndexType numPerm)
             return false;
          }
 
-         LOG (_T("Using ")<<m_HarpedRatio<<_T(" harped ratio fill order to make Ns=")<<ns<<_T(", Nh=")<<nh<<_T(" from ")<< numPerm);
+         LOG_DETAIL(_T("Using ")<<m_HarpedRatio<<_T(" harped ratio fill order to make Ns=")<<ns<<_T(", Nh=")<<nh<<_T(" from ")<< numPerm);
       }
       else
       {
@@ -558,7 +558,7 @@ bool pgsStrandDesignTool::SetNumPermanentStrands(StrandIndexType numPerm)
 
    } 
 
-   LOG(_T("** Set Np=")<<GetNumPermanentStrands()<<_T(", Ns=")<<GetNs()<<_T(", Nh=")<<GetNh());
+   DLOG(_T("Set Np=")<<GetNumPermanentStrands()<<_T(", Ns=")<<GetNs()<<_T(", Nh=")<<GetNh());
 
    return true;
 }
@@ -568,7 +568,7 @@ bool pgsStrandDesignTool::SetNumStraightHarped(StrandIndexType ns, StrandIndexTy
    ATLASSERT(IsDesignHarping());
    ATLASSERT(!m_pRaisedStraightStrandDesignTool); // should never call for this design type
    ATLASSERT(0 <= ns && 0 <= nh);
-   LOG (_T("SetNumStraightHarped:: Ns = ")<<ns<<_T(" Nh = ")<<nh);
+   DLOG(_T("SetNumStraightHarped:: Ns = ")<<ns<<_T(" Nh = ")<<nh);
    ATLASSERT(m_MinPermanentStrands <= ns+nh);
 
    // If this is being called, we are probably changing our strand fill. adjust likewise
@@ -578,21 +578,21 @@ bool pgsStrandDesignTool::SetNumStraightHarped(StrandIndexType ns, StrandIndexTy
    if (0 < ns && ns != pStrandGeom->GetNextNumStrands(m_SegmentKey,pgsTypes::Straight, ns-1))
    {
       ATLASSERT(false);
-      LOG (_T("Ns is invalid"));
+      DLOG(_T("Ns is invalid"));
       return false;
    }
 
    if (0 < nh && nh != pStrandGeom->GetNextNumStrands(m_SegmentKey,pgsTypes::Harped, nh-1))
    {
       ATLASSERT(false);
-      LOG (_T("Nh is invalid"));
+      DLOG(_T("Nh is invalid"));
       return false;
    }
 
    // change fill order for future strand setting and set our numbers of strands
    if (m_StrandFillType != ftMinimizeHarping)
    {
-      LOG (_T("Changing fill type to ftMinimizeHarping"));
+      DLOG(_T("Changing fill type to ftMinimizeHarping"));
       m_StrandFillType = ftMinimizeHarping;
    }
 
@@ -609,7 +609,7 @@ bool pgsStrandDesignTool::SetNumStraightHarped(StrandIndexType ns, StrandIndexTy
       m_HarpedRatio = (Float64)(nh)/(Float64)(ns+nh);
    }
 
-   LOG (_T("Setting harped ratio to ")<<m_HarpedRatio);
+   DLOG(_T("Setting harped ratio to ")<<m_HarpedRatio);
 
    m_bConfigDirty = true; // cache is dirty
 
@@ -629,7 +629,7 @@ bool pgsStrandDesignTool::SetNumStraightHarped(StrandIndexType ns, StrandIndexTy
    UpdateJackingForces();
 
    // Make sure we are within offset bounds. Force if necessary
-   LOG(_T("** Set Np=")<<GetNumPermanentStrands()<<_T(", Ns=")<<GetNs()<<_T(", Nh=")<<GetNh());
+   DLOG(_T("Set Np=")<<GetNumPermanentStrands()<<_T(", Ns=")<<GetNs()<<_T(", Nh=")<<GetNh());
    if (!KeepHarpedStrandsInBounds())
    {
       return false;
@@ -985,7 +985,7 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
 {
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
-   LOG(_T("Compute number of strands required to handle a force of ")<<WBFL::Units::ConvertFromSysUnits(pDesignParams->Preqd,WBFL::Units::Measure::Kip) << _T(" kip"));
+   DLOG(_T("Compute number of strands required to handle a force of ")<<WBFL::Units::ConvertFromSysUnits(pDesignParams->Preqd,WBFL::Units::Measure::Kip) << _T(" kip"));
 
    GDRCONFIG guess = GetSegmentConfiguration();
 
@@ -1020,7 +1020,7 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
       fpjMax = PjMax/(m_aps[pgsTypes::Straight]*ns + m_aps[pgsTypes::Harped]*nh + m_aps[pgsTypes::Temporary]*nt);
    }
 
-   LOG(_T("Maximum jacking stress for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(fpjMax,WBFL::Units::Measure::KSI) << _T(" KSI"));
+   DLOG(_T("Maximum jacking stress for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(fpjMax,WBFL::Units::Measure::KSI) << _T(" ksi"));
 
    // Estimate prestress loss
    pgsPsForceEng psfeng(m_pBroker,m_StatusGroupID);
@@ -1051,11 +1051,11 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    }
 #endif // _DEBUG
 
-   LOG(_T("Estimated losses for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(loss,WBFL::Units::Measure::KSI) << _T(" KSI"));
+   DLOG(_T("Estimated losses for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(loss,WBFL::Units::Measure::KSI) << _T(" ksi"));
 
    // Required strand stress
    Float64 fstrand = fpjMax - loss;
-   LOG(_T("Required strand stress = ") << WBFL::Units::ConvertFromSysUnits(fstrand,WBFL::Units::Measure::KSI) << _T(" KSI"));
+   DLOG(_T("Required strand stress = ") << WBFL::Units::ConvertFromSysUnits(fstrand,WBFL::Units::Measure::KSI) << _T(" ksi"));
 
    // Estimate number of prestressing strands
    Float64 Aps;
@@ -1068,8 +1068,8 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
       Aps = -pDesignParams->Preqd/fstrand; // Total required area of prestressing
    }
 
-   LOG(_T("Strand Area = ") << WBFL::Units::ConvertFromSysUnits(m_aps[pgsTypes::Straight],WBFL::Units::Measure::Inch2) << _T(" in^2 per strand"));
-   LOG(_T("Required area of prestressing = ") << WBFL::Units::ConvertFromSysUnits(Aps,WBFL::Units::Measure::Inch2) << _T(" in^2"));
+   DLOG(_T("Strand Area = ") << WBFL::Units::ConvertFromSysUnits(m_aps[pgsTypes::Straight],WBFL::Units::Measure::Inch2) << _T(" in^2 per strand"));
+   DLOG(_T("Required area of prestressing = ") << WBFL::Units::ConvertFromSysUnits(Aps,WBFL::Units::Measure::Inch2) << _T(" in^2"));
 
    // NOTE: This is a little bit of hack. The original design assumes all strands are the same size. However, straight
    // and harped strands can now be different sizes. Generally, harped strands will be smaller and carry less force
@@ -1081,11 +1081,11 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    StrandIndexType N = (StrandIndexType)ceil(fN);
    N = Max(N,(StrandIndexType)1); // Must be zero or more strands
 
-   LOG(_T("Required number of permanent strands (float) = ") << fN);
-   LOG(_T("Required number of permanent strands = ") << N);
+   DLOG(_T("Required number of permanent strands (float) = ") << fN);
+   DLOG(_T("Required number of permanent strands = ") << N);
 
    N = GetNextNumPermanentStrands(N-1);
-   LOG(_T("Actual number of permanent strands = ") << N);
+   DLOG(_T("Actual number of permanent strands = ") << N);
 
    ATLASSERT(fN <= N || INVALID_INDEX == N);
 
@@ -1095,7 +1095,7 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
 
 StrandIndexType pgsStrandDesignTool::GuessInitialStrands()
 {
-   LOG(_T(""));
+   DLOG(_T(""));
 
    // Initialize with low number of strands to force tension to control
    StrandIndexType Np = GetNextNumPermanentStrands(m_MinPermanentStrands);
@@ -1103,10 +1103,10 @@ StrandIndexType pgsStrandDesignTool::GuessInitialStrands()
    if (Np < 1)
    {
       Np = 0;
-      LOG(_T("No permanent strands defined in section"));
+      DLOG(_T("No permanent strands defined in section"));
    }
 
-   LOG(_T("Make initial guess of permanent strands using a couple, Np = ") << Np);
+   DLOG(_T("Make initial guess of permanent strands using a couple, Np = ") << Np);
    
    StrandIndexType ns = SetNumPermanentStrands(Np) ? Np : INVALID_INDEX;
    if (ns != INVALID_INDEX)
@@ -1169,7 +1169,7 @@ bool pgsStrandDesignTool::ResetEndZoneStrandConfig()
 bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
 {
    ATLASSERT(this->IsDesignHarping());
-   LOG(_T("Raising harped strands to maximum height at girder ends"));
+   DLOG(_T("Raising harped strands to maximum height at girder ends"));
 
    StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
    if (nh == 0)
@@ -1242,7 +1242,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
    // It's possible for users to enter strands at the beginning of the fill sequence that have
    // negative eccentricity. This is typically for hanging stirrups. If this occurs then design will crap out
 
-   LOG(_T("Compute m_MinPermanentStrands so next num strands give positive ecc"));
+   DLOG(_T("Compute m_MinPermanentStrands so next num strands give positive ecc"));
 
    m_MinPermanentStrands = GetNextNumPermanentStrands(0);
    if(m_MinPermanentStrands == INVALID_INDEX)
@@ -1323,21 +1323,21 @@ void pgsStrandDesignTool::ComputeMinStrands()
          config.PrestressConfig.SetStrandFill(pgsTypes::Harped,   hfillvec);
 
          Float64 ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx,mid_pois[0],pgsTypes::Permanent,&config).Y();
-         LOG(_T("Computed ecc = ")<<ecc<<_T(" for ns=")<<ns<<_T(" nh=")<<nh);
+         DLOG(_T("Computed ecc = ")<<ecc<<_T(" for ns=")<<ns<<_T(" nh=")<<nh);
          if ( ::IsGT(0.0,ecc) )
          {
             if (nIter == 0)
             {
                // Setting strand to a minimal number seems to give optimal results for cases without top strands
                m_MinPermanentStrands = GetNextNumPermanentStrands(0);
-               LOG(_T("Eccentricity positive on first iteration - m_MinPermanentStrands = ") << m_MinPermanentStrands << _T(" Success"));
+               DLOG(_T("Eccentricity positive on first iteration - m_MinPermanentStrands = ") << m_MinPermanentStrands << _T(" Success"));
             }
             else
             {
                // TRICKY: Just finding the point where eccentricity is positive turns out not to be enough.
                //         The design algorithm will likely get stuck. So we double it.
                m_MinPermanentStrands = GetNextNumPermanentStrands(2*ns_prev);
-               LOG(_T("Found m_MinPermanentStrands = ") << m_MinPermanentStrands << _T("Success"));
+               DLOG(_T("Found m_MinPermanentStrands = ") << m_MinPermanentStrands << _T("Success"));
             }
 
             break;
@@ -1349,7 +1349,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
 
             if (ns_curr == INVALID_INDEX)
             {
-               LOG(_T("**WARNING: Could not find number of strands to create positive eccentricity. The end is likely near..."));
+               LOG_WARN(_T("Could not find a number of strands that creates a positive eccentricity - design is unlikely to succeed"));
             }
          }
 
@@ -1401,31 +1401,31 @@ bool pgsStrandDesignTool::AdjustForStrandSlope()
       slope = fabs(slope); // all the code below is based on the slope being a positive value so get its absolute value
 
 
-      LOG(_T("Design for Maximum Strand Slope at ") << (endType == pgsTypes::metStart ? _T("start") : _T("end")) << _T(" of girder"));
-      LOG(_T("Maximum Strand Slope 1 : ") << m_StrandSlopeLimit);
-      LOG(_T("Actual  Strand Slope 1 : ") << slope);
+      DLOG(_T("Design for Maximum Strand Slope at ") << (endType == pgsTypes::metStart ? _T("start") : _T("end")) << _T(" of girder"));
+      DLOG(_T("Maximum Strand Slope 1 : ") << m_StrandSlopeLimit);
+      DLOG(_T("Actual  Strand Slope 1 : ") << slope);
 
       Float64 adj = 0.0;
       if ( slope < m_StrandSlopeLimit)
       {
-         LOG(_T("Strand slope needs adjusting"));
-         LOG(_T("Current Start offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metStart],WBFL::Units::Measure::Inch) << _T(" in"));
-         LOG(_T("Current HP1  offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metStart],WBFL::Units::Measure::Inch) << _T(" in"));
-         LOG(_T("Current HP2  offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
-         LOG(_T("Current End  offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
+         DLOG(_T("Strand slope needs adjusting"));
+         DLOG(_T("Current Start offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metStart],WBFL::Units::Measure::Inch) << _T(" in"));
+         DLOG(_T("Current HP1  offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metStart],WBFL::Units::Measure::Inch) << _T(" in"));
+         DLOG(_T("Current HP2  offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
+         DLOG(_T("Current End  offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
 
          if ( !AdjustStrandsForSlope(m_StrandSlopeLimit, slope, endType, config.PrestressConfig.GetStrandCount(pgsTypes::Harped)))
          {
-            LOG(_T("** DESIGN FAILED ** We cannot adjust Strands to design for allowable strand slope"));
+            LOG_FAIL(_T("Cannot adjust harped strands to satisfy the allowable strand slope"));
             m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::StrandSlopeOutOfRange);
             return false;
          }
 
-         LOG(_T("** Adjusted Start offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metStart) ,WBFL::Units::Measure::Inch) << _T(" in"));
-         LOG(_T("** Adjusted HP1   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metStart) ,WBFL::Units::Measure::Inch) << _T(" in"));
-         LOG(_T("** Adjusted HP2   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metEnd) ,WBFL::Units::Measure::Inch) << _T(" in"));
-         LOG(_T("** Adjusted End   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metEnd) ,WBFL::Units::Measure::Inch) << _T(" in"));
-         LOG(_T("New slope is 1 : ")<< pStrandGeom->GetMaxStrandSlope( pgsPointOfInterest(m_SegmentKey,0.00), &GetSegmentConfiguration()) );
+         LOG_ACTION(_T("Adjusted Start offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metStart) ,WBFL::Units::Measure::Inch) << _T(" in"));
+         LOG_ACTION(_T("Adjusted HP1   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metStart) ,WBFL::Units::Measure::Inch) << _T(" in"));
+         LOG_ACTION(_T("Adjusted HP2   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metEnd) ,WBFL::Units::Measure::Inch) << _T(" in"));
+         LOG_ACTION(_T("Adjusted End   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metEnd) ,WBFL::Units::Measure::Inch) << _T(" in"));
+         DLOG(_T("New slope is 1 : ")<< pStrandGeom->GetMaxStrandSlope( pgsPointOfInterest(m_SegmentKey,0.00), &GetSegmentConfiguration()) );
       }
    }
 
@@ -1434,14 +1434,14 @@ bool pgsStrandDesignTool::AdjustForStrandSlope()
 
 bool pgsStrandDesignTool::AdjustForHoldDownForce()
 {
-   LOG(_T("Design for Maximum Hold Down Force"));
+   DLOG(_T("Design for Maximum Hold Down Force"));
 
    ATLASSERT(m_HoldDownCriteria.bDesign); // should not be calling this
 
    StrandIndexType Nh = m_pArtifact->GetNumHarpedStrands();
    if (Nh == 0)
    {
-      LOG(_T("No harped strands, no hold down force"));
+      DLOG(_T("No harped strands, no hold down force"));
       return true;
    }
 
@@ -1483,15 +1483,15 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
    ATLASSERT(IsEqual(Pv, maxHFT));
 #endif
 
-   LOG(_T("P Harp = ") << WBFL::Units::ConvertFromSysUnits(strand_force, WBFL::Units::Measure::Kip) << _T(" kip"));
-   LOG(_T("Current slope = 1 : ") << slope);
-   LOG(_T("Actual  HD = ") << WBFL::Units::ConvertFromSysUnits(maxHFT, WBFL::Units::Measure::Kip) << _T(" kip"));
-   LOG(_T("Maximum HD = ") << WBFL::Units::ConvertFromSysUnits(m_HoldDownCriteria.force_limit,WBFL::Units::Measure::Kip) << _T(" kip"));
+   DLOG(_T("P Harp = ") << WBFL::Units::ConvertFromSysUnits(strand_force, WBFL::Units::Measure::Kip) << _T(" kip"));
+   DLOG(_T("Current slope = 1 : ") << slope);
+   DLOG(_T("Actual  HD = ") << WBFL::Units::ConvertFromSysUnits(maxHFT, WBFL::Units::Measure::Kip) << _T(" kip"));
+   DLOG(_T("Maximum HD = ") << WBFL::Units::ConvertFromSysUnits(m_HoldDownCriteria.force_limit,WBFL::Units::Measure::Kip) << _T(" kip"));
 
    Float64 adj = 0.0;
    if ( m_HoldDownCriteria.force_limit < maxHFT )
    {
-      LOG(_T("Hold down force exceeds max, strands need adjustment"));
+      DLOG(_T("Hold down force exceeds max, strands need adjustment"));
 
       pgsTypes::MemberEndType endType = (poi.GetDistFromStart() < Ls / 2 ? pgsTypes::metStart : pgsTypes::metEnd);
 
@@ -1505,31 +1505,31 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
       ATLASSERT(::BinarySign(slope) == ::BinarySign(sl_reqd));
       ATLASSERT(fabs(slope) < fabs(sl_reqd));
 
-      LOG(_T("Slope required = 1 : ")<< sl_reqd);
-      LOG(_T("Current Start offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metStart],WBFL::Units::Measure::Inch) << _T(" in"));
-      LOG(_T("Current HP1 offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metStart],WBFL::Units::Measure::Inch) << _T(" in"));
-      LOG(_T("Current HP2 offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
-      LOG(_T("Current End offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
+      DLOG(_T("Slope required = 1 : ")<< sl_reqd);
+      DLOG(_T("Current Start offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metStart],WBFL::Units::Measure::Inch) << _T(" in"));
+      DLOG(_T("Current HP1 offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metStart],WBFL::Units::Measure::Inch) << _T(" in"));
+      DLOG(_T("Current HP2 offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
+      DLOG(_T("Current End offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
 
       GET_IFACE2(GetBroker(),IStrandGeometry, pStrandGeom);
       if ( !AdjustStrandsForSlope(sl_reqd, slope, endType, Nh) )
       {
-         LOG(_T("** DESIGN FAILED ** We cannot adjust Strands to design for allowable hold down"));
+         LOG_FAIL(_T("Cannot adjust harped strands to satisfy the allowable hold down force"));
          m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::ExceededMaxHoldDownForce);
          return false;
       }
 
-      LOG(_T("** Adjusted Start offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metStart) ,WBFL::Units::Measure::Inch) << _T(" in"));
-      LOG(_T("** Adjusted HP1   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metStart) ,WBFL::Units::Measure::Inch) << _T(" in"));
-      LOG(_T("** Adjusted HP2   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metEnd) ,WBFL::Units::Measure::Inch) << _T(" in"));
-      LOG(_T("** Adjusted End   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metEnd) ,WBFL::Units::Measure::Inch) << _T(" in"));
+      LOG_ACTION(_T("Adjusted Start offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metStart) ,WBFL::Units::Measure::Inch) << _T(" in"));
+      LOG_ACTION(_T("Adjusted HP1   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metStart) ,WBFL::Units::Measure::Inch) << _T(" in"));
+      LOG_ACTION(_T("Adjusted HP2   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetHp(pgsTypes::metEnd) ,WBFL::Units::Measure::Inch) << _T(" in"));
+      LOG_ACTION(_T("Adjusted End   offset = ")<< WBFL::Units::ConvertFromSysUnits(GetHarpStrandOffsetEnd(pgsTypes::metEnd) ,WBFL::Units::Measure::Inch) << _T(" in"));
       if (m_HoldDownCriteria.type == HoldDownCriteria::Type::Total)
       {
-         LOG(_T("New avg slope is 1 : ") << pStrandGeom->GetAvgStrandSlope(poi, &GetSegmentConfiguration()));
+         DLOG(_T("New avg slope is 1 : ") << pStrandGeom->GetAvgStrandSlope(poi, &GetSegmentConfiguration()));
       }
       else
       {
-         LOG(_T("New max strand slope is 1 : ") << pStrandGeom->GetMaxStrandSlope(poi, &GetSegmentConfiguration()));
+         DLOG(_T("New max strand slope is 1 : ") << pStrandGeom->GetMaxStrandSlope(poi, &GetSegmentConfiguration()));
       }
    }
 
@@ -1547,13 +1547,13 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
    Float64 adj2 = (X4-X3) * (1/fabs(slope) - 1/fabs(sl_reqd));
    Float64 adj = Max(adj1,adj2);
 
-   LOG(_T("Vertical adjustment required to achieve slope = ")<< WBFL::Units::ConvertFromSysUnits(adj,WBFL::Units::Measure::Inch) << _T(" in"));
+   DLOG(_T("Vertical adjustment required to achieve slope = ")<< WBFL::Units::ConvertFromSysUnits(adj,WBFL::Units::Measure::Inch) << _T(" in"));
 
    // try to adjust end first
    Float64 end_offset_inc = GetHarpedEndOffsetIncrement();
    if (0.0 < end_offset_inc && !m_DesignOptions.doForceHarpedStrandsStraight)
    {
-      LOG(_T("Attempt to adjust hold down by lowering at ") << (endType == pgsTypes::metStart ? _T("start") : _T("end")) << _T(" ends"));
+      DLOG(_T("Attempt to adjust hold down by lowering at ") << (endType == pgsTypes::metStart ? _T("start") : _T("end")) << _T(" ends"));
       Float64 curr_adj = m_pArtifact->GetHarpStrandOffsetEnd(endType);
 
       const GDRCONFIG& config = GetSegmentConfiguration();
@@ -1563,30 +1563,30 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
 
       // adjust by round increment
       Float64 end_adj = ::CeilOff(adj, end_offset_inc);
-      LOG(_T("End adjustment rounded to increment = ")<< WBFL::Units::ConvertFromSysUnits(end_adj,WBFL::Units::Measure::Inch) << _T(" in"));
+      DLOG(_T("End adjustment rounded to increment = ")<< WBFL::Units::ConvertFromSysUnits(end_adj,WBFL::Units::Measure::Inch) << _T(" in"));
 
       Float64 max_adj = curr_adj - end_lower_bound;
       if (0 < max_adj)
       {
          if (end_adj <= max_adj)
          {
-            LOG(_T("Entire adjustment for slope can be taken at girder end - doing so"));
+            DLOG(_T("Entire adjustment for slope can be taken at girder end - doing so"));
             m_pArtifact->SetHarpStrandOffsetEnd(endType,curr_adj - end_adj);
             m_bConfigDirty = true; // cache is dirty
             adj = 0.0;
          }
          else
          {
-            LOG(_T("Partial adjustment for slope can be taken at girder end. Adjusting to ")<< WBFL::Units::ConvertFromSysUnits(end_lower_bound,WBFL::Units::Measure::Inch) << _T(" in"));
+            DLOG(_T("Partial adjustment for slope can be taken at girder end. Adjusting to ")<< WBFL::Units::ConvertFromSysUnits(end_lower_bound,WBFL::Units::Measure::Inch) << _T(" in"));
             m_pArtifact->SetHarpStrandOffsetEnd(endType,end_lower_bound);
             m_bConfigDirty = true; // cache is dirty
             adj -= (curr_adj-end_lower_bound);
-            LOG(_T("reminder of adjustment required = ")<< WBFL::Units::ConvertFromSysUnits(adj,WBFL::Units::Measure::Inch) << _T(" in"));
+            DLOG(_T("reminder of adjustment required = ")<< WBFL::Units::ConvertFromSysUnits(adj,WBFL::Units::Measure::Inch) << _T(" in"));
          }
       }
       else
       {
-         LOG(_T("Strands at end already adjusted as low as possible"));
+         DLOG(_T("Strands at end already adjusted as low as possible"));
       }
    }
 
@@ -1594,7 +1594,7 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
    Float64 hp_offset_inc = GetHarpedHpOffsetIncrement();
    if (0.0 < adj && 0.0 < hp_offset_inc)
    {
-      LOG(_T("Attempt to adjust Strand slope by raising at ") << (endType == pgsTypes::metStart ? _T("left") : _T("right")) << _T(" HP"));
+      DLOG(_T("Attempt to adjust Strand slope by raising at ") << (endType == pgsTypes::metStart ? _T("left") : _T("right")) << _T(" HP"));
       Float64 curr_adj = m_pArtifact->GetHarpStrandOffsetHp(endType);
       Float64 hp_lower_bound, hp_upper_bound;
 
@@ -1606,7 +1606,7 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
       {
          if (adj <= max_adj)
          {
-            LOG(_T("Entire adjustment for slope can be taken at girder HP - doing so"));
+            DLOG(_T("Entire adjustment for slope can be taken at girder HP - doing so"));
             m_pArtifact->SetHarpStrandOffsetHp(endType,curr_adj + adj);
             m_bConfigDirty = true; // cache is dirty
             adj = 0.0;
@@ -1614,7 +1614,7 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
       }
       else
       {
-         LOG(_T("Strands at HP already adjusted as high as possible - cannot achieve target slope reduction"));
+         DLOG(_T("Strands at HP already adjusted as high as possible - cannot achieve target slope reduction"));
       }
    }
 
@@ -1625,7 +1625,7 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
 bool pgsStrandDesignTool::SwapStraightForHarped()
 {
    ATLASSERT(!m_pRaisedStraightStrandDesignTool);
-   LOG(_T("Attempting to change strand proportions by moving straight strands into harped pattern"));
+   DLOG(_T("Attempting to change strand proportions by moving straight strands into harped pattern"));
    StrandIndexType Ns = GetNs();
    StrandIndexType Nh = GetNh();
    if ( Ns < 2 )
@@ -1638,19 +1638,19 @@ bool pgsStrandDesignTool::SwapStraightForHarped()
 
 bool pgsStrandDesignTool::AddStrands()
 {
-   LOG(_T("Attempting to add permanent strands"));
+   DLOG(_T("Attempting to add permanent strands"));
 
    StrandIndexType Ns = GetNs();
    StrandIndexType Nh = GetNh();
    StrandIndexType Np = Ns + Nh;
 
 
-   LOG(_T("Current configuration -> Ns = ") << Ns << _T(" Nh = ") << Nh <<_T(" Nperm = ") <<Np);
+   DLOG(_T("Current configuration -> Ns = ") << Ns << _T(" Nh = ") << Nh <<_T(" Nperm = ") <<Np);
 
    StrandIndexType nextNp = this->GetNextNumPermanentStrands(Np);
    if ( nextNp != INVALID_INDEX )
    {
-      LOG(_T("Adding ") << (nextNp - Np) << _T(" permanent strands"));
+      DLOG(_T("Adding ") << (nextNp - Np) << _T(" permanent strands"));
       if (!SetNumPermanentStrands(nextNp))
       {
          return false;
@@ -1659,39 +1659,39 @@ bool pgsStrandDesignTool::AddStrands()
    }
    else
    {
-      LOG(_T("Number of strands exceed maximum for this girder"));
+      LOG_FAIL(_T("Cannot add permanent strands - the maximum for this girder has been reached"));
       return false;
    }
 
    Ns = GetNs();
    Nh = GetNh();
 
-   LOG(_T("** Successfully added strands -> Ns = ") << Ns << _T(" Nh = ") << Nh);
+   LOG_ACTION(_T("Added permanent strands -> Ns = ") << Ns << _T(" Nh = ") << Nh);
 
    return KeepHarpedStrandsInBounds();
 }
 
 bool pgsStrandDesignTool::AddTempStrands()
 {
-   LOG(_T("Attempting to add temporary strands"));
+   DLOG(_T("Attempting to add temporary strands"));
 
    GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
    StrandIndexType Nt = m_pArtifact->GetNumTempStrands();
 
-   LOG(_T("Current configuration -> Nt = ") << Nt);
+   DLOG(_T("Current configuration -> Nt = ") << Nt);
    StrandIndexType nextNt = pStrandGeom->GetNextNumStrands(m_SegmentKey,pgsTypes::Temporary,Nt);
    if ( nextNt == 0 || nextNt == INVALID_INDEX )
    {
-      LOG(_T("Number of temp strand exceeds maximum for this girder"));
+      LOG_FAIL(_T("Cannot add temporary strands - the maximum for this girder has been reached"));
       return false;
    }
    else
    {
       GET_IFACE2(GetBroker(),IPretensionForce,pPrestressForce);
 
-      LOG(_T("Adding ") << (nextNt - Nt) << _T(" temporary strands"));
-      LOG(_T("** Successfully added strands -> Nt = ") << nextNt);
+      DLOG(_T("Adding ") << (nextNt - Nt) << _T(" temporary strands"));
+      LOG_ACTION(_T("Added temporary strands -> Nt = ") << nextNt);
       m_pArtifact->SetNumTempStrands( nextNt );
       m_pArtifact->SetPjackTempStrands( pPrestressForce->GetPjackMax(m_SegmentKey,pgsTypes::Temporary,nextNt) );
       m_pArtifact->SetUsedMaxPjackTempStrands( true );
@@ -1703,7 +1703,7 @@ bool pgsStrandDesignTool::AddTempStrands()
 
 bool pgsStrandDesignTool::AddRaisedStraightStrands()
 {
-   LOG(_T("** Attempting to add raised straight strands"));
+   DLOG(_T("Attempting to add raised straight strands"));
    if ( IsDesignRaisedStraight() )
    {
       ATLASSERT(m_pRaisedStraightStrandDesignTool); // better be alive
@@ -1713,7 +1713,7 @@ bool pgsStrandDesignTool::AddRaisedStraightStrands()
    else
    {
       // not raised straight design
-      LOG(_T("Raised straight strands design not available for this girder type"));
+      DLOG(_T("Raised straight strands design not available for this girder type"));
       return false;
    }
 }
@@ -1727,7 +1727,7 @@ void pgsStrandDesignTool::SimplifyDesignFillOrder(pgsSegmentDesignArtifact* pArt
       ATLASSERT(m_pRaisedStraightStrandDesignTool); // better be alive
       if(m_pRaisedStraightStrandDesignTool->GetNumUsedRaisedStrandLocations() == 0)
       {
-         LOG(_T("** A raised strand design was specified, but no raised strands were used. Change fill type back to grid order."));
+         DLOG(_T("A raised strand design was specified, but no raised strands were used. Change fill type back to grid order."));
          arDesignOptions options = pArtifact->GetDesignOptions();
 
          options.doStrandFillType = ftGridOrder;
@@ -1764,9 +1764,33 @@ public:
    }
 };
 
-void pgsStrandDesignTool::DumpDesignParameters() const
+std::_tstring pgsStrandDesignTool::GetDesignStateSummary() const
 {
-#if defined ENABLE_LOGGING
+   using namespace pgsDesignLog;
+   std::_tostringstream os;
+   os << _T("f'c=") << ksi(m_pArtifact->GetConcreteStrength()) << _T(" ksi, f'ci=") << ksi(m_pArtifact->GetReleaseStrength()) << _T(" ksi")
+      << _T(", Np=") << m_pArtifact->GetNumStraightStrands() + m_pArtifact->GetNumHarpedStrands()
+      << _T(" (Ns=") << m_pArtifact->GetNumStraightStrands() << _T(", Nh=") << m_pArtifact->GetNumHarpedStrands() << _T(")")
+      << _T(", Nt=") << m_pArtifact->GetNumTempStrands()
+      << _T(", debonded=") << m_pArtifact->GetStraightStrandDebondInfo().size();
+
+   if (IsDesignSlabOffset())
+   {
+      os << _T(", slab offset=") << in(m_pArtifact->GetSlabOffset(pgsTypes::metStart)) << _T("/") << in(m_pArtifact->GetSlabOffset(pgsTypes::metEnd)) << _T(" in");
+   }
+
+   return os.str();
+}
+
+void pgsStrandDesignTool::DumpDesignParameters(LPCTSTR lpszWhen) const
+{
+#if defined ENABLE_DESIGN_LOGGING
+   if (!pgsDesignLog::IsEnabled())
+   {
+      return;
+   }
+
+   using namespace pgsDesignLog;
 
    GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
@@ -1778,31 +1802,32 @@ void pgsStrandDesignTool::DumpDesignParameters() const
    Float64 hp2_offset  = pStrandGeom->ComputeHarpedOffsetFromAbsoluteHp(m_GirderEntryName.c_str(), pgsTypes::metEnd, pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec,  hsoBOTTOM2BOTTOM, m_pArtifact->GetHarpStrandOffsetHp(pgsTypes::metEnd));
    Float64 end_offset = pStrandGeom->ComputeHarpedOffsetFromAbsoluteEnd(m_GirderEntryName.c_str(), pgsTypes::metEnd, pgsTypes::asHarped, m_HgStart, m_HgHp1, m_HgHp2, m_HgEnd, fillvec, hsoTOP2TOP, m_pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metEnd));
 
-   LOG(_T(""));
-   LOG(_T("---------------------------------------------------------------"));
-   LOG(_T("Current design parameters"));
-   LOG(_T(""));
-   LOG(_T("f'c  = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetConcreteStrength(),WBFL::Units::Measure::KSI) << _T(" KSI"));
-   LOG(_T("f'ci = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetReleaseStrength(),WBFL::Units::Measure::KSI) << (m_ReleaseStrengthResult==ConcSuccessWithRebar?_T(" KSI - Min Rebar Required "):_T(" KSI")) );
-   LOG(_T("Np = ") << m_pArtifact->GetNumStraightStrands()+ m_pArtifact->GetNumHarpedStrands());
-   LOG(_T("Ns = ") << m_pArtifact->GetNumStraightStrands() << _T("   Pjack = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetPjackStraightStrands(), WBFL::Units::Measure::Kip) << _T(" Kip"));
-   LOG(_T("Nh = ") << m_pArtifact->GetNumHarpedStrands() << _T("   Pjack = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetPjackHarpedStrands(), WBFL::Units::Measure::Kip) << _T(" Kip"));
-   LOG(_T("Nt = ") << m_pArtifact->GetNumTempStrands() << _T("   Pjack = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetPjackTempStrands(), WBFL::Units::Measure::Kip) << _T(" Kip"));
-   LOG(_T("HP Offset at Start = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metStart),WBFL::Units::Measure::Inch) << _T(" in") << _T(" (From top = ") << WBFL::Units::ConvertFromSysUnits(start_offset,WBFL::Units::Measure::Inch) << _T(" in)"));
-   LOG(_T("HP Offset at HP1  = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetHp(pgsTypes::metStart),WBFL::Units::Measure::Inch) << _T(" in") << _T(" (From bottom = ") << WBFL::Units::ConvertFromSysUnits(hp1_offset,WBFL::Units::Measure::Inch) << _T(" in)"));
-   LOG(_T("HP Offset at HP2  = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetHp(pgsTypes::metEnd),WBFL::Units::Measure::Inch) << _T(" in") << _T(" (From bottom = ") << WBFL::Units::ConvertFromSysUnits(hp2_offset,WBFL::Units::Measure::Inch) << _T(" in)"));
-   LOG(_T("HP Offset at End = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metEnd),WBFL::Units::Measure::Inch) << _T(" in") << _T(" (From top = ") << WBFL::Units::ConvertFromSysUnits(end_offset,WBFL::Units::Measure::Inch) << _T(" in)"));
-   LOG(_T("Slab Offset at Start = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetSlabOffset(pgsTypes::metStart),WBFL::Units::Measure::Inch) << _T(" in"));
-   LOG(_T("Slab Offset at End   = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetSlabOffset(pgsTypes::metEnd),WBFL::Units::Measure::Inch) << _T(" in"));
-   LOG(_T("Assumed excess Camber   = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetAssumedExcessCamber(),WBFL::Units::Measure::Inch) << _T(" in"));
-   LOG(_T("Pick Point = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetLeftLiftingLocation(), WBFL::Units::Measure::Feet) << _T(" ft"));
-   LOG(_T("Leading Overhang  = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetLeadingOverhang(), WBFL::Units::Measure::Feet) << _T(" ft"));
-   LOG(_T("Trailing Overhang = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetTrailingOverhang(), WBFL::Units::Measure::Feet) << _T(" ft"));
+   DLOG(_T("Design parameters") << (lpszWhen ? _T(" ") : _T("")) << (lpszWhen ? lpszWhen : _T("")) << _T(":"));
+   DLOG(_T("   Concrete  : f'c = ") << ksi(m_pArtifact->GetConcreteStrength()) << _T(" ksi, f'ci = ") << ksi(m_pArtifact->GetReleaseStrength()) << _T(" ksi")
+       << (m_ReleaseStrengthResult==ConcSuccessWithRebar ? _T(" (release requires min. bonded rebar)") : _T("")));
+   DLOG(_T("   Strands   : Np = ") << m_pArtifact->GetNumStraightStrands()+ m_pArtifact->GetNumHarpedStrands()
+       << _T(" (Ns = ") << m_pArtifact->GetNumStraightStrands() << _T(", Nh = ") << m_pArtifact->GetNumHarpedStrands() << _T("), Nt = ") << m_pArtifact->GetNumTempStrands()
+       << _T("; Pjack Ns = ") << kip(m_pArtifact->GetPjackStraightStrands()) << _T(", Nh = ") << kip(m_pArtifact->GetPjackHarpedStrands()) << _T(", Nt = ") << kip(m_pArtifact->GetPjackTempStrands()) << _T(" kip"));
+   if (0 < m_pArtifact->GetNumHarpedStrands())
+   {
+      DLOG(_T("   Harp offs : start = ") << in(m_pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metStart)) << _T(" in (") << in(start_offset) << _T(" in from top)")
+          << _T(", HP1 = ") << in(m_pArtifact->GetHarpStrandOffsetHp(pgsTypes::metStart)) << _T(" in (") << in(hp1_offset) << _T(" in from bottom)")
+          << _T(", HP2 = ") << in(m_pArtifact->GetHarpStrandOffsetHp(pgsTypes::metEnd)) << _T(" in (") << in(hp2_offset) << _T(" in from bottom)")
+          << _T(", end = ") << in(m_pArtifact->GetHarpStrandOffsetEnd(pgsTypes::metEnd)) << _T(" in (") << in(end_offset) << _T(" in from top)"));
+   }
+   DLOG(_T("   Slab      : offset start = ") << in(m_pArtifact->GetSlabOffset(pgsTypes::metStart)) << _T(" in, end = ") << in(m_pArtifact->GetSlabOffset(pgsTypes::metEnd))
+       << _T(" in, assumed excess camber = ") << in(m_pArtifact->GetAssumedExcessCamber()) << _T(" in"));
+   DLOG(_T("   Handling  : pick point = ") << ft(m_pArtifact->GetLeftLiftingLocation()) << _T(" ft, hauling overhangs leading = ") << ft(m_pArtifact->GetLeadingOverhang())
+       << _T(" ft, trailing = ") << ft(m_pArtifact->GetTrailingOverhang()) << _T(" ft"));
 
    DebondConfigCollection dbinfo = m_pArtifact->GetStraightStrandDebondInfo();
-   if (!dbinfo.empty())
+   if (dbinfo.empty())
    {
-      LOG(_T("Debonding Information:"));
+      DLOG(_T("   Debonding : none"));
+   }
+   else
+   {
+      DLOG(_T("   Debonding : ") << dbinfo.size() << _T(" strands (strand indices by debond length)"));
       // sort debonding by section location. no need to output right and left ends because we are always symmetric
       std::sort(dbinfo.begin(), dbinfo.end(), DebondInfoSorter());
 
@@ -1813,7 +1838,7 @@ void pgsStrandDesignTool::DumpDesignParameters() const
          Float64 curr_loc = it->DebondLength[pgsTypes::metStart];
          Float64 last_loc = curr_loc;
          std::_tostringstream os;
-         os<<_T("    Strands Debonded at ")<< WBFL::Units::ConvertFromSysUnits(curr_loc, WBFL::Units::Measure::Feet) << _T(" ft: ");
+         os<<_T("      ")<< WBFL::Units::ConvertFromSysUnits(curr_loc, WBFL::Units::Measure::Feet) << _T(" ft: ");
          while(curr_loc == last_loc)
          {
             os << it->strandIdx << _T(", ");
@@ -1838,11 +1863,9 @@ void pgsStrandDesignTool::DumpDesignParameters() const
             str.erase(n-2,2); // get rid of trailing _T(", ")
          }
 
-         LOG( str );
+         DLOG( str );
       }
    }
-   LOG(_T("---------------------------------------------------------------"));
-   LOG(_T(""));
 #endif
 }
 
@@ -1899,7 +1922,7 @@ bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired, const Stres
       return false;
 
    Float64 fc_current = m_pArtifact->GetConcreteStrength();
-   LOG(_T("Update Final Concrete Strength if needed. f'c required = ")<< WBFL::Units::ConvertFromSysUnits(fcRequired,WBFL::Units::Measure::KSI) << _T(" KSI f'c current = ")<< WBFL::Units::ConvertFromSysUnits(fc_current,WBFL::Units::Measure::KSI) << _T(" KSI"));;
+   DLOG(_T("Request f'c = ") << pgsDesignLog::ksi(fcRequired) << _T(" ksi (current f'c = ") << pgsDesignLog::ksi(fc_current) << _T(" ksi)"));
 
    Float64 fc_max = GetMaximumConcreteStrength();
 
@@ -1907,27 +1930,27 @@ bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired, const Stres
    {
       // round up to nearest 100psi
       fcRequired = CeilOff(fcRequired, m_ConcreteAccuracy );
-      LOG(_T("Round up to nearest 100psi. New Required value is now = ")<< WBFL::Units::ConvertFromSysUnits(fcRequired,WBFL::Units::Measure::KSI) << _T(" KSI"));;
+      LOG_DETAIL(_T("Rounded up to nearest increment. Required f'c = ")<< WBFL::Units::ConvertFromSysUnits(fcRequired,WBFL::Units::Measure::KSI) << _T(" ksi"));
    }
 
    if (fc_max < fcRequired)
    {
       ATLASSERT(false); // should be checked by caller
-      LOG(_T("FAILED - f'c cannot exceed ")<< WBFL::Units::ConvertFromSysUnits(fc_max,WBFL::Units::Measure::KSI) << _T(" KSI"));
+      LOG_FAIL(_T("f'c cannot exceed ")<< WBFL::Units::ConvertFromSysUnits(fc_max,WBFL::Units::Measure::KSI) << _T(" ksi"));
       return false;
    }
 
    Float64 fc_min = GetMinimumConcreteStrength();
    if (fcRequired < fc_min)
    {
-      LOG(_T("f'c required less than minimum.  No need to update f'c"));
+      DLOG(_T("f'c required less than minimum.  No need to update f'c"));
       return false;
    }
 
    Float64 fci = m_pArtifact->GetReleaseStrength();
    if ( fcRequired < fci )
    {
-      LOG(_T("f'c required less than f'ci. Release controls - Set f'c to f'ci"));
+      DLOG(_T("f'c required less than f'ci. Release controls - Set f'c to f'ci"));
       fcRequired = CeilOff(fci, m_ConcreteAccuracy );;
    }
 
@@ -1936,11 +1959,11 @@ bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired, const Stres
    {
       m_pArtifact->SetConcreteStrength(newfc);
       m_bConfigDirty = true; // cache is dirty
-      LOG(_T("** Updated Final Concrete Strength to ")<< WBFL::Units::ConvertFromSysUnits(newfc,WBFL::Units::Measure::KSI) << _T(" KSI"));
+      LOG_ACTION(_T("f'c changed from ") << pgsDesignLog::ksi(fc_current) << _T(" to ") << pgsDesignLog::ksi(newfc) << _T(" ksi"));
    }
    else
    {
-      LOG(_T("A higher concrete strength is required for a different design element. Don't update f'c"));
+      DLOG(_T("f'c not changed (requested ") << pgsDesignLog::ksi(fcRequired) << _T(" ksi): ") << m_FcControl.Describe());
       return false; // nothing changed
    }
 
@@ -1950,16 +1973,16 @@ bool pgsStrandDesignTool::UpdateConcreteStrength(Float64 fcRequired, const Stres
 bool pgsStrandDesignTool::UpdateConcreteStrengthForShear(Float64 fcRequired,IntervalIndexType intervalIdx,pgsTypes::LimitState limitState)
 {
    Float64 fc_current = m_pArtifact->GetConcreteStrength();
-   LOG(_T("Update Final Concrete Strength for shear stress requirement. f'c required = ")<< WBFL::Units::ConvertFromSysUnits(fcRequired,WBFL::Units::Measure::KSI) << _T(" KSI f'c current = ")<< WBFL::Units::ConvertFromSysUnits(fc_current,WBFL::Units::Measure::KSI) << _T(" KSI"));;
+   DLOG(_T("Update Final Concrete Strength for shear stress requirement. f'c required = ")<< WBFL::Units::ConvertFromSysUnits(fcRequired,WBFL::Units::Measure::KSI) << _T(" ksi f'c current = ")<< WBFL::Units::ConvertFromSysUnits(fc_current,WBFL::Units::Measure::KSI) << _T(" ksi"));;
 
    // round up to nearest 100psi
    fcRequired = CeilOff(fcRequired, m_ConcreteAccuracy );
-   LOG(_T("Round up to nearest 100psi. New Required value is now = ")<< WBFL::Units::ConvertFromSysUnits(fcRequired,WBFL::Units::Measure::KSI) << _T(" KSI"));
+   DLOG(_T("Round up to nearest 100psi. New Required value is now = ")<< WBFL::Units::ConvertFromSysUnits(fcRequired,WBFL::Units::Measure::KSI) << _T(" ksi"));
 
    Float64 fc_min = GetMinimumConcreteStrength();
    if (fcRequired < fc_min)
    {
-      LOG(_T("Required concrete stress is less than minimum. Setting concrete strength to minimum: ") << WBFL::Units::ConvertFromSysUnits(fc_min, WBFL::Units::Measure::KSI) << _T(" KSI"));
+      DLOG(_T("Required concrete stress is less than minimum. Setting concrete strength to minimum: ") << WBFL::Units::ConvertFromSysUnits(fc_min, WBFL::Units::Measure::KSI) << _T(" ksi"));
       fcRequired = fc_min;
    }
 
@@ -1967,7 +1990,7 @@ bool pgsStrandDesignTool::UpdateConcreteStrengthForShear(Float64 fcRequired,Inte
    if (fc_max < fcRequired)
    {
       ATLASSERT(false); // should be checked by caller
-      LOG(_T("FAILED - f'c cannot exceed ")<< WBFL::Units::ConvertFromSysUnits(fc_max,WBFL::Units::Measure::KSI) << _T(" KSI"));
+      LOG_FAIL(_T("f'c cannot exceed ")<< WBFL::Units::ConvertFromSysUnits(fc_max,WBFL::Units::Measure::KSI) << _T(" ksi"));
       return false;
    }
 
@@ -1976,11 +1999,11 @@ bool pgsStrandDesignTool::UpdateConcreteStrengthForShear(Float64 fcRequired,Inte
    m_FcControl.DoUpdateForShear(fcRequired, intervalIdx, limitState);
    m_pArtifact->SetConcreteStrength(fcRequired);
    m_bConfigDirty = true; // cache is dirty
-      LOG(_T("** Updated Final Concrete Strength to ") << WBFL::Units::ConvertFromSysUnits(fcRequired, WBFL::Units::Measure::KSI) << _T(" KSI"));
+      LOG_ACTION(_T("f'c changed to ") << pgsDesignLog::ksi(fcRequired) << _T(" ksi for shear"));
    }
    else
    {
-      LOG(_T("Required f'c is less that current f'c - no change"));
+      DLOG(_T("Required f'c is less that current f'c - no change"));
    }
 
    return true;
@@ -1988,28 +2011,27 @@ bool pgsStrandDesignTool::UpdateConcreteStrengthForShear(Float64 fcRequired,Inte
 
 bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,const StressCheckTask& task,pgsTypes::StressLocation stressLocation)
 {
-   LOG(_T("Update Release Strength if needed. f'ci required = ")<< WBFL::Units::ConvertFromSysUnits(fciRequired,WBFL::Units::Measure::KSI) << _T(" KSI"));;
+   DLOG(_T("Request f'ci = ") << pgsDesignLog::ksi(fciRequired) << _T(" ksi (current f'ci = ") << pgsDesignLog::ksi(m_pArtifact->GetReleaseStrength()) << _T(" ksi)"));
 
    Float64 fci_current = m_pArtifact->GetConcreteStrength();
 
    Float64 fci_min = GetMinimumReleaseStrength();
    if( fciRequired < fci_min )
    {
-      LOG(_T("f'ci min = ") << WBFL::Units::ConvertFromSysUnits(fci_min,WBFL::Units::Measure::KSI) << _T(" KSI"));
-      LOG(_T("f'ci cannot be less than min"));
+      LOG_DETAIL(_T("f'ci cannot be less than the minimum of ") << pgsDesignLog::ksi(fci_min) << _T(" ksi"));
 
       fciRequired = fci_min;
-      LOG(_T("f'ci required now = ") << WBFL::Units::ConvertFromSysUnits(fciRequired,WBFL::Units::Measure::KSI) << _T(" KSI"));
+      LOG_DETAIL(_T("f'ci required now = ") << WBFL::Units::ConvertFromSysUnits(fciRequired,WBFL::Units::Measure::KSI) << _T(" ksi"));
    }
 
 
    fciRequired = CeilOff(fciRequired, m_ConcreteAccuracy );
-   LOG(_T("Round up to nearest 100psi. Required f'ci = ")<< WBFL::Units::ConvertFromSysUnits(fciRequired,WBFL::Units::Measure::KSI) << _T(" KSI"));;
+   LOG_DETAIL(_T("Rounded up to nearest increment. Required f'ci = ")<< WBFL::Units::ConvertFromSysUnits(fciRequired,WBFL::Units::Measure::KSI) << _T(" ksi"));
 
    Float64 fci;
    if ( m_FciControl.DoUpdate(fciRequired,task,stressLocation,&fci) )
    {
-      LOG(_T("** Setting f'ci to = ")<< WBFL::Units::ConvertFromSysUnits(fci, WBFL::Units::Measure::KSI) << _T(" KSI"));;
+      LOG_ACTION(_T("f'ci changed from ") << pgsDesignLog::ksi(m_pArtifact->GetReleaseStrength()) << _T(" to ") << pgsDesignLog::ksi(fci) << _T(" ksi"));
       m_pArtifact->SetReleaseStrength(fci);
       m_bConfigDirty = true; // cache is dirty
 
@@ -2031,19 +2053,19 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
             // Note: This logic here might require more treatment if designs are coming up requiring
             //       min rebar when is is not desired. If this is the case, some serious thought must
             //       be put into m_FciControl.
-            LOG(_T("Tensile demand requires minimum rebar - allow it, even though current strength does not require"));
+            DLOG(_T("Tensile demand requires minimum rebar - allow it, even though current strength does not require"));
             m_ReleaseStrengthResult = strengthResult;
          }
       }
 
-      LOG(_T("A higher release strength is required for a different design element. Don't update f'ci"));
+      DLOG(_T("f'ci not changed (requested ") << pgsDesignLog::ksi(fciRequired) << _T(" ksi): ") << m_FciControl.Describe());
       return false; // nothing changed
    }
 
    // Release strength can drive final.
    if (UpdateConcreteStrength(fci,task,stressLocation))
    {
-      LOG(_T("** Concrete strength changed by change in release strength"));
+      DLOG(_T("f'c was raised to stay at or above the new f'ci"));
    }
 
    return true;
@@ -2056,7 +2078,7 @@ void pgsStrandDesignTool::ClearReleaseStrengthDecreaseHistory(const StressCheckT
 
 ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Float64 fControl,const StressCheckTask& task,Float64* pfc) const
 {
-   LOG(_T("Entering ComputeRequiredConcreteStrength"));
+   DESIGN_LOG_SCOPE(_T("ComputeRequiredConcreteStrength for ") << (task.stressType == pgsTypes::Tension ? _T("tension") : _T("compression")) << _T(" stress of ") << pgsDesignLog::ksi(fControl) << _T(" ksi"));
    Float64 fc_reqd;
 
    GET_IFACE2(GetBroker(),IIntervals,pIntervals);
@@ -2069,7 +2091,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    if ( task.stressType == pgsTypes::Compression )
    {
       fc_reqd = pAllowStress->ComputeRequiredConcreteStrength(dummyPOI,pgsTypes::TopGirder,fControl,task,false,false);
-      LOG( _T("F demand (compression) = ") << WBFL::Units::ConvertFromSysUnits(fControl,WBFL::Units::Measure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" KSI"));
+      DLOG( _T("F demand (compression) = ") << WBFL::Units::ConvertFromSysUnits(fControl,WBFL::Units::Measure::KSI) << _T(" ksi") << _T(" --> f'c (req'd unrounded) = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" ksi"));
    }
    else
    {
@@ -2085,17 +2107,18 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
             if ((Float64)NO_AVAILABLE_CONCRETE_STRENGTH != fc_reqd)
             {
                   result = ConcSuccessWithRebar;
-                  LOG(_T("Min rebar is required to achieve required strength"));
+                  DLOG(_T("Min rebar is required to achieve required strength"));
             }
             else
             {
-               LOG(_T("Required strength is greater than spec defined upper limit. cannot achieve strength"));
+               LOG_FAIL(_T("Required f'c exceeds the specification upper limit, even with min. bonded rebar - no concrete strength can satisfy this stress"));
+               DESIGN_LOG_SCOPE_RESULT(_T("-> FAILED"));
                fc_reqd = -1;
                return ConcFailed;
             }
          }
 
-         LOG(_T("F demand (tension) = ") << WBFL::Units::ConvertFromSysUnits(fControl, WBFL::Units::Measure::KSI) << _T(" KSI") << _T(" --> f'c (req'd unrounded) = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd, WBFL::Units::Measure::KSI) << (result == ConcSuccessWithRebar ? _T(" KSI, min rebar required") : _T(" KSI")));
+         DLOG(_T("F demand (tension) = ") << WBFL::Units::ConvertFromSysUnits(fControl, WBFL::Units::Measure::KSI) << _T(" ksi") << _T(" --> f'c (req'd unrounded) = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd, WBFL::Units::Measure::KSI) << (result == ConcSuccessWithRebar ? _T(" ksi, min rebar required") : _T(" ksi")));
       }
       else
       {
@@ -2111,7 +2134,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    if ( fc_reqd < fc_min )
    {
       fc_reqd = fc_min;
-      LOG(_T("Required strength less than minimum... setting f'c = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" KSI"));
+      DLOG(_T("Required strength less than minimum... setting f'c = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" ksi"));
    }
    else if ( fc_max < fc_reqd )
    {
@@ -2119,19 +2142,20 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
       if (GetConcreteStrength() < fc_max)
       {
          fc_reqd = fc_max;
-         LOG(_T("Required strength exceeds that allowed by 5.4.2.1 - try setting f'c to max for one iteration = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" KSI"));
+         DLOG(_T("Required strength exceeds that allowed by 5.4.2.1 - try setting f'c to max for one iteration = ") << WBFL::Units::ConvertFromSysUnits(fc_reqd,WBFL::Units::Measure::KSI) << _T(" ksi"));
       }
       else
       {
          // we've tried the max and it didn't work, time to punt
-         LOG(_T("*** Required strength exceeds that allowed by 5.4.2.1 ***- and we've tried max - Punt"));
+         LOG_FAIL(_T("Required strength exceeds the maximum allowed by LRFD 5.4.2.1 and the maximum has already been tried - giving up"));
+         DESIGN_LOG_SCOPE_RESULT(_T("-> FAILED"));
          return ConcFailed;
       }
    }
 
    *pfc = fc_reqd;
 
-   LOG(_T("Exiting ComputeRequiredConcreteStrength"));
+   DESIGN_LOG_SCOPE_RESULT(_T("-> required f'c = ") << pgsDesignLog::ksi(fc_reqd) << _T(" ksi, result = ") << (result == ConcFailed ? _T("FAILED") : result == ConcSuccessWithRebar ? _T("OK with min. rebar") : _T("OK")));
    return result;
 }
 
@@ -2141,47 +2165,49 @@ bool pgsStrandDesignTool::Bump500(const StressCheckTask& task,pgsTypes::StressLo
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(m_SegmentKey);
 
-   LOG(_T("Bump 500psi"));
+   DESIGN_LOG_SCOPE(_T("Bump500: increase concrete strength by 500 psi"));
    Float64 five_ksi = WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::KSI);
    Float64 fc = GetConcreteStrength();
    Float64 fci = GetReleaseStrength();
-   LOG(_T("current f'c  = ") << WBFL::Units::ConvertFromSysUnits(fc,WBFL::Units::Measure::KSI) << _T(" KSI") );
-   LOG(_T("current f'ci = ") << WBFL::Units::ConvertFromSysUnits(fci,WBFL::Units::Measure::KSI) << _T(" KSI") );
+   DLOG(_T("current f'c = ") << pgsDesignLog::ksi(fc) << _T(" ksi, f'ci = ") << pgsDesignLog::ksi(fci) << _T(" ksi; target f'c = ") << pgsDesignLog::ksi(fc + five_ksi) << _T(" ksi"));
    fc  += five_ksi;
-   LOG(_T("target f'c  = ") << WBFL::Units::ConvertFromSysUnits(fc,WBFL::Units::Measure::KSI) << _T(" KSI") );
 
    Float64 fc_max = GetMaximumConcreteStrength();
    if (fc_max < fc)
    {
-      LOG(_T("Final Strength Exceeds Maximum of ")<<WBFL::Units::ConvertFromSysUnits(fc_max,WBFL::Units::Measure::KSI) << _T(" KSI - Bump 500 failed") );
+      LOG_FAIL(_T("target f'c exceeds the maximum of ") << pgsDesignLog::ksi(fc_max) << _T(" ksi"));
+      DESIGN_LOG_SCOPE_RESULT(_T("-> FAILED (f'c at maximum)"));
       return false;
    }
 
    if (!UpdateConcreteStrength(fc,task,stressLocation))
    {
-      LOG(_T("Failed increasing concrete strength"));
+      LOG_FAIL(_T("f'c could not be increased"));
+      DESIGN_LOG_SCOPE_RESULT(_T("-> FAILED (f'c not accepted)"));
       return false;
    }
 
    if (task.intervalIdx == releaseIntervalIdx || task.intervalIdx == liftSegmentIntervalIdx)
    {
       fci += five_ksi;
-      LOG(_T("target f'ci = ") << WBFL::Units::ConvertFromSysUnits(fci,WBFL::Units::Measure::KSI) << _T(" KSI") );
+      DLOG(_T("target f'ci = ") << pgsDesignLog::ksi(fci) << _T(" ksi"));
 
       Float64 fci_max = GetMaximumReleaseStrength();
       if (fci_max < fci)
       {
-         LOG(_T("Release Strength Exceeds Maximum of ")<<WBFL::Units::ConvertFromSysUnits(fci_max,WBFL::Units::Measure::KSI) << _T(" KSI - Bump 500 failed") );
+         LOG_FAIL(_T("target f'ci exceeds the maximum of ") << pgsDesignLog::ksi(fci_max) << _T(" ksi"));
+         DESIGN_LOG_SCOPE_RESULT(_T("-> FAILED (f'ci at maximum)"));
          return false;
       }
       else if (!UpdateReleaseStrength(fci,m_ReleaseStrengthResult,task,stressLocation))
       {
-         LOG(_T("Failed increasing concrete release strength"));
+         LOG_FAIL(_T("f'ci could not be increased"));
+         DESIGN_LOG_SCOPE_RESULT(_T("-> FAILED (f'ci not accepted)"));
          return false;
       }
    }
 
-   LOG(_T("** Bump 500psi Succeeded"));
+   DESIGN_LOG_SCOPE_RESULT(_T("-> OK, f'c = ") << pgsDesignLog::ksi(GetConcreteStrength()) << _T(" ksi, f'ci = ") << pgsDesignLog::ksi(GetReleaseStrength()) << _T(" ksi"));
    return true;
 }
 
@@ -2195,7 +2221,14 @@ void pgsStrandDesignTool::SetSlabOffset(pgsTypes::MemberEndType end,Float64 offs
    ATLASSERT(m_MinSlabOffset <= offset);
    ATLASSERT(IsDesignSlabOffset());
 
-   LOG(_T("** Set slab offset to ") <<WBFL::Units::ConvertFromSysUnits(offset,WBFL::Units::Measure::Inch) << (end == pgsTypes::metStart ? _T(" at Start of Girder") : _T(" at End of Girder")));
+   if (IsEqual(offset, m_pArtifact->GetSlabOffset(end)))
+   {
+      LOG_DETAIL(_T("Slab offset at ") << (end == pgsTypes::metStart ? _T("start") : _T("end")) << _T(" unchanged at ") << pgsDesignLog::in(offset) << _T(" in"));
+   }
+   else
+   {
+      LOG_ACTION(_T("Slab offset at ") << (end == pgsTypes::metStart ? _T("start") : _T("end")) << _T(" changed from ") << pgsDesignLog::in(m_pArtifact->GetSlabOffset(end)) << _T(" to ") << pgsDesignLog::in(offset) << _T(" in"));
+   }
    m_pArtifact->SetSlabOffset(end,offset);
    m_bConfigDirty = true; // cache is dirty
 }
@@ -2238,7 +2271,10 @@ Float64 pgsStrandDesignTool::GetAssumedExcessCamberTolerance() const
 
 void pgsStrandDesignTool::SetAssumedExcessCamber(Float64 camber)
 {
-   LOG(_T("** Set assumed excess camber to ") <<WBFL::Units::ConvertFromSysUnits(camber,WBFL::Units::Measure::Inch));
+   if (!IsEqual(camber, m_pArtifact->GetAssumedExcessCamber()))
+   {
+      LOG_ACTION(_T("Assumed excess camber changed from ") << pgsDesignLog::in(m_pArtifact->GetAssumedExcessCamber()) << _T(" to ") << pgsDesignLog::in(camber) << _T(" in"));
+   }
    m_pArtifact->SetAssumedExcessCamber(camber);
    m_bConfigDirty = true; // cache is dirty
 }
@@ -2250,7 +2286,14 @@ Float64 pgsStrandDesignTool::GetAssumedExcessCamber() const
 
 void pgsStrandDesignTool::SetLiftingLocations(Float64 left,Float64 right)
 {
-   LOG(_T("** Lifting locations set to left = ")<<WBFL::Units::ConvertFromSysUnits(left,WBFL::Units::Measure::Feet)<<_T(", right = ")<<WBFL::Units::ConvertFromSysUnits(right,WBFL::Units::Measure::Feet)<< _T(" ft") );
+   if (IsEqual(left, GetLeftLiftingLocation()) && IsEqual(right, GetRightLiftingLocation()))
+   {
+      LOG_DETAIL(_T("Lifting locations unchanged at ") << pgsDesignLog::ft(left) << _T(", ") << pgsDesignLog::ft(right) << _T(" ft"));
+   }
+   else
+   {
+      LOG_ACTION(_T("Lifting locations changed from ") << pgsDesignLog::ft(GetLeftLiftingLocation()) << _T(", ") << pgsDesignLog::ft(GetRightLiftingLocation()) << _T(" to ") << pgsDesignLog::ft(left) << _T(", ") << pgsDesignLog::ft(right) << _T(" ft (left, right)"));
+   }
    m_pArtifact->SetLiftingLocations(left, right);
    m_bConfigDirty = true; // cache is dirty
 }
@@ -2267,7 +2310,14 @@ Float64 pgsStrandDesignTool::GetRightLiftingLocation() const
 
 void pgsStrandDesignTool::SetTruckSupportLocations(Float64 left,Float64 right)
 {
-   LOG(_T("** Hauling locations set to left = ")<<WBFL::Units::ConvertFromSysUnits(left,WBFL::Units::Measure::Feet)<<_T(", right = ")<<WBFL::Units::ConvertFromSysUnits(right,WBFL::Units::Measure::Feet)<< _T(" ft") );
+   if (IsEqual(left, GetTrailingOverhang()) && IsEqual(right, GetLeadingOverhang()))
+   {
+      LOG_DETAIL(_T("Hauling truck support locations unchanged at ") << pgsDesignLog::ft(left) << _T(", ") << pgsDesignLog::ft(right) << _T(" ft"));
+   }
+   else
+   {
+      LOG_ACTION(_T("Hauling truck support locations changed from ") << pgsDesignLog::ft(GetTrailingOverhang()) << _T(", ") << pgsDesignLog::ft(GetLeadingOverhang()) << _T(" to ") << pgsDesignLog::ft(left) << _T(", ") << pgsDesignLog::ft(right) << _T(" ft (trailing, leading)"));
+   }
    m_pArtifact->SetTruckSupportLocations(left, right);
    m_bConfigDirty = true; // cache is dirty
 }
@@ -2284,7 +2334,10 @@ Float64 pgsStrandDesignTool::GetTrailingOverhang() const
 
 void pgsStrandDesignTool::SetHaulTruck(LPCTSTR lpszHaulTruck)
 {
-   LOG(_T("** Haul Truck set to ") << lpszHaulTruck);
+   if (GetHaulTruck() == nullptr || std::_tstring(GetHaulTruck()) != std::_tstring(lpszHaulTruck))
+   {
+      LOG_ACTION(_T("Haul truck changed to ") << lpszHaulTruck);
+   }
    m_pArtifact->SetHaulTruck(lpszHaulTruck);
    m_bConfigDirty = true; // cache is dirty
 }
@@ -2332,6 +2385,7 @@ Float64 pgsStrandDesignTool::GetPjackHarpedStrands() const
 
 void pgsStrandDesignTool::SetOutcome(pgsSegmentDesignArtifact::Outcome outcome)
 {
+   DLOG(_T("Design outcome set to ") << pgsDesignLog::OutcomeName(outcome) << _T(" [") << GetDesignStateSummary() << _T("]"));
    m_pArtifact->SetOutcome(outcome);
 }
 
@@ -2348,26 +2402,26 @@ Float64 pgsStrandDesignTool::GetHarpStrandOffsetHp(pgsTypes::MemberEndType endTy
 void pgsStrandDesignTool::SetHarpStrandOffsetEnd(pgsTypes::MemberEndType endType,Float64 off)
 {
    // set offset, but make sure it stays within bounds
-   LOG(_T("Attempt to offset harped strands at ends to   = ") << WBFL::Units::ConvertFromSysUnits(off, WBFL::Units::Measure::Inch) << _T(" in"));
+   DLOG(_T("Attempt to offset harped strands at ends to   = ") << WBFL::Units::ConvertFromSysUnits(off, WBFL::Units::Measure::Inch) << _T(" in"));
    m_pArtifact->SetHarpStrandOffsetEnd(endType,off);
    m_bConfigDirty = true; // cache is dirty
 
    bool st = KeepHarpedStrandsInBounds();
    ATLASSERT(st);
 
-   LOG(_T("** Strands Actually offset to  = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetEnd(endType), WBFL::Units::Measure::Inch) << _T(" in"));
+   LOG_ACTION(_T("Harped strands offset to ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetEnd(endType), WBFL::Units::Measure::Inch) << _T(" in"));
 }
 
 void pgsStrandDesignTool::SetHarpStrandOffsetHp(pgsTypes::MemberEndType endType,Float64 off)
 {
-   LOG(_T("Attempt to offset harped strands at HPs to   = ") << WBFL::Units::ConvertFromSysUnits(off, WBFL::Units::Measure::Inch) << _T(" in"));
+   DLOG(_T("Attempt to offset harped strands at HPs to   = ") << WBFL::Units::ConvertFromSysUnits(off, WBFL::Units::Measure::Inch) << _T(" in"));
    m_pArtifact->SetHarpStrandOffsetHp(endType,off);
    m_bConfigDirty = true; // cache is dirty
 
    bool st = KeepHarpedStrandsInBounds();
    ATLASSERT(st);
 
-   LOG(_T("** Strands Actually offset to  = ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetHp(endType), WBFL::Units::Measure::Inch) << _T(" in"));
+   LOG_ACTION(_T("Harped strands offset to ") << WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetHarpStrandOffsetHp(endType), WBFL::Units::Measure::Inch) << _T(" in"));
 }
 
 bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
@@ -2377,7 +2431,7 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
       return true;
    }
 
-   LOG(_T("Make sure harped strand patterns stay in bounds"));
+   DLOG(_T("Make sure harped strand patterns stay in bounds"));
 
    StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
    if (0 < nh)
@@ -2539,7 +2593,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
    Float64 distFromStart = poi.GetDistFromStart();
    ATLASSERT( !IsZero(distFromStart) && !IsEqual(distFromStart,m_SegmentLength));
 
-   LOG(_T("Compute total prestressing force at Release in end-zone for the current configuration at ") << WBFL::Units::ConvertFromSysUnits(distFromStart, WBFL::Units::Measure::Feet) << _T(" ft along girder"));
+   DLOG(_T("Compute total prestressing force at Release in end-zone for the current configuration at ") << WBFL::Units::ConvertFromSysUnits(distFromStart, WBFL::Units::Measure::Feet) << _T(" ft along girder"));
 
    Float64 xFerFactor;
    Float64 xferLength = GetTransferLength(pgsTypes::Permanent);
@@ -2555,7 +2609,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
    {
       xFerFactor = 1.0;
    }
-   LOG(_T("Transfer Length Factor = ")<<xFerFactor);
+   DLOG(_T("Transfer Length Factor = ")<<xFerFactor);
 
    // Compute the maximum allowable jacking force for the trial number of strands
    StrandIndexType ns = guess.PrestressConfig.GetStrandCount(pgsTypes::Straight);
@@ -2576,7 +2630,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
    Float64 Aps = m_aps[pgsTypes::Straight]*ns + m_aps[pgsTypes::Harped]*nh + m_aps[pgsTypes::Temporary]*nt;
    Float64 fpj =  pj/Aps;
 
-   LOG(_T("Average jacking stress for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(fpj,WBFL::Units::Measure::KSI) << _T(" KSI"));
+   DLOG(_T("Average jacking stress for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(fpj,WBFL::Units::Measure::KSI) << _T(" ksi"));
 
    // Estimate prestress loss
    pgsPsForceEng psfeng(m_pBroker,m_StatusGroupID);
@@ -2586,16 +2640,16 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
    IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(m_SegmentKey);
    Float64 loss = psfeng.GetEffectivePrestressLoss(poi,pgsTypes::Permanent,liftingIntervalIdx,pgsTypes::End, true/*apply elastic gain reduction*/, &guess);
 
-   LOG(_T("Estimated losses at lifting for this strand configuration = ")
-      << WBFL::Units::ConvertFromSysUnits(loss,WBFL::Units::Measure::KSI) << _T(" KSI"));
+   DLOG(_T("Estimated losses at lifting for this strand configuration = ")
+      << WBFL::Units::ConvertFromSysUnits(loss,WBFL::Units::Measure::KSI) << _T(" ksi"));
 
    // Average stress after losses
    Float64 fstrand = fpj - loss;
-   LOG(_T("Average strand stress at lifting = ") << WBFL::Units::ConvertFromSysUnits(fstrand,WBFL::Units::Measure::KSI) << _T(" KSI"));
+   DLOG(_T("Average strand stress at lifting = ") << WBFL::Units::ConvertFromSysUnits(fstrand,WBFL::Units::Measure::KSI) << _T(" ksi"));
 
    Float64 force = fstrand * xFerFactor * (m_aps[pgsTypes::Straight]*ns + m_aps[pgsTypes::Harped]*nh + m_aps[pgsTypes::Temporary]*nt);
 
-   LOG(_T("Total force at lifting = (") << WBFL::Units::ConvertFromSysUnits(fstrand,WBFL::Units::Measure::KSI) << _T(" ksi)(") << xFerFactor << _T(")")
+   DLOG(_T("Total force at lifting = (") << WBFL::Units::ConvertFromSysUnits(fstrand,WBFL::Units::Measure::KSI) << _T(" ksi)(") << xFerFactor << _T(")")
       << _T("[") << WBFL::Units::ConvertFromSysUnits(m_aps[pgsTypes::Straight],WBFL::Units::Measure::Inch2) << _T(" in^2)(") << ns << _T(") + (") 
       << WBFL::Units::ConvertFromSysUnits(m_aps[pgsTypes::Harped],WBFL::Units::Measure::Inch2) << _T(" in^2)(") << nh << _T(") + ") 
       << WBFL::Units::ConvertFromSysUnits(m_aps[pgsTypes::Temporary],WBFL::Units::Measure::Inch2) << _T("in^2)(") << nt << _T(")] = ") << WBFL::Units::ConvertFromSysUnits(force,WBFL::Units::Measure::Kip) << _T(" kip"));
@@ -2605,7 +2659,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
 
 Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
 {
-   LOG(_T("Compute total prestressing force in mid-zone for the current configuration"));
+   DLOG(_T("Compute total prestressing force in mid-zone for the current configuration"));
 
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
@@ -2641,7 +2695,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
    Float64 Aps = m_aps[pgsTypes::Straight]*ns + m_aps[pgsTypes::Harped]*nh + m_aps[pgsTypes::Temporary]*nt;
    Float64 fpj =  pj/Aps;
 
-   LOG(_T("Average jacking stress for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(fpj,WBFL::Units::Measure::KSI) << _T(" KSI"));
+   DLOG(_T("Average jacking stress for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(fpj,WBFL::Units::Measure::KSI) << _T(" ksi"));
 
    // Estimate prestress loss
    pgsPsForceEng psfeng(m_pBroker,m_StatusGroupID);
@@ -2658,23 +2712,23 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
 
    if (intervalIdx == releaseIntervalIdx)
    {
-      LOG(_T("Estimated Release losses for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(loss,WBFL::Units::Measure::KSI) << _T(" KSI"));
+      DLOG(_T("Estimated Release losses for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(loss,WBFL::Units::Measure::KSI) << _T(" ksi"));
    }
    else if ( intervalIdx < liveLoadIntervalIdx )
    {
-      LOG(_T("Estimated Final losses for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(loss,WBFL::Units::Measure::KSI) << _T(" KSI"));
+      DLOG(_T("Estimated Final losses for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(loss,WBFL::Units::Measure::KSI) << _T(" ksi"));
    }
    else
    {
-      LOG(_T("Estimated Final losses for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(loss,WBFL::Units::Measure::KSI) << _T(" KSI"));
+      DLOG(_T("Estimated Final losses for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(loss,WBFL::Units::Measure::KSI) << _T(" ksi"));
    }
 
    // Average stress after losses
    Float64 fstrand = fpj - loss;
-   LOG(_T("average strand stress after losses = ") << WBFL::Units::ConvertFromSysUnits(fstrand,WBFL::Units::Measure::KSI) << _T(" KSI"));
+   DLOG(_T("average strand stress after losses = ") << WBFL::Units::ConvertFromSysUnits(fstrand,WBFL::Units::Measure::KSI) << _T(" ksi"));
 
    Float64 force = fstrand*Aps;
-   LOG(_T("Total force at final = ") << WBFL::Units::ConvertFromSysUnits(force,WBFL::Units::Measure::Kip) << _T(" kip"));
+   DLOG(_T("Total force at final = ") << WBFL::Units::ConvertFromSysUnits(force,WBFL::Units::Measure::Kip) << _T(" kip"));
 
    return force;
 }
@@ -2802,25 +2856,25 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
    // don't do anything if we aren't in minimize harped mode
    if (m_DesignOptions.doStrandFillType != ftMinimizeHarping)
    {
-      LOG(_T("We do not minimize harped strands unless m_StrandFillType==ftMinimizeHarping"));
+      DLOG(_T("We do not minimize harped strands unless m_StrandFillType==ftMinimizeHarping"));
       return false;
    }
 
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
-   LOG(_T("Attempting to swap harped for straight to achieve an ecc = ")<< WBFL::Units::ConvertFromSysUnits(eccTarget, WBFL::Units::Measure::Inch) << _T(" in"));
-   LOG(_T("at ")<< WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(), WBFL::Units::Measure::Feet) << _T(" feet from left end of girder"));
+   DLOG(_T("Attempting to swap harped for straight to achieve an ecc = ")<< WBFL::Units::ConvertFromSysUnits(eccTarget, WBFL::Units::Measure::Inch) << _T(" in"));
+   DLOG(_T("at ")<< WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(), WBFL::Units::Measure::Feet) << _T(" feet from left end of girder"));
 
    GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
    // get the current eccentricity and make sure our target is lower (bigger)
    Float64 curr_ecc = ComputeEccentricity(poi,intervalIdx);
-   LOG(_T("Current ecc = ")<< WBFL::Units::ConvertFromSysUnits(curr_ecc, WBFL::Units::Measure::Inch) << _T(" in"));
+   DLOG(_T("Current ecc = ")<< WBFL::Units::ConvertFromSysUnits(curr_ecc, WBFL::Units::Measure::Inch) << _T(" in"));
    if (eccTarget < curr_ecc)
    {
       // If code hits here, we have a bug upstream computing lifting concrete strength - need to revisit
       ATLASSERT(false); // this should never happen
-      LOG(_T("Warning - current eccentricity is already larger than requested"));
+      LOG_WARN(_T("current eccentricity is already larger than requested"));
       return false;
    }
 
@@ -2848,7 +2902,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
    StrandIndexType ns_prev = ns_orig;
    StrandIndexType nh_prev = nh_orig;
    StrandIndexType Np = ns_prev+nh_prev;  // need to maintain this or be one bigger
-   LOG(_T("Current Ns = ") << ns_prev << _T(" Nh = ") << nh_prev << _T(" Np = ") << Np);
+   DLOG(_T("Current Ns = ") << ns_prev << _T(" Nh = ") << nh_prev << _T(" Np = ") << Np);
 
    pgsPointOfInterest ms_poi(m_SegmentKey,m_SegmentLength/2.0);
 
@@ -2857,7 +2911,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
 
    if (nh_orig <= min_nh)
    {
-      LOG(_T("No harped strands to lose - try another method"));
+      DLOG(_T("No harped strands to lose - try another method"));
       return false;
    }
 
@@ -2912,24 +2966,24 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
 
       Float64 new_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &guess).Y();
 
-      LOG(_T("Try ns = ")<< Ns <<_T(" nh = ")<< Nh <<_T(" np = ")<< Nh+Ns);
-      LOG(_T("New ecc = ")<< WBFL::Units::ConvertFromSysUnits(new_ecc, WBFL::Units::Measure::Inch) << _T(" in, Target ecc = ")<< WBFL::Units::ConvertFromSysUnits(eccTarget, WBFL::Units::Measure::Inch) << _T(" in"));
+      DLOG(_T("Try ns = ")<< Ns <<_T(" nh = ")<< Nh <<_T(" np = ")<< Nh+Ns);
+      DLOG(_T("New ecc = ")<< WBFL::Units::ConvertFromSysUnits(new_ecc, WBFL::Units::Measure::Inch) << _T(" in, Target ecc = ")<< WBFL::Units::ConvertFromSysUnits(eccTarget, WBFL::Units::Measure::Inch) << _T(" in"));
 
       // our new ecc had better be more than our previous, or this strategy isn't working
       if (new_ecc < curr_ecc)
       {
-         LOG(_T("Swapping Harped strands for straight does not increase eccentricity - quit this waste of time!"));
+         DLOG(_T("Swapping Harped strands for straight does not increase eccentricity - quit this waste of time!"));
          return false;
       }
       
       // we have to guard against causing mid-zone Bottom Service tension to go out of bounds. Odd case, but it happens for WF42G
       Float64 ms_ecc = pStrandGeom->GetEccentricity(eccIntervalIdx, ms_poi, false, &guess).Y();
-      LOG(_T("New Eccentricity in mid-zone, without temp strands, is ") <<WBFL::Units::ConvertFromSysUnits( ms_ecc , WBFL::Units::Measure::Inch)<< _T(" in"));
-      LOG(_T("Minimum ecc for release tension mz = ") <<WBFL::Units::ConvertFromSysUnits( GetMinimumFinalMidZoneEccentricity() , WBFL::Units::Measure::Inch)<< _T(" in"));
+      DLOG(_T("New Eccentricity in mid-zone, without temp strands, is ") <<WBFL::Units::ConvertFromSysUnits( ms_ecc , WBFL::Units::Measure::Inch)<< _T(" in"));
+      DLOG(_T("Minimum ecc for release tension mz = ") <<WBFL::Units::ConvertFromSysUnits( GetMinimumFinalMidZoneEccentricity() , WBFL::Units::Measure::Inch)<< _T(" in"));
 
       if (ms_ecc < GetMinimumFinalMidZoneEccentricity())
       {
-         LOG(_T("Swapping harped for straight violates minimum mid-zone eccentricity for bottom service tension. Abort this strategy"));
+         DLOG(_T("Swapping harped for straight violates minimum mid-zone eccentricity for bottom service tension. Abort this strategy"));
          return false;
       }
 
@@ -2943,7 +2997,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
          // with the eccentricity that is closest to the target
          if ( (new_ecc - eccTarget) < (eccTarget - curr_ecc) )
          {
-            LOG(_T("We overshot the target eccentricity, but we are closer than the previous guess so keep the result"));
+            DLOG(_T("We overshot the target eccentricity, but we are closer than the previous guess so keep the result"));
             ns_prev = Ns;
             nh_prev = Nh;
          }
@@ -2952,7 +3006,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
          {
             // the previous guess was better than this one so don't update the _T("prev") values.
             // the result will be the actual previous number of straight and harped strands
-            LOG(_T("Increased Ecc by reducing harped strands - Success"));
+            DLOG(_T("Increased Ecc by reducing harped strands - Success"));
          }
 #endif
 
@@ -2967,7 +3021,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
 
       if (nh_prev <= min_nh)
       {
-         LOG(_T("No more harped strands to lose"));
+         DLOG(_T("No more harped strands to lose"));
          break;
       }
    }
@@ -2975,14 +3029,14 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
    if (ns_orig != GetNs() || nh_orig != GetNh())
    {
       // we updated 
-      LOG(_T("Succeeded reducing harped strands, Ns = ")<<GetNs()<<_T(" Nh = ")<<GetNh());
+      DLOG(_T("Succeeded reducing harped strands, Ns = ")<<GetNs()<<_T(" Nh = ")<<GetNh());
       *pNs = ns_prev;
       *pNh = nh_prev;
       return true;
    }
    else
    {
-      LOG(_T("Number of harped strands not reduced - try another method"));
+      DLOG(_T("Number of harped strands not reduced - try another method"));
       return false; // nothing changed
    }
 }
@@ -2991,16 +3045,16 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
 {
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
-   LOG(_T("Attempting to swap straight for harped to raise ecc to at least = ")<< WBFL::Units::ConvertFromSysUnits(eccMax, WBFL::Units::Measure::Inch) << _T(" in"));
-   LOG(_T("Attempting to swap straight for harped to raise ecc to at most  = ")<< WBFL::Units::ConvertFromSysUnits(eccMin, WBFL::Units::Measure::Inch) << _T(" in"));
-   LOG(_T("At ")<< WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(), WBFL::Units::Measure::Inch) << _T(" in from left end of girder"));
+   DLOG(_T("Attempting to swap straight for harped to raise ecc to at least = ")<< WBFL::Units::ConvertFromSysUnits(eccMax, WBFL::Units::Measure::Inch) << _T(" in"));
+   DLOG(_T("Attempting to swap straight for harped to raise ecc to at most  = ")<< WBFL::Units::ConvertFromSysUnits(eccMin, WBFL::Units::Measure::Inch) << _T(" in"));
+   DLOG(_T("At ")<< WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(), WBFL::Units::Measure::Inch) << _T(" in from left end of girder"));
 
    // NOTE: If TxDOT starts designing for lifting, we need to change UI to allow non-standard fill and lifting
 
    // Lifting analysis swaps the other way - 
    if (m_DesignOptions.doDesignLifting)
    {
-      LOG(_T("Lifting analysis Enabled - Attempting to swap straight for harped to raise ecc is not compatible with lifting goals"));
+      DLOG(_T("Lifting analysis Enabled - Attempting to swap straight for harped to raise ecc is not compatible with lifting goals"));
       return false;
    }
    else
@@ -3014,11 +3068,11 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
 
       // get the current eccentricity and make sure our target is higher (smaller)
       Float64 curr_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, true, &guess).Y();
-      LOG(_T("Current ecc = ")<< WBFL::Units::ConvertFromSysUnits(curr_ecc, WBFL::Units::Measure::Inch) << _T(" in"));
+      DLOG(_T("Current ecc = ")<< WBFL::Units::ConvertFromSysUnits(curr_ecc, WBFL::Units::Measure::Inch) << _T(" in"));
       if (curr_ecc < eccMin)
       {
          ATLASSERT(false); // this probably should never happen
-         LOG(_T("Warning - current eccentricity is already smaller than requested"));
+         LOG_WARN(_T("current eccentricity is already smaller than requested"));
          return false;
       }
 
@@ -3028,18 +3082,18 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
       StrandIndexType nh_prev = nh_orig;
       StrandIndexType nhs = ns_prev+nh_prev;  // need to maintain this or be one bigger
       StrandIndexType nt = GetNt();
-      LOG(_T("Current ns = ")<<ns_prev<<_T(" nh = ")<<nh_prev<<_T(" nt = ")<<nt<<_T(" np = ")<< nhs);
+      DLOG(_T("Current ns = ")<<ns_prev<<_T(" nh = ")<<nh_prev<<_T(" nt = ")<<nt<<_T(" np = ")<< nhs);
 
       // largest number of harped strands we can have
       StrandIndexType max_nh = pStrandGeom->GetMaxStrands(m_SegmentKey,pgsTypes::Harped);
       if ( max_nh <= nh_orig)
       {
-         LOG(_T("Harped pattern is full - cannot add any more"));
+         DLOG(_T("Harped pattern is full - cannot add any more"));
          return false;
       }
       else if (ns_orig <= 0)
       {
-         LOG(_T("No straight strands to trade"));
+         DLOG(_T("No straight strands to trade"));
          return false;
       }
 
@@ -3055,7 +3109,7 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
          if (max_nh <= nh)
          {
             //no more harped locations left to fill
-            LOG(_T("All harped locations are full"));
+            DLOG(_T("All harped locations are full"));
             break;
          }
 
@@ -3064,7 +3118,7 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
          if (ns == INVALID_INDEX)
          {
             //no more straight strands left
-            LOG(_T("No straight strands left to trade"));
+            DLOG(_T("No straight strands left to trade"));
             break;
          }
 
@@ -3074,7 +3128,7 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
             nh = pStrandGeom->GetNextNumStrands(m_SegmentKey,pgsTypes::Harped, nh);
             if (nh == INVALID_INDEX)
             {
-               LOG(_T("No harped locations left"));
+               DLOG(_T("No harped locations left"));
                break;
             }
          }
@@ -3087,13 +3141,13 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
          guess.PrestressConfig.SetStrandFill(pgsTypes::Harped,   hfillvec);
          Float64 new_ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, true, &guess).Y();
 
-         LOG(_T("Try ns = ")<<ns<<_T(" nh = ")<<nh<<_T(" np = ")<< nh+ns);
-         LOG(_T("New ecc = ")<< WBFL::Units::ConvertFromSysUnits(new_ecc, WBFL::Units::Measure::Inch) << _T(" in, Target ecc = ")<< WBFL::Units::ConvertFromSysUnits(eccMax, WBFL::Units::Measure::Inch) << _T(" in"));
+         DLOG(_T("Try ns = ")<<ns<<_T(" nh = ")<<nh<<_T(" np = ")<< nh+ns);
+         DLOG(_T("New ecc = ")<< WBFL::Units::ConvertFromSysUnits(new_ecc, WBFL::Units::Measure::Inch) << _T(" in, Target ecc = ")<< WBFL::Units::ConvertFromSysUnits(eccMax, WBFL::Units::Measure::Inch) << _T(" in"));
 
          // our new ecc had better be less than our previous, or this strategy isn't working
          if (curr_ecc < new_ecc)
          {
-            LOG(_T("Swapping Straight strands for Harped does not decrease eccentricity - quit this waste of time!"));
+            DLOG(_T("Swapping Straight strands for Harped does not decrease eccentricity - quit this waste of time!"));
             return false;
          }
 
@@ -3102,7 +3156,7 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
          if (curr_ecc < eccMax)
          {
             // We have achieved our objective. Might be able to go further, but not needed
-            LOG(_T("Target ecc achieved at ns = ")<<ns<<_T(" nh = ")<<nh);
+            DLOG(_T("Target ecc achieved at ns = ")<<ns<<_T(" nh = ")<<nh);
             succeeded = true;
             ns_prev = ns;
             nh_prev = nh;
@@ -3111,14 +3165,14 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
 
          if (curr_ecc < eccMin)
          {
-            LOG(_T("New eccentricity is below minimum - this is as far as we can go"));
+            DLOG(_T("New eccentricity is below minimum - this is as far as we can go"));
             if (ns_prev == ns_orig && nh_prev == nh_orig)
             {
-                  LOG(_T("First try to increase harped strands overshot min - strategy Failed"));
+                  DLOG(_T("First try to increase harped strands overshot min - strategy Failed"));
             }
             else
             {
-               LOG(_T("Increased Ecc by reducing harped strands. But did not reach target - Limited Success"));
+               DLOG(_T("Increased Ecc by reducing harped strands. But did not reach target - Limited Success"));
             }
 
             break;
@@ -3129,12 +3183,12 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
 
          if (max_nh <= nh)
          {
-            LOG(_T("No more harped strands to add"));
+            DLOG(_T("No more harped strands to add"));
             break;
          }
          else if (ns == INVALID_INDEX || ns == 0)
          {
-            LOG(_T("No more straight strands to trade from"));
+            DLOG(_T("No more straight strands to trade from"));
             break;
          }
       }
@@ -3144,17 +3198,17 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
          // we updated 
          if (succeeded)
          {
-            LOG(_T("Target ecc was achieved"));
+            DLOG(_T("Target ecc was achieved"));
          }
 
-         LOG(_T("Succeeded Adding harped strands ns = ")<<ns_prev<<_T(" nh = ")<<nh_prev<<_T(" np = ")<< ns_prev+nh_prev);
+         DLOG(_T("Succeeded Adding harped strands ns = ")<<ns_prev<<_T(" nh = ")<<nh_prev<<_T(" np = ")<< ns_prev+nh_prev);
          *pNs = ns_prev;
          *pNh = nh_prev;
          return true;
       }
       else
       {
-         LOG(_T("Number of harped strands not increased - try another method"));
+         DLOG(_T("Number of harped strands not increased - try another method"));
          return false; // nothing changed
       }
    }
@@ -3637,7 +3691,7 @@ void pgsStrandDesignTool::AddPOI(pgsPointOfInterest& rpoi, Float64 lft_conn, Flo
 
 void pgsStrandDesignTool::ComputeMidZoneBoundaries()
 {
-   LOG(_T("Entering ComputeMidZoneBoundaries"));
+   DESIGN_LOG_SCOPE(_T("ComputeMidZoneBoundaries"));
    // Mid-zone length along beam where positive bending typically controls
    // Harped designs use harping points. User debond rules for all others
    if (m_DesignOptions.doDesignForFlexure == dtDesignForHarping)
@@ -3649,7 +3703,7 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       m_lftMz  = lhp;
       m_rgtMz = rhp;
 
-      LOG(_T("Mid-Zone boundaries are at harping points. Left = ")<< WBFL::Units::ConvertFromSysUnits(m_lftMz,WBFL::Units::Measure::Feet) << _T(" ft, Right = ")<< WBFL::Units::ConvertFromSysUnits(m_rgtMz,WBFL::Units::Measure::Feet) << _T(" ft"));
+      DLOG(_T("Mid-Zone boundaries are at harping points. Left = ")<< WBFL::Units::ConvertFromSysUnits(m_lftMz,WBFL::Units::Measure::Feet) << _T(" ft, Right = ")<< WBFL::Units::ConvertFromSysUnits(m_rgtMz,WBFL::Units::Measure::Feet) << _T(" ft"));
 
    }
    else if (m_DesignOptions.doDesignForFlexure == dtDesignFullyBondedRaised)
@@ -3691,10 +3745,10 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
                                                // More testing may allow more reduction.
 
       dev_len = WBFL::Units::ConvertToSysUnits(dev_len,WBFL::Units::Measure::Inch);
-      LOG(_T("Approximate upper bound of development length = ")<< WBFL::Units::ConvertFromSysUnits(dev_len,WBFL::Units::Measure::Inch)<<_T(" in"));
+      DLOG(_T("Approximate upper bound of development length = ")<< WBFL::Units::ConvertFromSysUnits(dev_len,WBFL::Units::Measure::Inch)<<_T(" in"));
 
       Float64 mz_end_len = m_SegmentLength/2.0 - dev_len;
-      LOG(_T("Max debond length based on development length = ")<< WBFL::Units::ConvertFromSysUnits(mz_end_len,WBFL::Units::Measure::Inch)<<_T(" in"));
+      DLOG(_T("Max debond length based on development length = ")<< WBFL::Units::ConvertFromSysUnits(mz_end_len,WBFL::Units::Measure::Inch)<<_T(" in"));
 
       bool bSpanFraction, buseHard;
       Float64 spanFraction, hardDistance;
@@ -3703,7 +3757,7 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       if (bSpanFraction)
       {
          Float64 sflen = m_SegmentLength * spanFraction;
-         LOG(_T("User-input min MZ fractional length = ")<< WBFL::Units::ConvertFromSysUnits(sflen,WBFL::Units::Measure::Inch)<<_T(" in"));
+         DLOG(_T("User-input min MZ fractional length = ")<< WBFL::Units::ConvertFromSysUnits(sflen,WBFL::Units::Measure::Inch)<<_T(" in"));
 
          mz_end_len = Min(mz_end_len, sflen);
       }
@@ -3711,21 +3765,21 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       if (buseHard)
       {
          mz_end_len = Min(mz_end_len, hardDistance);
-         LOG(_T("User-input min MZ hard length = ")<< WBFL::Units::ConvertFromSysUnits(hardDistance,WBFL::Units::Measure::Inch)<<_T(" in"));
+         DLOG(_T("User-input min MZ hard length = ")<< WBFL::Units::ConvertFromSysUnits(hardDistance,WBFL::Units::Measure::Inch)<<_T(" in"));
       }
 
       mz_end_len = Max(mz_end_len, 0.0); // can't be less than zero
-      LOG(_T("Raw MZ end length = ")<< WBFL::Units::ConvertFromSysUnits(mz_end_len,WBFL::Units::Measure::Inch)<<_T(" in"));
-      LOG(_T("Girder length = ")<< WBFL::Units::ConvertFromSysUnits(m_SegmentLength,WBFL::Units::Measure::Inch)<<_T(" in"));
+      DLOG(_T("Raw MZ end length = ")<< WBFL::Units::ConvertFromSysUnits(mz_end_len,WBFL::Units::Measure::Inch)<<_T(" in"));
+      DLOG(_T("Girder length = ")<< WBFL::Units::ConvertFromSysUnits(m_SegmentLength,WBFL::Units::Measure::Inch)<<_T(" in"));
  
       GET_IFACE2(GetBroker(),IDebondLimits, pDebondLimits);
       Float64 db_incr = pDebondLimits->GetMinDistanceBetweenDebondSections(m_SegmentKey);
-      LOG(_T("Debond spacing increment = ")<< WBFL::Units::ConvertFromSysUnits(db_incr,WBFL::Units::Measure::Inch)<<_T(" in"));
+      DLOG(_T("Debond spacing increment = ")<< WBFL::Units::ConvertFromSysUnits(db_incr,WBFL::Units::Measure::Inch)<<_T(" in"));
    
       if (mz_end_len < db_incr)
       {
          // we can't debond because there is no room
-         LOG(_T("**** No room for Debonding and no use trying - switch to straight strand design ****"));
+         LOG_WARN(_T("No room for debonding - switching to a straight strand design"));
          m_DesignOptions.doDesignForFlexure = dtDesignFullyBonded;
          m_lftMz = 0.0;
          m_rgtMz = m_SegmentLength;
@@ -3746,17 +3800,16 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
          m_NumDebondSections   = nincs+1; // always have a section at beam ends
          m_DebondSectionLength = db_incr;
 
-         LOG(_T("Number of debond increments to MZ  = ")<< nincs);
+         DLOG(_T("Number of debond increments to MZ  = ")<< nincs);
       }
  
-      LOG(_T("Left MZ location = ")<< WBFL::Units::ConvertFromSysUnits(m_lftMz,WBFL::Units::Measure::Inch)<<_T(" in"));
-      LOG(_T("Right MZ location = ")<< WBFL::Units::ConvertFromSysUnits(m_rgtMz,WBFL::Units::Measure::Inch)<<_T(" in"));
-      LOG(_T("Number of debond sections to MZ  = ")<< m_NumDebondSections);
-      LOG(_T("Debond section length for design  = ")<< WBFL::Units::ConvertFromSysUnits(m_DebondSectionLength,WBFL::Units::Measure::Inch)<<_T(" in"));
+      DLOG(_T("Left MZ location = ")<< WBFL::Units::ConvertFromSysUnits(m_lftMz,WBFL::Units::Measure::Inch)<<_T(" in"));
+      DLOG(_T("Right MZ location = ")<< WBFL::Units::ConvertFromSysUnits(m_rgtMz,WBFL::Units::Measure::Inch)<<_T(" in"));
+      DLOG(_T("Number of debond sections to MZ  = ")<< m_NumDebondSections);
+      DLOG(_T("Debond section length for design  = ")<< WBFL::Units::ConvertFromSysUnits(m_DebondSectionLength,WBFL::Units::Measure::Inch)<<_T(" in"));
 
       ATLASSERT(m_lftMz<m_SegmentLength/2.0);
    }
-   LOG(_T("Exiting ComputeMidZoneBoundaries"));
 }
 
 void pgsStrandDesignTool::InitHarpedPhysicalBounds(const WBFL::Materials::PsStrand* pstrand)
@@ -3784,11 +3837,11 @@ void pgsStrandDesignTool::InitHarpedPhysicalBounds(const WBFL::Materials::PsStra
    if ( m_StrandSlopeCriteria.bDesign )
    {
       m_StrandSlopeLimit = m_StrandSlopeCriteria.GetStrandSlopeLimit(pstrand->GetSize());
-      LOG(_T("We will be designing for an allowable strand slope of 1:") << m_StrandSlopeLimit);
+      DLOG(_T("We will be designing for an allowable strand slope of 1:") << m_StrandSlopeLimit);
    }
    else
    {
-      LOG(_T("Strand slope not a design criteria"));
+      DLOG(_T("Strand slope not a design criteria"));
    }
 
    // hold down
@@ -3797,11 +3850,11 @@ void pgsStrandDesignTool::InitHarpedPhysicalBounds(const WBFL::Materials::PsStra
 
    if (m_HoldDownCriteria.bDesign)
    {
-      LOG(_T("We will be designing for harped strand hold down allowable: ") << WBFL::Units::ConvertFromSysUnits(m_HoldDownCriteria.force_limit,WBFL::Units::Measure::Kip) << _T(" kips"));
+      DLOG(_T("We will be designing for harped strand hold down allowable: ") << WBFL::Units::ConvertFromSysUnits(m_HoldDownCriteria.force_limit,WBFL::Units::Measure::Kip) << _T(" kips"));
    }
    else
    {
-      LOG(_T("Hold down force not a design criteria"));
+      DLOG(_T("Hold down force not a design criteria"));
    }
 }
 
@@ -3870,21 +3923,19 @@ void pgsStrandDesignTool::InitDebondData()
 
 void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> pPrestressForce)
 {
-   LOG(_T(""));
-   LOG(_T("Enter ComputeDebondLevels"));
-   LOG(_T("*************************"));
+   DESIGN_LOG_SCOPE(_T("ComputeDebondLevels"));
 
    if (m_DesignOptions.doDesignForFlexure != dtDesignForDebonding && 
        m_DesignOptions.doDesignForFlexure != dtDesignForDebondingRaised)
    {
-      LOG(_T("Exiting ComputeDebondLevels - this is not a debond design"));
+      DESIGN_LOG_SCOPE_RESULT(_T("-> skipped, not a debond design"));
       return;
    }
 
    if (m_NumDebondSections <= 1)
    {
       // no mid-zone means no debonding
-      LOG(_T("No mid-zone - Cannot build debond levels"));
+      DLOG(_T("No mid-zone - Cannot build debond levels"));
       ATLASSERT(false);
       return;
    }
@@ -3911,14 +3962,14 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
 
    if (bCheckMaxPercentTotal)
    {
-      LOG(_T("db_max_percent_total = ") << db_max_percent_total);
+      DLOG(_T("db_max_percent_total = ") << db_max_percent_total);
    }
-   LOG(_T("db_max_percent_row = ")<<db_max_percent_row);
-   LOG(_T("m_MaxDebondSection10orLess = ") << m_MaxDebondSection10orLess);
-   LOG(_T("m_MaxDebondSection = ") << m_MaxDebondSection);
+   DLOG(_T("db_max_percent_row = ")<<db_max_percent_row);
+   DLOG(_T("m_MaxDebondSection10orLess = ") << m_MaxDebondSection10orLess);
+   DLOG(_T("m_MaxDebondSection = ") << m_MaxDebondSection);
    if (m_bCheckMaxFraAtSection)
    {
-      LOG(_T("m_MaxPercentDebondSection = ") << m_MaxPercentDebondSection);
+      DLOG(_T("m_MaxPercentDebondSection = ") << m_MaxPercentDebondSection);
    }
 
    GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
@@ -3945,7 +3996,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
    typedef std::pair<StrandIndexType,StrandIndexType> StrandPair;
    std::vector<StrandPair> debondable_list;
 
-   LOG(_T("Building list of debondable strands:"));
+   DESIGN_LOG_ONLY(std::_tostringstream osDebondable);
    IndexType num_debondable = 0;
    StrandIndexType currnum=0;
    while( currnum < max_ss )
@@ -3966,13 +4017,13 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
          {
             num_debondable++;
             debondable_list.push_back( StrandPair(nextnum-1, INVALID_INDEX) );
-            LOG(nextnum-1);
+            DESIGN_LOG_ONLY(osDebondable << nextnum-1 << _T(" "));
          }
          else
          {
             num_debondable += 2;
             debondable_list.push_back( StrandPair(nextnum-2, nextnum-1) );
-            LOG(nextnum-2<<_T(", ")<<nextnum-1);
+            DESIGN_LOG_ONLY(osDebondable << _T("(") << nextnum-2 << _T(",") << nextnum-1 << _T(") "));
          }
       }
       // count max number of strands in each row
@@ -4038,21 +4089,22 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
 
    if (debondable_list.empty())
    {
-      LOG(_T("No debondable strands - Cannot build debond levels"));
+      DLOG(_T("No debondable strands - Cannot build debond levels"));
       ATLASSERT(false); // this should probably be vetted before here ?
       return;
    }
-#ifdef ENABLE_LOGGING
-   else
+#ifdef ENABLE_DESIGN_LOGGING
+   else if (pgsDesignLog::IsEnabled())
    {
-      LOG(_T("Finished building debondable list of ")<<num_debondable<<_T(" strands"));
-      LOG(_T("Max Strands per row in ")<<rows.size()<<_T(" rows as follows:"));
+      DLOG(_T("Debondable strands (") << num_debondable << _T("), in fill order: ") << osDebondable.str());
+      std::_tostringstream osRows;
       for (RowIter riter=rows.begin(); riter!=rows.end(); riter++)
       {
-         LOG(_T("elev = ")<<WBFL::Units::ConvertFromSysUnits(Hg + riter->Elevation,WBFL::Units::Measure::Inch)<<_T(" max strands = ")<<riter->MaxInRow);
+         osRows << pgsDesignLog::in(Hg + riter->Elevation) << _T(" in: ") << riter->MaxInRow << _T(";  ");
       }
+      DLOG(_T("Max strands per row (") << rows.size() << _T(" rows, elevation from bottom: count): ") << osRows.str());
    }
-#endif // ENABLE_LOGGING
+#endif // ENABLE_DESIGN_LOGGING
 
    // Second step is to build temporary list containing all debond levels
    // that can be created
@@ -4064,7 +4116,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
    Int16 num_debonded = 0;
 
    // Simulate filling all straight strands and debond when possible
-   LOG(_T("Build row information and debond levels"));
+   DLOG(_T("Build row information and debond levels"));
    currnum=0;
    while( currnum < max_ss )
    {
@@ -4089,7 +4141,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
 
       curr_row.StrandsFilled.push_back(nextnum-1);
 
-      LOG(_T("nextnum = ")<<nextnum<<_T(" Y = ")<<WBFL::Units::ConvertFromSysUnits(Hg+curr_y,WBFL::Units::Measure::Inch)<<_T(" to fill = ")<< nextnum-currnum );
+      LOG_DETAIL(_T("nextnum = ")<<nextnum<<_T(" Y = ")<<WBFL::Units::ConvertFromSysUnits(Hg+curr_y,WBFL::Units::Measure::Inch)<<_T(" to fill = ")<< nextnum-currnum );
 
       // TRICKY: A nested loop here to try and debond as many strands on the queue as possible for the current fill
       //         Most of the time we will break out of this loop before our queus is depleted
@@ -4097,7 +4149,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
       while( db_iter != debondable_list.end() )
       {
          // See if we can debond current strand(s) on the queue
-         LOG(_T("Attempt to debond ")<<db_iter->first<<_T(", ")<<db_iter->second);
+         LOG_DETAIL(_T("Attempt to debond ")<<db_iter->first<<_T(", ")<<db_iter->second);
 
          Int16 num_to_db = (db_iter->second == INVALID_INDEX) ? 1 : 2;
          // first check percentage of total
@@ -4109,14 +4161,14 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
          {
             // not enough total straight strands yet. continue
             // break from inner loop because we need more strands
-            LOG(_T("Debonding of strands ")<<db_iter->first<<_T(",")<<db_iter->second<<_T(" cannot occur until more strands are added in fill order."));
+            LOG_DETAIL(_T("Debonding of strands ")<<db_iter->first<<_T(",")<<db_iter->second<<_T(" cannot occur until more strands are added in fill order."));
             break;
          }
          else if (bCheckMaxPercentTotal /*only do this if checking*/ && (db_max_percent_total < percent_of_total) )
          {
             // not enough total straight strands yet. continue
             // break from inner loop because we need more strands
-            LOG(_T("Debonding of strands ")<<db_iter->first<<_T(",")<<db_iter->second<<_T(" cannot occur until more strands are added for % total"));
+            LOG_DETAIL(_T("Debonding of strands ")<<db_iter->first<<_T(",")<<db_iter->second<<_T(" cannot occur until more strands are added for % total"));
             break;
          }
          else
@@ -4138,7 +4190,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
                {
                   // We can debond these strands, we have a new debond level
                   temp_levels.push_back( TempLevel(db_iter->first, db_iter->second, nextnum) ); 
-                  LOG(_T("Created debond level ")<<temp_levels.size()<<_T(" with strands ")<<db_iter->first<<_T(",")<<db_iter->second<<_T(" and ")<<nextnum<<_T(" minimum strands"));
+                  DLOG(_T("Created debond level ")<<temp_levels.size()<<_T(" with strands ")<<db_iter->first<<_T(",")<<db_iter->second<<_T(" and ")<<nextnum<<_T(" minimum strands"));
                   db_row.StrandsDebonded.push_back(db_iter->first);
                   num_debonded++;
                   if (num_to_db == 2)
@@ -4156,14 +4208,14 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
                   Float64 db_percent_max = Float64(num_to_db + num_db_in_row) / db_row.MaxInRow;
                   if ( db_max_percent_row < db_percent_max )
                   {
-                     LOG(_T("Row at ")<<WBFL::Units::ConvertFromSysUnits(Hg+curr_db_y,WBFL::Units::Measure::Inch)<<_T(" (in), is full try next debondable in queue."));
+                     LOG_DETAIL(_T("Row at ")<<WBFL::Units::ConvertFromSysUnits(Hg+curr_db_y,WBFL::Units::Measure::Inch)<<_T(" (in), is full try next debondable in queue."));
                   
                      db_iter++;
                   }
                   else
                   {
                      // break from inner loop because we need more strands
-                     LOG(_T("Cannot debond in row at ")<<WBFL::Units::ConvertFromSysUnits(Hg+curr_db_y,WBFL::Units::Measure::Inch)<<_T(" (in), until more strands are added"));
+                     LOG_DETAIL(_T("Cannot debond in row at ")<<WBFL::Units::ConvertFromSysUnits(Hg+curr_db_y,WBFL::Units::Measure::Inch)<<_T(" (in), until more strands are added"));
                      break;
                   }
                }
@@ -4177,13 +4229,13 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
 
       if (db_iter == debondable_list.end())
       {
-         LOG(_T("No more debondable strands - exiting debond level loop after filling ")<<nextnum<<_T(" strands"));
+         DLOG(_T("No more debondable strands - exiting debond level loop after filling ")<<nextnum<<_T(" strands"));
          break;
       }
 
       currnum = nextnum;
    }
-   LOG(temp_levels.size()<<_T(" temporary debond levels created, ")<<num_debonded<<_T(" strands can be debonded"));
+   DLOG(temp_levels.size()<<_T(" temporary debond levels created, ")<<num_debonded<<_T(" strands can be debonded"));
 
    // now we can build our _T("real") debond levels data structure
    // First gather some information required to compute debond level information
@@ -4222,8 +4274,6 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
    DumpDebondLevels(Hg);
 #endif
 
-   LOG(_T("Exiting ComputeDebondLevels"));
-   LOG(_T("****************************"));
 }
 
 void pgsStrandDesignTool::DebondLevel::Init(Float64 Hg,IPoint2dCollection* strandLocations)
@@ -4249,7 +4299,7 @@ void pgsStrandDesignTool::DebondLevel::Init(Float64 Hg,IPoint2dCollection* stran
 }
 
 Float64 pgsStrandDesignTool::DebondLevel::ComputeReliefStress(Float64 pePerStrandFullyBonded, Float64 pePerStrandDebonded, StrandIndexType nperm, StrandIndexType ntemp, Float64 cgFb,
-                                                              Float64 Hg, Float64 Yb,  Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy, SHARED_LOGFILE LOGFILE) const
+                                                              Float64 Hg, Float64 Yb,  Float64 eccX, Float64 Ca, Float64 Cmx, Float64 Cmy, DESIGN_SHARED_LOGFILE DESIGN_LOGFILE) const
 {
    // first compute stress from prestress due to fully bonded strand group
    StrandIndexType ntot = nperm + ntemp;
@@ -4276,26 +4326,26 @@ Float64 pgsStrandDesignTool::DebondLevel::ComputeReliefStress(Float64 pePerStran
    // difference is how much debonding will relieve the stress here
    Float64 stress_relief = stress_fb - stress_new;
 
-   LOG(_T("ComputeReliefStress: pePerStrandDebonded=") << WBFL::Units::ConvertFromSysUnits(pePerStrandDebonded, WBFL::Units::Measure::Kip) << _T(" Kip, pePerStrandFullyBonded=")
-      << WBFL::Units::ConvertFromSysUnits(pePerStrandFullyBonded, WBFL::Units::Measure::Kip) << _T(" Kip, nperm=") << nperm << _T(", ntemp=") << ntemp << _T(", cgFB=") << WBFL::Units::ConvertFromSysUnits(cgFb, WBFL::Units::Measure::Inch)
+   LOG_DETAIL(_T("ComputeReliefStress: pePerStrandDebonded=") << WBFL::Units::ConvertFromSysUnits(pePerStrandDebonded, WBFL::Units::Measure::Kip) << _T(" kip, pePerStrandFullyBonded=")
+      << WBFL::Units::ConvertFromSysUnits(pePerStrandFullyBonded, WBFL::Units::Measure::Kip) << _T(" kip, nperm=") << nperm << _T(", ntemp=") << ntemp << _T(", cgFB=") << WBFL::Units::ConvertFromSysUnits(cgFb, WBFL::Units::Measure::Inch)
       << _T(" in, Hg=") << WBFL::Units::ConvertFromSysUnits(Hg, WBFL::Units::Measure::Inch) << _T(" in, Yb=") << WBFL::Units::ConvertFromSysUnits(Yb, WBFL::Units::Measure::Inch) << _T(" in"));
-   LOG(_T("                     m_DebondedStrandsCg=") << WBFL::Units::ConvertFromSysUnits(m_DebondedStrandsCg, WBFL::Units::Measure::Inch)<< _T(" in, ntot=") << ntot << _T(" ndebonded=") << nsdb <<_T(", cg_new=") << WBFL::Units::ConvertFromSysUnits(cg_new, WBFL::Units::Measure::Inch) 
+   LOG_DETAIL(_T("                     m_DebondedStrandsCg=") << WBFL::Units::ConvertFromSysUnits(m_DebondedStrandsCg, WBFL::Units::Measure::Inch)<< _T(" in, ntot=") << ntot << _T(" ndebonded=") << nsdb <<_T(", cg_new=") << WBFL::Units::ConvertFromSysUnits(cg_new, WBFL::Units::Measure::Inch) 
       << _T(" in, e_fb=") << WBFL::Units::ConvertFromSysUnits(e_fb, WBFL::Units::Measure::Inch) << _T(" in, e_new=") << WBFL::Units::ConvertFromSysUnits( e_new, WBFL::Units::Measure::Inch)  
-      << _T("in, Pe=") << WBFL::Units::ConvertFromSysUnits((ntot-nsdb)*pePerStrandDebonded, WBFL::Units::Measure::Kip) << _T(" Kip"));
-   LOG(_T("                     stress_fb=") << WBFL::Units::ConvertFromSysUnits(stress_fb, WBFL::Units::Measure::KSI) << _T(" ksi, stress_new=") << WBFL::Units::ConvertFromSysUnits(stress_new, WBFL::Units::Measure::KSI) << _T(" ksi, stress_relief=") << WBFL::Units::ConvertFromSysUnits(stress_relief, WBFL::Units::Measure::KSI));
+      << _T("in, Pe=") << WBFL::Units::ConvertFromSysUnits((ntot-nsdb)*pePerStrandDebonded, WBFL::Units::Measure::Kip) << _T(" kip"));
+   LOG_DETAIL(_T("                     stress_fb=") << WBFL::Units::ConvertFromSysUnits(stress_fb, WBFL::Units::Measure::KSI) << _T(" ksi, stress_new=") << WBFL::Units::ConvertFromSysUnits(stress_new, WBFL::Units::Measure::KSI) << _T(" ksi, stress_relief=") << WBFL::Units::ConvertFromSysUnits(stress_relief, WBFL::Units::Measure::KSI));
 
    return stress_relief;
 }
 
 void pgsStrandDesignTool::DumpDebondLevels(Float64 Hg)
 {
-   LOG(_T("Dump of ")<<m_DebondLevels.size()<<_T(" debond levels:"));
+   DLOG(_T("Dump of ")<<m_DebondLevels.size()<<_T(" debond levels:"));
    Int16 levn = 0;
    for (DebondLevelIterator it=m_DebondLevels.begin(); it!=m_DebondLevels.end(); it++)
    {
-      LOG(_T("Debond Level ")<<levn);
+      DLOG(_T("Debond Level ")<<levn);
       DebondLevel& level = *it;
-      LOG(_T("   MinTotalStrandsRequired = ")<<level.MinTotalStrandsRequired);
+      DLOG(_T("   MinTotalStrandsRequired = ")<<level.MinTotalStrandsRequired);
 
       std::_tostringstream stream;
       for (std::vector<StrandIndexType>::iterator itss = level.StrandsDebonded.begin(); itss!=level.StrandsDebonded.end(); itss++)
@@ -4309,15 +4359,15 @@ void pgsStrandDesignTool::DumpDebondLevels(Float64 Hg)
       {
          str.erase(n-2,2);
       }
-      LOG(_T("   Debonded Strands = ")<<str);
-      LOG(_T("   DebondedStrandsCg = ")<<WBFL::Units::ConvertFromSysUnits(Hg+level.m_DebondedStrandsCg,WBFL::Units::Measure::Inch));
+      DLOG(_T("   Debonded Strands = ")<<str);
+      DLOG(_T("   DebondedStrandsCg = ")<<WBFL::Units::ConvertFromSysUnits(Hg+level.m_DebondedStrandsCg,WBFL::Units::Measure::Inch));
       levn++;
    }
 }
 
 bool pgsStrandDesignTool::MaximizeDebonding()
 {
-   LOG(_T("Entering MaximizeDebonding"));
+   DESIGN_LOG_SCOPE(_T("MaximizeDebonding"));
    // Basic idea here is to apply the maximum amount of debonding we can based
    // on physical constraints. We then apply it in order
    // to minimize release and final concrete strength during the early design
@@ -4328,7 +4378,7 @@ bool pgsStrandDesignTool::MaximizeDebonding()
    // Get maximum debond levels for current number of straight strands, and sections
    StrandIndexType ns = GetNs();
 
-   LOG(_T("max_sections = ")<< m_NumDebondSections<<_T(", ns = ")<<ns);
+   DLOG(_T("max_sections = ")<< m_NumDebondSections<<_T(", ns = ")<<ns);
 
    std::vector<DebondLevelType> debond_levels;
    debond_levels.reserve(m_NumDebondSections);
@@ -4355,13 +4405,12 @@ bool pgsStrandDesignTool::MaximizeDebonding()
       debond_levels.push_back(db_level);
    }
 
-   LOG(_T("Debond levels before layout = ")<<DumpIntVector(debond_levels));
+   DLOG(_T("Debond levels before layout = ")<<DumpIntVector(debond_levels));
 
    // save our max levels
    m_MaxPhysicalDebondLevels = debond_levels;
 
-   LOG(_T("Maximum Debond Layout = ")<<DumpIntVector(m_MaxPhysicalDebondLevels));
-   LOG(_T("Exiting MaximizeDebonding"));
+   DLOG(_T("Maximum Debond Layout = ")<<DumpIntVector(m_MaxPhysicalDebondLevels));
    return true;
 }
 
@@ -4445,7 +4494,7 @@ DebondLevelType pgsStrandDesignTool::GetMaxDebondLevel(StrandIndexType numStrand
 {
    ATLASSERT(0 <= numStrands);
    ATLASSERT(0 <= numLeadingSections);
-//   LOG(_T("Entering GetMaxDebondLevel, numStrands = ")<<numStrands<<_T(" numLeadingSections = ")<<numLeadingSections);
+//   DLOG(_T("Entering GetMaxDebondLevel, numStrands = ")<<numStrands<<_T(" numLeadingSections = ")<<numLeadingSections);
 
    DebondLevelType num_levels = (DebondLevelType)m_DebondLevels.size();
    DebondLevelType level = 0;
@@ -4476,7 +4525,7 @@ DebondLevelType pgsStrandDesignTool::GetMaxDebondLevel(StrandIndexType numStrand
       }
    }
    
-//   LOG(_T("Exiting GetMaxDebondLevel, max level is = ")<<level);
+//   DLOG(_T("Exiting GetMaxDebondLevel, max level is = ")<<level);
    ATLASSERT(0 <= level);
    return level;
 }
@@ -4489,8 +4538,8 @@ const std::vector<DebondLevelType>& pgsStrandDesignTool::GetMaxPhysicalDebonding
 void pgsStrandDesignTool::RefineDebondLevels(std::vector<DebondLevelType>& rDebondLevelsAtSections) const
 {
    SectionIndexType num_sects = GetMaxNumberOfDebondSections();
-   LOG(_T("Entering RefineDebondLevels, max debond sections = ")<<num_sects);
-   LOG(_T("List of raw levels at start ")<<DumpIntVector(rDebondLevelsAtSections));
+   DESIGN_LOG_SCOPE(_T("RefineDebondLevels, max debond sections = ") << num_sects);
+   DLOG(_T("List of raw levels at start ")<<DumpIntVector(rDebondLevelsAtSections));
    SectionIndexType test_size = rDebondLevelsAtSections.size();
 
    if (test_size != num_sects)
@@ -4509,13 +4558,13 @@ void pgsStrandDesignTool::RefineDebondLevels(std::vector<DebondLevelType>& rDebo
       // make sure debond termination rules are enforced
       if ( !SmoothDebondLevelsAtSections(rDebondLevelsAtSections) )
       {
-         LOG(_T("Unable to debond within section rules")); //  could we increase conc strength here?
+         DLOG(_T("Unable to debond within section rules")); //  could we increase conc strength here?
          rDebondLevelsAtSections.clear();
          return;
       }
 
-      LOG(_T("List of levels after smoothing     ")<<DumpIntVector(rDebondLevelsAtSections));
-      LOG(_T("List of max physical debond levels ")<<DumpIntVector(m_MaxPhysicalDebondLevels));
+      DLOG(_T("List of levels after smoothing     ")<<DumpIntVector(rDebondLevelsAtSections));
+      DLOG(_T("List of max physical debond levels ")<<DumpIntVector(m_MaxPhysicalDebondLevels));
 
       // check levels against physical max computed in MaximizeDebonding
       ATLASSERT(m_MaxPhysicalDebondLevels.size()==num_sects);
@@ -4529,7 +4578,7 @@ void pgsStrandDesignTool::RefineDebondLevels(std::vector<DebondLevelType>& rDebo
          if (max_debond_level < debond_level_at_section)
          {
             ATLASSERT(false); // remove this after testing
-            LOG(_T(" A debond level exceeds the maximum physical allowable at section ")<<sectno<<_T(" Design abort"));
+            DLOG(_T(" A debond level exceeds the maximum physical allowable at section ")<<sectno<<_T(" Design abort"));
             rDebondLevelsAtSections.clear();
             break;
          }
@@ -4543,7 +4592,6 @@ void pgsStrandDesignTool::RefineDebondLevels(std::vector<DebondLevelType>& rDebo
       ATLASSERT(false); // should probably always of at least one debond section by the time we get here
    }
 
-   LOG(_T("Exiting RefineDebondLevels"));
 }
 
 bool pgsStrandDesignTool::SmoothDebondLevelsAtSections(std::vector<DebondLevelType>& rDebondLevelsAtSections) const
@@ -4555,7 +4603,7 @@ bool pgsStrandDesignTool::SmoothDebondLevelsAtSections(std::vector<DebondLevelTy
 
    StrandIndexType numStrands = GetNumPermanentStrands();
    StrandIndexType max_db_term_at_section = Max(numStrands < 10 ? m_MaxDebondSection10orLess : m_MaxDebondSection, m_bCheckMaxFraAtSection ? StrandIndexType(num_debonded*m_MaxPercentDebondSection) : 0);
-   LOG(_T("Max allowable debond terminations at a section = ")<<max_db_term_at_section);
+   DLOG(_T("Max allowable debond terminations at a section = ")<<max_db_term_at_section);
 
    // iterate from mid-girder toward end
    std::vector<DebondLevelType>::reverse_iterator rit = rDebondLevelsAtSections.rbegin();
@@ -4658,7 +4706,7 @@ DebondLevelType pgsStrandDesignTool::GetMinAdjacentDebondLevel(DebondLevelType c
 
 bool pgsStrandDesignTool::LayoutDebonding(const std::vector<DebondLevelType>& rDebondLevelAtSections)
 {
-   LOG(_T("Entering LayoutDebonding. Debond Levels = ")<<DumpIntVector(rDebondLevelAtSections));
+   DESIGN_LOG_SCOPE(_T("LayoutDebonding, debond levels at sections = ") << DumpIntVector(rDebondLevelAtSections));
    DebondConfigCollection db_info;
    SectionIndexType num_sections_where_strands_are_debonded = rDebondLevelAtSections.size();
    if (0 < num_sections_where_strands_are_debonded)
@@ -4695,7 +4743,7 @@ bool pgsStrandDesignTool::LayoutDebonding(const std::vector<DebondLevelType>& rD
             // we have strands to debond at this section
             Float64 debond_location_from_left_end= GetDebondSectionLocation(debondSectionIndex, dbLeft);
 
-            LOG(_T("Debond required at section ")<<debondSectionIndex<<_T("at ")<<WBFL::Units::ConvertFromSysUnits(debond_location_from_left_end,WBFL::Units::Measure::Feet) << _T(" ft"));
+            DESIGN_LOG_ONLY(std::_tostringstream osStrands);
 
             for (StrandIndexType debondedStrandIdx = last_num_of_debonded_strands; debondedStrandIdx < num_debonded_strands_this_section; debondedStrandIdx++)
             {
@@ -4706,10 +4754,12 @@ bool pgsStrandDesignTool::LayoutDebonding(const std::vector<DebondLevelType>& rD
                debondInfo.DebondLength[pgsTypes::metStart] = debond_location_from_left_end;
                debondInfo.DebondLength[pgsTypes::metEnd]   = debond_location_from_left_end;
 
-               LOG(_T("   Debond ") << strandIndex);
+               DESIGN_LOG_ONLY(osStrands << strandIndex << _T(" "));
 
                db_info.push_back(debondInfo);
             }
+
+            DLOG(_T("Section ") << debondSectionIndex << _T(" at ") << pgsDesignLog::ft(debond_location_from_left_end) << _T(" ft: debond ") << num_debonded_strands_this_section - last_num_of_debonded_strands << _T(" strands: ") << osStrands.str());
          }
 
          debondSectionIndex--;
@@ -4721,7 +4771,6 @@ bool pgsStrandDesignTool::LayoutDebonding(const std::vector<DebondLevelType>& rD
    m_pArtifact->SetStraightStrandDebondInfo(db_info);
    m_bConfigDirty = true; // cache is dirty
 
-   LOG(_T("Exiting LayoutDebonding"));
 
    return true;
 }
@@ -4781,10 +4830,10 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(const StressDemand& demand
            {
                Float64 debonded_strand_force = ComputePrestressForcePerStrand(fullyBondedConfig, demand, lvl, interval, pPrestressForce);
 
-               LOG(_T("GetDebondLevelForTopTension: level  = ")<<level<<_T(", interval = ")<<interval<<_T(", strand force =") << WBFL::Units::ConvertFromSysUnits(debonded_strand_force,WBFL::Units::Measure::Kip) << _T(" kip"));
+               DLOG(_T("GetDebondLevelForTopTension: level  = ")<<level<<_T(", interval = ")<<interval<<_T(", strand force =") << WBFL::Units::ConvertFromSysUnits(debonded_strand_force,WBFL::Units::Measure::Kip) << _T(" kip"));
 
                // stress relief for lvl
-               Float64 stress =  lvl.ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, LOGGER);
+               Float64 stress =  lvl.ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, DESIGN_LOGGER);
 
               // if this makes it by fudge, call it good enough
               if ( tensDemand*TensDebondFudge < stress)
@@ -4820,7 +4869,7 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(const StressDemand& demand
             // Note that we might try to improve this later by trying even less debonding inboard, but things are complicated enough as is.
             Float64 debonded_strand_force_l = ComputePrestressForcePerStrand(fullyBondedConfig, demand, m_DebondLevels[level], interval, pPrestressForce);
 
-            Float64 outb_allev =  m_DebondLevels[level].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, LOGGER); // no fudge
+            Float64 outb_allev =  m_DebondLevels[level].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, DESIGN_LOGGER); // no fudge
 
             if (tensDemand < outb_allev)
             {
@@ -4828,7 +4877,7 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(const StressDemand& demand
                // Stress relief (alleviation) provided by next-lower level
                Float64 debonded_strand_force_l1 = ComputePrestressForcePerStrand(fullyBondedConfig, demand, m_DebondLevels[level], interval, pPrestressForce);
 
-               Float64 inb_allev = m_DebondLevels[level-1].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l1, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, LOGGER);
+               Float64 inb_allev = m_DebondLevels[level-1].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l1, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, DESIGN_LOGGER);
 
                Float64 transfer_provided = 1.0-(outboardDistance / GetTransferLength(pgsTypes::Permanent));
             
@@ -4884,13 +4933,13 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(const StressDemand&
 
            Float64 debonded_strand_force = ComputePrestressForcePerStrand(fullyBondedConfig, demand, lvl, interval, pPrestressForce);
 
-           LOG(_T("GetDebondLevelForBottomCompression: level  = ")<<level<<_T(", interval = ")<<interval<<_T(", strand force =") << WBFL::Units::ConvertFromSysUnits(debonded_strand_force,WBFL::Units::Measure::Kip) << _T(" kip"));
+           LOG_DETAIL(_T("GetDebondLevelForBottomCompression: level  = ")<<level<<_T(", interval = ")<<interval<<_T(", strand force =") << WBFL::Units::ConvertFromSysUnits(debonded_strand_force,WBFL::Units::Measure::Kip) << _T(" kip"));
 
            // can only attain level with min number of strands
            if (lvl.MinTotalStrandsRequired <= nperm)
            {
                // stress relief for lvl
-               Float64 stress =  lvl.ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, LOGGER);
+               Float64 stress =  lvl.ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, DESIGN_LOGGER);
 
               // if this makes it by fudge, call it good enough
               if (stress < (compDemand * ComprDebondFudge))
@@ -4927,7 +4976,7 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(const StressDemand&
 
             Float64 debonded_strand_force_l = ComputePrestressForcePerStrand(fullyBondedConfig, demand, m_DebondLevels[level], interval, pPrestressForce);
 
-            Float64 outb_allev =  m_DebondLevels[level].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, LOGGER); // no fudge
+            Float64 outb_allev =  m_DebondLevels[level].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, DESIGN_LOGGER); // no fudge
 
             if (outb_allev < compDemand)
             {
@@ -4935,7 +4984,7 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(const StressDemand&
                // Stress relief (alleviation) provided by next-lower level
                Float64 debonded_strand_force_l2 = ComputePrestressForcePerStrand(fullyBondedConfig, demand, m_DebondLevels[level-1], interval, pPrestressForce);
 
-               Float64 inb_allev = m_DebondLevels[level-1].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l2, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, LOGGER);
+               Float64 inb_allev = m_DebondLevels[level-1].ComputeReliefStress(demand.m_PrestressForcePerStrand, debonded_strand_force_l2, nperm, ntemp, cgFullyBonded, Hg, Yb, eccX, Ca, Cmx, Cmy, DESIGN_LOGGER);
 
                Float64 transfer_provided = 1.0-(outboardDistance / GetTransferLength(pgsTypes::Permanent));
             
@@ -4980,8 +5029,8 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
    {
       const StressDemand& demand = *sit;
 
-      LOG(_T("Debonding design for stresses at ")<<WBFL::Units::ConvertFromSysUnits(demand.m_Poi.GetDistFromStart(),WBFL::Units::Measure::Feet) << _T(" ft"));
-      LOG(_T("Applied Top stress = ")<< WBFL::Units::ConvertFromSysUnits(demand.m_TopStress,WBFL::Units::Measure::KSI) << _T(" ksi, Bottom stress = ") << WBFL::Units::ConvertFromSysUnits(demand.m_BottomStress,WBFL::Units::Measure::KSI) << _T(" ksi."));
+      DLOG(_T("Debonding design for stresses at ")<<WBFL::Units::ConvertFromSysUnits(demand.m_Poi.GetDistFromStart(),WBFL::Units::Measure::Feet) << _T(" ft"));
+      DLOG(_T("Applied Top stress = ")<< WBFL::Units::ConvertFromSysUnits(demand.m_TopStress,WBFL::Units::Measure::KSI) << _T(" ksi, Bottom stress = ") << WBFL::Units::ConvertFromSysUnits(demand.m_BottomStress,WBFL::Units::Measure::KSI) << _T(" ksi."));
 
       // Section properties of beam - non-prismatic
       // using release interval because we are computing stress on the girder due to prestress which happens in this interval
@@ -5014,19 +5063,19 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
             DebondLevelType out_top_db_level, in_top_db_level;
             GetDebondLevelForTopTension(demand, fullyBondedConfig, cgFullyBonded, interval, tens_demand, out_to_in_distance, Hg, Yb, ecc.X(), Cat, Ctx, Cty, &out_top_db_level, &in_top_db_level);
 
-            LOG(_T("Debonding needed to control top tensile overstress of ") << WBFL::Units::ConvertFromSysUnits(tens_demand,WBFL::Units::Measure::KSI) << _T(" KSI at ")<<WBFL::Units::ConvertFromSysUnits(demand.m_Poi.GetDistFromStart(),WBFL::Units::Measure::Feet) << _T(" ft. Outboard level required was ")<< out_top_db_level<<_T(" Inboard level required was ")<< in_top_db_level);
+            DLOG(_T("Debonding needed to control top tensile overstress of ") << WBFL::Units::ConvertFromSysUnits(tens_demand,WBFL::Units::Measure::KSI) << _T(" ksi at ")<<WBFL::Units::ConvertFromSysUnits(demand.m_Poi.GetDistFromStart(),WBFL::Units::Measure::Feet) << _T(" ft. Outboard level required was ")<< out_top_db_level<<_T(" Inboard level required was ")<< in_top_db_level);
 
             if (out_top_db_level < 0)
             {
                ATLASSERT(false); // algorithm should avoid this
-               LOG(_T("Debond design failed at location - continue, but failure is likely"));
+               DLOG(_T("Debond design failed at location - continue, but failure is likely"));
                out_top_db_level *= -1;
             }
 
             if (in_top_db_level < 0)
             {
                ATLASSERT(false); // algorithm should avoid this
-               LOG(_T("Debond design failed at location - continue, but failure is likely"));
+               DLOG(_T("Debond design failed at location - continue, but failure is likely"));
                in_top_db_level *= -1;
             }
 
@@ -5046,19 +5095,19 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
             DebondLevelType out_bot_db_level, in_bot_db_level;
             GetDebondLevelForBottomCompression(demand, fullyBondedConfig, cgFullyBonded, interval, comp_demand, out_to_in_distance, Hg, Yb, ecc.X(), Cab, Cbx, Cby, &out_bot_db_level, &in_bot_db_level);
 
-            LOG(_T("Debonding needed to control bottom compressive overstress of ") << WBFL::Units::ConvertFromSysUnits(comp_demand,WBFL::Units::Measure::KSI) << _T(" KSI at ")<<WBFL::Units::ConvertFromSysUnits(demand.m_Poi.GetDistFromStart(),WBFL::Units::Measure::Feet) << _T(" ft. Outboard level required was ")<< out_bot_db_level<<_T(" Inboard level required was ")<< in_bot_db_level);
+            DLOG(_T("Debonding needed to control bottom compressive overstress of ") << WBFL::Units::ConvertFromSysUnits(comp_demand,WBFL::Units::Measure::KSI) << _T(" ksi at ")<<WBFL::Units::ConvertFromSysUnits(demand.m_Poi.GetDistFromStart(),WBFL::Units::Measure::Feet) << _T(" ft. Outboard level required was ")<< out_bot_db_level<<_T(" Inboard level required was ")<< in_bot_db_level);
 
             if (out_bot_db_level < 0)
             {
                ATLASSERT(false); // algorithm should avoid this
-               LOG(_T("Debond design failed at location - continue, but failure is likely"));
+               DLOG(_T("Debond design failed at location - continue, but failure is likely"));
                out_bot_db_level *= -1;
             }
 
             if (in_bot_db_level < 0)
             {
                ATLASSERT(false); // algorithm should avoid this
-               LOG(_T("Debond design failed at location - continue, but failure is likely"));
+               DLOG(_T("Debond design failed at location - continue, but failure is likely"));
                in_bot_db_level *= -1;
             }
 
@@ -5082,7 +5131,7 @@ std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const 
       }
    }
 
-   LOG(_T("Smooth out our vector before we return it"));
+   DLOG(_T("Smooth out our vector before we return it"));
    RefineDebondLevels(debond_levels);
 
    return debond_levels;
