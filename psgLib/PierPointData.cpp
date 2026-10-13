@@ -31,7 +31,7 @@ CLASS
 CPierPointData::CPierPointData(CPierData2* pPier) :
 m_pPier(pPier)
 {
-   m_X = WBFL::Units::ConvertToSysUnits(-10.0,WBFL::Units::Measure::Feet);
+   m_X = WBFL::Units::ConvertToSysUnits(0.0,WBFL::Units::Measure::Feet);
    m_Y = WBFL::Units::ConvertToSysUnits(10.0,WBFL::Units::Measure::Feet);
 }
 
