@@ -2695,6 +2695,41 @@ bool CBridgeAgentImp::LayoutPiers()
    {
       const CPierData2* pPierData = pBridgeDesc->GetPier(pierIdx);
 
+      Float64 H1L, H2L, H1R, H2R;
+      Float64 X2L, X1L, X2R, X1R;
+      pPierData->GetXBeamDimensions(pgsTypes::stLeft, &H1L, &H2L, &X2L, &X1L);
+      pPierData->GetXBeamDimensions(pgsTypes::stRight, &H1R, &H2R, &X2R, &X1R);
+
+      Float64 W1 = pPierData->GetXBeamWidth();
+
+      Float64 HU, W2;
+      GetUpperXBeamDimensions(pierIdx, &HU, &W2);
+
+      // Create Cross Beam
+      CComPtr<IBridgePier> pier;
+      GetGenericBridgePier(pierIdx, &pier);
+
+      CComPtr<IBasicCrossBeam> bxbeam;
+      CComPtr<IScallopedCrossBeam> sxbeam;
+      CComPtr<IPointDefinedCrossBeam> uxbeam;
+
+      HRESULT hr;
+      if (pPierData->GetPierLayoutType() == pgsTypes::pltUserDefined)
+      {
+          hr = uxbeam.CoCreateInstance(CLSID_PointDefinedCrossBeam);
+          pier->putref_CrossBeam(uxbeam);
+      }
+      else if (pPierData->GetPierLayoutType() == pgsTypes::pltScalloped)
+      {
+          hr = sxbeam.CoCreateInstance(CLSID_ScallopedCrossBeam);
+          pier->putref_CrossBeam(sxbeam);
+      }
+      else
+      {
+          hr = bxbeam.CoCreateInstance(CLSID_BasicCrossBeam);
+          pier->putref_CrossBeam(bxbeam);
+      }
+
       GET_IFACE(IBridge, pBridge);
       Float64 pierStation = pBridge->GetPierStation(pierIdx);
 
@@ -2718,25 +2753,12 @@ bool CBridgeAgentImp::LayoutPiers()
           tDeck = pDeck->GrossDepth;
       }
 
-      CComPtr<IBridgePier> pier;
-      GetGenericBridgePier(pierIdx, &pier);
-
       pier->putref_DeckProfile(deckProfile);
 
       Float64 leftCLO = pBridge->GetLeftInteriorCurbOffset(pierIdx);
       Float64 rightCLO = pBridge->GetRightInteriorCurbOffset(pierIdx);
       pier->put_CurbLineOffset(qcbLeft, leftCLO);
       pier->put_CurbLineOffset(qcbRight, rightCLO);
-
-      Float64 H1L, H2L, H1R, H2R;
-      Float64 X2L, X1L, X2R, X1R;
-      pPierData->GetXBeamDimensions(pgsTypes::stLeft, &H1L, &H2L, &X2L, &X1L);
-      pPierData->GetXBeamDimensions(pgsTypes::stRight, &H1R, &H2R, &X2R, &X1R);
-
-      Float64 W1 = pPierData->GetXBeamWidth();
-
-      Float64 HU, W2;
-      GetUpperXBeamDimensions(pierIdx, &HU, &W2);
 
       // Pier Type (derived from boundary condition)
       pgsTypes::PierType pierType = GetPierType(pierIdx);
@@ -2748,10 +2770,6 @@ bool CBridgeAgentImp::LayoutPiers()
       
       if (pPierData->GetPierLayoutType() == pgsTypes::pltUserDefined)
       {
-          CComPtr<IPointDefinedCrossBeam> uxbeam;
-      
-          HRESULT hr = uxbeam.CoCreateInstance(CLSID_PointDefinedCrossBeam);
-      
           uxbeam->put_H1L(H1L);
           uxbeam->put_H1R(H1R);
           uxbeam->put_X1L(X1L);
@@ -2763,15 +2781,16 @@ bool CBridgeAgentImp::LayoutPiers()
           points.CoCreateInstance(CLSID_Point2dCollection);
       
           const auto& vPoints = pPierData->GetPierPointData();
-      
+
           for (const auto& pointData : vPoints)
           {
               CComPtr<IPoint2d> point;
               point.CoCreateInstance(CLSID_Point2d);
+              Float64 Xxb = pointData.Get_X();
 
-              Float64 Xcl = pointData.Get_X();
+              Float64 Xp = ConvertCrossBeamToPierCoordinate(*pPierData, Xxb);
 
-              Float64 Xp = ConvertCurbLineToPierCoordinate(*pPierData, Xcl);
+              Float64 Xcl = ConvertCrossBeamToCurbLineCoordinate(*pPierData, Xxb);
 
               Float64 Ydeck = GetElevation(*pPierData, Xcl);
 
@@ -2779,17 +2798,13 @@ bool CBridgeAgentImp::LayoutPiers()
                   Ydeck - pointData.Get_Y()
                   - tDeck
                   - HU);
+
               points->Add(point);
           }
           uxbeam->SetPoints(points);
-      
-          pier->putref_CrossBeam(uxbeam);
       }
       else if (pPierData->GetPierLayoutType() == pgsTypes::pltScalloped)
       {
-          CComPtr<IScallopedCrossBeam> sxbeam;
-      
-          HRESULT hr = sxbeam.CoCreateInstance(CLSID_ScallopedCrossBeam);
       
           sxbeam->put_H1L(H1L);
           sxbeam->put_H1R(H1R);
@@ -2807,13 +2822,9 @@ bool CBridgeAgentImp::LayoutPiers()
 	  	sxbeam->put_R(R);
 	  	sxbeam->put_D(D);
       
-          pier->putref_CrossBeam(sxbeam);
       }
       else
       {
-          CComPtr<IBasicCrossBeam> bxbeam;
-      
-          HRESULT hr = bxbeam.CoCreateInstance(CLSID_BasicCrossBeam);
       
           bxbeam->put_H1L(H1L);
           bxbeam->put_H2L(H2L);
@@ -2828,8 +2839,7 @@ bool CBridgeAgentImp::LayoutPiers()
       
           bxbeam->put_W1(W1);
           bxbeam->put_W2(W2);
-      
-          pier->putref_CrossBeam(bxbeam);
+
       }
       
       
@@ -13539,9 +13549,10 @@ void CBridgeAgentImp::GetBottomXBeamProfile(
                 const CPierPointData& pierPoint =
                     pierData.GetPierPointData(ppIdx);
 
-                Float64 Xcl = pierPoint.Get_X();
+                Float64 Xxb = pierPoint.Get_X();
 
-                Float64 Xp = ConvertCurbLineToPierCoordinate(pierData, Xcl);
+                Float64 Xp = ConvertCrossBeamToPierCoordinate(pierData, Xxb);
+                Float64 Xcl = ConvertCrossBeamToCurbLineCoordinate(pierData, Xxb);
 
                 Float64 deckElev = GetElevation(pierData, Xcl);
 

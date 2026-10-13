@@ -785,6 +785,14 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
             pntTop.Release();
         }
 
+        Float64 origX = pBridge->ConvertCrossBeamToPierCoordinate(*pPier, 0.0);
+        Float64 origY = fnTop.Evaluate(origX) - H1L;
+        WBFL::Geometry::Point2d origin(origX, origY);
+
+        auto doOrigin = WBFL::DManip::PointDisplayObject::Create();
+        doOrigin->SetPosition(origin, false, false);
+        displayList->AddDisplayObject(doOrigin);
+
         CString strBlcLabel = _T("(0, 0)");
 
         auto doBlcLabel = WBFL::DManip::TextBlock::Create();
@@ -796,11 +804,10 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
 
         for (const auto& pnt : pPier->GetPierPointData())
         {
-            Float64 Xcl = pnt.Get_X();
-            Float64 Xp = pBridge->ConvertCurbLineToPierCoordinate(*pPier, Xcl);
+            Float64 Xxb = pnt.Get_X();
 
-            // Actual Y coordinate of the top of the lower cross beam
-            // at this X location.
+            Float64 Xp = pBridge->ConvertCrossBeamToPierCoordinate(*pPier, Xxb);
+
             const Float64 Ytop = fnTop.Evaluate(Xp);
 
             const Float64 Ypoint = Ytop - pnt.Get_Y();
@@ -810,7 +817,7 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
             GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
             CString strPntLabel;
-            strPntLabel.Format(_T("(%s,%s)"), ::FormatDimension(Xp - Xl, pDisplayUnits->GetSpanLengthUnit()), ::FormatDimension(Ytop - Ypoint, pDisplayUnits->GetSpanLengthUnit()));
+            strPntLabel.Format(_T("(%s,%s)"), ::FormatDimension(Xxb, pDisplayUnits->GetSpanLengthUnit()), ::FormatDimension(pnt.Get_Y(), pDisplayUnits->GetSpanLengthUnit()));
 
             auto doPntLabel = WBFL::DManip::TextBlock::Create();
             doPntLabel->SetText(strPntLabel);
@@ -819,7 +826,11 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
             doPntLabel->SetPosition(pp);
             displayList->AddDisplayObject(doPntLabel);
 
+            auto doPoint = WBFL::DManip::PointDisplayObject::Create();
+            doPoint->SetPosition(pp, false, false);
+            displayList->AddDisplayObject(doPoint);
         }
+
     }
 
     // Column Dimensions
