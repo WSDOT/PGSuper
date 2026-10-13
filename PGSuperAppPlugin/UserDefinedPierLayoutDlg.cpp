@@ -173,168 +173,42 @@ void CUserDefinedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
         DDV_UnitValueZeroOrMore(pDX, IDC_OHR, m_XBeamOverhang[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
 
 
-        GET_IFACE2(pBroker, IBridge, pBridge);
-        Float64 pierStation = pBridge->GetPierStation(m_Pier.GetIndex());
-        GET_IFACE2(pBroker, IRoadway, pAlignment);
-        Float64 elev = pAlignment->GetElevation(pierStation, 0.0);
-        IndexType ctrnpt = pAlignment->GetAlignmentPointIndex(pierStation);
-        Float64 cpOffset = pAlignment->GetAlignmentOffset(ctrnpt, pierStation);
-
-        CComPtr<IAngle> skewAngle;
-        pBridge->GetPierSkew(m_Pier.GetIndex(), &skewAngle);
-        CComPtr<IPoint2dCollection> pierPoints;
-        pAlignment->GetRoadwaySurface(pierStation, skewAngle, &pierPoints);
-
-        Float64 leftSumX = 0.0;
-        Float64 leftSumY = 0.0;
-        Float64 leftSumXY = 0.0;
-        Float64 leftSumXX = 0.0;
-        IndexType leftCount = 0;
-
-        Float64 rightSumX = 0.0;
-        Float64 rightSumY = 0.0;
-        Float64 rightSumXY = 0.0;
-        Float64 rightSumXX = 0.0;
-        IndexType rightCount = 0;
-
-        IndexType npp;
-        pierPoints->get_Count(&npp);
-
-        for (IndexType i = 0; i < npp; i++)
-        {
-            CComPtr<IPoint2d> pPoint;
-            pierPoints->get_Item(i, &pPoint);
-
-            Float64 xp, yp;
-            pPoint->get_X(&xp);
-            pPoint->get_Y(&yp);
-
-            if (i <= ctrnpt)
-            {
-                // Calculate the left slope using line of best fit
-                // from the points to the left of the crown point.
-                leftSumX += xp;
-                leftSumY += yp;
-                leftSumXY += xp * yp;
-                leftSumXX += xp * xp;
-                leftCount++;
-            }
-            if (i >= ctrnpt)
-            {
-                // Calculate the right slope using line of best fit
-                // from the points to the right of the crown point.
-                rightSumX += xp;
-                rightSumY += yp;
-                rightSumXY += xp * yp;
-                rightSumXX += xp * xp;
-                rightCount++;
-            }
-        }
-
-        Float64 mLeft = 0.0;
-        Float64 mRight = 0.0;
-
-        if (leftCount >= 2)
-        {
-            Float64 denominator =
-                leftCount * leftSumXX - leftSumX * leftSumX;
-
-            if (fabs(denominator) > DBL_EPSILON)
-            {
-                mLeft =
-                    (leftCount * leftSumXY - leftSumX * leftSumY) /
-                    denominator;
-            }
-        }
-
-        if (rightCount >= 2)
-        {
-            Float64 denominator =
-                rightCount * rightSumXX - rightSumX * rightSumX;
-
-            if (fabs(denominator) > DBL_EPSILON)
-            {
-                mRight =
-                    (rightCount * rightSumXY - rightSumX * rightSumY) /
-                    denominator;
-            }
-        }
-
         const IndexType nCols = m_Pier.GetColumnCount();
 
-        Float64 xRightColumn = 0;
+        Float64 xxbRightColumn = m_XBeamOverhang[pgsTypes::stLeft] - m_XBeamEndSlopeOffset[pgsTypes::stLeft];
+
         IndexType nSpaces = (nCols - 1);
         for (IndexType idx = 0; idx < nSpaces; idx++)
         {
             Float64 spacing = m_Pier.GetColumnSpacing(idx);
-            xRightColumn += spacing;
+            xxbRightColumn += spacing;
         }
 
-        // Calculate position of reference column and alignment offset
-        Float64 xRefColumn = 0;
-        for (IndexType idx = 0; idx < m_RefColumnIdx; idx++)
-        {
-            Float64 spacing = m_Pier.GetColumnSpacing(idx);
-            xRefColumn += spacing;
-        }
-        Float64 xShift = -(xRefColumn + m_TransverseOffset);
+        Float64 xxbRightLimit = xxbRightColumn + m_XBeamOverhang[pgsTypes::stRight] - m_XBeamEndSlopeOffset[pgsTypes::stRight];
 
-        // Calculate limits outside the pier point loop (they don't depend on individual points)
-        const auto xLeftTop = xShift - m_XBeamOverhang[pgsTypes::stLeft];
-
-        const auto xRightTop = xShift + xRightColumn + m_XBeamOverhang[pgsTypes::stRight];
-
-
-        auto xLeftLimit =
-            xLeftTop + m_XBeamEndSlopeOffset[pgsTypes::stLeft];
-
-        auto xRightLimit =
-            xRightTop - m_XBeamEndSlopeOffset[pgsTypes::stRight];
+        Float64 prevPoint = -DBL_MAX;
 
         for (const auto& ppData : m_Pier.GetPierPointData())
         {
-            const auto& x = ppData.Get_X();
+
+            const auto& xxb = ppData.Get_X();
             const auto& y = ppData.Get_Y();
 
-            auto xLeftLimitAdjusted = xLeftLimit;
-            auto xRightLimitAdjusted = xRightLimit;
-
-            // While the point is within H1L/H1R, the allowable
-            // x-coordinate is governed by the sloping side.
-            if (y < m_XBeamHeight[pgsTypes::stLeft])
+            if (xxb < 0.0 || xxb > xxbRightLimit || y < 0.0)
             {
-                xLeftLimitAdjusted =
-                    xLeftTop +
-                    m_XBeamEndSlopeOffset[pgsTypes::stLeft] *
-                    y / m_XBeamHeight[pgsTypes::stLeft];
-            }
-
-            if (y < m_XBeamHeight[pgsTypes::stRight])
-            {
-                xRightLimitAdjusted =
-                    xRightTop -
-                    m_XBeamEndSlopeOffset[pgsTypes::stRight] *
-                    y / m_XBeamHeight[pgsTypes::stRight];
-            }
-
-            Float64 yTopLimit;
-            if (x < 0.0)
-            {
-                yTopLimit = -(mLeft * (x - cpOffset));
-            }
-            else
-            {
-                yTopLimit = -(mRight * (x - cpOffset));
-            }
-
-            if (y < yTopLimit ||
-                x < xLeftLimitAdjusted ||
-                x > xRightLimitAdjusted)
-            {
-                CString msg = _T("Pier point must be within the top and sides of the lower crossbeam.");
+                CString msg = _T("Pier point is outside the top and sides of the lower crossbeam.");
                 AfxMessageBox(msg);
                 pDX->Fail();
             }
+
+            if (xxb < prevPoint)
+            {
+                CString msg = _T("Pier point must increase left to right along the crossbeam.");
+                AfxMessageBox(msg);
+                pDX->Fail();
+            }
+
+            prevPoint = xxb;
 
         }
     }
@@ -554,192 +428,42 @@ void CUserDefinedPierLayoutDlg::ChangePierLayout()
         DDV_UnitValueZeroOrMore(&dx, IDC_X1R, m_XBeamEndSlopeOffset[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
 
 
-        GET_IFACE2(pBroker, IBridge, pBridge);
-        Float64 pierStation = pBridge->GetPierStation(m_Pier.GetIndex());
-        GET_IFACE2(pBroker, IRoadway, pAlignment);
-        Float64 elev = pAlignment->GetElevation(pierStation, 0.0);
-        IndexType ctrnpt = pAlignment->GetAlignmentPointIndex(pierStation);
-        Float64 cpOffset = pAlignment->GetAlignmentOffset(ctrnpt, pierStation);
-
-        CComPtr<IAngle> skewAngle;
-        pBridge->GetPierSkew(m_Pier.GetIndex(), &skewAngle);
-        CComPtr<IPoint2dCollection> pierPoints;
-        pAlignment->GetRoadwaySurface(pierStation, skewAngle, &pierPoints);
-
-        Float64 leftSumX = 0.0;
-        Float64 leftSumY = 0.0;
-        Float64 leftSumXY = 0.0;
-        Float64 leftSumXX = 0.0;
-        IndexType leftCount = 0;
-
-        Float64 rightSumX = 0.0;
-        Float64 rightSumY = 0.0;
-        Float64 rightSumXY = 0.0;
-        Float64 rightSumXX = 0.0;
-        IndexType rightCount = 0;
-
-        IndexType npp;
-        pierPoints->get_Count(&npp);
-
-        for (IndexType i = 0; i < npp; i++)
-        {
-            CComPtr<IPoint2d> pPoint;
-            pierPoints->get_Item(i, &pPoint);
-
-            Float64 xp, yp;
-            pPoint->get_X(&xp);
-            pPoint->get_Y(&yp);
-
-            if (i <= ctrnpt)
-            {
-                // Calculate the left slope using line of best fit
-                // from the points to the left of the crown point.
-                leftSumX += xp;
-                leftSumY += yp;
-                leftSumXY += xp * yp;
-                leftSumXX += xp * xp;
-                leftCount++;
-            }
-            if (i >= ctrnpt)
-            {
-                // Calculate the right slope using line of best fit
-                // from the points to the right of the crown point.
-                rightSumX += xp;
-                rightSumY += yp;
-                rightSumXY += xp * yp;
-                rightSumXX += xp * xp;
-                rightCount++;
-            }
-        }
-
-        Float64 mLeft = 0.0;
-        Float64 mRight = 0.0;
-
-        if (leftCount >= 2)
-        {
-            Float64 denominator =
-                leftCount * leftSumXX - leftSumX * leftSumX;
-
-            if (fabs(denominator) > DBL_EPSILON)
-            {
-                mLeft =
-                    (leftCount * leftSumXY - leftSumX * leftSumY) /
-                    denominator;
-            }
-        }
-
-        if (rightCount >= 2)
-        {
-            Float64 denominator =
-                rightCount * rightSumXX - rightSumX * rightSumX;
-
-            if (fabs(denominator) > DBL_EPSILON)
-            {
-                mRight =
-                    (rightCount * rightSumXY - rightSumX * rightSumY) /
-                    denominator;
-            }
-        }
-
         const IndexType nCols = m_Pier.GetColumnCount();
 
-        Float64 xRightColumn = 0;
+        Float64 xxbRightColumn = m_XBeamOverhang[pgsTypes::stLeft] - m_XBeamEndSlopeOffset[pgsTypes::stLeft];
+
         IndexType nSpaces = (nCols - 1);
         for (IndexType idx = 0; idx < nSpaces; idx++)
         {
             Float64 spacing = m_Pier.GetColumnSpacing(idx);
-            xRightColumn += spacing;
+            xxbRightColumn += spacing;
         }
 
-        // Calculate position of reference column and alignment offset
-        Float64 xRefColumn = 0;
-        if (m_RefColumnIdx < nCols)
-        {
-            for (IndexType idx = 0; idx < m_RefColumnIdx; idx++)
-            {
-                Float64 spacing = m_Pier.GetColumnSpacing(idx);
-                xRefColumn += spacing;
-            }
-        }
-        Float64 xShift = m_TransverseOffset - xRefColumn;
+        Float64 xxbRightLimit = xxbRightColumn + m_XBeamOverhang[pgsTypes::stRight] - m_XBeamEndSlopeOffset[pgsTypes::stRight];
 
-        // Calculate limits outside the pier point loop (they don't depend on individual points)
-        const auto xLeftTop = xShift - m_XBeamOverhang[pgsTypes::stLeft];
-
-        const auto xRightTop = xShift + xRightColumn + m_XBeamOverhang[pgsTypes::stRight];
-
-
-        auto xLeftLimit =
-            xLeftTop + m_XBeamEndSlopeOffset[pgsTypes::stLeft];
-
-        auto xRightLimit =
-            xRightTop - m_XBeamEndSlopeOffset[pgsTypes::stRight];
-
-		Float64 prevPoint = -DBL_MAX;
+        Float64 prevPoint = -DBL_MAX;
 
         for (const auto& ppData : m_Pier.GetPierPointData())
         {
-            const auto& xcl = ppData.Get_X();
-            const auto& x = pBridge->ConvertCurbLineToPierCoordinate(m_Pier, xcl);
 
+            const auto& xxb = ppData.Get_X();
             const auto& y = ppData.Get_Y();
 
-            auto xLeftLimitAdjusted = xLeftLimit;
-            auto xRightLimitAdjusted = xRightLimit;
-
-            // While the point is within H1L/H1R, the allowable
-            // x-coordinate is governed by the sloping side.
-            if (y < m_XBeamHeight[pgsTypes::stLeft])
+            if (xxb < 0.0 || xxb > xxbRightLimit || y < 0.0)
             {
-                xLeftLimitAdjusted =
-                    xLeftTop +
-                    m_XBeamEndSlopeOffset[pgsTypes::stLeft] *
-                    y / m_XBeamHeight[pgsTypes::stLeft];
-            }
-
-            if (y < m_XBeamHeight[pgsTypes::stRight])
-            {
-                xRightLimitAdjusted =
-                    xRightTop -
-                    m_XBeamEndSlopeOffset[pgsTypes::stRight] *
-                    y / m_XBeamHeight[pgsTypes::stRight];
-            }
-
-            Float64 yTopLimit;
-            if (x < 0.0)
-            {
-                yTopLimit = -(mLeft * (x - cpOffset));
-            }
-            else
-            {
-                yTopLimit = -(mRight * (x - cpOffset));
-            }
-
-            if (y < yTopLimit ||
-                x < xLeftLimitAdjusted ||
-                x > xRightLimitAdjusted)
-            {
-                m_PierPointGrid.RemoveSelectedPierPoints();
-
-                // Update pier data with current column data
-                m_PierPointGrid.GetPierPointData(m_Pier);
-                CString msg = _T("Pier point must be within the top and sides of the lower crossbeam.");
+                CString msg = _T("Pier point is outside the top and sides of the lower crossbeam.");
                 AfxMessageBox(msg);
                 dx.Fail();
             }
 
-            if (x < prevPoint)
+            if (xxb < prevPoint)
             {
-                m_PierPointGrid.RemoveSelectedPierPoints();
-
-                // Update pier data with current column data
-                m_PierPointGrid.GetPierPointData(m_Pier);
                 CString msg = _T("Pier point must increase left to right along the crossbeam.");
                 AfxMessageBox(msg);
                 dx.Fail();
             }
 
-			prevPoint = x;
+            prevPoint = xxb;
 
         }
     }
