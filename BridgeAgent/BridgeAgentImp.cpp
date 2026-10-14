@@ -14138,31 +14138,38 @@ void CBridgeAgentImp::GetXBeamShape(const CPierData2& pierData, pgsTypes::Stage 
 		pierData, Xxb,
         &lowerXBeamShape);
 
-    // ---------------------------------------------------------
-    // Get upper cross beam shape
-    // ---------------------------------------------------------
+	if (stage == pgsTypes::Stage1)
+	{
+		lowerXBeamShape.CopyTo(ppShape);
+	}
+	else
+    {
+        // ---------------------------------------------------------
+        // Get upper cross beam shape
+        // ---------------------------------------------------------
 
-    CComPtr<IShape> upperXBeamShape;
-    GetUpperXBeamShape(
-		pierData, Xxb,
-        &upperXBeamShape);
+        CComPtr<IShape> upperXBeamShape;
+        GetUpperXBeamShape(
+            pierData, Xxb,
+            &upperXBeamShape);
 
-    // ---------------------------------------------------------
-    // Combine upper + lower into composite shape
-    // ---------------------------------------------------------
+        // ---------------------------------------------------------
+        // Combine upper + lower into composite shape
+        // ---------------------------------------------------------
 
-    CComPtr<ICompositeShape> compositeShape;
-    compositeShape.CoCreateInstance(CLSID_CompositeShape);
+        CComPtr<ICompositeShape> compositeShape;
+        compositeShape.CoCreateInstance(CLSID_CompositeShape);
 
-    compositeShape->AddShape(
-        lowerXBeamShape,
-        VARIANT_FALSE);
+        compositeShape->AddShape(
+            lowerXBeamShape,
+            VARIANT_FALSE);
 
-    compositeShape->AddShape(
-        upperXBeamShape,
-        VARIANT_FALSE);
+        compositeShape->AddShape(
+            upperXBeamShape,
+            VARIANT_FALSE);
 
-    compositeShape->get_Shape(ppShape);
+        compositeShape->get_Shape(ppShape);
+    }
 
 }
 

@@ -702,39 +702,6 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
         // R = radius of bottom scallop arcs (same for both left and right)
         // D = depth of lower cross beam at column center
 
-        for (ColumnIndexType colIdx = 0; colIdx < nColumns; colIdx++)
-        {
-            // Left column arc center
-			Float64 XxbCol = pBridge->GetColumnLocation(*pPier, colIdx);
-            Float64 XpCol = pBridge->ConvertCrossBeamToPierCoordinate(*pPier, XxbCol);
-
-            // Get the top surface endpoints to interpolate Y at column center
-            pnt.Release();
-            topLowerXBeamProfile->get_Item(0, &pnt);
-            Float64 X0, Y0;
-            pnt->get_X(&X0);
-            pnt->get_Y(&Y0);
-
-            pnt.Release();
-            IndexType nPoints;
-            topLowerXBeamProfile->get_Count(&nPoints);
-            topLowerXBeamProfile->get_Item(nPoints - 1, &pnt);
-            Float64 Xn, Yn;
-            pnt->get_X(&Xn);
-            pnt->get_Y(&Yn);
-
-            // Interpolate Y value at column center accounting for slope
-            Float64 YtopCol = pBridge->GetTopColumnElevation(*pPier, colIdx);
-
-            // Create points for depth dimension (depth at column center)
-            // Depth is measured from the top of lower cross beam to the bottom of the scallop
-            WBFL::Geometry::Point2d depthBottomPoint(XpCol, YtopCol);
-            Float64 D = pPier->GetXBeamDepth();
-            WBFL::Geometry::Point2d depthTopPoint(XpCol, YtopCol + D);
-            BuildDimensionLine(displayList, depthTopPoint, depthBottomPoint); // D Dimension
-
-        }
-
         for (ColumnIndexType colIdx = 0;
             colIdx + 1 < nColumns; colIdx++)
         {
@@ -746,27 +713,171 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
             Float64 XpMid =
                 pBridge->ConvertCrossBeamToPierCoordinate(*pPier, Xmid);
 
-            CComPtr<IShape> shape;
-            pBridge->GetLowerXBeamShape(*pPier, Xmid, &shape);
+            Float64 XpCol =
+                pBridge->ConvertCrossBeamToPierCoordinate(*pPier, X1);
 
-            CComQIPtr<IXYPosition> position(shape);
+            CComPtr<IShape> shape1;
+            pBridge->GetXBeamShape(
+                *pPier,
+                pgsTypes::Stage1,
+                Xmid,
+                &shape1);
 
-            CComPtr<IPoint2d> pntTop;
-            CComPtr<IPoint2d> pntBot;
+            CComQIPtr<IXYPosition> position1(shape1);
 
-            position->get_LocatorPoint(lpTopCenter, &pntTop);
-            position->get_LocatorPoint(lpBottomCenter, &pntBot);
+            CComPtr<IShape> shape2;
+            pBridge->GetXBeamShape(
+                *pPier,
+                pgsTypes::Stage1,
+                X1,
+                &shape2);
 
-            Float64 Ytop, Ybot;
-            pntTop->get_Y(&Ytop);
-            pntBot->get_Y(&Ybot);
+            CComQIPtr<IXYPosition> position2(shape2);
 
-            WBFL::Geometry::Point2d top(XpMid, Ytop);
-            WBFL::Geometry::Point2d bottom(XpMid, Ybot);
+            CComPtr<IPoint2d> pntTop1;
+            CComPtr<IPoint2d> pntBot1;
 
-            BuildDimensionLine(displayList, top, bottom);
+            position1->get_LocatorPoint(lpTopCenter, &pntTop1);
+            position1->get_LocatorPoint(lpBottomCenter, &pntBot1);
+
+            Float64 Ytop1, Ybot1;
+            pntTop1->get_Y(&Ytop1);
+            pntBot1->get_Y(&Ybot1);
+
+            WBFL::Geometry::Point2d top1(XpMid, Ytop1);
+            WBFL::Geometry::Point2d bottom1(XpMid, Ybot1);
+
+            BuildDimensionLine(displayList, top1, bottom1);
+
+            CComPtr<IPoint2d> pntTop2;
+            CComPtr<IPoint2d> pntBot2;
+
+            position2->get_LocatorPoint(lpTopCenter, &pntTop2);
+            position2->get_LocatorPoint(lpBottomCenter, &pntBot2);
+
+            Float64 Ytop2, Ybot2;
+            pntTop2->get_Y(&Ytop2);
+            pntBot2->get_Y(&Ybot2);
+
+            WBFL::Geometry::Point2d top2(XpCol, Ytop2);
+            WBFL::Geometry::Point2d bottom2(XpCol, Ybot2);
+
+            BuildDimensionLine(displayList, top2, bottom2);
         }
 
+        // Depth dimension at the last column 
+        Float64 Xlast = pBridge->GetColumnLocation(*pPier, nColumns - 1);
+
+        Float64 XpLast =
+            pBridge->ConvertCrossBeamToPierCoordinate(*pPier, Xlast);
+
+        CComPtr<IShape> shapeLast;
+        pBridge->GetXBeamShape(
+            *pPier,
+            pgsTypes::Stage1,
+            Xlast,
+            &shapeLast);
+
+        CComQIPtr<IXYPosition> positionLast(shapeLast);
+
+        CComPtr<IPoint2d> pntTopLast;
+        CComPtr<IPoint2d> pntBotLast;
+
+        positionLast->get_LocatorPoint(lpTopCenter, &pntTopLast);
+        positionLast->get_LocatorPoint(lpBottomCenter, &pntBotLast);
+
+        Float64 YtopLast, YbotLast;
+        pntTopLast->get_Y(&YtopLast);
+        pntBotLast->get_Y(&YbotLast);
+
+        WBFL::Geometry::Point2d topLast(XpLast, YtopLast);
+        WBFL::Geometry::Point2d bottomLast(XpLast, YbotLast);
+
+        BuildDimensionLine(displayList, topLast, bottomLast);
+
+
+        GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+        CString strRadius;
+        strRadius.Format(_T("%s"),
+            FormatDimension(pPier->GetXBeamRadius(), pDisplayUnits->GetSpanLengthUnit()));
+
+        for (ColumnIndexType arcIdx = 0; arcIdx <= nColumns; ++arcIdx)
+        {
+            Float64 Xleft, Xright;
+
+            if (arcIdx == 0)
+            {
+                // Left overhang
+                Xleft = pBridge->ConvertPierToCrossBeamCoordinate(
+                    *pPier, lblc);
+
+                Xright = pBridge->GetColumnLocation(*pPier, 0);
+            }
+            else if (arcIdx == nColumns)
+            {
+                // Right overhang
+                Xleft = pBridge->GetColumnLocation(
+                    *pPier, nColumns - 1);
+
+                Xright = pBridge->ConvertPierToCrossBeamCoordinate(
+                    *pPier, lbrc);
+            }
+            else
+            {
+                // Between adjacent columns
+                Xleft = pBridge->GetColumnLocation(*pPier, arcIdx - 1);
+                Xright = pBridge->GetColumnLocation(*pPier, arcIdx);
+            }
+
+            const Float64 Xmid = (Xleft + Xright) / 2.0;
+
+            // Obtain the bottom surface elevations at the chord endpoints.
+            auto GetBottomY = [&](Float64 Xxb) -> Float64
+                {
+                    CComPtr<IShape> shape;
+
+                    pBridge->GetXBeamShape(
+                        *pPier,
+                        pgsTypes::Stage1,
+                        Xxb,
+                        &shape);
+
+                    CComQIPtr<IXYPosition> position(shape);
+
+                    CComPtr<IPoint2d> pntBot;
+                    position->get_LocatorPoint(lpBottomCenter, &pntBot);
+
+                    Float64 Y;
+                    pntBot->get_Y(&Y);
+
+                    return Y;
+                };
+
+            const Float64 Yleft = GetBottomY(Xleft);
+            const Float64 Yright = GetBottomY(Xright);
+
+            // Midpoint of the chord, accounting for inclination.
+            const Float64 Ychord = (Yleft + Yright) / 2.0;
+
+            const Float64 XpMid =
+                pBridge->ConvertCrossBeamToPierCoordinate(*pPier, Xmid);
+
+            // Small offset below the chord.
+            WBFL::Geometry::Point2d ppRad(XpMid, Ychord - 0.5);
+
+            CString strRadiusLabel;
+            strRadiusLabel.Format(
+                _T("R%d = %s"), arcIdx + 1, strRadius);
+
+            auto doRadiusLabel = WBFL::DManip::TextBlock::Create();
+            doRadiusLabel->SetText(strRadiusLabel);
+            doRadiusLabel->SetBkMode(TRANSPARENT);
+            doRadiusLabel->SetTextAlign(TA_TOP | TA_CENTER);
+            doRadiusLabel->SetPosition(ppRad);
+
+            displayList->AddDisplayObject(doRadiusLabel);
+        }
     }
     else if (pierLayoutType == pgsTypes::pltUserDefined)
     {
