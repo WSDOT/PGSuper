@@ -12477,7 +12477,7 @@ Float64 CBridgeAgentImp::GetTopColumnElevation(const CPierData2& pierData, Index
 	Float64 tDeck = GetDeckThickness();
 
     Float64 H5, W2;
-    GetUpperXBeamDimensions(pierData.GetIndex(), &H5, &W2);
+    GetUpperXBeamDimensions(pierData, &H5, &W2);
 
 	Float64 full_xbeam_depth = GetPierDepth(pierData, pgsTypes::Stage1, Xxb) + H5;
 
@@ -12552,17 +12552,6 @@ Float64 CBridgeAgentImp::GetDelta(const CPierData2& pierData) const
     Float64 delta = Xcl - Xxb;
 
     delta = IsZero(delta) ? 0.0 : delta;
-
-    // Match CPierImpl::GetDelta(): add X2 from the linear cross beam
-    Float64 H1, H2, X1, X2;
-    pierData.GetXBeamDimensions(
-        pgsTypes::stLeft,
-        &H1,
-        &H2,
-        &X1,
-        &X2);
-
-    delta += X2;
 
 	return delta;
 }
@@ -13121,7 +13110,7 @@ void CBridgeAgentImp::GetLowerXBeamProfile(const CPierData2& pierData, IPoint2dC
 
     // Determine the horizontal limits of the lower xbeam top profile
     Float64 H5, W2;
-    GetUpperXBeamDimensions(pierData.GetIndex(), &H5, &W2);
+    GetUpperXBeamDimensions(pierData, &H5, &W2);
 
     Float64 H1L, H2L, H1R, H2R;
     Float64 X2L, X1L, X2R, X1R;
@@ -13433,7 +13422,7 @@ void CBridgeAgentImp::GetBottomXBeamProfile(
             const Float64 xPierCol =
                 ConvertCrossBeamToPierCoordinate(
                     pierData,
-                    xCol - X1L);
+                    xCol);
 
             colStations.push_back(xPierCol);
         }
