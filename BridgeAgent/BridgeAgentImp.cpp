@@ -2821,6 +2821,23 @@ bool CBridgeAgentImp::LayoutPiers()
       
 	  	  sxbeam->put_RL(RL);
 	  	  sxbeam->put_RR(RR);
+
+          const ColumnIndexType nColumns = pPierData->GetColumnCount();
+          for (ColumnIndexType colIdx = 0; colIdx < nColumns; ++colIdx)
+          {
+              hr = sxbeam->put_ColumnScallopDepth(
+                  colIdx, pPierData->GetColumnScallopDepth(colIdx));
+              if (FAILED(hr))
+                  return false;
+
+              if (colIdx + 1 < nColumns)
+              {
+                  hr = sxbeam->put_ColumnScallopRadius(
+                      colIdx, pPierData->GetColumnScallopRadius(colIdx));
+                  if (FAILED(hr))
+                      return false;
+              }
+          }
       
       }
       else
@@ -13405,43 +13422,7 @@ void CBridgeAgentImp::GetBottomXBeamProfile(
         const Float64 RL = pierData.GetXBeamOverhangRadius(pgsTypes::stLeft);
         const Float64 RR = pierData.GetXBeamOverhangRadius(pgsTypes::stRight);
 
-        std::vector<Float64> colStations;
-
-        const IndexType nCols =
-            pierData.GetColumnCount();
-
-        for (IndexType colIdx = 0;
-            colIdx < nCols;
-            ++colIdx)
-        {
-            const Float64 xCol =
-                GetColumnLocation(
-                    pierData,
-                    colIdx);
-
-            const Float64 xPierCol =
-                ConvertCrossBeamToPierCoordinate(
-                    pierData,
-                    xCol);
-
-            colStations.push_back(xPierCol);
-        }
-
-        std::sort(
-            colStations.begin(),
-            colStations.end());
-
-        colStations.erase(
-            std::unique(
-                colStations.begin(),
-                colStations.end(),
-                [](Float64 a, Float64 b)
-                {
-                    return
-                        std::fabs(a - b) <
-                        1.0e-8;
-                }),
-            colStations.end());
+        const ColumnIndexType nCols = pierData.GetColumnCount();
 
         /*
          * The scalloped layout uses exactly the same exterior side
@@ -13457,14 +13438,17 @@ void CBridgeAgentImp::GetBottomXBeamProfile(
         const Float64 xRightCorner = XbottomRight;
         const Float64 yRightCorner = Yr - H1R;
 
-        if (!colStations.empty())
+        if (nCols > 0)
         {
             Float64 xArc0 = xLeftCorner;
             Float64 yArc0 = yLeftCorner;
             bool skipFirst = false;
 
-            for (Float64 xCol : colStations)
+            // Preserve the grid's column/bay indexing.
+            for (ColumnIndexType colIdx = 0; colIdx < nCols; ++colIdx)
             {
+                const Float64 xCol = ConvertCrossBeamToPierCoordinate(
+                    pierData, GetColumnLocation(pierData, colIdx));
                 /*
                  * D is the vertical distance from the local top of the
                  * lower cross beam to the top center of the column.
@@ -13477,14 +13461,14 @@ void CBridgeAgentImp::GetBottomXBeamProfile(
                         Xs,
                         Yl,
                         Yr,
-                        lxbProfile) - 1.33333333;
+                        lxbProfile) - pierData.GetColumnScallopDepth(colIdx);
 
                 AddCircularArcByEndpoints(
                     xArc0,
                     yArc0,
                     xCol,
                     yCol,
-                    RL,
+                    colIdx == 0 ? RL : pierData.GetColumnScallopRadius(colIdx - 1),
                     skipFirst,
                     BXBProfile);
 
