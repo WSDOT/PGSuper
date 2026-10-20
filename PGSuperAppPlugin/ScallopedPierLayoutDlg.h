@@ -23,7 +23,7 @@
 #pragma once
 #include "resource.h"
 #include <PsgLib\PierData2.h>
-#include "ColumnLayoutGrid.h"
+#include "ScallopedColumnLayoutGrid.h"
 #include <PgsExt\ColumnFixityComboBox.h>
 #include "DrawPierLayoutControl.h"
 
@@ -75,7 +75,7 @@ protected:
 
 	CMetaFileStatic m_LayoutPicture;
 
-	CColumnLayoutGrid m_ColumnLayoutGrid;
+	CScallopedColumnLayoutGrid m_ColumnLayoutGrid;
 	CColumnFixityComboBox m_cbColumnFixity;
 	CColumnData::ColumnHeightMeasurementType m_ColumnHeightMeasurementType;
 
