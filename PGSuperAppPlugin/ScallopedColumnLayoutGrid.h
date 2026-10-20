@@ -37,11 +37,14 @@ public:
 	void CustomInit() override;
 
 	void GetColumnData(CPierData2& pier) override;
+	void SetColumnData(const CPierData2& pier) override;
 
 private:
 	void GetColumnData(ROWCOL row, CColumnData* pColumn, Float64* pS) override;
+	void SetGeometryCell(ROWCOL row, ROWCOL col, Float64 value);
 
 protected:
 	int GetGridColumnCount() const override { return 8; }
+	void UpdateLastRowStyles() override;
 
 };

@@ -47,7 +47,7 @@ public:
    void RemoveSelectedColumns();
 
    virtual void GetColumnData(CPierData2& pier);
-   void SetColumnData(const CPierData2& pier);
+   virtual void SetColumnData(const CPierData2& pier);
 
    void SetHeightMeasurementType(CColumnData::ColumnHeightMeasurementType measure);
 
@@ -78,10 +78,13 @@ private:
    void SetColumnData(ROWCOL row,const CColumnData& column,Float64 S);
    virtual void GetColumnData(ROWCOL row,CColumnData* pColumn,Float64* pS);
 
+
 protected:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    virtual int GetGridColumnCount() const { return 6; }
+
+   virtual void UpdateLastRowStyles();
 };
 
 /////////////////////////////////////////////////////////////////////////////

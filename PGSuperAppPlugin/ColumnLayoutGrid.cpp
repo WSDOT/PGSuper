@@ -541,3 +541,18 @@ void CColumnLayoutGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
       __super::OnModifyCell(nRow, nCol);
    }
 }
+
+void CColumnLayoutGrid::UpdateLastRowStyles()
+{
+    ROWCOL nRows = GetRowCount();
+    if (0 < nRows)
+    {
+        SetStyleRange(CGXRange(nRows, 6), CGXStyle()
+            .SetEnabled(FALSE)
+            .SetReadOnly(TRUE)
+            .SetInterior(::GetSysColor(COLOR_BTNFACE))
+            .SetTextColor(::GetSysColor(COLOR_BTNFACE))
+            .SetHorizontalAlignment(DT_RIGHT)
+        );
+    }
+}

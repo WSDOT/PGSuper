@@ -63,6 +63,49 @@ void CScallopedColumnLayoutGrid::CustomInit()
     ResizeRowHeightsToFit(CGXRange(0, 0, 0, GetColCount()));
 }
 
+void CScallopedColumnLayoutGrid::UpdateLastRowStyles()
+{
+    CColumnLayoutGrid::UpdateLastRowStyles();
+    const ROWCOL nRows = GetRowCount();
+    if (nRows > 0)
+    {
+        // Only radius is interval-based. Depth remains editable in every row.
+        SetStyleRange(CGXRange(nRows, 7), CGXStyle()
+            .SetEnabled(FALSE).SetReadOnly(TRUE)
+            .SetInterior(::GetSysColor(COLOR_BTNFACE))
+            .SetTextColor(::GetSysColor(COLOR_BTNFACE))
+            .SetHorizontalAlignment(DT_RIGHT));
+        SetStyleRange(CGXRange(nRows, 8), CGXStyle()
+            .SetEnabled(TRUE).SetReadOnly(FALSE)
+            .SetInterior(::GetSysColor(COLOR_WINDOW))
+            .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+            .SetHorizontalAlignment(DT_RIGHT));
+    }
+}
+
+void CScallopedColumnLayoutGrid::SetGeometryCell(ROWCOL row, ROWCOL col, Float64 value)
+{
+    SetStyleRange(CGXRange(row, col), CGXStyle()
+        .SetEnabled(TRUE).SetReadOnly(FALSE)
+        .SetInterior(::GetSysColor(COLOR_WINDOW))
+        .SetTextColor(::GetSysColor(COLOR_WINDOWTEXT))
+        .SetHorizontalAlignment(DT_RIGHT).SetValue(value));
+}
+
+void CScallopedColumnLayoutGrid::SetColumnData(const CPierData2& pier)
+{
+    CColumnLayoutGrid::SetColumnData(pier);
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    const auto unit = pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure;
+
+
+    ///// Implement
+
+
+    UpdateLastRowStyles();
+}
+
 void CScallopedColumnLayoutGrid::GetColumnData(CPierData2& pier)
 {
     ROWCOL nRows = GetRowCount();
@@ -93,38 +136,6 @@ void CScallopedColumnLayoutGrid::GetColumnData(CPierData2& pier)
 void CScallopedColumnLayoutGrid::GetColumnData(ROWCOL row, CColumnData* pColumn, Float64* pS)
 {
 
-    auto pBroker = EAFGetBroker();
-    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+//// Implement
 
-    ROWCOL col = 1;
-
-    Float64 H = _tstof(GetCellValue(row, col++));
-    H = WBFL::Units::ConvertToSysUnits(H, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
-    pColumn->SetColumnHeight(H);
-
-    // Fixity
-    CString strFixity = GetCellValue(row, col++);
-    pgsTypes::ColumnTransverseFixityType fixity = GetTransverseFixityTypeFromString(strFixity);
-    pColumn->SetTransverseFixity(fixity);
-
-    // Shape Details
-    CString strShape = GetCellValue(row, col++);
-    if (strShape == _T("Circle"))
-    {
-        pColumn->SetColumnShape(CColumnData::cstCircle);
-    }
-    else
-    {
-        pColumn->SetColumnShape(CColumnData::cstRectangle);
-    }
-
-    Float64 D1 = _tstof(GetCellValue(row, col++));
-    D1 = WBFL::Units::ConvertToSysUnits(D1, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
-    Float64 D2 = _tstof(GetCellValue(row, col++));
-    D2 = WBFL::Units::ConvertToSysUnits(D2, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
-    pColumn->SetColumnDimensions(D1, D2);
-
-    // Spacing
-    Float64 S = _tstof(GetCellValue(row, col++));
-    *pS = WBFL::Units::ConvertToSysUnits(S, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
 }
