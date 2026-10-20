@@ -800,7 +800,7 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
 
         CString strRadius;
         strRadius.Format(_T("%s"),
-            FormatDimension(pPier->GetXBeamRadius(), pDisplayUnits->GetSpanLengthUnit()));
+            FormatDimension(pPier->GetXBeamOverhangRadius(pgsTypes::stLeft), pDisplayUnits->GetSpanLengthUnit()));
 
         for (ColumnIndexType arcIdx = 0; arcIdx <= nColumns; ++arcIdx)
         {

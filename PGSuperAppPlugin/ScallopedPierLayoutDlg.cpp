@@ -61,8 +61,8 @@ BEGIN_MESSAGE_MAP(CScallopedPierLayoutDlg, CDialog)
     ON_EN_CHANGE(IDC_W, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
     ON_EN_CHANGE(IDC_H1L, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
     ON_EN_CHANGE(IDC_H1R, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_R, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_D, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_CHANGE(IDC_RL, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_CHANGE(IDC_RR, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
     ON_EN_CHANGE(IDC_X1L, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
     ON_EN_CHANGE(IDC_X1R, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
     ON_EN_CHANGE(IDC_OHL, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
@@ -89,8 +89,6 @@ BOOL CScallopedPierLayoutDlg::OnInitDialog()
 
     m_Pier.GetTransverseOffset(&m_RefColumnIdx, &m_TransverseOffset, &m_TransverseOffsetMeasurement);
     m_XBeamWidth = m_Pier.GetXBeamWidth();
-	m_XBeamRadius = m_Pier.GetXBeamRadius();
-	m_XBeamDepth = m_Pier.GetXBeamDepth();
 
     for (int i = 0; i < 2; i++)
     {
@@ -98,6 +96,7 @@ BOOL CScallopedPierLayoutDlg::OnInitDialog()
 		Float64 xBeamHeight, xBeamTaperHeight, xBeamTaperLength;
         m_Pier.GetXBeamDimensions(side, &m_XBeamHeight[side], &xBeamTaperHeight, &xBeamTaperLength, &m_XBeamEndSlopeOffset[side]);
         m_XBeamOverhang[side] = m_Pier.GetXBeamOverhang(side);
+        m_XBeamOverhangRadius[side] = m_Pier.GetXBeamOverhangRadius(side);
     }
 
     m_ColumnFixity = m_Pier.GetColumnFixity();
@@ -134,9 +133,10 @@ void CScallopedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
     DDX_UnitValueAndTag(pDX, IDC_OHL, IDC_OHL_UNIT, m_XBeamOverhang[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
     DDX_UnitValueAndTag(pDX, IDC_OHR, IDC_OHR_UNIT, m_XBeamOverhang[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
 
+    DDX_UnitValueAndTag(pDX, IDC_RL, IDC_RL_UNIT, m_XBeamOverhangRadius[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
+    DDX_UnitValueAndTag(pDX, IDC_RR, IDC_RR_UNIT, m_XBeamOverhangRadius[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
+
     DDX_UnitValueAndTag(pDX, IDC_W, IDC_W_UNIT, m_XBeamWidth, pDisplayUnits->GetSpanLengthUnit());
-    DDX_UnitValueAndTag(pDX, IDC_R, IDC_R_UNIT,  m_XBeamRadius, pDisplayUnits->GetSpanLengthUnit());
-    DDX_UnitValueAndTag(pDX, IDC_D, IDC_D_UNIT,  m_XBeamDepth, pDisplayUnits->GetSpanLengthUnit());
 
     DDX_CBIndex(pDX, IDC_REFCOLUMN, m_RefColumnIdx);
     DDX_OffsetAndTag(pDX, IDC_REFCOLUMN_OFFSET, IDC_REFCOLUMN_OFFSET_UNIT, m_TransverseOffset, pDisplayUnits->GetSpanLengthUnit());
@@ -154,8 +154,6 @@ void CScallopedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
     {
         // XBeam width, W, must be greater than zero
         DDV_UnitValueGreaterThanZero(pDX, IDC_W, m_XBeamWidth, pDisplayUnits->GetSpanLengthUnit());
-        DDV_UnitValueGreaterThanZero(pDX, IDC_R, m_XBeamRadius, pDisplayUnits->GetSpanLengthUnit());
-        DDV_UnitValueGreaterThanZero(pDX, IDC_D, m_XBeamDepth, pDisplayUnits->GetSpanLengthUnit());
 
         // H1 and H3 must be > 0
         DDV_UnitValueGreaterThanZero(pDX, IDC_H1L, m_XBeamHeight[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
@@ -168,6 +166,9 @@ void CScallopedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
         DDV_UnitValueZeroOrMore(pDX, IDC_OHL, m_XBeamOverhang[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
         DDV_UnitValueZeroOrMore(pDX, IDC_OHR, m_XBeamOverhang[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
 
+        DDV_UnitValueZeroOrMore(pDX, IDC_RL, m_XBeamOverhangRadius[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
+        DDV_UnitValueZeroOrMore(pDX, IDC_RR, m_XBeamOverhangRadius[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
+
         for (SpacingIndexType spaIdx = 0;
             spaIdx < m_Pier.GetColumnCount() - 1;
             ++spaIdx)
@@ -175,10 +176,10 @@ void CScallopedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
             const Float64 spacing = m_Pier.GetColumnSpacing(spaIdx);
 
             // Chord length must be less than the diameter.
-            if (spacing >= 2.0 * m_XBeamRadius)
+            if (spacing >= 2.0 * m_XBeamOverhangRadius[pgsTypes::stLeft])
             {
 
-                pDX->PrepareCtrl(IDC_R);
+                pDX->PrepareCtrl(IDC_RL);
 
                 CString msg;
                 msg.Format(
@@ -194,24 +195,24 @@ void CScallopedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
             // Arc height (sagitta) must not exceed D.
             const Float64 halfChord = spacing / 2.0;
             const Float64 arcHeight =
-                m_XBeamRadius -
-                sqrt(m_XBeamRadius * m_XBeamRadius -
+                m_XBeamOverhangRadius[pgsTypes::stLeft] -
+                sqrt(m_XBeamOverhangRadius[pgsTypes::stLeft] * m_XBeamOverhangRadius[pgsTypes::stLeft] -
                     halfChord * halfChord);
 
-            if (arcHeight > m_XBeamDepth)
+            if (arcHeight > 1.33333)
             {
 
-                pDX->PrepareCtrl(IDC_D);
+                //pDX->PrepareCtrl(IDC_D);
 
-                CString msg;
-                msg.Format(
-                    _T("D is too small for the arc between columns %d and %d. ")
-                    _T("D must be at least the height of the arc."),
-                    spaIdx + 1,
-                    spaIdx + 2);
+                //CString msg;
+                //msg.Format(
+                //    _T("D is too small for the arc between columns %d and %d. ")
+                //    _T("D must be at least the height of the arc."),
+                //    spaIdx + 1,
+                //    spaIdx + 2);
 
-                AfxMessageBox(msg);
-                pDX->Fail();
+                //AfxMessageBox(msg);
+                //pDX->Fail();
             }
         }
 
@@ -221,9 +222,9 @@ void CScallopedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
         {
             const Float64 run = m_XBeamOverhang[side];
             const Float64 dy =
-                m_XBeamDepth - m_XBeamHeight[side];
+                1.33333 - m_XBeamHeight[side];
 
-            const Float64 R = m_XBeamRadius;
+            const Float64 R = m_XBeamOverhangRadius[side];
             const Float64 chord = sqrt(run * run + dy * dy);
 
             const CString sideName =
@@ -232,7 +233,7 @@ void CScallopedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
             // The chord cannot exceed the circle diameter.
             if (chord >= 2.0 * R)
             {
-                pDX->PrepareCtrl(IDC_R);
+                pDX->PrepareCtrl(IDC_RL);
 
                 CString msg;
                 msg.Format(
@@ -315,19 +316,19 @@ void CScallopedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
 
             // The top of the arc cannot exceed
             // the top of the lower crossbeam.
-            if (maxY > m_XBeamDepth)
+            if (maxY > 1.33333)
             {
-                pDX->PrepareCtrl(IDC_D);
+                //pDX->PrepareCtrl(IDC_D);
 
-                CString msg;
-                msg.Format(
-                    _T("D is too small for the %s overhang arc. ")
-                    _T("The top of the arc cannot extend above ")
-                    _T("the top of the cross beam."),
-                    sideName.GetString());
+                //CString msg;
+                //msg.Format(
+                //    _T("D is too small for the %s overhang arc. ")
+                //    _T("The top of the arc cannot extend above ")
+                //    _T("the top of the cross beam."),
+                //    sideName.GetString());
 
-                AfxMessageBox(msg);
-                pDX->Fail();
+                //AfxMessageBox(msg);
+                //pDX->Fail();
             }
         }
 
@@ -501,27 +502,27 @@ void CScallopedPierLayoutDlg::ChangePierLayout()
     DDX_UnitValueAndTag(&dx, IDC_OHL, IDC_OHL_UNIT, m_XBeamOverhang[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
     DDX_UnitValueAndTag(&dx, IDC_OHR, IDC_OHR_UNIT, m_XBeamOverhang[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
 
+    DDX_UnitValueAndTag(&dx, IDC_RL, IDC_RL_UNIT, m_XBeamOverhangRadius[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
+    DDX_UnitValueAndTag(&dx, IDC_RR, IDC_RR_UNIT, m_XBeamOverhangRadius[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
+
     DDX_UnitValueAndTag(&dx, IDC_W, IDC_W_UNIT, m_XBeamWidth, pDisplayUnits->GetSpanLengthUnit());
-    DDX_UnitValueAndTag(&dx, IDC_R, IDC_R_UNIT, m_XBeamRadius, pDisplayUnits->GetSpanLengthUnit());
-    DDX_UnitValueAndTag(&dx, IDC_D, IDC_D_UNIT, m_XBeamDepth, pDisplayUnits->GetSpanLengthUnit());
 
     // Update the pier data with the current values
     m_Pier.SetXBeamDimensions(pgsTypes::stLeft, m_XBeamHeight[pgsTypes::stLeft], 0.0, 0.0, m_XBeamEndSlopeOffset[pgsTypes::stLeft]);
     m_Pier.SetXBeamDimensions(pgsTypes::stRight, m_XBeamHeight[pgsTypes::stRight], 0.0, 0.0, m_XBeamEndSlopeOffset[pgsTypes::stRight]);
 
     m_Pier.SetXBeamWidth(m_XBeamWidth);
-    m_Pier.SetXBeamRadius(m_XBeamRadius);
-    m_Pier.SetXBeamDepth(m_XBeamDepth);
 
     m_Pier.SetXBeamOverhang(pgsTypes::stLeft, m_XBeamOverhang[pgsTypes::stLeft]);
     m_Pier.SetXBeamOverhang(pgsTypes::stRight, m_XBeamOverhang[pgsTypes::stRight]);
+
+    m_Pier.SetXBeamOverhangRadius(pgsTypes::stLeft, m_XBeamOverhangRadius[pgsTypes::stLeft]);
+    m_Pier.SetXBeamOverhangRadius(pgsTypes::stRight, m_XBeamOverhangRadius[pgsTypes::stRight]);
 
     if (pPage->m_pPierLayoutPopout != nullptr)
     {
         // XBeam width, W, must be greater than zero
         DDV_UnitValueGreaterThanZero(&dx, IDC_W, m_XBeamWidth, pDisplayUnits->GetSpanLengthUnit());
-        DDV_UnitValueGreaterThanZero(&dx, IDC_R, m_XBeamRadius, pDisplayUnits->GetSpanLengthUnit());
-        DDV_UnitValueGreaterThanZero(&dx, IDC_D, m_XBeamDepth, pDisplayUnits->GetSpanLengthUnit());
 
         // H1 and H3 must be > 0
         DDV_UnitValueGreaterThanZero(&dx, IDC_H1L, m_XBeamHeight[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
@@ -532,6 +533,8 @@ void CScallopedPierLayoutDlg::ChangePierLayout()
         DDV_UnitValueZeroOrMore(&dx, IDC_X1R, m_XBeamEndSlopeOffset[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
         DDV_UnitValueZeroOrMore(&dx, IDC_OHL, m_XBeamOverhang[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
         DDV_UnitValueZeroOrMore(&dx, IDC_OHR, m_XBeamOverhang[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
+        DDV_UnitValueZeroOrMore(&dx, IDC_RL, m_XBeamOverhangRadius[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
+        DDV_UnitValueZeroOrMore(&dx, IDC_RR, m_XBeamOverhangRadius[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
 
         for (SpacingIndexType spaIdx = 0;
             spaIdx < m_Pier.GetColumnCount() - 1;
@@ -540,10 +543,10 @@ void CScallopedPierLayoutDlg::ChangePierLayout()
             const Float64 spacing = m_Pier.GetColumnSpacing(spaIdx);
 
             // Chord length must be less than the diameter.
-            if (spacing >= 2.0 * m_XBeamRadius)
+            if (spacing >= 2.0 * m_XBeamOverhangRadius[pgsTypes::stLeft])
             {
 
-                dx.PrepareCtrl(IDC_R);
+                dx.PrepareCtrl(IDC_RL);
 
                 CString msg;
                 msg.Format(
@@ -559,24 +562,24 @@ void CScallopedPierLayoutDlg::ChangePierLayout()
             // Arc height (sagitta) must not exceed D.
             const Float64 halfChord = spacing / 2.0;
             const Float64 arcHeight =
-                m_XBeamRadius -
-                sqrt(m_XBeamRadius * m_XBeamRadius -
+                m_XBeamOverhangRadius[pgsTypes::stLeft] -
+                sqrt(m_XBeamOverhangRadius[pgsTypes::stLeft] * m_XBeamOverhangRadius[pgsTypes::stLeft] -
                     halfChord * halfChord);
 
-            if (arcHeight > m_XBeamDepth)
+            if (arcHeight > 1.33333)
             {
 
-                dx.PrepareCtrl(IDC_D);
+                //dx.PrepareCtrl(IDC_D);
 
-                CString msg;
-                msg.Format(
-                    _T("D is too small for the arc between columns %d and %d. ")
-                    _T("D must be at least the height of the arc."),
-                    spaIdx + 1,
-                    spaIdx + 2);
+                //CString msg;
+                //msg.Format(
+                //    _T("D is too small for the arc between columns %d and %d. ")
+                //    _T("D must be at least the height of the arc."),
+                //    spaIdx + 1,
+                //    spaIdx + 2);
 
-                AfxMessageBox(msg);
-                dx.Fail();
+                //AfxMessageBox(msg);
+                //dx.Fail();
             }
         }
 
@@ -586,9 +589,9 @@ void CScallopedPierLayoutDlg::ChangePierLayout()
         {
             const Float64 run = m_XBeamOverhang[side];
             const Float64 dy =
-                m_XBeamDepth - m_XBeamHeight[side];
+                1.3333 - m_XBeamHeight[side];
 
-            const Float64 R = m_XBeamRadius;
+            const Float64 R = m_XBeamOverhangRadius[side];
             const Float64 chord = sqrt(run * run + dy * dy);
 
             const CString sideName =
@@ -597,7 +600,7 @@ void CScallopedPierLayoutDlg::ChangePierLayout()
             // The chord cannot exceed the circle diameter.
             if (chord >= 2.0 * R)
             {
-                dx.PrepareCtrl(IDC_R);
+                dx.PrepareCtrl(IDC_RL);
 
                 CString msg;
                 msg.Format(
@@ -680,19 +683,19 @@ void CScallopedPierLayoutDlg::ChangePierLayout()
 
             // The top of the arc cannot exceed
             // the top of the lower crossbeam.
-            if (maxY > m_XBeamDepth)
+            if (maxY > 1.33333)
             {
-                dx.PrepareCtrl(IDC_D);
+                //dx.PrepareCtrl(IDC_D);
 
-                CString msg;
-                msg.Format(
-                    _T("D is too small for the %s overhang arc. ")
-                    _T("The top of the arc cannot extend above ")
-                    _T("the top of the cross beam."),
-                    sideName.GetString());
+                //CString msg;
+                //msg.Format(
+                //    _T("D is too small for the %s overhang arc. ")
+                //    _T("The top of the arc cannot extend above ")
+                //    _T("the top of the cross beam."),
+                //    sideName.GetString());
 
-                AfxMessageBox(msg);
-                dx.Fail();
+                //AfxMessageBox(msg);
+                //dx.Fail();
             }
         }
 

@@ -86,9 +86,9 @@ CPierData2::CPierData2()
    m_XBeamEndSlopeOffset[pgsTypes::stRight] = 0;
    m_XBeamOverhang[pgsTypes::stLeft]  = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
    m_XBeamOverhang[pgsTypes::stRight] = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
+   m_XBeamOverhangRadius[pgsTypes::stLeft]  = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
+   m_XBeamOverhangRadius[pgsTypes::stRight] = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
    m_XBeamWidth = WBFL::Units::ConvertToSysUnits(5,WBFL::Units::Measure::Feet);
-   m_XBeamRadius = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
-   m_XBeamDepth = WBFL::Units::ConvertToSysUnits(5,WBFL::Units::Measure::Feet);
 
    m_ColumnFixity = pgsTypes::cftFixed;
    CColumnData defaultColumn(this);
@@ -300,6 +300,10 @@ bool CPierData2::operator==(const CPierData2& rOther) const
               {
                   return false;
               }
+              if (!IsEqual(m_XBeamOverhangRadius[side], rOther.m_XBeamOverhangRadius[side]))
+              {
+                  return false;
+              }
           }
           else
           {
@@ -323,6 +327,10 @@ bool CPierData2::operator==(const CPierData2& rOther) const
               {
                   return false;
               }
+              if (!IsEqual(m_XBeamOverhangRadius[pgsTypes::stLeft], rOther.m_XBeamOverhangRadius[pgsTypes::stLeft]))
+              {
+                  return false;
+              }
           }
       }
 
@@ -332,16 +340,6 @@ bool CPierData2::operator==(const CPierData2& rOther) const
       }
 
       if ( !IsEqual(m_XBeamWidth,rOther.m_XBeamWidth) )
-      {
-         return false;
-      }
-
-      if ( !IsEqual(m_XBeamRadius,rOther.m_XBeamRadius) )
-      {
-         return false;
-      }
-
-      if ( !IsEqual(m_XBeamDepth,rOther.m_XBeamDepth) )
       {
          return false;
       }
@@ -575,8 +573,8 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress>
       pStrSave->put_Property(_T("XBeamOverhang_Left"),CComVariant(m_XBeamOverhang[pgsTypes::stLeft]));
       pStrSave->put_Property(_T("XBeamOverhang_Right"),CComVariant(m_XBeamOverhang[pgsTypes::stRight]));
       pStrSave->put_Property(_T("XBeamWidth"),CComVariant(m_XBeamWidth));
-      pStrSave->put_Property(_T("XBeamRadius"),CComVariant(m_XBeamRadius));  // added in version 23
-      pStrSave->put_Property(_T("XBeamDepth"),CComVariant(m_XBeamDepth));  // added in version 23
+      pStrSave->put_Property(_T("XBeamOverhangRadius_Left"),CComVariant(m_XBeamOverhangRadius[pgsTypes::stLeft]));  // added in version 23
+      pStrSave->put_Property(_T("XBeamOverhangRadius_Right"),CComVariant(m_XBeamOverhangRadius[pgsTypes::stRight]));  // added in version 23
 
       pStrSave->put_Property(_T("PierPointCount"), CComVariant(m_PierPoints.size()));  // added in version 23
       std::vector<CPierPointData>::iterator ppIterBegin = m_PierPoints.begin();
@@ -964,14 +962,14 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress>
 
 			if (22 < version)
             {
+                hr = pStrLoad->get_Property(_T("XBeamOverhangRadius_Left"), &var);
+                m_XBeamOverhangRadius[pgsTypes::stLeft] = var.dblVal;
+
+                hr = pStrLoad->get_Property(_T("XBeamOverhangRadius_Right"), &var);
+                m_XBeamOverhangRadius[pgsTypes::stRight] = var.dblVal;
+
                 if (m_PierModelType == pgsTypes::pmtPhysical)
                 {
-                    hr = pStrLoad->get_Property(_T("XBeamRadius"), &var);
-                    m_XBeamRadius = var.dblVal;
-
-                    hr = pStrLoad->get_Property(_T("XBeamDepth"), &var);
-                    m_XBeamDepth = var.dblVal;
-
                     m_PierPoints.clear();
                     var.vt = VT_INDEX;
                     hr = pStrLoad->get_Property(_T("PierPointCount"), &var);
@@ -1498,8 +1496,6 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
 
    m_Concrete = rOther.m_Concrete;
    m_XBeamWidth = rOther.m_XBeamWidth;
-   m_XBeamRadius = rOther.m_XBeamRadius;
-   m_XBeamDepth = rOther.m_XBeamDepth;
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -1508,6 +1504,7 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
       m_XBeamTaperLength[i] = rOther.m_XBeamTaperLength[i];
       m_XBeamEndSlopeOffset[i] = rOther.m_XBeamEndSlopeOffset[i];
       m_XBeamOverhang[i]    = rOther.m_XBeamOverhang[i];
+      m_XBeamOverhangRadius[i]    = rOther.m_XBeamOverhangRadius[i];
 
       m_GirderEndDistance[i]            = rOther.m_GirderEndDistance[i];
       m_EndDistanceMeasurementType[i]   = rOther.m_EndDistanceMeasurementType[i];
@@ -2269,29 +2266,14 @@ Float64 CPierData2::GetXBeamWidth() const
    return m_XBeamWidth;
 }
 
-void CPierData2::SetXBeamRadius(Float64 radius)
-{
-   m_XBeamRadius = radius;
-}
-
-Float64 CPierData2::GetXBeamRadius() const
-{
-   return m_XBeamRadius;
-}
-
-void CPierData2::SetXBeamDepth(Float64 depth)
-{
-   m_XBeamDepth = depth;
-}
-
-Float64 CPierData2::GetXBeamDepth() const
-{
-   return m_XBeamDepth;
-}
-
 void CPierData2::SetXBeamOverhang(pgsTypes::SideType side,Float64 overhang)
 {
    m_XBeamOverhang[side] = overhang;
+}
+
+void CPierData2::SetXBeamOverhangRadius(pgsTypes::SideType side,Float64 overhangRadius)
+{
+   m_XBeamOverhangRadius[side] = overhangRadius;
 }
 
 void CPierData2::SetXBeamOverhangs(Float64 leftOverhang,Float64 rightOverhang)
@@ -2303,6 +2285,11 @@ void CPierData2::SetXBeamOverhangs(Float64 leftOverhang,Float64 rightOverhang)
 Float64 CPierData2::GetXBeamOverhang(pgsTypes::SideType side) const
 {
    return m_XBeamOverhang[side];
+}
+
+Float64 CPierData2::GetXBeamOverhangRadius(pgsTypes::SideType side) const
+{
+   return m_XBeamOverhangRadius[side];
 }
 
 void CPierData2::GetXBeamOverhangs(Float64* pLeftOverhang,Float64* pRightOverhang) const

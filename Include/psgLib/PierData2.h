@@ -254,13 +254,11 @@ public:
    void GetXBeamDimensions(pgsTypes::SideType side,Float64* pHeight,Float64* pTaperHeight,Float64* pTaperLength,Float64* pEndSlopeOffset) const;
    void SetXBeamWidth(Float64 width);
    Float64 GetXBeamWidth() const;
-   void SetXBeamRadius(Float64 radius);
-   Float64 GetXBeamRadius() const;
-   void SetXBeamDepth(Float64 depth);
-   Float64 GetXBeamDepth() const;
    void SetXBeamOverhang(pgsTypes::SideType side,Float64 overhang);
+   void SetXBeamOverhangRadius(pgsTypes::SideType side,Float64 overhangRadius);
    void SetXBeamOverhangs(Float64 leftOverhang,Float64 rightOverhang);
    Float64 GetXBeamOverhang(pgsTypes::SideType side) const;
+   Float64 GetXBeamOverhangRadius(pgsTypes::SideType side) const;
    void GetXBeamOverhangs(Float64* pLeftOverhang,Float64* pRightOverhang) const;
    Float64 GetXBeamLength() const;
 
@@ -399,9 +397,8 @@ private:
    std::array<Float64, 2> m_XBeamTaperLength;
    std::array<Float64, 2> m_XBeamEndSlopeOffset;
    std::array<Float64, 2> m_XBeamOverhang;
+   std::array<Float64, 2> m_XBeamOverhangRadius;
    Float64 m_XBeamWidth;
-   Float64 m_XBeamRadius;
-   Float64 m_XBeamDepth;
 
    // Column Dimensions and Layout
    pgsTypes::ColumnLongitudinalBaseFixityType m_ColumnFixity;

@@ -141,15 +141,13 @@ bool CPierLayoutPage::CommitScallopedPierLayout()
     m_pPier->SetTransverseOffset(m_ScallopedPierLayoutDlg.m_RefColumnIdx,
     m_ScallopedPierLayoutDlg.m_TransverseOffset, m_ScallopedPierLayoutDlg.m_TransverseOffsetMeasurement);
     m_pPier->SetXBeamWidth(m_ScallopedPierLayoutDlg.m_XBeamWidth);
-    m_pPier->SetXBeamRadius(m_ScallopedPierLayoutDlg.m_XBeamRadius);
-    m_pPier->SetXBeamDepth(m_ScallopedPierLayoutDlg.m_XBeamDepth);
 
     for (int i = 0; i < 2; i++)
     {
         pgsTypes::SideType side = (pgsTypes::SideType)i;
         m_pPier->SetXBeamDimensions(side, m_ScallopedPierLayoutDlg.m_XBeamHeight[side], 0.0,
         0.0, m_ScallopedPierLayoutDlg.m_XBeamEndSlopeOffset[side]);
-        m_pPier->SetXBeamOverhang(side, m_ScallopedPierLayoutDlg.m_XBeamOverhang[side]);
+        m_pPier->SetXBeamOverhangRadius(side, m_ScallopedPierLayoutDlg.m_XBeamOverhangRadius[side]);
     }
 
     m_pPier->SetColumnFixity(m_ScallopedPierLayoutDlg.m_ColumnFixity);

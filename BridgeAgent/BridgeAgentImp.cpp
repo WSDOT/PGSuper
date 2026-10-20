@@ -2816,11 +2816,11 @@ bool CBridgeAgentImp::LayoutPiers()
           sxbeam->put_W1(W1);
           sxbeam->put_W2(W2);
       
-          Float64 R = pPierData->GetXBeamRadius();
-	  	Float64 D = pPierData->GetXBeamDepth();
+          Float64 RL = pPierData->GetXBeamOverhangRadius(pgsTypes::stLeft);
+          Float64 RR = pPierData->GetXBeamOverhangRadius(pgsTypes::stRight);
       
-	  	sxbeam->put_R(R);
-	  	sxbeam->put_D(D);
+	  	  sxbeam->put_RL(RL);
+	  	  sxbeam->put_RR(RR);
       
       }
       else
@@ -13402,8 +13402,8 @@ void CBridgeAgentImp::GetBottomXBeamProfile(
 
     if (pierData.GetPierLayoutType() == pgsTypes::pltScalloped)
     {
-        const Float64 R = pierData.GetXBeamRadius();
-        const Float64 D = pierData.GetXBeamDepth();
+        const Float64 RL = pierData.GetXBeamOverhangRadius(pgsTypes::stLeft);
+        const Float64 RR = pierData.GetXBeamOverhangRadius(pgsTypes::stRight);
 
         std::vector<Float64> colStations;
 
@@ -13477,14 +13477,14 @@ void CBridgeAgentImp::GetBottomXBeamProfile(
                         Xs,
                         Yl,
                         Yr,
-                        lxbProfile) - D;
+                        lxbProfile) - 1.33333333;
 
                 AddCircularArcByEndpoints(
                     xArc0,
                     yArc0,
                     xCol,
                     yCol,
-                    R,
+                    RL,
                     skipFirst,
                     BXBProfile);
 
@@ -13498,7 +13498,7 @@ void CBridgeAgentImp::GetBottomXBeamProfile(
                 yArc0,
                 xRightCorner,
                 yRightCorner,
-                R,
+                RR,
                 true,
                 BXBProfile);
         }
