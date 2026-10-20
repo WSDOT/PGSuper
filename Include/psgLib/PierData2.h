@@ -282,6 +282,14 @@ public:
    // Sets the definition of a column
    void SetColumnData(ColumnIndexType colIdx,const CColumnData& columnData);
 
+   void SetColumnScallopDepth(ColumnIndexType colIdx, Float64 depth);
+
+   Float64 GetColumnScallopDepth(ColumnIndexType colIdx) const;
+
+   void SetColumnScallopRadius(ColumnIndexType colIdx, Float64 radius);
+
+   Float64 GetColumnScallopRadius(ColumnIndexType colIdx) const;
+
    // Sets the number of columns... if the column count increases, the new columns
    // are copies of the right most column at the right most spacing.
    void SetColumnCount(ColumnIndexType nColumns);
@@ -384,6 +392,9 @@ private:
    pgsTypes::PierLayoutType m_PierLayoutType; 
 
    CConcreteMaterial m_Concrete;
+
+   std::vector<Float64> m_ScallopDepths;
+   std::vector<Float64> m_ScallopRadii;
 
    // This data only used if m_PierModelType is pgsTypes::pmtPhysical
    // Transverse location of the pier relative to the alignment or bridge line

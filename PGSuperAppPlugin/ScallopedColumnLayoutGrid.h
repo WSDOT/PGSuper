@@ -38,9 +38,9 @@ public:
 
 	void GetColumnData(CPierData2& pier) override;
 	void SetColumnData(const CPierData2& pier) override;
+	void AddColumn() override;
 
 private:
-	void GetColumnData(ROWCOL row, CColumnData* pColumn, Float64* pS) override;
 	void SetGeometryCell(ROWCOL row, ROWCOL col, Float64 value);
 
 protected:

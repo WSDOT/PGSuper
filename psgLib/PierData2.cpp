@@ -94,6 +94,10 @@ CPierData2::CPierData2()
    CColumnData defaultColumn(this);
    m_Columns.push_back(defaultColumn);
 
+   Float64 defaultScallopDepth = WBFL::Units::ConvertToSysUnits(5.0, WBFL::Units::Measure::Feet);
+   m_ScallopDepths.push_back(defaultScallopDepth);
+
+
    for ( int i = 0; i < 2; i++ )
    {
       m_GirderEndDistance[i]            = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch);
@@ -253,6 +257,16 @@ bool CPierData2::operator==(const CPierData2& rOther) const
       }
 
       if ( m_Columns != rOther.m_Columns )
+      {
+         return false;
+      }
+
+      if ( m_ScallopDepths != rOther.m_ScallopDepths )
+      {
+         return false;
+      }
+
+      if ( m_ScallopRadii != rOther.m_ScallopRadii )
       {
          return false;
       }
@@ -588,22 +602,37 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress>
 
       pStrSave->put_Property(_T("ColumnFixity"),CComVariant(m_ColumnFixity)); // added version 16
 
-      pStrSave->put_Property(_T("ColumnCount"),CComVariant(m_Columns.size()));
-      std::vector<Float64>::iterator spacingIter = m_ColumnSpacing.begin();
-      std::vector<CColumnData>::iterator columnIterBegin = m_Columns.begin();
-      std::vector<CColumnData>::iterator columnIter = columnIterBegin;
-      std::vector<CColumnData>::iterator columnIterEnd = m_Columns.end();
-      for ( ; columnIter != columnIterEnd; columnIter++ )
+      pStrSave->put_Property(
+          _T("ColumnCount"),
+          CComVariant(m_Columns.size()));
+
+      ATLASSERT(m_ScallopDepths.size() == m_Columns.size());
+      ATLASSERT(m_ScallopRadii.size() == m_ColumnSpacing.size());
+
+      for (ColumnIndexType colIdx = 0;
+          colIdx < m_Columns.size(); colIdx++)
       {
-         if ( columnIter != columnIterBegin )
-         {
-            Float64 spacing = *spacingIter;
-            pStrSave->put_Property(_T("Spacing"),CComVariant(spacing));
-            spacingIter++;
-         }
-         CColumnData& columnData = *columnIter;
-         columnData.Save(pStrSave,pProgress);
+          // Spacing and radius belong to the interval
+          // preceding this column.
+          if (colIdx > 0)
+          {
+              pStrSave->put_Property(
+                  _T("Spacing"),
+                  CComVariant(m_ColumnSpacing[colIdx - 1]));
+
+              pStrSave->put_Property(
+                  _T("Radii"),
+                  CComVariant(m_ScallopRadii[colIdx - 1]));
+          }
+
+          // Every column has its own scallop depth.
+          pStrSave->put_Property(
+              _T("Depths"),
+              CComVariant(m_ScallopDepths[colIdx]));
+
+          m_Columns[colIdx].Save(pStrSave, pProgress);
       }
+
    }
 
    pStrSave->BeginUnit(_T("Back"),2.0);
@@ -1007,22 +1036,54 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress>
 
             m_Columns.clear();
             m_ColumnSpacing.clear();
+            m_ScallopRadii.clear();
+            m_ScallopDepths.clear();
+
             var.vt = VT_INDEX;
-            hr = pStrLoad->get_Property(_T("ColumnCount"),&var);
+            hr = pStrLoad->get_Property(_T("ColumnCount"), &var);
             ColumnIndexType nColumns = VARIANT2INDEX(var);
-            for ( ColumnIndexType colIdx = 0; colIdx < nColumns; colIdx++ )
+
+            for (ColumnIndexType colIdx = 0;
+                colIdx < nColumns; colIdx++)
             {
-               if ( 0 < colIdx )
-               {
-                  var.vt = VT_R8;
-                  hr = pStrLoad->get_Property(_T("Spacing"),&var);
-                  Float64 spacing = var.dblVal;
-                  m_ColumnSpacing.push_back(spacing);
-               }
-               CColumnData columnData(this);
-               columnData.Load(pStrLoad,pProgress);
-               m_Columns.push_back(columnData);
+                if (colIdx > 0)
+                {
+                    var.vt = VT_R8;
+                    hr = pStrLoad->get_Property(_T("Spacing"), &var);
+                    m_ColumnSpacing.push_back(var.dblVal);
+
+                    if (version >= 23)
+                    {
+                        var.vt = VT_R8;
+                        hr = pStrLoad->get_Property(_T("Radii"), &var);
+                        m_ScallopRadii.push_back(var.dblVal);
+                    }
+                    else
+                    {
+                        m_ScallopRadii.push_back(
+                            WBFL::Units::ConvertToSysUnits(
+                                10.0, WBFL::Units::Measure::Feet));
+                    }
+                }
+
+                if (version >= 23)
+                {
+                    var.vt = VT_R8;
+                    hr = pStrLoad->get_Property(_T("Depths"), &var);
+                    m_ScallopDepths.push_back(var.dblVal);
+                }
+                else
+                {
+                    m_ScallopDepths.push_back(
+                        WBFL::Units::ConvertToSysUnits(
+                            5.0, WBFL::Units::Measure::Feet));
+                }
+
+                CColumnData columnData(this);
+                columnData.Load(pStrLoad, pProgress);
+                m_Columns.push_back(columnData);
             }
+
          }
       }
       
@@ -1492,6 +1553,10 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    m_ColumnFixity = rOther.m_ColumnFixity;
    m_ColumnSpacing = rOther.m_ColumnSpacing;
    m_Columns = rOther.m_Columns;
+
+   m_ScallopDepths = rOther.m_ScallopDepths;
+   m_ScallopRadii = rOther.m_ScallopRadii;
+
    m_PierPoints = rOther.m_PierPoints;
 
    m_Concrete = rOther.m_Concrete;
@@ -2325,12 +2390,24 @@ void CPierData2::RemoveColumns()
    m_Columns.erase(m_Columns.begin()+1,m_Columns.end());
    m_ColumnSpacing.clear();
    ATLASSERT(m_Columns.size() == m_ColumnSpacing.size()+1);
+
+   m_ScallopDepths.resize(1);
+   m_ScallopRadii.clear();
 }
 
 void CPierData2::AddColumn(Float64 spacing,const CColumnData& columnData)
 {
    m_ColumnSpacing.push_back(spacing);
    m_Columns.push_back(columnData);
+   m_ScallopDepths.push_back(m_ScallopDepths.back());
+
+   const Float64 radius = m_ScallopRadii.empty() ?
+       WBFL::Units::ConvertToSysUnits(
+           10.0, WBFL::Units::Measure::Feet) :
+       m_ScallopRadii.back();
+
+   m_ScallopRadii.push_back(radius);
+
    m_Columns.back().SetPier(this);
    ATLASSERT(m_Columns.size() == m_ColumnSpacing.size()+1);
 }
@@ -2348,25 +2425,87 @@ void CPierData2::SetColumnData(ColumnIndexType colIdx,const CColumnData& columnD
    m_Columns[colIdx].SetPier(this);
 }
 
+void CPierData2::SetColumnScallopDepth(ColumnIndexType colIdx, Float64 depth)
+{
+   ATLASSERT(colIdx < m_ScallopDepths.size());
+   m_ScallopDepths[colIdx] = depth;
+}
+
+Float64 CPierData2::GetColumnScallopDepth(ColumnIndexType colIdx) const
+{
+   ATLASSERT(colIdx < m_ScallopDepths.size());
+   return m_ScallopDepths[colIdx];
+}
+
+void CPierData2::SetColumnScallopRadius(ColumnIndexType colIdx, Float64 radius)
+{
+   ATLASSERT(colIdx < m_ScallopRadii.size());
+   m_ScallopRadii[colIdx] = radius;
+}
+
+Float64 CPierData2::GetColumnScallopRadius(ColumnIndexType colIdx) const
+{
+   ATLASSERT(colIdx < m_ScallopRadii.size());
+   return m_ScallopRadii[colIdx];
+}
+
 void CPierData2::SetColumnCount(ColumnIndexType nColumns)
 {
-   if ( nColumns < m_Columns.size() )
-   {
-      // the number of columns is being reduced ... remove columns on the right side of the pier
-      m_Columns.erase(m_Columns.begin()+nColumns,m_Columns.end());
-      m_ColumnSpacing.erase(m_ColumnSpacing.begin()+nColumns-1,m_ColumnSpacing.end());
-   }
-   else if ( m_Columns.size() < nColumns )
-   {
-      // the number of columns is being increased... add columns on the right side of the pier
-      ColumnIndexType nColumnsToAdd = nColumns - m_Columns.size();
-      CColumnData column = m_Columns.back(); // right-most column
-      Float64 spacing = (m_ColumnSpacing.size() == 0 ? WBFL::Units::ConvertToSysUnits(10.0,WBFL::Units::Measure::Feet) : m_ColumnSpacing.back()); // right-most spacing
-      m_Columns.insert(m_Columns.end(),nColumnsToAdd,column);
-      m_ColumnSpacing.insert(m_ColumnSpacing.end(),nColumnsToAdd,spacing);
-   }
-   ATLASSERT(m_Columns.size() == m_ColumnSpacing.size()+1);
+    ATLASSERT(nColumns >= 1);
+
+    if (nColumns < m_Columns.size())
+    {
+        m_Columns.erase(
+            m_Columns.begin() + nColumns,
+            m_Columns.end());
+
+        m_ColumnSpacing.resize(nColumns - 1);
+    }
+    else if (m_Columns.size() < nColumns)
+    {
+        ColumnIndexType nColumnsToAdd =
+            nColumns - m_Columns.size();
+
+        CColumnData column = m_Columns.back();
+
+        Float64 spacing = m_ColumnSpacing.empty() ?
+            WBFL::Units::ConvertToSysUnits(
+                10.0, WBFL::Units::Measure::Feet) :
+            m_ColumnSpacing.back();
+
+        m_Columns.insert(
+            m_Columns.end(), nColumnsToAdd, column);
+
+        m_ColumnSpacing.insert(
+            m_ColumnSpacing.end(), nColumnsToAdd, spacing);
+    }
+
+    // One scallop depth per column.
+    Float64 depth = m_ScallopDepths.empty() ?
+        WBFL::Units::ConvertToSysUnits(
+            5.0, WBFL::Units::Measure::Feet) :
+        m_ScallopDepths.back();
+
+    m_ScallopDepths.resize(nColumns, depth);
+
+    // One radius per interval between columns.
+    Float64 radius = m_ScallopRadii.empty() ?
+        WBFL::Units::ConvertToSysUnits(
+            10.0, WBFL::Units::Measure::Feet) :
+        m_ScallopRadii.back();
+
+    m_ScallopRadii.resize(nColumns - 1, radius);
+
+    ATLASSERT(m_Columns.size() ==
+        m_ColumnSpacing.size() + 1);
+
+    ATLASSERT(m_ScallopDepths.size() ==
+        m_Columns.size());
+
+    ATLASSERT(m_ScallopRadii.size() ==
+        m_ColumnSpacing.size());
 }
+
 
 ColumnIndexType CPierData2::GetColumnCount() const
 {

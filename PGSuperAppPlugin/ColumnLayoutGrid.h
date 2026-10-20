@@ -43,7 +43,7 @@ public:
 
 // Operations
 public:
-   void AddColumn();
+   virtual void AddColumn();
    void RemoveSelectedColumns();
 
    virtual void GetColumnData(CPierData2& pier);
@@ -76,7 +76,7 @@ protected:
 private:
    void AddColumn(const CColumnData& column,Float64 S);
    void SetColumnData(ROWCOL row,const CColumnData& column,Float64 S);
-   virtual void GetColumnData(ROWCOL row,CColumnData* pColumn,Float64* pS);
+   void GetColumnData(ROWCOL row,CColumnData* pColumn,Float64* pS);
 
 
 protected:

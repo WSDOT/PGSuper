@@ -92,50 +92,109 @@ void CScallopedColumnLayoutGrid::SetGeometryCell(ROWCOL row, ROWCOL col, Float64
         .SetHorizontalAlignment(DT_RIGHT).SetValue(value));
 }
 
+// Requires the scallop geometry accessors declared in PierData2.h.
+// Scallop depth is indexed by column; radius is indexed by interval.
 void CScallopedColumnLayoutGrid::SetColumnData(const CPierData2& pier)
 {
     CColumnLayoutGrid::SetColumnData(pier);
+    GetParam()->EnableUndo(FALSE);
+    GetParam()->SetLockReadOnly(FALSE);
+
     auto pBroker = EAFGetBroker();
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
     const auto unit = pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure;
+    const ROWCOL nRows = GetRowCount();
 
+    for (ROWCOL row = 1; row <= nRows; ++row)
+    {
+        const ColumnIndexType idx = static_cast<ColumnIndexType>(row - 1);
+        const Float64 depth = WBFL::Units::ConvertFromSysUnits(
+            pier.GetColumnScallopDepth(idx), unit);
+        SetGeometryCell(row, 8, depth);
 
-    ///// Implement
-
+        if (row < nRows)
+        {
+            const Float64 radius = WBFL::Units::ConvertFromSysUnits(
+                pier.GetColumnScallopRadius(idx), unit);
+            SetGeometryCell(row, 7, radius);
+        }
+    }
 
     UpdateLastRowStyles();
+    GetParam()->SetLockReadOnly(TRUE);
+    GetParam()->EnableUndo(TRUE);
 }
 
 void CScallopedColumnLayoutGrid::GetColumnData(CPierData2& pier)
 {
-    ROWCOL nRows = GetRowCount();
-    pier.SetColumnCount((ColumnIndexType)nRows);
-    for (ROWCOL row = 1; row <= nRows; row++)
+    // Preserve the base class handling of column properties, spacing,
+    // and the transverse reference-column adjustment.
+    CColumnLayoutGrid::GetColumnData(pier);
+
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    const auto unit = pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure;
+    const ROWCOL nRows = GetRowCount();
+
+    for (ROWCOL row = 1; row <= nRows; ++row)
     {
-        ColumnIndexType colIdx = (ColumnIndexType)(row - 1);
-        CColumnData column;
-        Float64 S;
-        GetColumnData(row, &column, &S);
-        pier.SetColumnData(colIdx, column);
+        const ColumnIndexType idx = static_cast<ColumnIndexType>(row - 1);
+        const Float64 depth = WBFL::Units::ConvertToSysUnits(
+            _tstof(GetCellValue(row, 8)), unit);
+        pier.SetColumnScallopDepth(idx, depth);
+
         if (row < nRows)
         {
-            pier.SetColumnSpacing(colIdx, S);
+            const Float64 radius = WBFL::Units::ConvertToSysUnits(
+                _tstof(GetCellValue(row, 7)), unit);
+            pier.SetColumnScallopRadius(idx, radius);
         }
     }
-    const auto& nCols = pier.GetColumnCount();
-    ColumnIndexType refColumnIdx;
-    Float64 offset;
-    pgsTypes::OffsetMeasurementType offsetType;
-    pier.GetTransverseOffset(&refColumnIdx, &offset, &offsetType);
-    if (refColumnIdx >= nCols)
-    {
-        pier.SetTransverseOffset(nCols - 1, offset, offsetType);
-    }
 }
 
-void CScallopedColumnLayoutGrid::GetColumnData(ROWCOL row, CColumnData* pColumn, Float64* pS)
+void CScallopedColumnLayoutGrid::AddColumn()
 {
+    // Let the base grid create the new column row
+    // and handle spacing.
+    CColumnLayoutGrid::AddColumn();
 
-//// Implement
+    GetParam()->EnableUndo(FALSE);
+    GetParam()->SetLockReadOnly(FALSE);
 
+    const ROWCOL nRows = GetRowCount();
+
+    if (nRows >= 2)
+    {
+        // The previous last row now has an interval.
+        // Give it a radius of 10 ft.
+        auto pBroker = EAFGetBroker();
+        GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+        const auto unit =
+            pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure;
+
+        const Float64 radius =
+            WBFL::Units::ConvertFromSysUnits(
+                WBFL::Units::ConvertToSysUnits(
+                    10.0, WBFL::Units::Measure::Feet),
+                unit);
+
+        SetGeometryCell(nRows - 1, 7, radius);
+
+        // Every new column gets a scallop depth of 5 ft.
+        const Float64 depth =
+            WBFL::Units::ConvertFromSysUnits(
+                WBFL::Units::ConvertToSysUnits(
+                    5.0, WBFL::Units::Measure::Feet),
+                unit);
+
+        SetGeometryCell(nRows, 8, depth);
+    }
+
+    // Disable radius on the new last row.
+    UpdateLastRowStyles();
+
+    GetParam()->SetLockReadOnly(TRUE);
+    GetParam()->EnableUndo(TRUE);
 }
+
