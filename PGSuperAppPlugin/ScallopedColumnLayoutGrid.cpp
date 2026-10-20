@@ -43,3 +43,88 @@ CScallopedColumnLayoutGrid::~CScallopedColumnLayoutGrid()
 {
 }
 
+void CScallopedColumnLayoutGrid::CustomInit()
+{
+    CColumnLayoutGrid::CustomInit();
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    CString units = pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str();
+    CString header;
+    header.Format(_T("Radius\n(%s)"), units.GetString());
+    SetStyleRange(CGXRange(0, 7), CGXStyle()
+        .SetWrapText(TRUE).SetEnabled(FALSE)
+        .SetHorizontalAlignment(DT_CENTER).SetVerticalAlignment(DT_VCENTER)
+        .SetValue(header));
+    header.Format(_T("Scallop Depth\n(%s)"), units.GetString());
+    SetStyleRange(CGXRange(0, 8), CGXStyle()
+        .SetWrapText(TRUE).SetEnabled(FALSE)
+        .SetHorizontalAlignment(DT_CENTER).SetVerticalAlignment(DT_VCENTER)
+        .SetValue(header));
+    ResizeRowHeightsToFit(CGXRange(0, 0, 0, GetColCount()));
+}
+
+void CScallopedColumnLayoutGrid::GetColumnData(CPierData2& pier)
+{
+    ROWCOL nRows = GetRowCount();
+    pier.SetColumnCount((ColumnIndexType)nRows);
+    for (ROWCOL row = 1; row <= nRows; row++)
+    {
+        ColumnIndexType colIdx = (ColumnIndexType)(row - 1);
+        CColumnData column;
+        Float64 S;
+        GetColumnData(row, &column, &S);
+        pier.SetColumnData(colIdx, column);
+        if (row < nRows)
+        {
+            pier.SetColumnSpacing(colIdx, S);
+        }
+    }
+    const auto& nCols = pier.GetColumnCount();
+    ColumnIndexType refColumnIdx;
+    Float64 offset;
+    pgsTypes::OffsetMeasurementType offsetType;
+    pier.GetTransverseOffset(&refColumnIdx, &offset, &offsetType);
+    if (refColumnIdx >= nCols)
+    {
+        pier.SetTransverseOffset(nCols - 1, offset, offsetType);
+    }
+}
+
+void CScallopedColumnLayoutGrid::GetColumnData(ROWCOL row, CColumnData* pColumn, Float64* pS)
+{
+
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+    ROWCOL col = 1;
+
+    Float64 H = _tstof(GetCellValue(row, col++));
+    H = WBFL::Units::ConvertToSysUnits(H, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+    pColumn->SetColumnHeight(H);
+
+    // Fixity
+    CString strFixity = GetCellValue(row, col++);
+    pgsTypes::ColumnTransverseFixityType fixity = GetTransverseFixityTypeFromString(strFixity);
+    pColumn->SetTransverseFixity(fixity);
+
+    // Shape Details
+    CString strShape = GetCellValue(row, col++);
+    if (strShape == _T("Circle"))
+    {
+        pColumn->SetColumnShape(CColumnData::cstCircle);
+    }
+    else
+    {
+        pColumn->SetColumnShape(CColumnData::cstRectangle);
+    }
+
+    Float64 D1 = _tstof(GetCellValue(row, col++));
+    D1 = WBFL::Units::ConvertToSysUnits(D1, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+    Float64 D2 = _tstof(GetCellValue(row, col++));
+    D2 = WBFL::Units::ConvertToSysUnits(D2, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+    pColumn->SetColumnDimensions(D1, D2);
+
+    // Spacing
+    Float64 S = _tstof(GetCellValue(row, col++));
+    *pS = WBFL::Units::ConvertToSysUnits(S, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+}

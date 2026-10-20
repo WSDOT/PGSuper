@@ -34,4 +34,14 @@ public:
 	CScallopedColumnLayoutGrid();
 	virtual ~CScallopedColumnLayoutGrid();
 
+	void CustomInit() override;
+
+	void GetColumnData(CPierData2& pier) override;
+
+private:
+	void GetColumnData(ROWCOL row, CColumnData* pColumn, Float64* pS) override;
+
+protected:
+	int GetGridColumnCount() const override { return 8; }
+
 };
