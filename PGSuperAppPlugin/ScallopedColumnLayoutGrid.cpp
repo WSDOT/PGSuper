@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -154,42 +154,28 @@ void CScallopedColumnLayoutGrid::GetColumnData(CPierData2& pier)
 
 void CScallopedColumnLayoutGrid::AddColumn()
 {
-    // Let the base grid create the new column row
-    // and handle spacing.
+    const ROWCOL oldRows = GetRowCount();
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    const auto unit = pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure;
+
+    // Capture displayed values before the base grid inserts the new row.
+    // The last row has no bay radius; use the last existing bay instead.
+    const Float64 depth = oldRows > 0 ? _tstof(GetCellValue(oldRows, 8))
+        : WBFL::Units::ConvertFromSysUnits(
+            WBFL::Units::ConvertToSysUnits(5.0, WBFL::Units::Measure::Feet), unit);
+    const Float64 radius = oldRows > 1 ? _tstof(GetCellValue(oldRows - 1, 7))
+        : WBFL::Units::ConvertFromSysUnits(
+            WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::Feet), unit);
+
     CColumnLayoutGrid::AddColumn();
 
     GetParam()->EnableUndo(FALSE);
     GetParam()->SetLockReadOnly(FALSE);
 
-    const ROWCOL nRows = GetRowCount();
-
-    if (nRows >= 2)
-    {
-        // The previous last row now has an interval.
-        // Give it a radius of 10 ft.
-        auto pBroker = EAFGetBroker();
-        GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
-        const auto unit =
-            pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure;
-
-        const Float64 radius =
-            WBFL::Units::ConvertFromSysUnits(
-                WBFL::Units::ConvertToSysUnits(
-                    10.0, WBFL::Units::Measure::Feet),
-                unit);
-
-        SetGeometryCell(nRows - 1, 7, radius);
-
-        // Every new column gets a scallop depth of 5 ft.
-        const Float64 depth =
-            WBFL::Units::ConvertFromSysUnits(
-                WBFL::Units::ConvertToSysUnits(
-                    5.0, WBFL::Units::Measure::Feet),
-                unit);
-
-        SetGeometryCell(nRows, 8, depth);
-    }
+    if (oldRows > 0)
+        SetGeometryCell(oldRows, 7, radius);
+    SetGeometryCell(oldRows + 1, 8, depth);
 
     // Disable radius on the new last row.
     UpdateLastRowStyles();
