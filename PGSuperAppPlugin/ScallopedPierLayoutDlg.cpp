@@ -110,8 +110,10 @@ BOOL CScallopedPierLayoutDlg::OnInitDialog()
 
     CDialog::OnInitDialog();
 
-    m_Initialized = true;
+    // Set grid presentation while notifications are still suppressed.
+    // PierLayoutPage constructs every layout dialog, including inactive ones.
     OnHeightMeasureChanged();
+    m_Initialized = true;
 
     return TRUE;
 }
@@ -332,7 +334,10 @@ void CScallopedPierLayoutDlg::ValidateScallopGeometry(CDataExchange* pDX)
             pDX->Fail();
         }
     }
-    CPierData2 candidate = m_Pier;
+    // Copy construction intentionally creates a new pier with an invalid ID/index.
+    // Assignment preserves the existing pier identity needed by bridge queries.
+    CPierData2 candidate;
+    candidate = m_Pier;
     m_ColumnLayoutGrid.GetColumnData(candidate);
     const ColumnIndexType count = candidate.GetColumnCount();
     if (m_RefColumnIdx >= count)
