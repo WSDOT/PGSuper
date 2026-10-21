@@ -39,6 +39,7 @@ public:
 	void GetColumnData(CPierData2& pier) override;
 	void SetColumnData(const CPierData2& pier) override;
 	void AddColumn() override;
+	static void DDV_ColumnGrid(CDataExchange* pDX, CScallopedColumnLayoutGrid& grid);
 
 private:
 	void SetGeometryCell(ROWCOL row, ROWCOL col, Float64 value);

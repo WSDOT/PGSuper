@@ -729,6 +729,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="HaunchDirectSegmentGrid.h" />
     <ClInclude Include="HaunchDirectSpansGrid.h" />
     <ClInclude Include="ScallopedPierLayoutDlg.h" />
+    <ClInclude Include="ScallopGeometry.h" />
     <ClInclude Include="HorizontalAlignmentGrid.h" />
     <ClInclude Include="HorizontalAlignmentPage.h" />
     <ClInclude Include="..\Include\BridgeModelViewController.h" />

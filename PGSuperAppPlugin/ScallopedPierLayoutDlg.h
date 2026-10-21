@@ -83,6 +83,9 @@ protected:
 	void FillHeightMeasureComboBox();
 	void FillTransverseLocationComboBox();
 	void RefreshDisplay();
+	void ValidateScallopGeometry(CDataExchange* pDX);
+	bool m_Initialized = false;
+	bool m_UpdatingLayout = false;
 
 	ColumnIndexType m_RefColumnIdx;
 	Float64 m_TransverseOffset;

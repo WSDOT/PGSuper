@@ -39,6 +39,9 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace/Tools.h>
+#include <IFace/Bridge.h>
+#include "ScallopGeometry.h"
+#include <Math\PiecewiseFunction.h>
 
 CScallopedPierLayoutDlg::CScallopedPierLayoutDlg(CWnd* pParent)
     :CDialog(IDD_PIER_LAYOUT_SCALLOPED, pParent)
@@ -58,18 +61,18 @@ BEGIN_MESSAGE_MAP(CScallopedPierLayoutDlg, CDialog)
     ON_BN_CLICKED(IDC_ADD_COLUMN, &CScallopedPierLayoutDlg::OnAddColumn)
     ON_BN_CLICKED(IDC_REMOVE_COLUMN, &CScallopedPierLayoutDlg::OnRemoveColumns)
 
-    ON_EN_CHANGE(IDC_W, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_H1L, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_H1R, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_RL, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_RR, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_X1L, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_X1R, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_OHL, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_OHR, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_W, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_H1L, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_H1R, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_RL, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_RR, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_X1L, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_X1R, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_OHL, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_OHR, &CScallopedPierLayoutDlg::OnPierLayoutChanged)
 
     ON_CBN_SELCHANGE(IDC_REFCOLUMN, &CScallopedPierLayoutDlg::OnRefColumnChanged)
-    ON_EN_CHANGE(IDC_REFCOLUMN_OFFSET, &CScallopedPierLayoutDlg::OnRefColumnChanged)
+    ON_EN_KILLFOCUS(IDC_REFCOLUMN_OFFSET, &CScallopedPierLayoutDlg::OnRefColumnChanged)
     ON_CBN_SELCHANGE(IDC_REFCOLUMN_MEASUREMENT, &CScallopedPierLayoutDlg::OnRefColumnChanged)
 
     ON_WM_LBUTTONDOWN()
@@ -107,8 +110,8 @@ BOOL CScallopedPierLayoutDlg::OnInitDialog()
 
     CDialog::OnInitDialog();
 
+    m_Initialized = true;
     OnHeightMeasureChanged();
-
 
     return TRUE;
 }
@@ -144,8 +147,9 @@ void CScallopedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
 
     DDX_CBItemData(pDX, IDC_FIXITY, m_ColumnFixity);
 
-    CColumnLayoutGrid::DDV_ColumnGrid(pDX, m_ColumnLayoutGrid);
-    CColumnLayoutGrid::DDX_ColumnGrid(pDX, m_ColumnLayoutGrid, &m_Pier);
+    CScallopedColumnLayoutGrid::DDV_ColumnGrid(pDX, m_ColumnLayoutGrid);
+    if (!pDX->m_bSaveAndValidate)
+        m_ColumnLayoutGrid.SetColumnData(m_Pier);
 
     m_ColumnHeightMeasurementType = m_Pier.GetColumnData(0).GetColumnHeightMeasurementType();
     DDX_CBItemData(pDX, IDC_HEIGHT_MEASURE, m_ColumnHeightMeasurementType);
@@ -166,182 +170,9 @@ void CScallopedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
         DDV_UnitValueZeroOrMore(pDX, IDC_OHL, m_XBeamOverhang[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
         DDV_UnitValueZeroOrMore(pDX, IDC_OHR, m_XBeamOverhang[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
 
-        DDV_UnitValueZeroOrMore(pDX, IDC_RL, m_XBeamOverhangRadius[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
-        DDV_UnitValueZeroOrMore(pDX, IDC_RR, m_XBeamOverhangRadius[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
-
-        for (SpacingIndexType spaIdx = 0;
-            spaIdx < m_Pier.GetColumnCount() - 1;
-            ++spaIdx)
-        {
-            const Float64 spacing = m_Pier.GetColumnSpacing(spaIdx);
-
-            // Chord length must be less than the diameter.
-            if (spacing >= 2.0 * m_XBeamOverhangRadius[pgsTypes::stLeft])
-            {
-
-                pDX->PrepareCtrl(IDC_RL);
-
-                CString msg;
-                msg.Format(
-                    _T("R is too small for the spacing between columns %d and %d. ")
-                    _T("R must be more than one-half of the column spacing."),
-                    spaIdx + 1,
-                    spaIdx + 2);
-
-                AfxMessageBox(msg);
-                pDX->Fail();
-            }
-
-            // Arc height (sagitta) must not exceed D.
-            const Float64 halfChord = spacing / 2.0;
-            const Float64 arcHeight =
-                m_XBeamOverhangRadius[pgsTypes::stLeft] -
-                sqrt(m_XBeamOverhangRadius[pgsTypes::stLeft] * m_XBeamOverhangRadius[pgsTypes::stLeft] -
-                    halfChord * halfChord);
-
-            if (arcHeight > 1.33333)
-            {
-
-                //pDX->PrepareCtrl(IDC_D);
-
-                //CString msg;
-                //msg.Format(
-                //    _T("D is too small for the arc between columns %d and %d. ")
-                //    _T("D must be at least the height of the arc."),
-                //    spaIdx + 1,
-                //    spaIdx + 2);
-
-                //AfxMessageBox(msg);
-                //pDX->Fail();
-            }
-        }
-
-        // Validate left and right overhang arcs
-        for (int side = pgsTypes::stLeft;
-            side <= pgsTypes::stRight; ++side)
-        {
-            const Float64 run = m_XBeamOverhang[side];
-            const Float64 dy =
-                1.33333 - m_XBeamHeight[side];
-
-            const Float64 R = m_XBeamOverhangRadius[side];
-            const Float64 chord = sqrt(run * run + dy * dy);
-
-            const CString sideName =
-                side == pgsTypes::stLeft ? _T("left") : _T("right");
-
-            // The chord cannot exceed the circle diameter.
-            if (chord >= 2.0 * R)
-            {
-                pDX->PrepareCtrl(IDC_RL);
-
-                CString msg;
-                msg.Format(
-                    _T("R is too small for the %s overhang arc. ")
-                    _T("R must be more than one-half of the ")
-                    _T("distance between the arc endpoints."),
-                    sideName.GetString());
-
-                AfxMessageBox(msg);
-                pDX->Fail();
-            }
-
-            if (IsZero(chord))
-                continue;
-
-            const Float64 halfChord = chord / 2.0;
-
-            const Float64 centerOffset =
-                sqrt(R * R - halfChord * halfChord);
-
-            // Circle center relative to the column endpoint.
-            // The column endpoint is (0, 0).
-            // The overhang endpoint is (run, dy).
-            const Float64 centerX =
-                0.5 * run + centerOffset * dy / chord;
-
-            const Float64 centerY =
-                0.5 * dy - centerOffset * run / chord;
-
-            // Highest point of the complete circle.
-            const Float64 peakX = centerX;
-            const Float64 peakY = centerY + R;
-
-            // Start with the higher endpoint.
-            Float64 maxY = Max(0.0, dy);
-
-            // Check whether the circle's highest point
-            // lies on the actual upper minor arc.
-            const Float64 startAngle =
-                atan2(-centerY, -centerX);
-
-            const Float64 endAngle =
-                atan2(dy - centerY, run - centerX);
-
-            // Normalize angles to [0, 2*pi).
-            const Float64 twoPi = 2.0 * acos(-1.0);
-
-            Float64 a0 = startAngle;
-            Float64 a1 = endAngle;
-
-            if (a0 < 0.0)
-                a0 += twoPi;
-
-            if (a1 < 0.0)
-                a1 += twoPi;
-
-            // Counterclockwise sweep from start to end.
-            Float64 sweep = a1 - a0;
-
-            if (sweep < 0.0)
-                sweep += twoPi;
-
-            // Select the minor arc.
-            if (sweep > acos(-1.0))
-            {
-                std::swap(a0, a1);
-                sweep = twoPi - sweep;
-            }
-
-            // The highest point is at pi/2.
-            Float64 peakAngle = acos(-1.0) / 2.0;
-
-            Float64 relativeAngle = peakAngle - a0;
-
-            if (relativeAngle < 0.0)
-                relativeAngle += twoPi;
-
-            if (relativeAngle <= sweep)
-                maxY = Max(maxY, peakY);
-
-            // The top of the arc cannot exceed
-            // the top of the lower crossbeam.
-            if (maxY > 1.33333)
-            {
-                //pDX->PrepareCtrl(IDC_D);
-
-                //CString msg;
-                //msg.Format(
-                //    _T("D is too small for the %s overhang arc. ")
-                //    _T("The top of the arc cannot extend above ")
-                //    _T("the top of the cross beam."),
-                //    sideName.GetString());
-
-                //AfxMessageBox(msg);
-                //pDX->Fail();
-            }
-        }
-
-        // Overhangs must satisfy the first/last column radius limits.
-        Float64 D1 = 0.0, D2 = 0.0;
-        ATLASSERT(1 <= m_Pier.GetColumnCount());
-
-
-        Float64 spacingSum = 0.0;
-        for (SpacingIndexType spaIdx = 0; spaIdx < m_Pier.GetColumnCount() - 1; spaIdx++)
-        {
-            spacingSum += m_Pier.GetColumnSpacing(spaIdx);
-        }
+        DDV_UnitValueGreaterThanZero(pDX, IDC_RL, m_XBeamOverhangRadius[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
+        DDV_UnitValueGreaterThanZero(pDX, IDC_RR, m_XBeamOverhangRadius[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
+        ValidateScallopGeometry(pDX);
     }
 }
 
@@ -417,8 +248,6 @@ LRESULT CScallopedPierLayoutDlg::OnColumnGridCellChanged(WPARAM wParam, LPARAM l
 
     FillRefColumnComboBox();
 
-    // Update pier data with current column data
-    m_ColumnLayoutGrid.GetColumnData(m_Pier);
 
     OnPierLayoutChanged();
 
@@ -430,8 +259,6 @@ void CScallopedPierLayoutDlg::OnAddColumn()
     m_ColumnLayoutGrid.AddColumn();
     FillRefColumnComboBox();
 
-    // Update pier data with current column data
-    m_ColumnLayoutGrid.GetColumnData(m_Pier);
 
     OnPierLayoutChanged();
 
@@ -444,13 +271,6 @@ void CScallopedPierLayoutDlg::OnRemoveColumns()
         m_ColumnLayoutGrid.RemoveSelectedColumns();
 
         FillRefColumnComboBox();
-
-        // Update pier data with current column data
-        const auto nCols = m_Pier.GetColumnCount();
-        if (nCols > 1)
-        {
-            m_ColumnLayoutGrid.GetColumnData(m_Pier);
-        }
 
         OnPierLayoutChanged();
     }
@@ -483,249 +303,125 @@ void CScallopedPierLayoutDlg::OnPierLayoutChanged()
 
 void CScallopedPierLayoutDlg::ChangePierLayout()
 {
-    // Get the current values from the edit controls into member variables
-    CDataExchange dx(this, TRUE);
-
-    auto pBroker = EAFGetBroker();
-    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
-    CPierLayoutPage* pPage =
-        DYNAMIC_DOWNCAST(CPierLayoutPage, GetParent());
-
-    // Exchange XBeam dimensions
-    DDX_UnitValueAndTag(&dx, IDC_H1L, IDC_H1L_UNIT, m_XBeamHeight[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
-    DDX_UnitValueAndTag(&dx, IDC_H1R, IDC_H1R_UNIT, m_XBeamHeight[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
-
-    DDX_UnitValueAndTag(&dx, IDC_X1L, IDC_X1L_UNIT, m_XBeamEndSlopeOffset[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
-    DDX_UnitValueAndTag(&dx, IDC_X1R, IDC_X1R_UNIT, m_XBeamEndSlopeOffset[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
-
-    DDX_UnitValueAndTag(&dx, IDC_OHL, IDC_OHL_UNIT, m_XBeamOverhang[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
-    DDX_UnitValueAndTag(&dx, IDC_OHR, IDC_OHR_UNIT, m_XBeamOverhang[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
-
-    DDX_UnitValueAndTag(&dx, IDC_RL, IDC_RL_UNIT, m_XBeamOverhangRadius[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
-    DDX_UnitValueAndTag(&dx, IDC_RR, IDC_RR_UNIT, m_XBeamOverhangRadius[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
-
-    DDX_UnitValueAndTag(&dx, IDC_W, IDC_W_UNIT, m_XBeamWidth, pDisplayUnits->GetSpanLengthUnit());
-
-    // Update the pier data with the current values
-    m_Pier.SetXBeamDimensions(pgsTypes::stLeft, m_XBeamHeight[pgsTypes::stLeft], 0.0, 0.0, m_XBeamEndSlopeOffset[pgsTypes::stLeft]);
-    m_Pier.SetXBeamDimensions(pgsTypes::stRight, m_XBeamHeight[pgsTypes::stRight], 0.0, 0.0, m_XBeamEndSlopeOffset[pgsTypes::stRight]);
-
-    m_Pier.SetXBeamWidth(m_XBeamWidth);
-
-    m_Pier.SetXBeamOverhang(pgsTypes::stLeft, m_XBeamOverhang[pgsTypes::stLeft]);
-    m_Pier.SetXBeamOverhang(pgsTypes::stRight, m_XBeamOverhang[pgsTypes::stRight]);
-
-    m_Pier.SetXBeamOverhangRadius(pgsTypes::stLeft, m_XBeamOverhangRadius[pgsTypes::stLeft]);
-    m_Pier.SetXBeamOverhangRadius(pgsTypes::stRight, m_XBeamOverhangRadius[pgsTypes::stRight]);
-
-    if (pPage->m_pPierLayoutPopout != nullptr)
-    {
-        // XBeam width, W, must be greater than zero
-        DDV_UnitValueGreaterThanZero(&dx, IDC_W, m_XBeamWidth, pDisplayUnits->GetSpanLengthUnit());
-
-        // H1 and H3 must be > 0
-        DDV_UnitValueGreaterThanZero(&dx, IDC_H1L, m_XBeamHeight[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
-        DDV_UnitValueGreaterThanZero(&dx, IDC_H1R, m_XBeamHeight[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
-
-        // X1..X4 must be >= 0
-        DDV_UnitValueZeroOrMore(&dx, IDC_X1L, m_XBeamEndSlopeOffset[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
-        DDV_UnitValueZeroOrMore(&dx, IDC_X1R, m_XBeamEndSlopeOffset[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
-        DDV_UnitValueZeroOrMore(&dx, IDC_OHL, m_XBeamOverhang[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
-        DDV_UnitValueZeroOrMore(&dx, IDC_OHR, m_XBeamOverhang[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
-        DDV_UnitValueZeroOrMore(&dx, IDC_RL, m_XBeamOverhangRadius[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
-        DDV_UnitValueZeroOrMore(&dx, IDC_RR, m_XBeamOverhangRadius[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
-
-        for (SpacingIndexType spaIdx = 0;
-            spaIdx < m_Pier.GetColumnCount() - 1;
-            ++spaIdx)
-        {
-            const Float64 spacing = m_Pier.GetColumnSpacing(spaIdx);
-
-            // Chord length must be less than the diameter.
-            if (spacing >= 2.0 * m_XBeamOverhangRadius[pgsTypes::stLeft])
-            {
-
-                dx.PrepareCtrl(IDC_RL);
-
-                CString msg;
-                msg.Format(
-                    _T("R is too small for the spacing between columns %d and %d. ")
-                    _T("R must be more than one-half of the column spacing."),
-                    spaIdx + 1,
-                    spaIdx + 2);
-
-                AfxMessageBox(msg);
-                dx.Fail();
-            }
-
-            // Arc height (sagitta) must not exceed D.
-            const Float64 halfChord = spacing / 2.0;
-            const Float64 arcHeight =
-                m_XBeamOverhangRadius[pgsTypes::stLeft] -
-                sqrt(m_XBeamOverhangRadius[pgsTypes::stLeft] * m_XBeamOverhangRadius[pgsTypes::stLeft] -
-                    halfChord * halfChord);
-
-            if (arcHeight > 1.33333)
-            {
-
-                //dx.PrepareCtrl(IDC_D);
-
-                //CString msg;
-                //msg.Format(
-                //    _T("D is too small for the arc between columns %d and %d. ")
-                //    _T("D must be at least the height of the arc."),
-                //    spaIdx + 1,
-                //    spaIdx + 2);
-
-                //AfxMessageBox(msg);
-                //dx.Fail();
-            }
-        }
-
-        // Validate left and right overhang arcs
-        for (int side = pgsTypes::stLeft;
-            side <= pgsTypes::stRight; ++side)
-        {
-            const Float64 run = m_XBeamOverhang[side];
-            const Float64 dy =
-                1.3333 - m_XBeamHeight[side];
-
-            const Float64 R = m_XBeamOverhangRadius[side];
-            const Float64 chord = sqrt(run * run + dy * dy);
-
-            const CString sideName =
-                side == pgsTypes::stLeft ? _T("left") : _T("right");
-
-            // The chord cannot exceed the circle diameter.
-            if (chord >= 2.0 * R)
-            {
-                dx.PrepareCtrl(IDC_RL);
-
-                CString msg;
-                msg.Format(
-                    _T("R is too small for the %s overhang arc. ")
-                    _T("R must be more than one-half of the ")
-                    _T("distance between the arc endpoints."),
-                    sideName.GetString());
-
-                AfxMessageBox(msg);
-                dx.Fail();
-            }
-
-            if (IsZero(chord))
-                continue;
-
-            const Float64 halfChord = chord / 2.0;
-
-            const Float64 centerOffset =
-                sqrt(R * R - halfChord * halfChord);
-
-            // Circle center relative to the column endpoint.
-            // The column endpoint is (0, 0).
-            // The overhang endpoint is (run, dy).
-            const Float64 centerX =
-                0.5 * run + centerOffset * dy / chord;
-
-            const Float64 centerY =
-                0.5 * dy - centerOffset * run / chord;
-
-            // Highest point of the complete circle.
-            const Float64 peakX = centerX;
-            const Float64 peakY = centerY + R;
-
-            // Start with the higher endpoint.
-            Float64 maxY = Max(0.0, dy);
-
-            // Check whether the circle's highest point
-            // lies on the actual upper minor arc.
-            const Float64 startAngle =
-                atan2(-centerY, -centerX);
-
-            const Float64 endAngle =
-                atan2(dy - centerY, run - centerX);
-
-            // Normalize angles to [0, 2*pi).
-            const Float64 twoPi = 2.0 * acos(-1.0);
-
-            Float64 a0 = startAngle;
-            Float64 a1 = endAngle;
-
-            if (a0 < 0.0)
-                a0 += twoPi;
-
-            if (a1 < 0.0)
-                a1 += twoPi;
-
-            // Counterclockwise sweep from start to end.
-            Float64 sweep = a1 - a0;
-
-            if (sweep < 0.0)
-                sweep += twoPi;
-
-            // Select the minor arc.
-            if (sweep > acos(-1.0))
-            {
-                std::swap(a0, a1);
-                sweep = twoPi - sweep;
-            }
-
-            // The highest point is at pi/2.
-            Float64 peakAngle = acos(-1.0) / 2.0;
-
-            Float64 relativeAngle = peakAngle - a0;
-
-            if (relativeAngle < 0.0)
-                relativeAngle += twoPi;
-
-            if (relativeAngle <= sweep)
-                maxY = Max(maxY, peakY);
-
-            // The top of the arc cannot exceed
-            // the top of the lower crossbeam.
-            if (maxY > 1.33333)
-            {
-                //dx.PrepareCtrl(IDC_D);
-
-                //CString msg;
-                //msg.Format(
-                //    _T("D is too small for the %s overhang arc. ")
-                //    _T("The top of the arc cannot extend above ")
-                //    _T("the top of the cross beam."),
-                //    sideName.GetString());
-
-                //AfxMessageBox(msg);
-                //dx.Fail();
-            }
-        }
-
-        // Overhangs must satisfy the first/last column radius limits.
-        Float64 D1 = 0.0, D2 = 0.0;
-
-
-        Float64 spacingSum = 0.0;
-        for (SpacingIndexType spaIdx = 0; spaIdx < m_Pier.GetColumnCount() - 1; spaIdx++)
-        {
-            spacingSum += m_Pier.GetColumnSpacing(spaIdx);
-        }
-    }
-
-    RefreshDisplay();
+    if (!m_Initialized || m_UpdatingLayout)
+        return;
+    m_UpdatingLayout = true;
+    // UpdateData catches validation failures. The validator only commits a
+    // candidate pier after all checks, preserving the last valid preview.
+    if (UpdateData(TRUE))
+        RefreshDisplay();
+    m_UpdatingLayout = false;
 }
 
 void CScallopedPierLayoutDlg::OnRefColumnChanged()
 {
-    // Get the current values from the edit controls into member variables
-    CDataExchange dx(this, TRUE);
+    ChangePierLayout();
+}
 
+void CScallopedPierLayoutDlg::ValidateScallopGeometry(CDataExchange* pDX)
+{
+    using xbrScallop::Point;
+    for (Float64 value : {m_XBeamWidth, m_XBeamHeight[0], m_XBeamHeight[1],
+        m_XBeamEndSlopeOffset[0], m_XBeamEndSlopeOffset[1], m_XBeamOverhang[0],
+        m_XBeamOverhang[1], m_XBeamOverhangRadius[0], m_XBeamOverhangRadius[1], m_TransverseOffset})
+    {
+        if (!std::isfinite(value))
+        {
+            pDX->PrepareCtrl(IDC_W);
+            AfxMessageBox(_T("Cross beam dimensions and reference offset must be finite numbers."));
+            pDX->Fail();
+        }
+    }
+    CPierData2 candidate = m_Pier;
+    m_ColumnLayoutGrid.GetColumnData(candidate);
+    const ColumnIndexType count = candidate.GetColumnCount();
+    if (m_RefColumnIdx >= count)
+    {
+        pDX->PrepareCtrl(IDC_REFCOLUMN);
+        AfxMessageBox(_T("Select a reference column."));
+        pDX->Fail();
+    }
+    candidate.SetTransverseOffset(m_RefColumnIdx, m_TransverseOffset, m_TransverseOffsetMeasurement);
+    candidate.SetXBeamWidth(m_XBeamWidth);
+    for (int side = pgsTypes::stLeft; side <= pgsTypes::stRight; ++side)
+    {
+        const auto st = static_cast<pgsTypes::SideType>(side);
+        candidate.SetXBeamDimensions(st, m_XBeamHeight[side], 0.0, 0.0, m_XBeamEndSlopeOffset[side]);
+        candidate.SetXBeamOverhang(st, m_XBeamOverhang[side]);
+        candidate.SetXBeamOverhangRadius(st, m_XBeamOverhangRadius[side]);
+        if (m_XBeamEndSlopeOffset[side] > m_XBeamOverhang[side])
+        {
+            pDX->PrepareCtrl(side == pgsTypes::stLeft ? IDC_X1L : IDC_X1R);
+            AfxMessageBox(_T("The end slope offset cannot exceed its overhang length."));
+            pDX->Fail();
+        }
+    }
     auto pBroker = EAFGetBroker();
-    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
-    DDX_CBIndex(&dx, IDC_REFCOLUMN, m_RefColumnIdx);
-    DDX_OffsetAndTag(&dx, IDC_REFCOLUMN_OFFSET, IDC_REFCOLUMN_OFFSET_UNIT, m_TransverseOffset, pDisplayUnits->GetSpanLengthUnit());
-    DDX_CBItemData(&dx, IDC_REFCOLUMN_MEASUREMENT, m_TransverseOffsetMeasurement);
-
-	m_Pier.SetTransverseOffset(m_RefColumnIdx, m_TransverseOffset, m_TransverseOffsetMeasurement);
-
-    RefreshDisplay();
+    GET_IFACE2(pBroker, IBridge, pBridge);
+    // The top profile is safe to compute before constructing any bottom arcs.
+    CComPtr<IPoint2dCollection> profile;
+    pBridge->GetLowerXBeamProfile(candidate, &profile);
+    IndexType nPoints;
+    profile->get_Count(&nPoints);
+    std::vector<Point> top;
+    WBFL::Math::PiecewiseFunction topY;
+    for (IndexType i = 0; i < nPoints; ++i)
+    {
+        CComPtr<IPoint2d> point;
+        profile->get_Item(i, &point);
+        Float64 x, y;
+        point->Location(&x, &y);
+        top.push_back({x, y});
+        topY.AddPoint(x, y);
+    }
+    if (top.size() < 2)
+    {
+        pDX->PrepareCtrl(IDC_COLUMN_GRID);
+        AfxMessageBox(_T("The lower cross beam must have a nonzero length."));
+        pDX->Fail();
+    }
+    std::vector<Point> ends = {{top.front().x + m_XBeamEndSlopeOffset[pgsTypes::stLeft],
+        top.front().y - m_XBeamHeight[pgsTypes::stLeft]}};
+    for (ColumnIndexType i = 0; i < count; ++i)
+    {
+        const Float64 x = pBridge->ConvertCrossBeamToPierCoordinate(candidate, pBridge->GetColumnLocation(candidate, i));
+        ends.push_back({x, topY.Evaluate(x) - candidate.GetColumnScallopDepth(i)});
+    }
+    ends.push_back({top.back().x - m_XBeamEndSlopeOffset[pgsTypes::stRight],
+        top.back().y - m_XBeamHeight[pgsTypes::stRight]});
+    for (ColumnIndexType arc = 0; arc <= count; ++arc)
+    {
+        const Float64 radius = arc == 0 ? m_XBeamOverhangRadius[pgsTypes::stLeft]
+            : arc == count ? m_XBeamOverhangRadius[pgsTypes::stRight]
+            : candidate.GetColumnScallopRadius(arc - 1);
+        const auto error = xbrScallop::ValidateArc(ends[arc], ends[arc + 1], radius, top);
+        if (error == xbrScallop::ArcError::None)
+            continue;
+        if (error == xbrScallop::ArcError::AboveTop)
+        {
+            const ColumnIndexType column = arc == 0 ? 0 : arc == count ? count - 1
+                : candidate.GetColumnScallopDepth(arc - 1) <= candidate.GetColumnScallopDepth(arc) ? arc - 1 : arc;
+            pDX->PrepareCtrl(IDC_COLUMN_GRID);
+            m_ColumnLayoutGrid.SetCurrentCell(column + 1, 8);
+        }
+        else
+        {
+            pDX->PrepareCtrl(arc == 0 ? IDC_RL : arc == count ? IDC_RR : IDC_COLUMN_GRID);
+            if (arc > 0 && arc < count)
+                m_ColumnLayoutGrid.SetCurrentCell(arc, 7);
+        }
+        CString location, message;
+        if (arc == 0) location = _T("Left overhang");
+        else if (arc == count) location = _T("Right overhang");
+        else location.Format(_T("Bay between columns %u and %u"), arc, arc + 1);
+        message.Format(_T("%s: %s"), location.GetString(),
+            error == xbrScallop::ArcError::InvalidChord
+                ? _T("Radius must be at least half the distance between arc endpoints, including their elevation difference.")
+                : error == xbrScallop::ArcError::AboveTop
+                    ? _T("Arc extends above the lower cross beam top. Increase the column depth or radius.")
+                    : _T("Arc turns back past an endpoint. Increase the radius or adjust the endpoint depths."));
+        AfxMessageBox(message);
+        pDX->Fail();
+    }
+    m_Pier = candidate;
 }

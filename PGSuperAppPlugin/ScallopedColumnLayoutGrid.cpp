@@ -22,6 +22,7 @@
 
 #include "stdafx.h"
 #include "ScallopedColumnLayoutGrid.h"
+#include <cmath>
 
 #include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -184,3 +185,33 @@ void CScallopedColumnLayoutGrid::AddColumn()
     GetParam()->EnableUndo(TRUE);
 }
 
+
+void CScallopedColumnLayoutGrid::DDV_ColumnGrid(CDataExchange* pDX, CScallopedColumnLayoutGrid& grid)
+{
+    CColumnLayoutGrid::DDV_ColumnGrid(pDX, grid);
+    if (!pDX->m_bSaveAndValidate)
+        return;
+    for (ROWCOL row = 1; row <= grid.GetRowCount(); ++row)
+    {
+        for (ROWCOL col : {ROWCOL(6), ROWCOL(7), ROWCOL(8)})
+        {
+            if (row == grid.GetRowCount() && col != 8)
+                continue; // No spacing or bay radius on the last row.
+            CString text = grid.GetCellValue(row, col);
+            text.Trim();
+            TCHAR* end = nullptr;
+            const Float64 value = _tcstod(text.GetString(), &end);
+            if (text.IsEmpty() || end == text.GetString() || *end != 0 ||
+                !std::isfinite(value) || value <= 0.0)
+            {
+                pDX->PrepareCtrl(grid.GetDlgCtrlID());
+                grid.SetCurrentCell(row, col);
+                CString message;
+                message.Format(_T("Column %u: %s must be a positive, finite number."), row,
+                    col == 6 ? _T("spacing") : col == 7 ? _T("bay radius") : _T("scallop depth"));
+                AfxMessageBox(message);
+                pDX->Fail();
+            }
+        }
+    }
+}

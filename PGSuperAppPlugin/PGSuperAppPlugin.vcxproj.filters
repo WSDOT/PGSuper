@@ -1908,6 +1908,9 @@
     <ClInclude Include="ScallopedPierLayoutDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ScallopGeometry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="UserDefinedPierLayoutDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
