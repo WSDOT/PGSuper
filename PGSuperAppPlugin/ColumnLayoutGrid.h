@@ -72,6 +72,7 @@ protected:
    
    virtual void OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol);
    virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
+   virtual bool NotifyDuringCellEdit() const { return true; }
 
 private:
    void AddColumn(const CColumnData& column,Float64 S);

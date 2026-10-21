@@ -215,3 +215,17 @@ void CScallopedColumnLayoutGrid::DDV_ColumnGrid(CDataExchange* pDX, CScallopedCo
         }
     }
 }
+
+BOOL CScallopedColumnLayoutGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
+{
+    CGXControl* control = GetControl(nRow, nCol);
+    const BOOL modified = control && control->GetModify();
+    const BOOL accepted = CColumnLayoutGrid::OnEndEditing(nRow, nCol);
+    if (accepted && modified && GetParent())
+    {
+        // The grid has not finished storing/resetting the edit control yet.
+        // Defer validation and preview updates until this callback unwinds.
+        GetParent()->PostMessage(WM_COLUMN_GRID_CELL_CHANGED, (WPARAM)nRow, (LPARAM)nCol);
+    }
+    return accepted;
+}

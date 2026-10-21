@@ -47,5 +47,7 @@ private:
 protected:
 	int GetGridColumnCount() const override { return 8; }
 	void UpdateLastRowStyles() override;
+	bool NotifyDuringCellEdit() const override { return false; }
+	BOOL OnEndEditing(ROWCOL nRow, ROWCOL nCol) override;
 
 };
