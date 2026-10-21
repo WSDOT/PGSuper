@@ -798,10 +798,6 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
 
         GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-        CString strRadius;
-        strRadius.Format(_T("%s"),
-            FormatDimension(pPier->GetXBeamOverhangRadius(pgsTypes::stLeft), pDisplayUnits->GetSpanLengthUnit()));
-
         for (ColumnIndexType arcIdx = 0; arcIdx <= nColumns; ++arcIdx)
         {
             Float64 Xleft, Xright;
@@ -866,9 +862,20 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
             // Small offset below the chord.
             WBFL::Geometry::Point2d ppRad(XpMid, Ychord - 0.5);
 
+            const Float64 radius = arcIdx == 0
+                ? pPier->GetXBeamOverhangRadius(pgsTypes::stLeft)
+                : arcIdx == nColumns
+                    ? pPier->GetXBeamOverhangRadius(pgsTypes::stRight)
+                    : pPier->GetColumnScallopRadius(arcIdx - 1);
+            const CString strRadius = FormatDimension(radius, pDisplayUnits->GetSpanLengthUnit());
+
             CString strRadiusLabel;
-            strRadiusLabel.Format(
-                _T("R%d = %s"), arcIdx + 1, strRadius);
+            if (arcIdx == 0)
+                strRadiusLabel.Format(_T("RL = %s"), strRadius.GetString());
+            else if (arcIdx == nColumns)
+                strRadiusLabel.Format(_T("RR = %s"), strRadius.GetString());
+            else
+                strRadiusLabel.Format(_T("R%d = %s"), arcIdx, strRadius.GetString());
 
             auto doRadiusLabel = WBFL::DManip::TextBlock::Create();
             doRadiusLabel->SetText(strRadiusLabel);
