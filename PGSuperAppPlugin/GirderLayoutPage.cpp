@@ -70,10 +70,6 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
 
-   
-   auto pBroker = EAFGetBroker();
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    DDX_Control(pDX, IDC_NUMGDR_SPIN,         m_NumGdrSpinner);
    DDX_Control(pDX, IDC_GDR_SPC_TYPE_COMBO,  m_cbGirderSpacingType);
 
@@ -93,6 +89,9 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER, m_RefGirderIdx[pgsTypes::metStart]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER, m_RefGirderIdx[pgsTypes::metEnd]);
+
+   auto pBroker = EAFGetBroker();
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    DDX_OffsetAndTag(pDX, IDC_PREV_REF_GIRDER_OFFSET,IDC_PREV_REF_GIRDER_OFFSET_UNIT, m_RefGirderOffset[pgsTypes::metStart], pDisplayUnits->GetXSectionDimUnit());
    DDX_OffsetAndTag(pDX, IDC_NEXT_REF_GIRDER_OFFSET,IDC_NEXT_REF_GIRDER_OFFSET_UNIT, m_RefGirderOffset[pgsTypes::metEnd], pDisplayUnits->GetXSectionDimUnit());
