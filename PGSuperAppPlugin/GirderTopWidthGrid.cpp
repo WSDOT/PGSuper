@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2026  Washington State Department of Transportation
+// Copyright Â© 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -36,6 +36,8 @@
 #include <PsgLib\GirderLibraryEntry.h>
 #include <PsgLib\Helpers.h>
 
+
+#define WM_UPDATE_TOP_WIDTH_GRID (WM_APP + 1672)
 
 #define LEFT 0
 #define RIGHT 1
@@ -81,6 +83,7 @@ CGirderTopWidthGrid::CGirderTopWidthGrid()
 //   RegisterClass();
    m_pGirderGroup = nullptr;
    m_bEnabled = TRUE;
+   m_bUpdatingGrid = false;
 }
 
 CGirderTopWidthGrid::~CGirderTopWidthGrid()
@@ -92,6 +95,7 @@ BEGIN_MESSAGE_MAP(CGirderTopWidthGrid, CGXGridWnd)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 	ON_COMMAND(IDC_EXPAND, OnExpand)
 	ON_COMMAND(IDC_JOIN, OnJoin)
+   ON_MESSAGE(WM_UPDATE_TOP_WIDTH_GRID, OnUpdateGrid)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -134,8 +138,17 @@ void CGirderTopWidthGrid::CustomInit(CGirderGroupData *pGirderGroup)
 	SetFocus();
 }
 
+LRESULT CGirderTopWidthGrid::OnUpdateGrid(WPARAM, LPARAM)
+{
+   UpdateGrid();
+   return 0;
+}
+
 void CGirderTopWidthGrid::UpdateGrid()
 {
+   if (m_bUpdatingGrid)
+      return;
+
    if ( GetSafeHwnd() == nullptr )
       return; // grid isn't ready for filling
 
@@ -145,7 +158,15 @@ void CGirderTopWidthGrid::UpdateGrid()
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   
+   // Column changes can synchronously finish the current cell again.
+   // Suppress callbacks until the grid and its group metadata are rebuilt.
+   m_bUpdatingGrid = true;
+   struct CUpdateGuard
+   {
+      bool& updating;
+      ~CUpdateGuard() { updating = false; }
+   } updateGuard{m_bUpdatingGrid};
+
    auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
@@ -757,6 +778,9 @@ BOOL CGirderTopWidthGrid::ValidateGirderTopWidth()
 
 void CGirderTopWidthGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
 {
+   if (m_bUpdatingGrid)
+      return;
+
    if (nRow == 1 && 2 <= nCol)
    {
       pgsTypes::TopWidthType type = GetTopWidthTypeFromCell(nCol);
@@ -766,7 +790,9 @@ void CGirderTopWidthGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
       CGirderTopWidthGroup group = m_pGirderGroup->GetGirderTopWidthGroup(topWidthGroupIdx);
       m_pGirderGroup->SetGirderTopWidth(topWidthGroupIdx, type, group.left[pgsTypes::metStart], group.right[pgsTypes::metStart], group.left[pgsTypes::metEnd], group.right[pgsTypes::metEnd]);
 
-      UpdateGrid();
+      // Rebuilding columns here reenters OnEndEditing while the edit control
+      // is still active. Refresh after Objective Grid finishes this callback.
+      PostMessage(WM_UPDATE_TOP_WIDTH_GRID);
    }
    else
    {
@@ -776,6 +802,9 @@ void CGirderTopWidthGrid::OnModifyCell(ROWCOL nRow, ROWCOL nCol)
 
 BOOL CGirderTopWidthGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
 {
+   if (m_bUpdatingGrid)
+      return TRUE;
+
    if ( (nRow == 2 || nRow == 4) && 2 <= nCol)
    {
       
@@ -802,7 +831,9 @@ BOOL CGirderTopWidthGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
          m_pGirderGroup->SetGirderTopWidth(topWidthGroupIdx, group.type, group.left[pgsTypes::metStart], group.right[pgsTypes::metStart], left, group.right[pgsTypes::metEnd]);
       }
 
-      UpdateGrid();
+      // Rebuilding columns here reenters OnEndEditing while the edit control
+      // is still active. Refresh after Objective Grid finishes this callback.
+      PostMessage(WM_UPDATE_TOP_WIDTH_GRID);
    }
    else if ( (nRow == 3 || nRow == 5) && 2 <= nCol)
    {
@@ -830,7 +861,9 @@ BOOL CGirderTopWidthGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
          m_pGirderGroup->SetGirderTopWidth(topWidthGroupIdx, group.type, group.left[pgsTypes::metStart], group.right[pgsTypes::metStart], group.left[pgsTypes::metEnd], right);
       }
 
-      UpdateGrid();
+      // Rebuilding columns here reenters OnEndEditing while the edit control
+      // is still active. Refresh after Objective Grid finishes this callback.
+      PostMessage(WM_UPDATE_TOP_WIDTH_GRID);
    }
 
    return CGXGridWnd::OnEndEditing(nRow, nCol);
