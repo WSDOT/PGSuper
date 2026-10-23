@@ -253,7 +253,7 @@ void write_segment_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::share
       else
       {
          const WBFL::Units::LengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
-         rptFormattedLengthUnitValue cmpdim(pUnit,length_unit.Tol, true, !bUnitsSI, 8, false, rptFormattedLengthUnitValue::RoundOff);
+         rptFormattedLengthUnitValue cmpdim(pUnit,length_unit.Tol, true, !bUnitsSI, 16, false, rptFormattedLengthUnitValue::RoundOff);
          cmpdim.SetFormat(length_unit.Format);
          cmpdim.SetWidth(length_unit.Width);
          cmpdim.SetPrecision(length_unit.Precision);
@@ -265,7 +265,7 @@ void write_segment_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::share
    if (IsTopWidthSpacing(pBridgeDesc->GetGirderSpacingType()))
    {
       const WBFL::Units::LengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
-      rptFormattedLengthUnitValue cmpdim(&length_unit.UnitOfMeasure, length_unit.Tol, true, !bUnitsSI, 8, false, rptFormattedLengthUnitValue::RoundOff);
+      rptFormattedLengthUnitValue cmpdim(&length_unit.UnitOfMeasure, length_unit.Tol, true, !bUnitsSI, 16, false, rptFormattedLengthUnitValue::RoundOff);
       cmpdim.SetFormat(length_unit.Format);
       cmpdim.SetWidth(length_unit.Width);
       cmpdim.SetPrecision(length_unit.Precision);
