@@ -297,7 +297,8 @@ bool CBridgePlanViewGirderDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDi
    {
       auto pList = pDO->GetDisplayList();
       auto pDispMgr = pList->GetDisplayMgr();
-      auto pView = pDispMgr->GetView();
+      auto pDisp = pDispMgr->GetDisplay();
+      auto pView = dynamic_cast<CDisplayView*>(pDisp);
       CDocument* pDoc = pView->GetDocument();
 
       CPGSDocBase* pPGSDoc = (CPGSDocBase*)pDoc;
@@ -659,7 +660,8 @@ bool CBridgePlanViewSegmentDisplayObjectEvents::OnContextMenu(std::shared_ptr<iD
    {
       auto pList = pDO->GetDisplayList();
       auto pDispMgr = pList->GetDisplayMgr();
-      auto pView = pDispMgr->GetView();
+      auto pDisp = pDispMgr->GetDisplay();
+      auto pView = dynamic_cast<CDisplayView*>(pDisp);
       CDocument* pDoc = pView->GetDocument();
 
       CPGSDocBase* pPGSuperDoc = (CPGSDocBase*)pDoc;
@@ -1018,7 +1020,8 @@ bool CGirderElevationViewSegmentDisplayObjectEvents::OnContextMenu(std::shared_p
    {
       auto pDispMgr = pDO->GetDisplayList()->GetDisplayMgr();
 
-      CDisplayView* pView = pDispMgr->GetView();
+      auto pDisp = pDispMgr->GetDisplay();
+      auto pView = dynamic_cast<CDisplayView*>(pDisp);
       CDocument* pDoc = pView->GetDocument();
 
       CPGSDocBase* pPGSuperDoc = (CPGSDocBase*)pDoc;
@@ -1157,7 +1160,8 @@ bool CGirderSectionViewSegmentDisplayObjectEvents::OnContextMenu(std::shared_ptr
       auto pList = pDO->GetDisplayList();
       auto pDispMgr = pList->GetDisplayMgr();
 
-      CDisplayView* pView = pDispMgr->GetView();
+      auto pDisp = pDispMgr->GetDisplay();
+      auto pView = dynamic_cast<CDisplayView*>(pDisp);
       CDocument* pDoc = pView->GetDocument();
 
       CPGSDocBase* pPGSuperDoc = (CPGSDocBase*)pDoc;

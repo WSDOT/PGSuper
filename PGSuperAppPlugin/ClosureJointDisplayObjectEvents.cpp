@@ -202,7 +202,8 @@ bool CClosureJointDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DMani
 
    if ( pDO->IsSelected() )
    {
-      auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
+      auto pDisp = pDO->GetDisplayList()->GetDisplayMgr()->GetDisplay();
+      auto pView = dynamic_cast<CDisplayView*>(pDisp);
       CPGSpliceDoc* pDoc = (CPGSpliceDoc*)pView->GetDocument();
 
       auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());

@@ -55,7 +55,8 @@ void CPierDisplayObjectEvents::EditPier(std::shared_ptr<WBFL::DManip::iDisplayOb
 {
    auto pList = pDO->GetDisplayList();
    auto pDispMgr = pList->GetDisplayMgr();
-   auto pView = pDispMgr->GetView();
+   auto pDisp = pDispMgr->GetDisplay();
+   auto pView = dynamic_cast<CDisplayView*>(pDisp);
    CDocument* pDoc = pView->GetDocument();
 
    ((CPGSDocBase*)pDoc)->EditPierDescription(m_PierIdx,PIERDLG_PAGE_LOCATION);
@@ -255,7 +256,8 @@ bool CPierDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisp
    {
       auto pList = pDO->GetDisplayList();
       auto pDispMgr = pList->GetDisplayMgr();
-      auto pView = pDispMgr->GetView();
+      auto pDisp = pDispMgr->GetDisplay();
+      auto pView = dynamic_cast<CDisplayView*>(pDisp);
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());

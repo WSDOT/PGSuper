@@ -35,29 +35,7 @@
 
 
 
-void DDX_ColumnGrid(CDataExchange* pDX,CColumnLayoutGrid& grid,CPierData2* pPier)
-{
-   if ( pDX->m_bSaveAndValidate )
-   {
-      grid.GetColumnData(*pPier);
-   }
-   else
-   {
-      grid.SetColumnData(*pPier);
-   }
-}
 
-void DDV_ColumnGrid(CDataExchange* pDX,CColumnLayoutGrid& grid)
-{
-   if ( pDX->m_bSaveAndValidate )
-   {
-      if ( grid.GetRowCount() == 0 )
-      {
-         AfxMessageBox(_T("The pier must have at least one column"),MB_OK | MB_ICONEXCLAMATION);
-         pDX->Fail();
-      }
-   }
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierLayoutPage property page
@@ -66,14 +44,11 @@ IMPLEMENT_DYNCREATE(CPierLayoutPage, CPropertyPage)
 
 CPierLayoutPage::CPierLayoutPage() : CPropertyPage(CPierLayoutPage::IDD)
 {
-	//{{AFX_DATA_INIT(CPierLayoutPage)
-		// NOTE: the ClassWizard will add member initialization here
-	//}}AFX_DATA_INIT
-   
-   
-   // only using the fixed option (no pinned at base of column,
-   // it leads to unstable models before continuity is achieved)
-   m_cbColumnFixity.SetFixityTypes(COLUMN_FIXITY_FIXED); 
+    //{{AFX_DATA_INIT(CPierLayoutPage)
+        // NOTE: the ClassWizard will add member initialization here
+    //}}AFX_DATA_INIT
+
+
 }
 
 CPierLayoutPage::~CPierLayoutPage()
@@ -82,509 +57,702 @@ CPierLayoutPage::~CPierLayoutPage()
 
 void CPierLayoutPage::Init(CPierData2* pPier)
 {
-   m_pPier = pPier;
+    m_pPier = pPier;
 
-   m_PierIdx = pPier->GetIndex();
+    m_PierIdx = pPier->GetIndex();
+    
 }
 
 void CPierLayoutPage::DoDataExchange(CDataExchange* pDX)
 {
-     CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CPierConnectionsPage)
-		// NOTE: the ClassWizard will add DDX and DDV calls here
-	//}}AFX_DATA_MAP
-	DDX_Control(pDX, IDC_EC,           m_ctrlEc);
-	DDX_Control(pDX, IDC_EC_LABEL,     m_ctrlEcCheck);
-	DDX_Control(pDX, IDC_FC,           m_ctrlFc);
-   DDX_Control(pDX, IDC_FIXITY,       m_cbColumnFixity);
+    CPropertyPage::DoDataExchange(pDX);
+    //{{AFX_DATA_MAP(CPierConnectionsPage)
+        // NOTE: the ClassWizard will add DDX and DDV calls here
+    //}}AFX_DATA_MAP
+    DDX_Control(pDX, IDC_EC, m_ctrlEc);
+    DDX_Control(pDX, IDC_EC_LABEL, m_ctrlEcCheck);
+    DDX_Control(pDX, IDC_FC, m_ctrlFc);
 
-   
-   auto pBroker = EAFGetBroker();
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-   DDX_MetaFileStatic(pDX, IDC_PIER_LAYOUT, m_LayoutPicture,_T("PIERLAYOUT"), _T("Metafile") );
+    // Pier Model
+    DDX_CBItemData(pDX, IDC_PIER_MODEL_TYPE, m_PierModelType);
+    DDX_CBEnum(pDX, IDC_PIER_LAYOUT_TYPE, m_PierLayoutType);
 
-   // Pier Model
-   DDX_CBItemData(pDX,IDC_PIER_MODEL_TYPE,m_PierModelType);
+    CConcreteMaterial& concrete = m_pPier->GetConcrete();
+    DDX_UnitValueAndTag(pDX, IDC_FC, IDC_FC_UNIT, concrete.Fc, pDisplayUnits->GetStressUnit());
+    DDX_UnitValueAndTag(pDX, IDC_EC, IDC_EC_UNIT, concrete.Ec, pDisplayUnits->GetModEUnit());
+    DDX_Check_Bool(pDX, IDC_EC_LABEL, concrete.bUserEc);
 
-   CConcreteMaterial& concrete = m_pPier->GetConcrete();
-   DDX_UnitValueAndTag(pDX,IDC_FC,IDC_FC_UNIT,concrete.Fc,pDisplayUnits->GetStressUnit());
-   DDX_UnitValueAndTag(pDX,IDC_EC,IDC_EC_UNIT,concrete.Ec,pDisplayUnits->GetModEUnit());
-   DDX_Check_Bool(pDX,IDC_EC_LABEL,concrete.bUserEc);
+    if (pDX->m_bSaveAndValidate)
+    {
+        // Only validate and save data owned by this page here.
+        // Embedded child dialogs are validated and committed from OnApply/OnKillActive
+        // so we do not recurse into UpdateData(TRUE) from inside DoDataExchange.
+        m_pPier->SetPierModelType(m_PierModelType);
+        m_pPier->SetPierLayoutType(m_PierLayoutType);
+    }
+}
 
-   DDX_UnitValueAndTag(pDX,IDC_H1,IDC_H1_UNIT,m_XBeamHeight[pgsTypes::stLeft],pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX,IDC_H2,IDC_H2_UNIT,m_XBeamTaperHeight[pgsTypes::stLeft],pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX,IDC_X1,IDC_X1_UNIT,m_XBeamTaperLength[pgsTypes::stLeft],pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX,IDC_X2,IDC_X2_UNIT,m_XBeamEndSlopeOffset[pgsTypes::stLeft],pDisplayUnits->GetSpanLengthUnit() );
 
-   DDX_UnitValueAndTag(pDX,IDC_H3,IDC_H3_UNIT,m_XBeamHeight[pgsTypes::stRight],pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX,IDC_H4,IDC_H4_UNIT,m_XBeamTaperHeight[pgsTypes::stRight],pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX,IDC_X3,IDC_X3_UNIT,m_XBeamTaperLength[pgsTypes::stRight],pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX,IDC_X4,IDC_X4_UNIT,m_XBeamEndSlopeOffset[pgsTypes::stRight],pDisplayUnits->GetSpanLengthUnit() );
+bool CPierLayoutPage::CommitCommonPierLayout()
+{
 
-   DDX_UnitValueAndTag(pDX,IDC_W,IDC_W_UNIT,m_XBeamWidth,pDisplayUnits->GetSpanLengthUnit() );
+    if (!m_CommonPierLayoutDlg.UpdateData(TRUE))
+    {
+        return false;
+    }
 
-   DDX_CBIndex(pDX,IDC_REFCOLUMN,m_RefColumnIdx);
-   DDX_OffsetAndTag(pDX,IDC_REFCOLUMN_OFFSET,IDC_REFCOLUMN_OFFSET_UNIT,m_TransverseOffset, pDisplayUnits->GetSpanLengthUnit() );
-   DDX_CBItemData(pDX,IDC_REFCOLUMN_MEASUREMENT,m_TransverseOffsetMeasurement);
+    m_pPier->SetTransverseOffset(m_CommonPierLayoutDlg.m_RefColumnIdx, 
+    m_CommonPierLayoutDlg.m_TransverseOffset, m_CommonPierLayoutDlg.m_TransverseOffsetMeasurement);
+    m_pPier->SetXBeamWidth(m_CommonPierLayoutDlg.m_XBeamWidth);
 
-   DDX_UnitValueAndTag(pDX,IDC_X5,IDC_X5_UNIT,m_XBeamOverhang[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit() );
-   DDX_UnitValueAndTag(pDX,IDC_X6,IDC_X6_UNIT,m_XBeamOverhang[pgsTypes::stRight],pDisplayUnits->GetSpanLengthUnit() );
+    for (int i = 0; i < 2; i++)
+    {
+        pgsTypes::SideType side = (pgsTypes::SideType)i;
+        m_pPier->SetXBeamDimensions(side, m_CommonPierLayoutDlg.m_XBeamHeight[side], m_CommonPierLayoutDlg.m_XBeamTaperHeight[side],
+        m_CommonPierLayoutDlg.m_XBeamTaperLength[side], m_CommonPierLayoutDlg.m_XBeamEndSlopeOffset[side]);
+        m_pPier->SetXBeamOverhang(side, m_CommonPierLayoutDlg.m_XBeamOverhang[side]);
+    }
 
-   DDX_CBItemData(pDX,IDC_FIXITY,m_ColumnFixity);
+    m_pPier->SetColumnFixity(m_CommonPierLayoutDlg.m_ColumnFixity);
+    m_CommonPierLayoutDlg.m_ColumnLayoutGrid.GetColumnData(*m_pPier);
 
-   if ( m_PierModelType == pgsTypes::pmtPhysical )
-   {
-      DDV_ColumnGrid(pDX,m_ColumnLayoutGrid);
-      DDX_ColumnGrid(pDX,m_ColumnLayoutGrid,m_pPier);
-   }
+    ColumnIndexType nColumns = m_pPier->GetColumnCount();
+    for (ColumnIndexType colIdx = 0; colIdx < nColumns; colIdx++)
+    {
+        CColumnData column = m_pPier->GetColumnData(colIdx);
+        column.SetColumnHeightMeasurementType(m_CommonPierLayoutDlg.m_ColumnHeightMeasurementType);
+        m_pPier->SetColumnData(colIdx, column);
+    }
 
-   if ( pDX->m_bSaveAndValidate )
-   {
-      CColumnData::ColumnHeightMeasurementType measure;
-      DDX_CBItemData(pDX,IDC_HEIGHT_MEASURE,measure);
-      ColumnIndexType nColumns = m_pPier->GetColumnCount();
-      for ( ColumnIndexType colIdx = 0; colIdx < nColumns; colIdx++ )
-      {
-         CColumnData column = m_pPier->GetColumnData(colIdx);
-         column.SetColumnHeightMeasurementType(measure);
-         m_pPier->SetColumnData(colIdx,column);
-      }
-   }
-   else
-   {
-      CColumnData::ColumnHeightMeasurementType measure = m_pPier->GetColumnData(0).GetColumnHeightMeasurementType();
-      DDX_CBItemData(pDX,IDC_HEIGHT_MEASURE,measure);
-   }
+    return true;
+}
 
-   if ( pDX->m_bSaveAndValidate )
-   {
-      // all of the data has been extracted from the dialog controls and it has been validated
-      // set the values on the actual pier object
-      m_pPier->SetPierModelType(m_PierModelType);
+bool CPierLayoutPage::CommitScallopedPierLayout()
+{
 
-      if ( m_PierModelType == pgsTypes::pmtPhysical )
-      {
-         m_pPier->SetTransverseOffset(m_RefColumnIdx,m_TransverseOffset,m_TransverseOffsetMeasurement);
-         for ( int i = 0; i < 2; i++ )
-         {
-            pgsTypes::SideType side = (pgsTypes::SideType)i;
-            m_pPier->SetXBeamDimensions(side,m_XBeamHeight[side],m_XBeamTaperHeight[side],m_XBeamTaperLength[side],m_XBeamEndSlopeOffset[side]);
-            m_pPier->SetXBeamOverhang(side,m_XBeamOverhang[side]);
-         }
-         m_pPier->SetXBeamWidth(m_XBeamWidth);
+    if (!m_ScallopedPierLayoutDlg.UpdateData(TRUE))
+    {
+        return false;
+    }
 
-         m_pPier->SetColumnFixity(m_ColumnFixity);
+    m_pPier->SetTransverseOffset(m_ScallopedPierLayoutDlg.m_RefColumnIdx,
+    m_ScallopedPierLayoutDlg.m_TransverseOffset, m_ScallopedPierLayoutDlg.m_TransverseOffsetMeasurement);
+    m_pPier->SetXBeamWidth(m_ScallopedPierLayoutDlg.m_XBeamWidth);
 
-         // XBeam width, W, must be greater than zeo
-         DDV_UnitValueGreaterThanZero(pDX, IDC_W, m_XBeamWidth, pDisplayUnits->GetSpanLengthUnit());
+    for (int i = 0; i < 2; i++)
+    {
+        pgsTypes::SideType side = (pgsTypes::SideType)i;
+        m_pPier->SetXBeamDimensions(side, m_ScallopedPierLayoutDlg.m_XBeamHeight[side], 0.0,
+        0.0, m_ScallopedPierLayoutDlg.m_XBeamEndSlopeOffset[side]);
+        m_pPier->SetXBeamOverhangRadius(side, m_ScallopedPierLayoutDlg.m_XBeamOverhangRadius[side]);
+    }
 
-         // H1 and H3 must be > 0
-         DDV_UnitValueGreaterThanZero(pDX, IDC_H1, m_XBeamHeight[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
-         DDV_UnitValueGreaterThanZero(pDX, IDC_H3, m_XBeamHeight[pgsTypes::stRight], pDisplayUnits->GetSpanLengthUnit());
+    m_pPier->SetColumnFixity(m_ScallopedPierLayoutDlg.m_ColumnFixity);
+    m_ScallopedPierLayoutDlg.m_ColumnLayoutGrid.GetColumnData(*m_pPier);
 
-         // X2 and X4 must be >= 0
-         DDV_UnitValueZeroOrMore(pDX, IDC_X1, m_XBeamTaperLength[pgsTypes::stLeft],    pDisplayUnits->GetSpanLengthUnit());
-         DDV_UnitValueZeroOrMore(pDX, IDC_X2, m_XBeamEndSlopeOffset[pgsTypes::stLeft], pDisplayUnits->GetSpanLengthUnit());
-         DDV_UnitValueZeroOrMore(pDX, IDC_X3, m_XBeamTaperLength[pgsTypes::stRight],   pDisplayUnits->GetSpanLengthUnit());
-         DDV_UnitValueZeroOrMore(pDX, IDC_X4, m_XBeamEndSlopeOffset[pgsTypes::stRight],pDisplayUnits->GetSpanLengthUnit());
+    ColumnIndexType nColumns = m_pPier->GetColumnCount();
+    for (ColumnIndexType colIdx = 0; colIdx < nColumns; colIdx++)
+    {
+        CColumnData column = m_pPier->GetColumnData(colIdx);
+        column.SetColumnHeightMeasurementType(m_ScallopedPierLayoutDlg.m_ColumnHeightMeasurementType);
+        m_pPier->SetColumnData(colIdx, column);
+    }
 
-         // Left end
-         if (0 < m_XBeamTaperLength[pgsTypes::stLeft])
-         {
-            // if H2 > 0, then X1 must be > 0
-            if ( IsZero(m_XBeamTaperHeight[pgsTypes::stLeft]) )
+    return true;
+}
+
+bool CPierLayoutPage::CommitUserDefinedPierLayout()
+{
+
+    if (!m_UserDefinedPierLayoutDlg.UpdateData(TRUE))
+    {
+        return false;
+    }
+
+    m_pPier->SetTransverseOffset(m_UserDefinedPierLayoutDlg.m_RefColumnIdx,
+        m_UserDefinedPierLayoutDlg.m_TransverseOffset, m_UserDefinedPierLayoutDlg.m_TransverseOffsetMeasurement);
+    m_pPier->SetXBeamWidth(m_UserDefinedPierLayoutDlg.m_XBeamWidth);
+
+    for (int i = 0; i < 2; i++)
+    {
+        pgsTypes::SideType side = (pgsTypes::SideType)i;
+        m_pPier->SetXBeamDimensions(side, m_UserDefinedPierLayoutDlg.m_XBeamHeight[side], m_UserDefinedPierLayoutDlg.m_XBeamTaperHeight[side],
+            m_UserDefinedPierLayoutDlg.m_XBeamTaperLength[side], m_UserDefinedPierLayoutDlg.m_XBeamEndSlopeOffset[side]);
+        m_pPier->SetXBeamOverhang(side, m_UserDefinedPierLayoutDlg.m_XBeamOverhang[side]);
+    }
+
+    m_pPier->SetColumnFixity(m_UserDefinedPierLayoutDlg.m_ColumnFixity);
+    m_UserDefinedPierLayoutDlg.m_ColumnLayoutGrid.GetColumnData(*m_pPier);
+
+    ColumnIndexType nColumns = m_pPier->GetColumnCount();
+    for (ColumnIndexType colIdx = 0; colIdx < nColumns; colIdx++)
+    {
+        CColumnData column = m_pPier->GetColumnData(colIdx);
+        column.SetColumnHeightMeasurementType(m_UserDefinedPierLayoutDlg.m_ColumnHeightMeasurementType);
+        m_pPier->SetColumnData(colIdx, column);
+    }
+
+    m_UserDefinedPierLayoutDlg.m_PierPointGrid.GetPierPointData(*m_pPier);
+
+    PierPointIndexType nPierPoints = m_pPier->GetPierPointCount();
+    for (PierPointIndexType ppIdx = 0; ppIdx < nPierPoints; ppIdx++)
+    {
+        CPierPointData pierPoint = m_pPier->GetPierPointData(ppIdx);
+        m_pPier->SetPierPointData(ppIdx, pierPoint);
+    }
+
+    return true;
+}
+
+BOOL CPierLayoutPage::OnKillActive()
+{
+    if (!UpdateData(TRUE))
+    {
+        return FALSE;
+    }
+
+    if (m_PierModelType == pgsTypes::pmtPhysical)
+    {
+        if (m_PierLayoutType == pgsTypes::pltCommon)
+        {
+            if (!CommitCommonPierLayout())
             {
-               pDX->PrepareCtrl(IDC_H2);
-               AfxMessageBox(_T("H2 must be greater than zero when X1 is greater than zero."));
-               pDX->Fail();
+                return FALSE;
             }
-            else if ( m_XBeamTaperLength[pgsTypes::stLeft] < m_XBeamEndSlopeOffset[pgsTypes::stLeft] )
+        }
+        else if (m_PierLayoutType == pgsTypes::pltScalloped)
+        {
+            if (!CommitScallopedPierLayout())
             {
-               pDX->PrepareCtrl(IDC_X1);
-               AfxMessageBox(_T("X1 must be greater than X2 when X1 is greater than zero."));
-               pDX->Fail();
+                return FALSE;
             }
-         }
-         else if ( !IsZero(m_XBeamTaperHeight[pgsTypes::stLeft]) )
-         {
-            // if X1 is zero, then H2 must also be zero
-            pDX->PrepareCtrl(IDC_H2);
-            AfxMessageBox(_T("H2 must be zero when X1 is zero"));
-            pDX->Fail();
-         }
-
-         // Right end
-         if (0 < m_XBeamTaperLength[pgsTypes::stRight])
-         {
-            // if H4 > 0, then X3 must be > 0
-            if ( IsZero(m_XBeamTaperHeight[pgsTypes::stRight]) )
+        }
+        else if (m_PierLayoutType == pgsTypes::pltUserDefined)
+        {
+            if (!CommitUserDefinedPierLayout())
             {
-               pDX->PrepareCtrl(IDC_H4);
-               AfxMessageBox(_T("H4 must be greater than zero when X3 is greater than zero."));
-               pDX->Fail();
+                return FALSE;
             }
-            else if ( m_XBeamTaperLength[pgsTypes::stRight] < m_XBeamEndSlopeOffset[pgsTypes::stRight] )
+        }
+    }
+
+    return CPropertyPage::OnKillActive();
+}
+
+BOOL CPierLayoutPage::OnApply()
+{
+    if (!UpdateData(TRUE))
+    {
+        return FALSE;
+    }
+
+    if (m_PierModelType == pgsTypes::pmtPhysical)
+    {
+        if (m_PierLayoutType == pgsTypes::pltCommon)
+        {
+            if (!CommitCommonPierLayout())
             {
-               pDX->PrepareCtrl(IDC_X3);
-               AfxMessageBox(_T("X3 must be greater than X4 when X3 is greater than zero."));
-               pDX->Fail();
+                return FALSE;
             }
-         }
-         else if ( !IsZero(m_XBeamTaperHeight[pgsTypes::stRight]) )
-         {
-            // if X3 is zero, then H4 must also be zero
-            pDX->PrepareCtrl(IDC_H4);
-            AfxMessageBox(_T("H4 must be zero when X3 is zero"));
-            pDX->Fail();
-         }
+        }
+        else if (m_PierLayoutType == pgsTypes::pltScalloped)
+        {
+            if (!CommitScallopedPierLayout())
+            {
+                return FALSE;
+            }
+        }
+        else if (m_PierLayoutType == pgsTypes::pltUserDefined)
+        {
+            if (!CommitUserDefinedPierLayout())
+            {
+                return FALSE;
+            }
+        }
+    }
 
-         Float64 D1, D2;
-         // X5 must be >= diameter of first column
-         m_pPier->GetColumnData(0).GetColumnDimensions(&D1, &D2);
-         DDV_UnitValueLimitOrMore(pDX, IDC_X5, m_XBeamOverhang[pgsTypes::stLeft], D1 / 2, pDisplayUnits->GetSpanLengthUnit());
-
-         // X6 must be >= diameter of first column
-         ColumnIndexType nColumns = m_pPier->GetColumnCount();
-         m_pPier->GetColumnData(nColumns - 1).GetColumnDimensions(&D1, &D2);
-         DDV_UnitValueLimitOrMore(pDX, IDC_X6, m_XBeamOverhang[pgsTypes::stRight], D1 / 2, pDisplayUnits->GetSpanLengthUnit());
-
-         // X1 + X3 must be less than X5 + X6 + Sum(S)
-         ATLASSERT(1 <= nColumns);
-         Float64 S = 0;
-         for (SpacingIndexType spaIdx = 0; spaIdx < nColumns - 1; spaIdx++)
-         {
-            S += m_pPier->GetColumnSpacing(spaIdx);
-         }
-         Float64 pierWidth = m_XBeamOverhang[pgsTypes::stLeft] + m_XBeamOverhang[pgsTypes::stRight] + S;
-         Float64 sumOverhangs = m_XBeamTaperLength[pgsTypes::stLeft] + m_XBeamTaperLength[pgsTypes::stRight];
-         if (pierWidth < sumOverhangs)
-         {
-            pDX->PrepareCtrl(IDC_X5);
-            AfxMessageBox(_T("X1 + X3 cannot exceed the overall pier width (X5 + X6 + summation of S)"));
-            pDX->Fail();
-         }
-      }
-   }
+    SetModified(FALSE);
+    return CPropertyPage::OnApply();
 }
 
 BEGIN_MESSAGE_MAP(CPierLayoutPage, CPropertyPage)
-	//{{AFX_MSG_MAP(CPierLayoutPage)
-   ON_BN_CLICKED(IDC_EC_LABEL,OnUserEc)
-	ON_EN_CHANGE(IDC_FC, OnChangeFc)
-   ON_BN_CLICKED(IDC_MORE_PROPERTIES, OnMoreProperties)
-   ON_CBN_SELCHANGE(IDC_PIER_MODEL_TYPE, OnPierModelTypeChanged)
-	ON_COMMAND(ID_HELP, OnHelp)
-   ON_CBN_SELCHANGE(IDC_HEIGHT_MEASURE, OnHeightMeasureChanged)
-   ON_BN_CLICKED(IDC_ADD_COLUMN, &CPierLayoutPage::OnAddColumn)
-   ON_BN_CLICKED(IDC_REMOVE_COLUMN, &CPierLayoutPage::OnRemoveColumns)
-	//}}AFX_MSG_MAP
+    //{{AFX_MSG_MAP(CPierLayoutPage)
+    ON_BN_CLICKED(IDC_EC_LABEL, OnUserEc)
+    ON_EN_CHANGE(IDC_FC, OnChangeFc)
+    ON_BN_CLICKED(IDC_MORE_PROPERTIES, OnMoreProperties)
+    ON_CBN_SELCHANGE(IDC_PIER_MODEL_TYPE, OnPierModelTypeChanged)
+    ON_CBN_SELCHANGE(IDC_PIER_LAYOUT_TYPE, OnPierLayoutTypeChanged)
+    ON_BN_CLICKED(IDC_LAYOUT_GRAPHIC, OnShowLiveClicked)
+    ON_MESSAGE(WM_PIER_LAYOUT_CHANGED, OnPierLayoutChanged)
+    ON_COMMAND(ID_HELP, OnHelp)
+    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierLayoutPage message handlers
 
-BOOL CPierLayoutPage::OnInitDialog() 
+BOOL CPierLayoutPage::OnInitDialog()
 {
-   m_ColumnLayoutGrid.SubclassDlgItem(IDC_COLUMN_GRID, this);
-   m_ColumnLayoutGrid.CustomInit();
 
-   m_PierModelType = m_pPier->GetPierModelType();
+    m_PierModelType = m_pPier->GetPierModelType();
+    m_PierLayoutType = m_pPier->GetPierLayoutType();
 
-   m_pPier->GetTransverseOffset(&m_RefColumnIdx,&m_TransverseOffset,&m_TransverseOffsetMeasurement);
-   m_XBeamWidth = m_pPier->GetXBeamWidth();
+    FillPierModelTypeComboBox();
+    FillPierLayoutTypeComboBox();
 
-   for ( int i = 0; i < 2; i++ )
-   {
-      pgsTypes::SideType side = (pgsTypes::SideType)i;
-      m_pPier->GetXBeamDimensions(side,&m_XBeamHeight[side],&m_XBeamTaperHeight[side],&m_XBeamTaperLength[side],&m_XBeamEndSlopeOffset[side]);
-      m_XBeamOverhang[side] = m_pPier->GetXBeamOverhang(side);
-   }
+    CWnd* pBox = GetDlgItem(IDC_STATIC_BOUNDS);
+    pBox->ShowWindow(SW_HIDE);
 
-   m_ColumnFixity = m_pPier->GetColumnFixity();
+    CRect boxRect;
+    pBox->GetWindowRect(&boxRect);
+    ScreenToClient(boxRect);
 
-   FillTransverseLocationComboBox();
-   FillRefColumnComboBox(m_pPier->GetColumnCount());
-   FillHeightMeasureComboBox();
-   FillPierModelTypeComboBox();
+    m_pPier->SetPierLayoutType(m_PierLayoutType);
 
-   CPropertyPage::OnInitDialog();
+    m_CommonPierLayoutDlg.SetPierModelType(m_PierModelType);
+    m_CommonPierLayoutDlg.SetPierData(*m_pPier);
+    VERIFY(m_CommonPierLayoutDlg.Create(IDD_PIER_LAYOUT_COMMON, this));
+    VERIFY(m_CommonPierLayoutDlg.SetWindowPos(GetDlgItem(IDC_STATIC_BOUNDS), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
 
-   UpdateConcreteTypeLabel();
-   if ( m_strUserEc == _T("") )
-   {
-      m_ctrlEc.GetWindowText(m_strUserEc);
-   }
-   OnUserEc();
+    m_ScallopedPierLayoutDlg.SetPierModelType(m_PierModelType);
+    m_ScallopedPierLayoutDlg.SetPierData(*m_pPier);
+    VERIFY(m_ScallopedPierLayoutDlg.Create(IDD_PIER_LAYOUT_SCALLOPED, this));
+    VERIFY(m_ScallopedPierLayoutDlg.SetWindowPos(GetDlgItem(IDC_STATIC_BOUNDS), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
+    
+    m_UserDefinedPierLayoutDlg.SetPierModelType(m_PierModelType);
+    m_UserDefinedPierLayoutDlg.SetPierData(*m_pPier);
+    VERIFY(m_UserDefinedPierLayoutDlg.Create(IDD_PIER_LAYOUT_USERDEFINED, this));
+    VERIFY(m_UserDefinedPierLayoutDlg.SetWindowPos(GetDlgItem(IDC_STATIC_BOUNDS), boxRect.left, boxRect.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE));//|SWP_NOMOVE));
 
-   OnPierModelTypeChanged();
+    CPropertyPage::OnInitDialog();
 
-   OnHeightMeasureChanged();
+    UpdateConcreteTypeLabel();
+    if (m_strUserEc == _T(""))
+    {
+        m_ctrlEc.GetWindowText(m_strUserEc);
+    }
+    OnUserEc();
 
-   return TRUE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+    OnPierModelTypeChanged();
+
+    return TRUE;  // return TRUE unless you set the focus to a control
+    // EXCEPTION: OCX Property Pages should return FALSE
 }
 
 void CPierLayoutPage::UpdateConcreteTypeLabel()
 {
-   CString strLabel;
-   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
-   {  
-      switch( m_pPier->GetConcrete().Type )
-      {
-      case pgsTypes::Normal:
-         strLabel = _T("Normal Weight Concrete");
-         break;
+    CString strLabel;
+    if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims)
+    {
+        switch (m_pPier->GetConcrete().Type)
+        {
+        case pgsTypes::Normal:
+            strLabel = _T("Normal Weight Concrete");
+            break;
 
-      case pgsTypes::AllLightweight:
-         strLabel = _T("All Lightweight Concrete");
-         break;
+        case pgsTypes::AllLightweight:
+            strLabel = _T("All Lightweight Concrete");
+            break;
 
-      case pgsTypes::SandLightweight:
-         strLabel = _T("Sand Lightweight Concrete");
-         break;
+        case pgsTypes::SandLightweight:
+            strLabel = _T("Sand Lightweight Concrete");
+            break;
 
-      case pgsTypes::PCI_UHPC: // UI should prevent UHPC for piers
-      case pgsTypes::UHPC:
-      default:
-         ATLASSERT(false); // should never get here
-         strLabel = _T("Concrete Type Label Error");
-      }
-   }
-   else
-   {
-      // LRFD 2016 and later there is only normal and lightweight concrete. We
-      //use the SandLightweight enum to mean "lightweight"
-      ATLASSERT( m_pPier->GetConcrete().Type == pgsTypes::Normal || m_pPier->GetConcrete().Type == pgsTypes::SandLightweight );
-      switch( m_pPier->GetConcrete().Type )
-      {
-      case pgsTypes::Normal:
-         strLabel = _T("Normal Weight Concrete");
-         break;
+        case pgsTypes::PCI_UHPC: // UI should prevent UHPC for piers
+        case pgsTypes::UHPC:
+        default:
+            ATLASSERT(false); // should never get here
+            strLabel = _T("Concrete Type Label Error");
+        }
+    }
+    else
+    {
+        // LRFD 2016 and later there is only normal and lightweight concrete. We
+        //use the SandLightweight enum to mean "lightweight"
+        ATLASSERT(m_pPier->GetConcrete().Type == pgsTypes::Normal || m_pPier->GetConcrete().Type == pgsTypes::SandLightweight);
+        switch (m_pPier->GetConcrete().Type)
+        {
+        case pgsTypes::Normal:
+            strLabel = _T("Normal Weight Concrete");
+            break;
 
-      case pgsTypes::SandLightweight:
-         strLabel = _T("Lightweight Concrete");
-         break;
+        case pgsTypes::SandLightweight:
+            strLabel = _T("Lightweight Concrete");
+            break;
 
-      case pgsTypes::PCI_UHPC: // UI should prevent UHPC for piers
-      case pgsTypes::UHPC:
-      default:
-         ATLASSERT(false); // should never get here
-         strLabel = _T("Concrete Type Label Error");
-      }
-   }
+        case pgsTypes::PCI_UHPC: // UI should prevent UHPC for piers
+        case pgsTypes::UHPC:
+        default:
+            ATLASSERT(false); // should never get here
+            strLabel = _T("Concrete Type Label Error");
+        }
+    }
 
-   GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText(strLabel);
+    GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText(strLabel);
 }
 
-void CPierLayoutPage::FillTransverseLocationComboBox()
-{
-   CComboBox* pcbMeasure = (CComboBox*)GetDlgItem(IDC_REFCOLUMN_MEASUREMENT);
-   pcbMeasure->ResetContent();
-   int idx = pcbMeasure->AddString(_T("from the Alignment"));
-   pcbMeasure->SetItemData(idx,(DWORD_PTR)pgsTypes::omtAlignment);
-   idx = pcbMeasure->AddString(_T("from the Bridgeline"));
-   pcbMeasure->SetItemData(idx,(DWORD_PTR)pgsTypes::omtBridge);
-}
 
-void CPierLayoutPage::FillRefColumnComboBox(ColumnIndexType nColumns)
-{
-   CComboBox* pcbRefColumn = (CComboBox*)GetDlgItem(IDC_REFCOLUMN);
-   int curSel = pcbRefColumn->GetCurSel();
-   pcbRefColumn->ResetContent();
-   if (nColumns == INVALID_INDEX)
-   {
-      nColumns = (ColumnIndexType)m_ColumnLayoutGrid.GetRowCount();
-   }
-
-   for ( ColumnIndexType colIdx = 0; colIdx < nColumns; colIdx++ )
-   {
-      CString strLabel;
-      strLabel.Format(_T("Column %d"),LABEL_COLUMN(colIdx));
-      pcbRefColumn->AddString(strLabel);
-   }
-
-   if ( pcbRefColumn->SetCurSel(curSel) == CB_ERR )
-   {
-      pcbRefColumn->SetCurSel(0);
-   }
-}
-
-void CPierLayoutPage::FillHeightMeasureComboBox()
-{
-   CComboBox* pcbHeightMeasure = (CComboBox*)GetDlgItem(IDC_HEIGHT_MEASURE);
-   pcbHeightMeasure->ResetContent();
-   int idx = pcbHeightMeasure->AddString(_T("Column Height (H)"));
-   pcbHeightMeasure->SetItemData(idx,(DWORD_PTR)CColumnData::chtHeight);
-   idx = pcbHeightMeasure->AddString(_T("Bottom Elevation"));
-   pcbHeightMeasure->SetItemData(idx,(DWORD_PTR)CColumnData::chtBottomElevation);
-}
-
-void CPierLayoutPage::OnHeightMeasureChanged()
-{
-   CComboBox* pcbHeightMeasure = (CComboBox*)GetDlgItem(IDC_HEIGHT_MEASURE);
-   int curSel = pcbHeightMeasure->GetCurSel();
-   CColumnData::ColumnHeightMeasurementType measure = (CColumnData::ColumnHeightMeasurementType)(pcbHeightMeasure->GetItemData(curSel));
-   m_ColumnLayoutGrid.SetHeightMeasurementType(measure);
-}
 
 void CPierLayoutPage::FillPierModelTypeComboBox()
 {
-   CComboBox* pcbPierModel = (CComboBox*)GetDlgItem(IDC_PIER_MODEL_TYPE);
-   pcbPierModel->ResetContent();
+    CComboBox* pcbPierModel = (CComboBox*)GetDlgItem(IDC_PIER_MODEL_TYPE);
+    pcbPierModel->ResetContent();
 
-   int idx = pcbPierModel->AddString(_T("Idealized"));
-   pcbPierModel->SetItemData(idx,(DWORD_PTR)pgsTypes::pmtIdealized);
+    int idx = pcbPierModel->AddString(_T("Idealized"));
+    pcbPierModel->SetItemData(idx, (DWORD_PTR)pgsTypes::pmtIdealized);
 
-   idx = pcbPierModel->AddString(_T("Physical"));
-   pcbPierModel->SetItemData(idx,(DWORD_PTR)pgsTypes::pmtPhysical);
+    idx = pcbPierModel->AddString(_T("Physical"));
+    pcbPierModel->SetItemData(idx, (DWORD_PTR)pgsTypes::pmtPhysical);
 }
 
-void CPierLayoutPage::OnHelp() 
+void CPierLayoutPage::FillPierLayoutTypeComboBox()
 {
-   EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_PIERDETAILS_LAYOUT );
+    CComboBox* pcbPierModel = (CComboBox*)GetDlgItem(IDC_PIER_LAYOUT_TYPE);
+    pcbPierModel->ResetContent();
+
+    int idx = pcbPierModel->AddString(_T("Common"));
+    pcbPierModel->SetItemData(idx, (DWORD_PTR)pgsTypes::pltCommon);
+
+    idx = pcbPierModel->AddString(_T("Scalloped"));
+    pcbPierModel->SetItemData(idx, (DWORD_PTR)pgsTypes::pltScalloped);
+
+    idx = pcbPierModel->AddString(_T("User-Defined"));
+    pcbPierModel->SetItemData(idx, (DWORD_PTR)pgsTypes::pltUserDefined);
+
+}
+
+void CPierLayoutPage::OnHelp()
+{
+    EAFHelp(EAFGetDocument()->GetDocumentationSetName(), IDH_PIERDETAILS_LAYOUT);
 }
 
 void CPierLayoutPage::OnUserEc()
 {
-   BOOL bEnable = m_ctrlEcCheck.GetCheck();
+    BOOL bEnable = m_ctrlEcCheck.GetCheck();
 
-   GetDlgItem(IDC_EC_LABEL)->EnableWindow(TRUE);
+    GetDlgItem(IDC_EC_LABEL)->EnableWindow(TRUE);
 
-   if (bEnable==FALSE)
-   {
-      m_ctrlEc.GetWindowText(m_strUserEc);
-      UpdateEc();
-   }
-   else
-   {
-      m_ctrlEc.SetWindowText(m_strUserEc);
-   }
+    if (bEnable == FALSE)
+    {
+        m_ctrlEc.GetWindowText(m_strUserEc);
+        UpdateEc();
+    }
+    else
+    {
+        m_ctrlEc.SetWindowText(m_strUserEc);
+    }
 
-   GetDlgItem(IDC_EC)->EnableWindow(bEnable);
-   GetDlgItem(IDC_EC_UNIT)->EnableWindow(bEnable);
+    GetDlgItem(IDC_EC)->EnableWindow(bEnable);
+    GetDlgItem(IDC_EC_UNIT)->EnableWindow(bEnable);
 }
 
 void CPierLayoutPage::OnMoreProperties()
 {
-   UpdateData(TRUE);
-   CConcreteDetailsDlg dlg(true/*f'c*/,false/*no uhpc*/, false/*don't enable Compute Time Parameters option*/);
-   CConcreteMaterial& concrete = m_pPier->GetConcrete();
+    UpdateData(TRUE);
+    CConcreteDetailsDlg dlg(true/*f'c*/, false/*no uhpc*/, false/*don't enable Compute Time Parameters option*/);
+    CConcreteMaterial& concrete = m_pPier->GetConcrete();
 
-   dlg.m_fc28 = concrete.Fc;
-   dlg.m_Ec28 = concrete.Ec;
-   dlg.m_bUserEc28 = concrete.bUserEc;
+    dlg.m_fc28 = concrete.Fc;
+    dlg.m_Ec28 = concrete.Ec;
+    dlg.m_bUserEc28 = concrete.bUserEc;
 
-   dlg.m_General.m_Type    = concrete.Type;
-   dlg.m_General.m_AggSize = concrete.MaxAggregateSize;
-   dlg.m_General.m_Ds      = concrete.StrengthDensity;
-   dlg.m_General.m_Dw      = concrete.WeightDensity;
-   dlg.m_General.m_strUserEc  = m_strUserEc;
+    dlg.m_General.m_Type = concrete.Type;
+    dlg.m_General.m_AggSize = concrete.MaxAggregateSize;
+    dlg.m_General.m_Ds = concrete.StrengthDensity;
+    dlg.m_General.m_Dw = concrete.WeightDensity;
+    dlg.m_General.m_strUserEc = m_strUserEc;
 
-   dlg.m_AASHTO.m_EccK1       = concrete.EcK1;
-   dlg.m_AASHTO.m_EccK2       = concrete.EcK2;
-   dlg.m_AASHTO.m_CreepK1     = concrete.CreepK1;
-   dlg.m_AASHTO.m_CreepK2     = concrete.CreepK2;
-   dlg.m_AASHTO.m_ShrinkageK1 = concrete.ShrinkageK1;
-   dlg.m_AASHTO.m_ShrinkageK2 = concrete.ShrinkageK2;
-   dlg.m_AASHTO.m_bHasFct     = concrete.bHasFct;
-   dlg.m_AASHTO.m_Fct         = concrete.Fct;
+    dlg.m_AASHTO.m_EccK1 = concrete.EcK1;
+    dlg.m_AASHTO.m_EccK2 = concrete.EcK2;
+    dlg.m_AASHTO.m_CreepK1 = concrete.CreepK1;
+    dlg.m_AASHTO.m_CreepK2 = concrete.CreepK2;
+    dlg.m_AASHTO.m_ShrinkageK1 = concrete.ShrinkageK1;
+    dlg.m_AASHTO.m_ShrinkageK2 = concrete.ShrinkageK2;
+    dlg.m_AASHTO.m_bHasFct = concrete.bHasFct;
+    dlg.m_AASHTO.m_Fct = concrete.Fct;
 
-   if ( dlg.DoModal() == IDOK )
-   {
-      concrete.Fc               = dlg.m_fc28;
-      concrete.Ec               = dlg.m_Ec28;
-      concrete.bUserEc          = dlg.m_bUserEc28;
+    if (dlg.DoModal() == IDOK)
+    {
+        concrete.Fc = dlg.m_fc28;
+        concrete.Ec = dlg.m_Ec28;
+        concrete.bUserEc = dlg.m_bUserEc28;
 
-      concrete.Type             = dlg.m_General.m_Type;
-      concrete.MaxAggregateSize = dlg.m_General.m_AggSize;
-      concrete.StrengthDensity  = dlg.m_General.m_Ds;
-      concrete.WeightDensity    = dlg.m_General.m_Dw;
-      concrete.EcK1             = dlg.m_AASHTO.m_EccK1;
-      concrete.EcK2             = dlg.m_AASHTO.m_EccK2;
-      concrete.CreepK1          = dlg.m_AASHTO.m_CreepK1;
-      concrete.CreepK2          = dlg.m_AASHTO.m_CreepK2;
-      concrete.ShrinkageK1      = dlg.m_AASHTO.m_ShrinkageK1;
-      concrete.ShrinkageK2      = dlg.m_AASHTO.m_ShrinkageK2;
-      concrete.bHasFct          = dlg.m_AASHTO.m_bHasFct;
-      concrete.Fct              = dlg.m_AASHTO.m_Fct;
+        concrete.Type = dlg.m_General.m_Type;
+        concrete.MaxAggregateSize = dlg.m_General.m_AggSize;
+        concrete.StrengthDensity = dlg.m_General.m_Ds;
+        concrete.WeightDensity = dlg.m_General.m_Dw;
+        concrete.EcK1 = dlg.m_AASHTO.m_EccK1;
+        concrete.EcK2 = dlg.m_AASHTO.m_EccK2;
+        concrete.CreepK1 = dlg.m_AASHTO.m_CreepK1;
+        concrete.CreepK2 = dlg.m_AASHTO.m_CreepK2;
+        concrete.ShrinkageK1 = dlg.m_AASHTO.m_ShrinkageK1;
+        concrete.ShrinkageK2 = dlg.m_AASHTO.m_ShrinkageK2;
+        concrete.bHasFct = dlg.m_AASHTO.m_bHasFct;
+        concrete.Fct = dlg.m_AASHTO.m_Fct;
 
-      m_strUserEc  = dlg.m_General.m_strUserEc;
-      m_ctrlEc.SetWindowText(m_strUserEc);
+        m_strUserEc = dlg.m_General.m_strUserEc;
+        m_ctrlEc.SetWindowText(m_strUserEc);
 
-      UpdateData(FALSE);
-      OnUserEc();
-      UpdateConcreteTypeLabel();
-   }
+        UpdateData(FALSE);
+        OnUserEc();
+        UpdateConcreteTypeLabel();
+    }
 }
 
-void CPierLayoutPage::OnChangeFc() 
+void CPierLayoutPage::OnChangeFc()
 {
-   UpdateEc();
+    UpdateEc();
 }
 
 void CPierLayoutPage::UpdateEc()
 {
-   // update modulus
-   if (m_ctrlEcCheck.GetCheck() == 0)
-   {
-      // blank out ec
-      CString strEc;
-      m_ctrlEc.SetWindowText(strEc);
+    // update modulus
+    if (m_ctrlEcCheck.GetCheck() == 0)
+    {
+        // blank out ec
+        CString strEc;
+        m_ctrlEc.SetWindowText(strEc);
 
-      // need to manually parse strength and density values
-      CString strFc, strDensity, strK1, strK2;
-      m_ctrlFc.GetWindowText(strFc);
+        // need to manually parse strength and density values
+        CString strFc, strDensity, strK1, strK2;
+        m_ctrlFc.GetWindowText(strFc);
 
-      
-      auto pBroker = EAFGetBroker();
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-      strDensity.Format(_T("%s"),FormatDimension(m_pPier->GetConcrete().StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
-      strK1.Format(_T("%f"),m_pPier->GetConcrete().EcK1);
-      strK2.Format(_T("%f"),m_pPier->GetConcrete().EcK2);
+        auto pBroker = EAFGetBroker();
+        GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-      strEc = CConcreteDetailsDlg::UpdateEc(m_pPier->GetConcrete().Type,strFc,strDensity,strK1,strK2);
-      m_ctrlEc.SetWindowText(strEc);
-   }
+        strDensity.Format(_T("%s"), FormatDimension(m_pPier->GetConcrete().StrengthDensity, pDisplayUnits->GetDensityUnit(), false));
+        strK1.Format(_T("%f"), m_pPier->GetConcrete().EcK1);
+        strK2.Format(_T("%f"), m_pPier->GetConcrete().EcK2);
+
+        strEc = CConcreteDetailsDlg::UpdateEc(m_pPier->GetConcrete().Type, strFc, strDensity, strK1, strK2);
+        m_ctrlEc.SetWindowText(strEc);
+    }
 }
 
 void CPierLayoutPage::OnPierModelTypeChanged()
 {
-   CComboBox* pcbPierModel = (CComboBox*)GetDlgItem(IDC_PIER_MODEL_TYPE);
-   int curSel = pcbPierModel->GetCurSel();
-   m_PierModelType = (pgsTypes::PierModelType)pcbPierModel->GetItemData(curSel);
-   
-   int nShow = (m_PierModelType == pgsTypes::pmtIdealized ? SW_HIDE : SW_SHOW);
+    CComboBox* pcbPierModel = (CComboBox*)GetDlgItem(IDC_PIER_MODEL_TYPE);
+    int curSel = pcbPierModel->GetCurSel();
+    m_PierModelType = (pgsTypes::PierModelType)pcbPierModel->GetItemData(curSel);
 
-   // enable/disable all the controls, except pier model type selector
-   CWnd* pWnd = pcbPierModel->GetNextWindow(GW_HWNDNEXT);
-   while ( pWnd )
-   {
-      int nID = pWnd->GetDlgCtrlID();
-      if ( nID != IDC_PIER_MODEL_LABEL && nID != IDC_PIER_MODEL_TYPE )
-      {
-         if ( nID == IDC_EC_LABEL )
-         {
-            m_ctrlEcCheck.ShowWindow(nShow);
-         }
-         else
-         {
-            pWnd->ShowWindow(nShow);
-         }
-      }
-      pWnd = pWnd->GetNextWindow(GW_HWNDNEXT);
-   }
+    const bool bPhysical = (m_PierModelType == pgsTypes::pmtPhysical);
+    int nShow = bPhysical ? SW_SHOW : SW_HIDE;
+
+    CWnd* pWnd = pcbPierModel->GetNextWindow(GW_HWNDNEXT);
+    while (pWnd)
+    {
+        int nID = pWnd->GetDlgCtrlID();
+
+        bool bIsEmbeddedPierDlg =
+            (pWnd->GetSafeHwnd() == m_CommonPierLayoutDlg.GetSafeHwnd()) ||
+            (pWnd->GetSafeHwnd() == m_ScallopedPierLayoutDlg.GetSafeHwnd()) ||
+            (pWnd->GetSafeHwnd() == m_UserDefinedPierLayoutDlg.GetSafeHwnd());
+
+        if (!bIsEmbeddedPierDlg &&
+            nID != IDC_PIER_MODEL_LABEL &&
+            nID != IDC_PIER_MODEL_TYPE)
+        {
+            if (nID == IDC_EC_LABEL)
+            {
+                m_ctrlEcCheck.ShowWindow(nShow);
+            }
+            else
+            {
+                pWnd->ShowWindow(nShow);
+            }
+        }
+
+        pWnd = pWnd->GetNextWindow(GW_HWNDNEXT);
+    }
+
+    // Manage embedded dialogs explicitly
+    if (bPhysical)
+    {
+        SwapDialogs(); // show only the selected physical layout dialog
+    }
+    else
+    {
+        m_CommonPierLayoutDlg.ShowWindow(SW_HIDE);
+        m_ScallopedPierLayoutDlg.ShowWindow(SW_HIDE);
+        m_UserDefinedPierLayoutDlg.ShowWindow(SW_HIDE);
+    }
+
+    SetModified(TRUE);
 }
 
-void CPierLayoutPage::OnAddColumn()
+
+
+void CPierLayoutPage::OnPierLayoutTypeChanged()
 {
-   m_ColumnLayoutGrid.AddColumn();
-   FillRefColumnComboBox();
+    CComboBox* pcbPierModel = (CComboBox*)GetDlgItem(IDC_PIER_LAYOUT_TYPE);
+    int curSel = pcbPierModel->GetCurSel();
+    m_PierLayoutType = (pgsTypes::PierLayoutType)pcbPierModel->GetItemData(curSel);
+
+    SwapDialogs();
+
+    if (m_pPierLayoutPopout && ::IsWindow(m_pPierLayoutPopout->GetSafeHwnd()))
+    {
+        ShowPierLayoutPopout();
+    }
 }
 
-void CPierLayoutPage::OnRemoveColumns()
+void CPierLayoutPage::SwapDialogs() // call UpdateData(TRUE) on these?
 {
-   m_ColumnLayoutGrid.RemoveSelectedColumns();
-   FillRefColumnComboBox();
+    if (m_PierModelType == pgsTypes::pmtPhysical)
+    {
+        if (m_PierLayoutType == pgsTypes::pltCommon)
+        {
+            m_CommonPierLayoutDlg.ShowWindow(SW_SHOW);
+            m_ScallopedPierLayoutDlg.ShowWindow(SW_HIDE);
+            m_UserDefinedPierLayoutDlg.ShowWindow(SW_HIDE);
+        }
+        else if (m_PierLayoutType == pgsTypes::pltScalloped)
+        {
+            m_CommonPierLayoutDlg.ShowWindow(SW_HIDE);
+            m_ScallopedPierLayoutDlg.ShowWindow(SW_SHOW);
+            m_UserDefinedPierLayoutDlg.ShowWindow(SW_HIDE);
+        }
+        else if (m_PierLayoutType == pgsTypes::pltUserDefined)
+        {
+            m_CommonPierLayoutDlg.ShowWindow(SW_HIDE);
+            m_ScallopedPierLayoutDlg.ShowWindow(SW_HIDE);
+            m_UserDefinedPierLayoutDlg.ShowWindow(SW_SHOW);
+        }
+        else
+        {
+            m_CommonPierLayoutDlg.ShowWindow(SW_HIDE);
+            m_ScallopedPierLayoutDlg.ShowWindow(SW_HIDE);
+            m_UserDefinedPierLayoutDlg.ShowWindow(SW_HIDE);
+        }
+
+    }
+
 }
+
+LRESULT CPierLayoutPage::OnPierLayoutChanged(WPARAM, LPARAM)
+{
+    RefreshPierLayoutPopout();
+    return 0;
+}
+
+void CPierLayoutPage::RefreshPierLayoutPopout()
+{
+    if (m_pPierLayoutPopout &&
+        ::IsWindow(m_pPierLayoutPopout->GetSafeHwnd()))
+    {
+        m_pPierLayoutPopout->UpdateDisplayObjects();
+        m_pPierLayoutPopout->Invalidate();
+		m_pPierLayoutPopout->UpdateWindow();
+    }
+}
+
+
+
+
+void CPierLayoutPage::ShowPierLayoutPopout()
+{
+    // Select the correct data source based on current model/layout
+    IPierLayoutDataSource* pSource = nullptr;
+
+    if (m_PierModelType == pgsTypes::pmtPhysical)
+    {
+        switch (m_PierLayoutType)
+        {
+        case pgsTypes::pltCommon:
+            pSource = &m_CommonPierLayoutDlg;
+            break;
+        case pgsTypes::pltScalloped:
+            pSource = &m_ScallopedPierLayoutDlg;
+            break;
+        case pgsTypes::pltUserDefined:
+            pSource = &m_UserDefinedPierLayoutDlg;
+            break;
+        default:
+            // No popout for custom/unknown layouts
+            pSource = nullptr;
+            break;
+        }
+    }
+    else
+    {
+        // Idealized model has no physical layout to draw
+        pSource = nullptr;
+    }
+
+    if (pSource == nullptr)
+    {
+        // nothing to show
+        return;
+    }
+
+    // If popout doesn't exist, create it with the chosen source.
+    if (m_pPierLayoutPopout == nullptr || !::IsWindow(m_pPierLayoutPopout->GetSafeHwnd()))
+    {
+        m_pPierLayoutPopout = new CDrawPierLayoutControl();
+        if (!m_pPierLayoutPopout->CreatePopout(pSource, this))
+        {
+            delete m_pPierLayoutPopout;
+            m_pPierLayoutPopout = nullptr;
+            return;
+        }
+    }
+    else
+    {
+        // Popout already exists — re-bind to the new data source.
+        m_pPierLayoutPopout->CustomInit(pSource);
+    }
+
+    // Show and refresh
+    pSource->ChangePierLayout();
+    m_pPierLayoutPopout->ShowWindow(SW_SHOW);
+    m_pPierLayoutPopout->UpdateDisplayObjects();
+    m_pPierLayoutPopout->Invalidate();
+    m_pPierLayoutPopout->UpdateWindow();
+}
+
+
+void CPierLayoutPage::OnShowLiveClicked()
+{
+    // Determine the active embedded dialog (data source) based on current model/layout
+    CDialog* pActiveDlg = nullptr;
+    if (m_PierModelType == pgsTypes::pmtPhysical)
+    {
+        switch (m_PierLayoutType)
+        {
+        case pgsTypes::pltCommon:
+            pActiveDlg = &m_CommonPierLayoutDlg;
+            break;
+        case pgsTypes::pltScalloped:
+            pActiveDlg = &m_ScallopedPierLayoutDlg;
+            break;
+        case pgsTypes::pltUserDefined:
+            pActiveDlg = &m_UserDefinedPierLayoutDlg;
+            break;
+        default:
+            pActiveDlg = nullptr;
+            break;
+        }
+    }
+
+    // If there is no valid active dialog, nothing to do.
+    if (pActiveDlg == nullptr || !::IsWindow(pActiveDlg->GetSafeHwnd()))
+    {
+        return;
+    }
+
+    // hide the embedded control in the dialog (we use the popout for live)
+    if (CWnd* pEmbedded = pActiveDlg->GetDlgItem(IDC_PIER_LAYOUT))
+        pEmbedded->ShowWindow(SW_HIDE);
+
+    // Create / show a popout bound to the currently active dialog's data source
+    ShowPierLayoutPopout();
+
+}
+
+
+
+

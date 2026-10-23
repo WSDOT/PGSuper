@@ -235,13 +235,13 @@ bool CMomentLoadDrawStrategyImpl::OnRButtonDown(std::shared_ptr<WBFL::DManip::iD
 
    dispMgr->SelectObject(pDO, true);
 
-   auto view = dispMgr->GetView();
+   auto disp = dispMgr->GetDisplay();
    POINT screen_point = point;
-   view->ClientToScreen(&screen_point);
+   disp->GetWnd()->ClientToScreen(&screen_point);
 
    CMenu menu;
    VERIFY( menu.LoadMenu(IDR_LOADS_CTX) );
-   menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, screen_point.x, screen_point.y, view);
+   menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, screen_point.x, screen_point.y, disp->GetWnd());
 
    return true;
 }

@@ -191,6 +191,11 @@ LRESULT CPierDetailsDlg::OnKickIdle(WPARAM wp, LPARAM lp)
    }
 }
 
+void CPierDetailsDlg::OnPierConnectionChanged()
+{
+	m_PierLayoutPage.RefreshPierLayoutPopout();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CPierDetailsDlg message handlers
 void CPierDetailsDlg::CreateExtensionPages()

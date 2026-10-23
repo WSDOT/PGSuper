@@ -158,7 +158,8 @@ STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnContextMenu(std::share
 {
    if ( pDO->IsSelected() )
    {
-      auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
+      auto pDisp = pDO->GetDisplayList()->GetDisplayMgr()->GetDisplay();
+      auto pView = dynamic_cast<CDisplayView*>(pDisp);
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());

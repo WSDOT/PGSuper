@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <PsgLib/PierData2.h>
+
 #include <PsgLib/SpanData2.h>
 #include <PsgLib/BridgeDescription2.h>
 #include <PsgLib/GirderSpacing2.h>
@@ -66,6 +66,7 @@ CPierData2::CPierData2()
    m_strOrientation = _T("Normal");
 
    m_PierModelType = pgsTypes::pmtIdealized;
+   m_PierLayoutType = pgsTypes::pltCommon;
 
    m_Concrete.bHasInitial = false;
    m_Concrete.Fc = WBFL::Units::ConvertToSysUnits(4,WBFL::Units::Measure::KSI);
@@ -83,13 +84,19 @@ CPierData2::CPierData2()
    m_XBeamTaperLength[pgsTypes::stRight] = 0;
    m_XBeamEndSlopeOffset[pgsTypes::stLeft] = 0;
    m_XBeamEndSlopeOffset[pgsTypes::stRight] = 0;
-   m_XBeamOverhang[pgsTypes::stLeft]  = WBFL::Units::ConvertToSysUnits(5,WBFL::Units::Measure::Feet);
-   m_XBeamOverhang[pgsTypes::stRight] = WBFL::Units::ConvertToSysUnits(5,WBFL::Units::Measure::Feet);
+   m_XBeamOverhang[pgsTypes::stLeft]  = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
+   m_XBeamOverhang[pgsTypes::stRight] = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
+   m_XBeamOverhangRadius[pgsTypes::stLeft]  = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
+   m_XBeamOverhangRadius[pgsTypes::stRight] = WBFL::Units::ConvertToSysUnits(10,WBFL::Units::Measure::Feet);
    m_XBeamWidth = WBFL::Units::ConvertToSysUnits(5,WBFL::Units::Measure::Feet);
 
    m_ColumnFixity = pgsTypes::cftFixed;
    CColumnData defaultColumn(this);
    m_Columns.push_back(defaultColumn);
+
+   Float64 defaultScallopDepth = WBFL::Units::ConvertToSysUnits(5.0, WBFL::Units::Measure::Feet);
+   m_ScallopDepths.push_back(defaultScallopDepth);
+
 
    for ( int i = 0; i < 2; i++ )
    {
@@ -219,6 +226,11 @@ bool CPierData2::operator==(const CPierData2& rOther) const
    
    if ( m_PierModelType == pgsTypes::pmtPhysical )
    {
+       if (m_PierLayoutType != rOther.m_PierLayoutType)
+       {
+           return false;
+       }
+
       if ( m_RefColumnIdx != rOther.m_RefColumnIdx )
       {
          return false;
@@ -248,6 +260,21 @@ bool CPierData2::operator==(const CPierData2& rOther) const
       {
          return false;
       }
+
+      if ( m_ScallopDepths != rOther.m_ScallopDepths )
+      {
+         return false;
+      }
+
+      if ( m_ScallopRadii != rOther.m_ScallopRadii )
+      {
+         return false;
+      }
+
+      if ( m_PierPoints != rOther.m_PierPoints )
+      {
+         return false;
+      }
    }
 
    // Must update mutable bearing data before comparison
@@ -258,32 +285,67 @@ bool CPierData2::operator==(const CPierData2& rOther) const
    {
       if ( m_PierModelType == pgsTypes::pmtPhysical )
       {
-         pgsTypes::SideType side = (pgsTypes::SideType)i;
 
-         if ( !IsEqual(m_XBeamHeight[side],rOther.m_XBeamHeight[side]) )
-         {
-            return false;
-         }
+          if (m_PierLayoutType == pgsTypes::pltCommon)
+          {
+              pgsTypes::SideType side = (pgsTypes::SideType)i;
 
-         if ( !IsEqual(m_XBeamTaperHeight[side],rOther.m_XBeamTaperHeight[side]) )
-         {
-            return false;
-         }
+              if (!IsEqual(m_XBeamHeight[side], rOther.m_XBeamHeight[side]))
+              {
+                  return false;
+              }
 
-         if ( !IsEqual(m_XBeamTaperLength[side],rOther.m_XBeamTaperLength[side]) )
-         {
-            return false;
-         }
+              if (!IsEqual(m_XBeamTaperHeight[side], rOther.m_XBeamTaperHeight[side]))
+              {
+                  return false;
+              }
 
-         if ( !IsEqual(m_XBeamEndSlopeOffset[side],rOther.m_XBeamEndSlopeOffset[side]) )
-         {
-            return false;
-         }
+              if (!IsEqual(m_XBeamTaperLength[side], rOther.m_XBeamTaperLength[side]))
+              {
+                  return false;
+              }
 
-         if ( !IsEqual(m_XBeamOverhang[side],rOther.m_XBeamOverhang[side]) )
-         {
-            return false;
-         }
+              if (!IsEqual(m_XBeamEndSlopeOffset[side], rOther.m_XBeamEndSlopeOffset[side]))
+              {
+                  return false;
+              }
+
+              if (!IsEqual(m_XBeamOverhang[side], rOther.m_XBeamOverhang[side]))
+              {
+                  return false;
+              }
+              if (!IsEqual(m_XBeamOverhangRadius[side], rOther.m_XBeamOverhangRadius[side]))
+              {
+                  return false;
+              }
+          }
+          else
+          {
+              if (!IsEqual(m_XBeamHeight[pgsTypes::stLeft], rOther.m_XBeamHeight[pgsTypes::stLeft]))
+              {
+                  return false;
+              }
+              if (!IsEqual(m_XBeamTaperHeight[pgsTypes::stLeft], rOther.m_XBeamTaperHeight[pgsTypes::stLeft]))
+              {
+                  return false;
+              }
+              if (!IsEqual(m_XBeamTaperLength[pgsTypes::stLeft], rOther.m_XBeamTaperLength[pgsTypes::stLeft]))
+              {
+                  return false;
+              }
+              if (!IsEqual(m_XBeamEndSlopeOffset[pgsTypes::stLeft], rOther.m_XBeamEndSlopeOffset[pgsTypes::stLeft]))
+              {
+                  return false;
+              }
+              if (!IsEqual(m_XBeamOverhang[pgsTypes::stLeft], rOther.m_XBeamOverhang[pgsTypes::stLeft]))
+              {
+                  return false;
+              }
+              if (!IsEqual(m_XBeamOverhangRadius[pgsTypes::stLeft], rOther.m_XBeamOverhangRadius[pgsTypes::stLeft]))
+              {
+                  return false;
+              }
+          }
       }
 
       if ( m_Concrete != rOther.m_Concrete )
@@ -480,7 +542,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress>
 
    // Make sure outside changes to the bridge haven't made our data out of sync
    ProtectBearingData();
-   pStrSave->BeginUnit(_T("PierDataDetails"),21.0);
+   pStrSave->BeginUnit(_T("PierDataDetails"),23.0);
    
    pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
 
@@ -510,6 +572,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress>
       //pStrSave->put_Property(_T("Ec"),CComVariant(m_Ec)); // removed in version 15
       m_Concrete.Save(pStrSave,pProgress); // added in version 15
 
+      pStrSave->put_Property(_T("PierLayoutType"),CComVariant(m_PierLayoutType)); //added in verion 23
       pStrSave->put_Property(_T("RefColumnIndex"),CComVariant(m_RefColumnIdx));
       pStrSave->put_Property(_T("TransverseOffset"),CComVariant(m_TransverseOffset));
       pStrSave->put_Property(_T("TransverseOffsetMeasurement"),CComVariant(m_TransverseOffsetMeasurement));
@@ -524,25 +587,52 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress>
       pStrSave->put_Property(_T("XBeamOverhang_Left"),CComVariant(m_XBeamOverhang[pgsTypes::stLeft]));
       pStrSave->put_Property(_T("XBeamOverhang_Right"),CComVariant(m_XBeamOverhang[pgsTypes::stRight]));
       pStrSave->put_Property(_T("XBeamWidth"),CComVariant(m_XBeamWidth));
+      pStrSave->put_Property(_T("XBeamOverhangRadius_Left"),CComVariant(m_XBeamOverhangRadius[pgsTypes::stLeft]));  // added in version 23
+      pStrSave->put_Property(_T("XBeamOverhangRadius_Right"),CComVariant(m_XBeamOverhangRadius[pgsTypes::stRight]));  // added in version 23
+
+      pStrSave->put_Property(_T("PierPointCount"), CComVariant(m_PierPoints.size()));  // added in version 23
+      std::vector<CPierPointData>::iterator ppIterBegin = m_PierPoints.begin();
+      std::vector<CPierPointData>::iterator ppIter = ppIterBegin;
+      std::vector<CPierPointData>::iterator ppIterEnd = m_PierPoints.end();
+      for (; ppIter != ppIterEnd; ppIter++)
+      {
+          CPierPointData& pierPointData = *ppIter;
+          pierPointData.Save(pStrSave, pProgress);
+      }
 
       pStrSave->put_Property(_T("ColumnFixity"),CComVariant(m_ColumnFixity)); // added version 16
 
-      pStrSave->put_Property(_T("ColumnCount"),CComVariant(m_Columns.size()));
-      std::vector<Float64>::iterator spacingIter = m_ColumnSpacing.begin();
-      std::vector<CColumnData>::iterator columnIterBegin = m_Columns.begin();
-      std::vector<CColumnData>::iterator columnIter = columnIterBegin;
-      std::vector<CColumnData>::iterator columnIterEnd = m_Columns.end();
-      for ( ; columnIter != columnIterEnd; columnIter++ )
+      pStrSave->put_Property(
+          _T("ColumnCount"),
+          CComVariant(m_Columns.size()));
+
+      ATLASSERT(m_ScallopDepths.size() == m_Columns.size());
+      ATLASSERT(m_ScallopRadii.size() == m_ColumnSpacing.size());
+
+      for (ColumnIndexType colIdx = 0;
+          colIdx < m_Columns.size(); colIdx++)
       {
-         if ( columnIter != columnIterBegin )
-         {
-            Float64 spacing = *spacingIter;
-            pStrSave->put_Property(_T("Spacing"),CComVariant(spacing));
-            spacingIter++;
-         }
-         CColumnData& columnData = *columnIter;
-         columnData.Save(pStrSave,pProgress);
+          // Spacing and radius belong to the interval
+          // preceding this column.
+          if (colIdx > 0)
+          {
+              pStrSave->put_Property(
+                  _T("Spacing"),
+                  CComVariant(m_ColumnSpacing[colIdx - 1]));
+
+              pStrSave->put_Property(
+                  _T("Radii"),
+                  CComVariant(m_ScallopRadii[colIdx - 1]));
+          }
+
+          // Every column has its own scallop depth.
+          pStrSave->put_Property(
+              _T("Depths"),
+              CComVariant(m_ScallopDepths[colIdx]));
+
+          m_Columns[colIdx].Save(pStrSave, pProgress);
       }
+
    }
 
    pStrSave->BeginUnit(_T("Back"),2.0);
@@ -841,6 +931,14 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress>
                hr = m_Concrete.Load(pStrLoad,pProgress);
             }
 
+            if (version > 21)
+            {
+                // added in version 22
+                var.vt = VT_I4;
+                hr = pStrLoad->get_Property(_T("PierLayoutType"), &var);
+                m_PierLayoutType = (pgsTypes::PierLayoutType)var.lVal;
+            }
+
             var.vt = VT_INDEX;
             hr = pStrLoad->get_Property(_T("RefColumnIndex"),&var);
             m_RefColumnIdx = VARIANT2INDEX(var);
@@ -891,6 +989,29 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress>
             hr = pStrLoad->get_Property(_T("XBeamWidth"),&var);
             m_XBeamWidth = var.dblVal;
 
+			if (22 < version)
+            {
+                hr = pStrLoad->get_Property(_T("XBeamOverhangRadius_Left"), &var);
+                m_XBeamOverhangRadius[pgsTypes::stLeft] = var.dblVal;
+
+                hr = pStrLoad->get_Property(_T("XBeamOverhangRadius_Right"), &var);
+                m_XBeamOverhangRadius[pgsTypes::stRight] = var.dblVal;
+
+                if (m_PierModelType == pgsTypes::pmtPhysical)
+                {
+                    m_PierPoints.clear();
+                    var.vt = VT_INDEX;
+                    hr = pStrLoad->get_Property(_T("PierPointCount"), &var);
+                    PierPointIndexType nPierPoints = VARIANT2INDEX(var);
+                    for (PierPointIndexType ppIdx = 0; ppIdx < nPierPoints; ppIdx++)
+                    {
+                        CPierPointData pierPointData(this);
+                        pierPointData.Load(pStrLoad, pProgress);
+                        m_PierPoints.push_back(pierPointData);
+                    }
+                }
+            }
+
             if ( 15 < version )
             {
                // added int version 16
@@ -915,22 +1036,54 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress>
 
             m_Columns.clear();
             m_ColumnSpacing.clear();
+            m_ScallopRadii.clear();
+            m_ScallopDepths.clear();
+
             var.vt = VT_INDEX;
-            hr = pStrLoad->get_Property(_T("ColumnCount"),&var);
+            hr = pStrLoad->get_Property(_T("ColumnCount"), &var);
             ColumnIndexType nColumns = VARIANT2INDEX(var);
-            for ( ColumnIndexType colIdx = 0; colIdx < nColumns; colIdx++ )
+
+            for (ColumnIndexType colIdx = 0;
+                colIdx < nColumns; colIdx++)
             {
-               if ( 0 < colIdx )
-               {
-                  var.vt = VT_R8;
-                  hr = pStrLoad->get_Property(_T("Spacing"),&var);
-                  Float64 spacing = var.dblVal;
-                  m_ColumnSpacing.push_back(spacing);
-               }
-               CColumnData columnData(this);
-               columnData.Load(pStrLoad,pProgress);
-               m_Columns.push_back(columnData);
+                if (colIdx > 0)
+                {
+                    var.vt = VT_R8;
+                    hr = pStrLoad->get_Property(_T("Spacing"), &var);
+                    m_ColumnSpacing.push_back(var.dblVal);
+
+                    if (version >= 23)
+                    {
+                        var.vt = VT_R8;
+                        hr = pStrLoad->get_Property(_T("Radii"), &var);
+                        m_ScallopRadii.push_back(var.dblVal);
+                    }
+                    else
+                    {
+                        m_ScallopRadii.push_back(
+                            WBFL::Units::ConvertToSysUnits(
+                                10.0, WBFL::Units::Measure::Feet));
+                    }
+                }
+
+                if (version >= 23)
+                {
+                    var.vt = VT_R8;
+                    hr = pStrLoad->get_Property(_T("Depths"), &var);
+                    m_ScallopDepths.push_back(var.dblVal);
+                }
+                else
+                {
+                    m_ScallopDepths.push_back(
+                        WBFL::Units::ConvertToSysUnits(
+                            5.0, WBFL::Units::Measure::Feet));
+                }
+
+                CColumnData columnData(this);
+                columnData.Load(pStrLoad, pProgress);
+                m_Columns.push_back(columnData);
             }
+
          }
       }
       
@@ -1390,6 +1543,7 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    Angle                   = rOther.Angle;
 
    m_PierModelType = rOther.m_PierModelType;
+   m_PierLayoutType = rOther.m_PierLayoutType;
    m_RefColumnIdx = rOther.m_RefColumnIdx;
    m_TransverseOffset = rOther.m_TransverseOffset;
    m_TransverseOffsetMeasurement = rOther.m_TransverseOffsetMeasurement;
@@ -1399,6 +1553,11 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
    m_ColumnFixity = rOther.m_ColumnFixity;
    m_ColumnSpacing = rOther.m_ColumnSpacing;
    m_Columns = rOther.m_Columns;
+
+   m_ScallopDepths = rOther.m_ScallopDepths;
+   m_ScallopRadii = rOther.m_ScallopRadii;
+
+   m_PierPoints = rOther.m_PierPoints;
 
    m_Concrete = rOther.m_Concrete;
    m_XBeamWidth = rOther.m_XBeamWidth;
@@ -1410,6 +1569,7 @@ void CPierData2::MakeCopy(const CPierData2& rOther,bool bCopyDataOnly)
       m_XBeamTaperLength[i] = rOther.m_XBeamTaperLength[i];
       m_XBeamEndSlopeOffset[i] = rOther.m_XBeamEndSlopeOffset[i];
       m_XBeamOverhang[i]    = rOther.m_XBeamOverhang[i];
+      m_XBeamOverhangRadius[i]    = rOther.m_XBeamOverhangRadius[i];
 
       m_GirderEndDistance[i]            = rOther.m_GirderEndDistance[i];
       m_EndDistanceMeasurementType[i]   = rOther.m_EndDistanceMeasurementType[i];
@@ -1866,6 +2026,17 @@ const CBearingData2* CPierData2::GetBearingData(GirderIndexType gdrIdx, pgsTypes
    return &m_BearingData[face][gdrIdx];
 }
 
+const std::vector<CBearingData2> CPierData2::GetPierBearingData(pgsTypes::PierFaceType face) const
+{
+    // Interior piers have a single bearing - use ahead slot to store
+    if (IsInteriorPier())
+    {
+        face = pgsTypes::Ahead;
+    }
+
+    return m_BearingData[face];
+}
+
 Float64 CPierData2::GetSupportWidth(GirderIndexType gdrIdx, pgsTypes::PierFaceType face) const
 {
    ProtectBearingData();
@@ -2095,6 +2266,16 @@ void CPierData2::SetPierModelType(pgsTypes::PierModelType modelType)
    m_PierModelType = modelType;
 }
 
+pgsTypes::PierLayoutType CPierData2::GetPierLayoutType() const
+{
+   return m_PierLayoutType;
+}
+
+void CPierData2::SetPierLayoutType(pgsTypes::PierLayoutType layoutType)
+{
+   m_PierLayoutType = layoutType;
+}
+
 void CPierData2::SetConcrete(const CConcreteMaterial& concrete)
 {
    m_Concrete = concrete;
@@ -2155,6 +2336,11 @@ void CPierData2::SetXBeamOverhang(pgsTypes::SideType side,Float64 overhang)
    m_XBeamOverhang[side] = overhang;
 }
 
+void CPierData2::SetXBeamOverhangRadius(pgsTypes::SideType side,Float64 overhangRadius)
+{
+   m_XBeamOverhangRadius[side] = overhangRadius;
+}
+
 void CPierData2::SetXBeamOverhangs(Float64 leftOverhang,Float64 rightOverhang)
 {
    m_XBeamOverhang[pgsTypes::stLeft]  = leftOverhang;
@@ -2164,6 +2350,11 @@ void CPierData2::SetXBeamOverhangs(Float64 leftOverhang,Float64 rightOverhang)
 Float64 CPierData2::GetXBeamOverhang(pgsTypes::SideType side) const
 {
    return m_XBeamOverhang[side];
+}
+
+Float64 CPierData2::GetXBeamOverhangRadius(pgsTypes::SideType side) const
+{
+   return m_XBeamOverhangRadius[side];
 }
 
 void CPierData2::GetXBeamOverhangs(Float64* pLeftOverhang,Float64* pRightOverhang) const
@@ -2199,12 +2390,24 @@ void CPierData2::RemoveColumns()
    m_Columns.erase(m_Columns.begin()+1,m_Columns.end());
    m_ColumnSpacing.clear();
    ATLASSERT(m_Columns.size() == m_ColumnSpacing.size()+1);
+
+   m_ScallopDepths.resize(1);
+   m_ScallopRadii.clear();
 }
 
 void CPierData2::AddColumn(Float64 spacing,const CColumnData& columnData)
 {
    m_ColumnSpacing.push_back(spacing);
    m_Columns.push_back(columnData);
+   m_ScallopDepths.push_back(m_ScallopDepths.back());
+
+   const Float64 radius = m_ScallopRadii.empty() ?
+       WBFL::Units::ConvertToSysUnits(
+           10.0, WBFL::Units::Measure::Feet) :
+       m_ScallopRadii.back();
+
+   m_ScallopRadii.push_back(radius);
+
    m_Columns.back().SetPier(this);
    ATLASSERT(m_Columns.size() == m_ColumnSpacing.size()+1);
 }
@@ -2222,25 +2425,87 @@ void CPierData2::SetColumnData(ColumnIndexType colIdx,const CColumnData& columnD
    m_Columns[colIdx].SetPier(this);
 }
 
+void CPierData2::SetColumnScallopDepth(ColumnIndexType colIdx, Float64 depth)
+{
+   ATLASSERT(colIdx < m_ScallopDepths.size());
+   m_ScallopDepths[colIdx] = depth;
+}
+
+Float64 CPierData2::GetColumnScallopDepth(ColumnIndexType colIdx) const
+{
+   ATLASSERT(colIdx < m_ScallopDepths.size());
+   return m_ScallopDepths[colIdx];
+}
+
+void CPierData2::SetColumnScallopRadius(ColumnIndexType colIdx, Float64 radius)
+{
+   ATLASSERT(colIdx < m_ScallopRadii.size());
+   m_ScallopRadii[colIdx] = radius;
+}
+
+Float64 CPierData2::GetColumnScallopRadius(ColumnIndexType colIdx) const
+{
+   ATLASSERT(colIdx < m_ScallopRadii.size());
+   return m_ScallopRadii[colIdx];
+}
+
 void CPierData2::SetColumnCount(ColumnIndexType nColumns)
 {
-   if ( nColumns < m_Columns.size() )
-   {
-      // the number of columns is being reduced ... remove columns on the right side of the pier
-      m_Columns.erase(m_Columns.begin()+nColumns,m_Columns.end());
-      m_ColumnSpacing.erase(m_ColumnSpacing.begin()+nColumns-1,m_ColumnSpacing.end());
-   }
-   else if ( m_Columns.size() < nColumns )
-   {
-      // the number of columns is being increased... add columns on the right side of the pier
-      ColumnIndexType nColumnsToAdd = nColumns - m_Columns.size();
-      CColumnData column = m_Columns.back(); // right-most column
-      Float64 spacing = (m_ColumnSpacing.size() == 0 ? WBFL::Units::ConvertToSysUnits(10.0,WBFL::Units::Measure::Feet) : m_ColumnSpacing.back()); // right-most spacing
-      m_Columns.insert(m_Columns.end(),nColumnsToAdd,column);
-      m_ColumnSpacing.insert(m_ColumnSpacing.end(),nColumnsToAdd,spacing);
-   }
-   ATLASSERT(m_Columns.size() == m_ColumnSpacing.size()+1);
+    ATLASSERT(nColumns >= 1);
+
+    if (nColumns < m_Columns.size())
+    {
+        m_Columns.erase(
+            m_Columns.begin() + nColumns,
+            m_Columns.end());
+
+        m_ColumnSpacing.resize(nColumns - 1);
+    }
+    else if (m_Columns.size() < nColumns)
+    {
+        ColumnIndexType nColumnsToAdd =
+            nColumns - m_Columns.size();
+
+        CColumnData column = m_Columns.back();
+
+        Float64 spacing = m_ColumnSpacing.empty() ?
+            WBFL::Units::ConvertToSysUnits(
+                10.0, WBFL::Units::Measure::Feet) :
+            m_ColumnSpacing.back();
+
+        m_Columns.insert(
+            m_Columns.end(), nColumnsToAdd, column);
+
+        m_ColumnSpacing.insert(
+            m_ColumnSpacing.end(), nColumnsToAdd, spacing);
+    }
+
+    // One scallop depth per column.
+    Float64 depth = m_ScallopDepths.empty() ?
+        WBFL::Units::ConvertToSysUnits(
+            5.0, WBFL::Units::Measure::Feet) :
+        m_ScallopDepths.back();
+
+    m_ScallopDepths.resize(nColumns, depth);
+
+    // One radius per interval between columns.
+    Float64 radius = m_ScallopRadii.empty() ?
+        WBFL::Units::ConvertToSysUnits(
+            10.0, WBFL::Units::Measure::Feet) :
+        m_ScallopRadii.back();
+
+    m_ScallopRadii.resize(nColumns - 1, radius);
+
+    ATLASSERT(m_Columns.size() ==
+        m_ColumnSpacing.size() + 1);
+
+    ATLASSERT(m_ScallopDepths.size() ==
+        m_Columns.size());
+
+    ATLASSERT(m_ScallopRadii.size() ==
+        m_ColumnSpacing.size());
 }
+
 
 ColumnIndexType CPierData2::GetColumnCount() const
 {
@@ -2278,6 +2543,51 @@ const CColumnData& CPierData2::GetColumnData(ColumnIndexType colIdx) const
 {
    ATLASSERT(colIdx < m_Columns.size());
    return m_Columns[colIdx];
+}
+
+
+void CPierData2::SetPierPointData(PierPointIndexType ppIdx, const CPierPointData& pierPointData)
+{
+    ATLASSERT(ppIdx < m_PierPoints.size());
+    m_PierPoints[ppIdx] = pierPointData;
+    m_PierPoints[ppIdx].SetPier(this);
+}
+
+void CPierData2::SetPierPointCount(PierPointIndexType nPierPoints)
+{
+    if (nPierPoints < m_PierPoints.size())
+    {
+        m_PierPoints.erase(m_PierPoints.begin() + nPierPoints, m_PierPoints.end());
+    }
+    else if (m_PierPoints.size() < nPierPoints)
+    {
+        // the number of pier points is being increased... add pier points on the right side of the pier
+        PierPointIndexType nPierPointsToAdd = nPierPoints - m_PierPoints.size();
+        CPierPointData pp;
+        if (!m_PierPoints.empty())
+        {
+            pp = m_PierPoints.back(); // right-most pier point
+            Float64 spacing = WBFL::Units::ConvertToSysUnits(4.0, WBFL::Units::Measure::Feet);
+            pp.Set_X(pp.Get_X() + spacing); // set the new pier point to be 4 feet to the right of the last pier point
+        }
+        m_PierPoints.insert(m_PierPoints.end(), nPierPointsToAdd, pp);
+    }
+}
+
+const CPierPointData& CPierData2::GetPierPointData(PierPointIndexType ppIdx) const
+{
+    ATLASSERT(ppIdx < m_PierPoints.size());
+    return m_PierPoints[ppIdx];
+}
+
+const std::vector<CPierPointData>& CPierData2::GetPierPointData() const
+{
+    return m_PierPoints;
+}
+
+PierPointIndexType CPierData2::GetPierPointCount() const
+{
+   return m_PierPoints.size();
 }
 
 void CPierData2::SetDiaphragmHeight(pgsTypes::PierFaceType pierFace,Float64 d)
