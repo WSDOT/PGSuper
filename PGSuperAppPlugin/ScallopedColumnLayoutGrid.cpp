@@ -51,12 +51,12 @@ void CScallopedColumnLayoutGrid::CustomInit()
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
     CString units = pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str();
     CString header;
-    header.Format(_T("Radius\n(%s)"), units.GetString());
+    header.Format(_T("R\nBay Radius\n(%s)"), units.GetString());
     SetStyleRange(CGXRange(0, 7), CGXStyle()
         .SetWrapText(TRUE).SetEnabled(FALSE)
         .SetHorizontalAlignment(DT_CENTER).SetVerticalAlignment(DT_VCENTER)
         .SetValue(header));
-    header.Format(_T("Scallop Depth\n(%s)"), units.GetString());
+    header.Format(_T("D\nScallop Depth\n(%s)"), units.GetString());
     SetStyleRange(CGXRange(0, 8), CGXStyle()
         .SetWrapText(TRUE).SetEnabled(FALSE)
         .SetHorizontalAlignment(DT_CENTER).SetVerticalAlignment(DT_VCENTER)
