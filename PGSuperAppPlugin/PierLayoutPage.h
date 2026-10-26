@@ -112,6 +112,9 @@ protected:
    CScallopedPierLayoutDlg m_ScallopedPierLayoutDlg;
    CUserDefinedPierLayoutDlg m_UserDefinedPierLayoutDlg;
 
+   bool SaveColumnLayout(CDialog& dialog, CColumnLayoutGrid& grid);
+   void LoadColumnLayout(CDialog& dialog, CColumnLayoutGrid& grid, CPierData2& pier);
+
    bool CommitCommonPierLayout();
    bool CommitScallopedPierLayout();
    bool CommitUserDefinedPierLayout();
