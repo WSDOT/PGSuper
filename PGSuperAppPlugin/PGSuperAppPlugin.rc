@@ -4052,7 +4052,7 @@ BEGIN
     LTEXT           "RR", IDC_RR_LABEL, 324, 143, 10, 8
     EDITTEXT        IDC_RR, 340, 140, 40, 14, ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static", IDC_RR_UNIT, 383, 143, 19, 8
-    LTEXT           "Depths (D) and bay radii (R) are entered in the grid below.",IDC_STATIC,19,161,245,8
+    LTEXT           "Scallop Depths (D) and Bay Radii (R) are entered in the grid below.",IDC_STATIC,19,161,245,8
     LTEXT           "W",IDC_W_LABEL,324,161,10,8
     EDITTEXT        IDC_W,339,158,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Static",IDC_W_UNIT,381,161,19,8
