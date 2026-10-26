@@ -61,6 +61,8 @@ const Float64 EndOffset = WBFL::Units::ConvertToSysUnits(10, WBFL::Units::Measur
 
 const WBFL::DManip::SelectionType g_selectionType = WBFL::DManip::SelectionType::None; // nothing is selectable, except for the section cut object
 
+UINT WM_PIER_LAYOUT_POPOUT_CLOSED = ::RegisterWindowMessage(_T("PGSuper.PierLayoutPopoutClosed"));
+
 IMPLEMENT_DYNAMIC(CDrawPierLayoutControl, CDisplayWnd) //I guess I manually create the object then?
 
 CDrawPierLayoutControl::CDrawPierLayoutControl()
@@ -75,6 +77,7 @@ CDrawPierLayoutControl::~CDrawPierLayoutControl()
 
 BEGIN_MESSAGE_MAP(CDrawPierLayoutControl, CDisplayWnd)
     ON_WM_PAINT()
+    ON_WM_DESTROY()
 END_MESSAGE_MAP()
 
 void CDrawPierLayoutControl::OnDraw(CDC* pDC)
@@ -1194,6 +1197,7 @@ BOOL CDrawPierLayoutControl::CreatePopout(IPierLayoutDataSource* pSource, CWnd* 
     DWORD dwStyle = WS_OVERLAPPEDWINDOW/* | WS_VISIBLE*/;
 
     HWND hOwner = (pOwner != nullptr) ? pOwner->GetSafeHwnd() : nullptr;
+    m_hPopoutOwner = hOwner;
 
     BOOL ok = CreateEx(
         dwExStyle,
@@ -1224,4 +1228,13 @@ void CDrawPierLayoutControl::OnPaint()
 
 	CDisplayWnd::OnPaint();
 
+}
+
+void CDrawPierLayoutControl::OnDestroy()
+{
+    // The native owner can be the property sheet, rather than the layout page.
+    if (::IsWindow(m_hPopoutOwner))
+        ::SendMessage(m_hPopoutOwner, WM_PIER_LAYOUT_POPOUT_CLOSED, 0, 0);
+    m_hPopoutOwner = nullptr;
+    CDisplayWnd::OnDestroy();
 }

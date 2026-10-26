@@ -54,6 +54,12 @@ CPierLayoutPage::CPierLayoutPage() : CPropertyPage(CPierLayoutPage::IDD)
 
 CPierLayoutPage::~CPierLayoutPage()
 {
+    if (m_pPierLayoutPopout)
+    {
+        if (::IsWindow(m_pPierLayoutPopout->GetSafeHwnd()))
+            m_pPierLayoutPopout->DestroyWindow();
+        delete m_pPierLayoutPopout;
+    }
 }
 
 void CPierLayoutPage::Init(CPierData2* pPier)
@@ -287,6 +293,7 @@ BEGIN_MESSAGE_MAP(CPierLayoutPage, CPropertyPage)
     ON_CBN_SELCHANGE(IDC_PIER_MODEL_TYPE, OnPierModelTypeChanged)
     ON_CBN_SELCHANGE(IDC_PIER_LAYOUT_TYPE, OnPierLayoutTypeChanged)
     ON_BN_CLICKED(IDC_LAYOUT_GRAPHIC, OnShowLiveClicked)
+    ON_REGISTERED_MESSAGE(WM_PIER_LAYOUT_POPOUT_CLOSED, OnPierLayoutPopoutClosed)
     ON_MESSAGE(WM_PIER_LAYOUT_CHANGED, OnPierLayoutChanged)
     ON_COMMAND(ID_HELP, OnHelp)
     //}}AFX_MSG_MAP
@@ -817,9 +824,11 @@ void CPierLayoutPage::ShowPierLayoutPopout()
     }
 
     // If popout doesn't exist, create it with the chosen source.
-    if (m_pPierLayoutPopout == nullptr || !::IsWindow(m_pPierLayoutPopout->GetSafeHwnd()))
-    {
+    if (m_pPierLayoutPopout == nullptr)
         m_pPierLayoutPopout = new CDrawPierLayoutControl();
+
+    if (!::IsWindow(m_pPierLayoutPopout->GetSafeHwnd()))
+    {
         if (!m_pPierLayoutPopout->CreatePopout(pSource, this))
         {
             delete m_pPierLayoutPopout;
@@ -839,11 +848,26 @@ void CPierLayoutPage::ShowPierLayoutPopout()
     m_pPierLayoutPopout->UpdateDisplayObjects();
     m_pPierLayoutPopout->Invalidate();
     m_pPierLayoutPopout->UpdateWindow();
+    GetDlgItem(IDC_LAYOUT_GRAPHIC)->SetWindowText(_T("Hide Popout Window"));
 }
 
+LRESULT CPierLayoutPage::OnPierLayoutPopoutClosed(WPARAM, LPARAM)
+{
+    CWnd* pButton = GetDlgItem(IDC_LAYOUT_GRAPHIC);
+    if (pButton)
+        pButton->SetWindowText(_T("Show Popout Window"));
+    return 0;
+}
 
 void CPierLayoutPage::OnShowLiveClicked()
 {
+    if (m_pPierLayoutPopout && ::IsWindow(m_pPierLayoutPopout->GetSafeHwnd()))
+    {
+        if (m_pPierLayoutPopout->DestroyWindow())
+            GetDlgItem(IDC_LAYOUT_GRAPHIC)->SetWindowText(_T("Show Popout Window"));
+        return;
+    }
+
     // Determine the active embedded dialog (data source) based on current model/layout
     CDialog* pActiveDlg = nullptr;
     if (m_PierModelType == pgsTypes::pmtPhysical)

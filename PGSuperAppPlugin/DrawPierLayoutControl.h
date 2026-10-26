@@ -26,6 +26,8 @@
 #include <PsgLib\Keys.h>
 #include <DManip/DManip.h>
 
+extern UINT WM_PIER_LAYOUT_POPOUT_CLOSED;
+
 interface IPierLayoutDataSource
 {
 public:
@@ -72,10 +74,12 @@ protected:
 
 
 	afx_msg void OnPaint();
+	afx_msg void OnDestroy();
 
 	DECLARE_MESSAGE_MAP()
 
 private:
+	HWND m_hPopoutOwner = nullptr;
 	IPierLayoutDataSource* m_pSource;
 
 	CXBeamCutLocation* m_pCutLoc;
