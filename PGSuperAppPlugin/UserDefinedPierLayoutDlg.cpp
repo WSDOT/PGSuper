@@ -212,7 +212,8 @@ void CUserDefinedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
 
         }
 
-        CPierData2 candidate(m_Pier);
+        CPierData2 candidate;
+        candidate = m_Pier; // Preserve pier index and ID; the copy constructor clears them.
         for (int side = 0; side < 2; ++side)
         {
             candidate.SetXBeamDimensions(static_cast<pgsTypes::SideType>(side),m_XBeamHeight[side],
@@ -397,7 +398,8 @@ void CUserDefinedPierLayoutDlg::OnPierLayoutChanged()
 {
     if (!m_Initialized || m_UpdatingLayout) return;
     m_UpdatingLayout = true;
-    const CPierData2 previous = m_Pier;
+    CPierData2 previous;
+    previous = m_Pier; // Preserve identity if validation fails and we restore the snapshot.
     if (UpdateData(TRUE)) ChangePierLayout();
     else m_Pier = previous;
     m_UpdatingLayout = false;
