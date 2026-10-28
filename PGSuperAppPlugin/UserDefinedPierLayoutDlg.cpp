@@ -64,16 +64,16 @@ BEGIN_MESSAGE_MAP(CUserDefinedPierLayoutDlg, CDialog)
     ON_BN_CLICKED(IDC_ADD_PIERPOINT, &CUserDefinedPierLayoutDlg::OnAddPierPoint)
     ON_BN_CLICKED(IDC_REMOVE_PIERPOINT, &CUserDefinedPierLayoutDlg::OnRemovePierPoints)
 
-    ON_EN_CHANGE(IDC_W, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_H1L, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_H1R, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_X1L, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_X1R, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_OHL, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
-    ON_EN_CHANGE(IDC_OHR, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_W, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_H1L, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_H1R, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_X1L, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_X1R, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_OHL, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
+    ON_EN_KILLFOCUS(IDC_OHR, &CUserDefinedPierLayoutDlg::OnPierLayoutChanged)
 
     ON_CBN_SELCHANGE(IDC_REFCOLUMN, &CUserDefinedPierLayoutDlg::OnRefColumnChanged)
-    ON_EN_CHANGE(IDC_REFCOLUMN_OFFSET, &CUserDefinedPierLayoutDlg::OnRefColumnChanged)
+    ON_EN_KILLFOCUS(IDC_REFCOLUMN_OFFSET, &CUserDefinedPierLayoutDlg::OnRefColumnChanged)
     ON_CBN_SELCHANGE(IDC_REFCOLUMN_MEASUREMENT, &CUserDefinedPierLayoutDlg::OnRefColumnChanged)
 
     ON_WM_LBUTTONDOWN()
@@ -115,7 +115,7 @@ BOOL CUserDefinedPierLayoutDlg::OnInitDialog()
     CDialog::OnInitDialog();
 
     OnHeightMeasureChanged();
-
+    m_Initialized = true;
 
     return TRUE;
 }
@@ -211,6 +211,27 @@ void CUserDefinedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
             prevPoint = xxb;
 
         }
+
+        CPierData2 candidate(m_Pier);
+        for (int side = 0; side < 2; ++side)
+        {
+            candidate.SetXBeamDimensions(static_cast<pgsTypes::SideType>(side),m_XBeamHeight[side],
+                m_XBeamTaperHeight[side],m_XBeamTaperLength[side],m_XBeamEndSlopeOffset[side]);
+            candidate.SetXBeamOverhang(static_cast<pgsTypes::SideType>(side),m_XBeamOverhang[side]);
+        }
+        candidate.SetTransverseOffset(m_RefColumnIdx,m_TransverseOffset,m_TransverseOffsetMeasurement);
+        try
+        {
+            GET_IFACE2(pBroker, IBridge, pBridge);
+            CComPtr<IPoint2dCollection> profile;
+            pBridge->GetBottomXBeamProfile(candidate,&profile);
+        }
+        catch (HRESULT)
+        {
+            AfxMessageBox(_T("Invalid profile arc. Increase the radius, adjust the endpoints, or change the arc direction. "
+                "Arcs must run left to right and remain below the top of the crossbeam."));
+            pDX->Fail();
+        }
     }
 
 }
@@ -295,8 +316,6 @@ LRESULT CUserDefinedPierLayoutDlg::OnColumnGridCellChanged(WPARAM wParam, LPARAM
 LRESULT CUserDefinedPierLayoutDlg::OnPierPointGridCellChanged(WPARAM wParam, LPARAM lParam)
 {
     // Update pier data with current pier point data
-    m_PierPointGrid.GetPierPointData(m_Pier);
-
     OnPierLayoutChanged();
 
     return 0;
@@ -376,7 +395,12 @@ const CPierData2* CUserDefinedPierLayoutDlg::GetPierData() const
 
 void CUserDefinedPierLayoutDlg::OnPierLayoutChanged()
 {
-    ChangePierLayout();
+    if (!m_Initialized || m_UpdatingLayout) return;
+    m_UpdatingLayout = true;
+    const CPierData2 previous = m_Pier;
+    if (UpdateData(TRUE)) ChangePierLayout();
+    else m_Pier = previous;
+    m_UpdatingLayout = false;
 }
 
 void CUserDefinedPierLayoutDlg::ChangePierLayout()

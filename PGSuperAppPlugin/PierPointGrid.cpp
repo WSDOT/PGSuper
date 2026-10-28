@@ -27,6 +27,7 @@
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PGSuperUIUtil.h>
+#include <cmath>
 
 
 GRID_IMPLEMENT_REGISTER(CPierPointGrid, CS_DBLCLKS, 0, 0, 0);
@@ -47,7 +48,21 @@ void CPierPointGrid::DDV_PierPointGrid(CDataExchange* pDX, CPierPointGrid& grid)
 {
     if (pDX->m_bSaveAndValidate)
     {
-        //placeholder
+        for (ROWCOL row = 1; row <= grid.GetRowCount(); ++row)
+        {
+           for (ROWCOL col = 1; col <= 4; ++col)
+           {
+              if (col == 3 || (col == 4 &&
+                  (row == grid.GetRowCount() || grid.GetCellValue(row,3) == _T("Straight"))))
+                 continue;
+              Float64 value;
+              if (!grid.ReadNumber(row, col, value) || (col == 4 && value <= 0))
+              {
+                 AfxMessageBox(_T("Enter a valid coordinate or a positive arc radius."));
+                 pDX->Fail();
+              }
+           }
+        }
     }
 }
 
@@ -85,7 +100,7 @@ void CPierPointGrid::CustomInit()
    SetMergeCellsMode(gxnMergeDelayEval);
 
    const int num_rows = 0;
-   const int num_cols = 2;
+   const int num_cols = 4;
 
 	SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -120,7 +135,7 @@ void CPierPointGrid::CustomInit()
 
    CString cv;
 
-   cv.Format(_T("X pt."),pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("X (%s)"),pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,pp++), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -129,7 +144,7 @@ void CPierPointGrid::CustomInit()
 			.SetValue(cv)
 		);
 
-   cv.Format(_T("Y pt."),pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
+   cv.Format(_T("Y (%s)"),pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
 	SetStyleRange(CGXRange(0,pp++), CGXStyle()
          .SetWrapText(TRUE)
 			.SetEnabled(FALSE)          // disables usage as current cell
@@ -138,6 +153,16 @@ void CPierPointGrid::CustomInit()
 			.SetValue(cv)
 		);
 
+
+   SetStyleRange(CGXRange(0,pp++), CGXStyle()
+      .SetWrapText(FALSE).SetEnabled(FALSE)
+      .SetHorizontalAlignment(DT_CENTER).SetVerticalAlignment(DT_VCENTER)
+      .SetValue(_T("Transition to next")));
+   cv.Format(_T("Radius (%s)"), pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
+   SetStyleRange(CGXRange(0,pp++), CGXStyle()
+      .SetWrapText(FALSE).SetEnabled(FALSE)
+      .SetHorizontalAlignment(DT_CENTER).SetVerticalAlignment(DT_VCENTER).SetValue(cv));
+   ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 
    // make it so that text fits correctly in header row
 	ResizeRowHeightsToFit(CGXRange(0,0,0,num_cols));
@@ -173,13 +198,13 @@ void CPierPointGrid::AddPierPoint()
     }
     else
     {
-        // set the default spacing in the last row
-        SetPierPointData(nRows, pierPointData);
         pierPointData.Set_X(pierPointData.Get_X() + WBFL::Units::ConvertToSysUnits(4.0, WBFL::Units::Measure::Feet));
         // add the new column (adds row to the grid)
         AddPierPoint(pierPointData);
     }
 
+    UpdateTransitionCells();
+    ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
     GetParam()->SetLockReadOnly(TRUE);
     GetParam()->EnableUndo(TRUE);
 }
@@ -197,6 +222,7 @@ void CPierPointGrid::RemoveSelectedPierPoints()
       ROWCOL selRow = selRows[r];
       RemoveRows(selRow,selRow);
    }
+   UpdateTransitionCells();
 
    GetParam()->SetLockReadOnly(TRUE);
 	GetParam( )->EnableUndo(TRUE);
@@ -234,6 +260,7 @@ void CPierPointGrid::SetPierPointData(const CPierData2& pier)
        AddPierPoint(pierPoint);
    }
 
+   UpdateTransitionCells();
    ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 
    GetParam()->SetLockReadOnly(TRUE);
@@ -263,6 +290,16 @@ void CPierPointGrid::SetPierPointData(ROWCOL row,const CPierPointData& pierPoint
       .SetHorizontalAlignment(DT_RIGHT)
       .SetValue(y)
       );
+
+   CString transition = _T("Straight");
+   if (pierPoint.GetTransitionType() == CPierPointData::ttArcUpward) transition = _T("Arc upward");
+   else if (pierPoint.GetTransitionType() == CPierPointData::ttArcDownward) transition = _T("Arc downward");
+   SetStyleRange(CGXRange(row,3), CGXStyle()
+      .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
+      .SetChoiceList(_T("Straight\nArc upward\nArc downward"))
+      .SetEnabled(TRUE).SetReadOnly(FALSE).SetValue(transition));
+   const Float64 radius = WBFL::Units::ConvertFromSysUnits(pierPoint.GetRadius(), pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+   SetStyleRange(CGXRange(row,4), CGXStyle().SetHorizontalAlignment(DT_RIGHT).SetValue(radius));
 }
 
 void CPierPointGrid::AddPierPoint(const CPierPointData& pierPoint)
@@ -286,6 +323,16 @@ void CPierPointGrid::GetPierPointData(ROWCOL row,CPierPointData* pPierPoint)
    Float64 Y = _tstof(GetCellValue(row,col));
    Y = WBFL::Units::ConvertToSysUnits(Y, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
    pPierPoint->Set_Y(Y);
+   CPierPointData::TransitionType type = CPierPointData::ttStraight;
+   if (row < GetRowCount())
+   {
+      const CString transition = GetCellValue(row,3);
+      if (transition == _T("Arc upward")) type = CPierPointData::ttArcUpward;
+      else if (transition == _T("Arc downward")) type = CPierPointData::ttArcDownward;
+   }
+   Float64 radius = type == CPierPointData::ttStraight ? 0 : _tstof(GetCellValue(row,4));
+   radius = WBFL::Units::ConvertToSysUnits(radius, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+   pPierPoint->SetTransition(type, radius);
 }
 
 CString CPierPointGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
@@ -311,31 +358,85 @@ void CPierPointGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
 }
 
+bool CPierPointGrid::ReadNumber(ROWCOL row, ROWCOL col, Float64& value)
+{
+   CString text = GetCellValue(row,col);
+   text.Trim();
+   if (text.IsEmpty()) return false;
+   TCHAR* end = nullptr;
+   value = _tcstod(text, &end);
+   return end != text.GetString() && *end == 0 && std::isfinite(value);
+}
+
+void CPierPointGrid::UpdateRadiusCell(ROWCOL row)
+{
+   const CString transition = GetCellValue(row,3);
+   const BOOL enabled = row < GetRowCount() &&
+      (transition == _T("Arc upward") || transition == _T("Arc downward"));
+   SetStyleRange(CGXRange(row,4), CGXStyle()
+      .SetEnabled(enabled).SetReadOnly(!enabled)
+      .SetInterior(::GetSysColor(enabled ? COLOR_WINDOW : COLOR_BTNFACE))
+      .SetTextColor(::GetSysColor(enabled ? COLOR_WINDOWTEXT : COLOR_GRAYTEXT)));
+   if (!enabled)
+      SetStyleRange(CGXRange(row,4), CGXStyle().SetValue(_T("-")));
+   else
+   {
+      Float64 radius;
+      if (!ReadNumber(row,4,radius) || radius <= 0)
+      {
+         const Float64 dx = _tstof(GetCellValue(row+1,1)) - _tstof(GetCellValue(row,1));
+         const Float64 dy = _tstof(GetCellValue(row+1,2)) - _tstof(GetCellValue(row,2));
+         radius = 10 * std::hypot(dx,dy);
+         SetStyleRange(CGXRange(row,4), CGXStyle().SetValue(radius));
+      }
+   }
+}
+
+void CPierPointGrid::UpdateTransitionCells()
+{
+   for (ROWCOL row = 1; row <= GetRowCount(); ++row)
+   {
+      const BOOL enabled = row < GetRowCount();
+      SetStyleRange(CGXRange(row,3), CGXStyle()
+         .SetEnabled(enabled).SetReadOnly(!enabled)
+         .SetInterior(::GetSysColor(enabled ? COLOR_WINDOW : COLOR_BTNFACE))
+         .SetTextColor(::GetSysColor(enabled ? COLOR_WINDOWTEXT : COLOR_GRAYTEXT)));
+      if (!enabled)
+         SetStyleRange(CGXRange(row,3), CGXStyle().SetValue(_T("End")));
+      else if (GetValueRowCol(row,3) == _T("End"))
+         SetStyleRange(CGXRange(row,3), CGXStyle().SetValue(_T("Straight")));
+      UpdateRadiusCell(row);
+   }
+}
+
 void CPierPointGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 {
-
-   if ( nCol == 3 )
+   __super::OnModifyCell(nRow,nCol);
+   if (nRow > 0 && nCol == 3)
    {
       GetParam()->EnableUndo(FALSE);
       GetParam()->SetLockReadOnly(FALSE);
-
-      SetStyleRange(CGXRange(nRow,nCol+2),CGXStyle()
-        .SetEnabled(FALSE)
-        .SetReadOnly(TRUE)
-        .SetInterior(::GetSysColor(COLOR_BTNFACE))
-        .SetTextColor(::GetSysColor(COLOR_BTNFACE))
-        .SetHorizontalAlignment(DT_RIGHT)
-        );
-
+      UpdateRadiusCell(nRow);
       GetParam()->SetLockReadOnly(TRUE);
       GetParam()->EnableUndo(TRUE);
    }
-   else
+}
+
+BOOL CPierPointGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
+{
+   CGXControl* control = GetControl(nRow,nCol);
+   const BOOL modified = control && control->GetModify();
+   if (modified && (nCol == 1 || nCol == 2 || nCol == 4))
    {
-       __super::OnModifyCell(nRow, nCol);
-
-       if (GetParent())
-           GetParent()->PostMessage(WM_PIERPOINT_GRID_CELL_CHANGED, (WPARAM)nRow, (LPARAM)nCol);
+      Float64 value;
+      if (!ReadNumber(nRow,nCol,value) || (nCol == 4 && value <= 0))
+      {
+         AfxMessageBox(_T("Enter a valid coordinate or a positive arc radius."));
+         return FALSE;
+      }
    }
-
+   const BOOL accepted = CGXGridWnd::OnEndEditing(nRow,nCol);
+   if (accepted && modified && GetParent())
+      GetParent()->PostMessage(WM_PIERPOINT_GRID_CELL_CHANGED, (WPARAM)nRow, (LPARAM)nCol);
+   return accepted;
 }

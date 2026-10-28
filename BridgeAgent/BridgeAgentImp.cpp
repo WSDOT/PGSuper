@@ -25,6 +25,7 @@
 #include "BridgeAgent.h"
 #include "BridgeAgentImp.h"
 #include "BridgeHelpers.h"
+#include <PointDefinedArc.h>
 #include <PGSuperException.h>
 #include "DeckEdgeBuilder.h"
 #include "CLSID.h"
@@ -2802,6 +2803,7 @@ bool CBridgeAgentImp::LayoutPiers()
               points->Add(point);
           }
           uxbeam->SetPoints(points);
+
       }
       else if (pPierData->GetPierLayoutType() == pgsTypes::pltScalloped)
       {
@@ -2921,6 +2923,18 @@ bool CBridgeAgentImp::LayoutPiers()
       columnLayout->SetReferenceColumn(refColIdx, refColOffset);
       
       pier->putref_ColumnLayout(columnLayout);
+      if (uxbeam)
+      {
+          const auto& vPoints = pPierData->GetPierPointData();
+          CComQIPtr<IPointDefinedCrossBeam2> transitions(uxbeam);
+          if (!transitions) return false;
+          for (IndexType idx = 0; idx + 1 < vPoints.size(); ++idx)
+          {
+             hr = transitions->SetTransition(idx,
+                static_cast<CrossBeamTransition>(vPoints[idx].GetTransitionType()), vPoints[idx].GetRadius());
+             if (FAILED(hr)) return false;
+          }
+      }
       
    }
 
@@ -13515,31 +13529,51 @@ void CBridgeAgentImp::GetBottomXBeamProfile(
             IndexType nPierPoints =
                 pierData.GetPierPointCount();
 
-            for (IndexType ppIdx = 0;
-                ppIdx < nPierPoints;
-                ++ppIdx)
+            for (IndexType ppIdx = 0; ppIdx < nPierPoints; ++ppIdx)
             {
-                const CPierPointData& pierPoint =
-                    pierData.GetPierPointData(ppIdx);
-
-                Float64 Xxb = pierPoint.Get_X();
-
-                Float64 Xp = ConvertCrossBeamToPierCoordinate(pierData, Xxb);
-                Float64 Xcl = ConvertCrossBeamToCurbLineCoordinate(pierData, Xxb);
-
-                Float64 deckElev = GetElevation(pierData, Xcl);
-
-                Float64 y = 
-                    deckElev - pierPoint.Get_Y() - tDeck - H5;
-
-                if (InRange(Xlt, Xp, Xrt))
+                const auto& point = pierData.GetPierPointData(ppIdx);
+                const Float64 x = ConvertCrossBeamToPierCoordinate(pierData, point.Get_X());
+                const Float64 xcl = ConvertCrossBeamToCurbLineCoordinate(pierData, point.Get_X());
+                const Float64 y = GetElevation(pierData, xcl) - point.Get_Y() - tDeck - H5;
+                if (!InRange(XbottomLeft, x, XbottomRight)) throw E_INVALIDARG;
+                CComPtr<IPoint2d> pnt;
+                pnt.CoCreateInstance(CLSID_Point2d);
+                pnt->Move(x,y);
+                BXBProfile->Add(pnt);
+                if (ppIdx + 1 == nPierPoints || point.GetTransitionType() == CPierPointData::ttStraight)
+                    continue;
+                const auto& next = pierData.GetPierPointData(ppIdx + 1);
+                const Float64 nx = ConvertCrossBeamToPierCoordinate(pierData, next.Get_X());
+                const Float64 nxcl = ConvertCrossBeamToCurbLineCoordinate(pierData, next.Get_X());
+                const Float64 ny = GetElevation(pierData, nxcl) - next.Get_Y() - tDeck - H5;
+                WBFL::Geometry::PointDefinedArc arc;
+                if (!arc.Initialize(x,y,nx,ny,point.GetRadius(), point.GetTransitionType() == CPierPointData::ttArcUpward))
+                    throw E_INVALIDARG;
+                // Check the whole arc against every intersected top-profile segment.
+                for (IndexType idx = 0; idx + 1 < nPoints; ++idx)
                 {
-                    CComPtr<IPoint2d> pntBXB;
-                    pntBXB.CoCreateInstance(
-                        CLSID_Point2d);
-
-                    pntBXB->Move(Xp, y);
-                    BXBProfile->Add(pntBXB);
+                    CComPtr<IPoint2d> a, b;
+                    lxbProfile->get_Item(idx,&a);
+                    lxbProfile->get_Item(idx+1,&b);
+                    Float64 ax,ay,bx,by;
+                    a->Location(&ax,&ay); b->Location(&bx,&by);
+                    const Float64 left = (std::max)(x,ax), right = (std::min)(nx,bx);
+                    if (left < right && bx > ax)
+                    {
+                        const Float64 slope = (by-ay)/(bx-ax);
+                        if (!arc.IsBelowLine(left,ay+slope*(left-ax),right,ay+slope*(right-ax)))
+                            throw E_INVALIDARG;
+                    }
+                }
+                const int segments = arc.GetSegmentCount();
+                for (int segment = 1; segment < segments; ++segment)
+                {
+                    Float64 sx,sy;
+                    arc.PointAtFraction(Float64(segment)/segments,sx,sy);
+                    CComPtr<IPoint2d> sample;
+                    sample.CoCreateInstance(CLSID_Point2d);
+                    sample->Move(sx,sy);
+                    BXBProfile->Add(sample);
                 }
             }
         }
@@ -13588,7 +13622,7 @@ void CBridgeAgentImp::GetBottomXBeamProfile(
 
         BXBProfile->Insert(0, bxbL);
 
-        if (!IsZero(H2L) &&
+        if (pierData.GetPierLayoutType() != pgsTypes::pltUserDefined && !IsZero(H2L) &&
             !IsZero(X2L))
         {
             CComPtr<IPoint2d> bxbLT;
@@ -13605,7 +13639,7 @@ void CBridgeAgentImp::GetBottomXBeamProfile(
             BXBProfile->Insert(1, bxbLT);
         }
 
-        if (!IsZero(H2R) &&
+        if (pierData.GetPierLayoutType() != pgsTypes::pltUserDefined && !IsZero(H2R) &&
             !IsZero(X2R))
         {
             CComPtr<IPoint2d> bxbRT;
@@ -14298,6 +14332,28 @@ Float64 CBridgeAgentImp::GetPierDepth(const CPierData2& pierData, pgsTypes::Stag
 
     Float64 Y1 = fnTop.Evaluate(xLoc);
     Float64 Y2 = fnBottom.Evaluate(xLoc);
+    if (pierData.GetPierLayoutType() == pgsTypes::pltUserDefined)
+    {
+        const auto& points = pierData.GetPierPointData();
+        Float64 hu, width;
+        GetUpperXBeamDimensions(pierData.GetIndex(), &hu, &width);
+        const Float64 tDeck = GetDeckThickness();
+        for (IndexType idx = 0; idx + 1 < points.size(); ++idx)
+        {
+            const auto& a = points[idx]; const auto& b = points[idx+1];
+            if (a.GetTransitionType() == CPierPointData::ttStraight || xLoc < a.Get_X() || xLoc > b.Get_X())
+                continue;
+            const Float64 x0 = ConvertCrossBeamToPierCoordinate(pierData,a.Get_X());
+            const Float64 x1 = ConvertCrossBeamToPierCoordinate(pierData,b.Get_X());
+            const Float64 y0 = GetElevation(pierData,ConvertCrossBeamToCurbLineCoordinate(pierData,a.Get_X())) - tDeck - hu - a.Get_Y();
+            const Float64 y1 = GetElevation(pierData,ConvertCrossBeamToCurbLineCoordinate(pierData,b.Get_X())) - tDeck - hu - b.Get_Y();
+            WBFL::Geometry::PointDefinedArc arc;
+            if (!arc.Initialize(x0,y0,x1,y1,a.GetRadius(),a.GetTransitionType() == CPierPointData::ttArcUpward))
+                throw E_INVALIDARG;
+            Y2 = arc.Evaluate(xLoc + Xoffset);
+            break;
+        }
+    }
 
     Float64 depth = Y1 - Y2; // depth of the lower cross beam
 

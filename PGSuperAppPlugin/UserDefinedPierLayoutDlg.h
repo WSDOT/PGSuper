@@ -74,6 +74,8 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
+    bool m_Initialized = false;
+    bool m_UpdatingLayout = false;
 	pgsTypes::PierModelType m_PierModelType;
 	CPierData2 m_Pier;
 

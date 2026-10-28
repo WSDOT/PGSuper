@@ -22,6 +22,7 @@
 
 #include "StdAfx.h"
 #include <PsgLib\PierPointData.h>
+#include <cmath>
 
 /****************************************************************************
 CLASS
@@ -66,7 +67,7 @@ bool CPierPointData::operator==(const CPierPointData& rOther) const
       return false;
    }
 
-   return true;
+   return m_TransitionType == rOther.m_TransitionType && IsEqual(m_Radius, rOther.m_Radius);
 }
 
 bool CPierPointData::operator!=(const CPierPointData& rOther) const
@@ -78,10 +79,12 @@ HRESULT CPierPointData::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgr
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PierPoint"),1.0);
+   pStrSave->BeginUnit(_T("PierPoint"),2.0);
 
    pStrSave->put_Property(_T("X"),CComVariant(m_X));
    pStrSave->put_Property(_T("Y"),CComVariant(m_Y));
+   pStrSave->put_Property(_T("Transition"),CComVariant(m_TransitionType));
+   pStrSave->put_Property(_T("Radius"),CComVariant(m_Radius));
 
    pStrSave->EndUnit(); // Pier Point
 
@@ -107,6 +110,20 @@ HRESULT CPierPointData::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgr
 
       hr = pStrLoad->get_Property(_T("Y"),&var);
       m_Y = var.dblVal;
+      m_TransitionType = ttStraight;
+      m_Radius = 0;
+      if (version >= 2.0)
+      {
+         var.vt = VT_I4;
+         hr = pStrLoad->get_Property(_T("Transition"), &var);
+         if (var.lVal < ttStraight || var.lVal > ttArcDownward) throw E_FAIL;
+         m_TransitionType = static_cast<TransitionType>(var.lVal);
+         var.vt = VT_R8;
+         hr = pStrLoad->get_Property(_T("Radius"), &var);
+         m_Radius = var.dblVal;
+         if (!std::isfinite(m_Radius) || m_Radius < 0 ||
+             (m_TransitionType != ttStraight && m_Radius == 0)) throw E_FAIL;
+      }
 
       hr = pStrLoad->EndUnit(); // Pier Point
    }
@@ -141,6 +158,8 @@ void CPierPointData::MakeCopy(const CPierPointData& rOther)
    m_pPier = rOther.m_pPier;
    m_X = rOther.m_X;
    m_Y = rOther.m_Y;
+   m_TransitionType = rOther.m_TransitionType;
+   m_Radius = rOther.m_Radius;
 
    PGS_ASSERT_VALID;
 }
@@ -168,6 +187,22 @@ void CPierPointData::Set_Y(Float64 ppY)
 Float64 CPierPointData::Get_Y() const
 {
    return m_Y;
+}
+
+void CPierPointData::SetTransition(TransitionType type, Float64 radius)
+{
+   m_TransitionType = type;
+   m_Radius = type == ttStraight ? 0 : radius;
+}
+
+CPierPointData::TransitionType CPierPointData::GetTransitionType() const
+{
+   return m_TransitionType;
+}
+
+Float64 CPierPointData::GetRadius() const
+{
+   return m_Radius;
 }
 
 #if defined _DEBUG

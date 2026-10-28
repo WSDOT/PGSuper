@@ -71,6 +71,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
    
    virtual void OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol);
+   BOOL OnEndEditing(ROWCOL nRow, ROWCOL nCol) override;
    virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
 
 private:
@@ -78,6 +79,9 @@ private:
    void SetPierPointData(ROWCOL row,const CPierPointData& pierPoint);
    void GetPierPointData(ROWCOL row,CPierPointData* pierPoint);
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
+   bool ReadNumber(ROWCOL row, ROWCOL col, Float64& value);
+   void UpdateTransitionCells();
+   void UpdateRadiusCell(ROWCOL row);
 };
 
 /////////////////////////////////////////////////////////////////////////////

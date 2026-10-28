@@ -42,6 +42,11 @@ public:
    const CPierData2* GetPier() const;
    CPierData2* GetPier();
 
+   enum TransitionType { ttStraight = 0, ttArcUpward = 1, ttArcDownward = 2 };
+   void SetTransition(TransitionType type, Float64 radius);
+   TransitionType GetTransitionType() const;
+   Float64 GetRadius() const;
+
    void Set_X(Float64 ppX);
    Float64 Get_X() const;
 
@@ -66,4 +71,6 @@ private:
    CPierData2* m_pPier;
    Float64 m_X;
    Float64 m_Y;
+   TransitionType m_TransitionType = ttStraight;
+   Float64 m_Radius = 0;
 };
