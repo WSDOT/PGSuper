@@ -358,7 +358,8 @@ bool CSectionCutDisplayImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDispla
    {
       auto pList = pDO->GetDisplayList();
       auto pDispMgr =  pList->GetDisplayMgr();
-      auto pView = pDispMgr->GetView();
+      auto pDisp = pDispMgr->GetDisplay();
+      auto pView = dynamic_cast<CDisplayView*>(pDisp);
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
