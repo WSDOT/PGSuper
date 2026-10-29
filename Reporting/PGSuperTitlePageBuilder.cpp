@@ -30,6 +30,7 @@
 #include <PgsExt\SegmentRelatedStatusItem.h>
 
 #include <IFace\VersionInfo.h>
+#include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFUIIntegration.h>
@@ -202,10 +203,12 @@ rptChapter* CPGSuperTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Re
    pPara = new rptParagraph;
    pPara->SetStyleName(rptStyleManager::GetReportTitleStyle());
    *pTitlePage << pPara;
+   GET_IFACE2(broker, IDocumentType, pDocType);
+   LPCTSTR appName = pDocType->IsPGSpliceDocument() ? _T("PGSplice") : _T("PGSuper");
 #if defined _WIN64
-   *pPara << _T("PGSuper") << Super(symbol(TRADEMARK)) << _T(" (x64)") << rptNewLine;
+   *pPara << appName << Super(symbol(TRADEMARK)) << _T(" (x64)") << rptNewLine;
 #else
-   *pPara << _T("PGSuper") << Super(symbol(TRADEMARK)) << _T(" (x86)") << rptNewLine;
+   *pPara << appName << Super(symbol(TRADEMARK)) << _T(" (x86)") << rptNewLine;
 #endif
 
    pPara = new rptParagraph(rptStyleManager::GetCopyrightStyle());
