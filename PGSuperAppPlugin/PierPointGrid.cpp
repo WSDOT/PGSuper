@@ -389,13 +389,21 @@ void CPierPointGrid::UpdateRadiusCell(ROWCOL row)
       Float64 radius;
       if (!ReadNumber(row,4,radius) || radius <= 0)
       {
-         auto pBroker = EAFGetBroker();
-         GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-         const Float64 previousX = row > 1 ? _tstof(GetCellValue(row-1,1)) : 0;
-         const Float64 previousY = row > 1 ? _tstof(GetCellValue(row-1,2)) :
-            WBFL::Units::ConvertFromSysUnits(m_StartDepth, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
-         const Float64 dx = _tstof(GetCellValue(row,1)) - previousX;
-         const Float64 dy = _tstof(GetCellValue(row,2)) - previousY;
+
+         Float64 previousX = row > 1 ? _tstof(GetCellValue(row-1,1)) : 0;
+         Float64 previousY = row;
+         if (previousY > 1)
+         {
+             _tstof(GetCellValue(row - 1, 2));
+         }
+         else
+         {
+             auto pBroker = EAFGetBroker();
+             GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+             WBFL::Units::ConvertFromSysUnits(m_StartDepth, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+         }
+         Float64 dx = _tstof(GetCellValue(row,1)) - previousX;
+         Float64 dy = _tstof(GetCellValue(row,2)) - previousY;
          radius = 10 * std::hypot(dx,dy);
          SetStyleRange(CGXRange(row,4), CGXStyle().SetValue(radius));
       }
