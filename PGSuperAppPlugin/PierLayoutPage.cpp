@@ -561,6 +561,7 @@ void CPierLayoutPage::OnPierModelTypeChanged()
             (pWnd->GetSafeHwnd() == m_UserDefinedPierLayoutDlg.GetSafeHwnd());
 
         if (!bIsEmbeddedPierDlg &&
+            nID != IDC_STATIC_BOUNDS &&
             nID != IDC_PIER_MODEL_LABEL &&
             nID != IDC_PIER_MODEL_TYPE)
         {

@@ -130,7 +130,7 @@ void CPierPointGrid::CustomInit()
 			.SetEnabled(FALSE)          // disables usage as current cell
          .SetHorizontalAlignment(DT_CENTER)
          .SetVerticalAlignment(DT_VCENTER)
-			.SetValue(_T("Node"))
+			.SetValue(_T("Point"))
 		);
 
    CString cv;
