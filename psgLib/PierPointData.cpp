@@ -80,7 +80,7 @@ HRESULT CPierPointData::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgr
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("PierPoint"),3.0);
+   pStrSave->BeginUnit(_T("PierPoint"),1.0);
 
    pStrSave->put_Property(_T("X"),CComVariant(m_X));
    pStrSave->put_Property(_T("Y"),CComVariant(m_Y));
@@ -94,7 +94,7 @@ HRESULT CPierPointData::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgr
    return hr;
 }
 
-HRESULT CPierPointData::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress, bool* pLegacyTransition)
+HRESULT CPierPointData::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress)
 {
    CHRException hr;
 
@@ -103,11 +103,6 @@ HRESULT CPierPointData::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgr
       CComVariant var;
       hr = pStrLoad->BeginUnit(_T("PierPoint"));
 
-      Float64 version;
-      pStrLoad->get_Version(&version);
-      if (pLegacyTransition) *pLegacyTransition = version < 3.0;
-      m_IsEndPoint = false;
-
       var.vt = VT_R8;
 
       hr = pStrLoad->get_Property(_T("X"),&var);
@@ -115,27 +110,18 @@ HRESULT CPierPointData::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgr
 
       hr = pStrLoad->get_Property(_T("Y"),&var);
       m_Y = var.dblVal;
-      m_TransitionType = ttStraight;
-      m_Radius = 0;
-      if (version >= 2.0)
-      {
-         var.vt = VT_I4;
-         hr = pStrLoad->get_Property(_T("Transition"), &var);
-         if (var.lVal < ttStraight || var.lVal > ttArcDownward) throw E_FAIL;
-         m_TransitionType = static_cast<TransitionType>(var.lVal);
-         var.vt = VT_R8;
-         hr = pStrLoad->get_Property(_T("Radius"), &var);
-         m_Radius = var.dblVal;
-         if (!std::isfinite(m_Radius) || m_Radius < 0 ||
-             (m_TransitionType != ttStraight && m_Radius == 0)) throw E_FAIL;
-      }
-
-      if (version >= 3.0)
-      {
-         var.vt = VT_BOOL;
-         hr = pStrLoad->get_Property(_T("EndPoint"), &var);
-         m_IsEndPoint = var.boolVal != VARIANT_FALSE;
-      }
+      var.vt = VT_I4;
+      hr = pStrLoad->get_Property(_T("Transition"), &var);
+      if (var.lVal < ttStraight || var.lVal > ttArcDownward) throw E_FAIL;
+      m_TransitionType = static_cast<TransitionType>(var.lVal);
+      var.vt = VT_R8;
+      hr = pStrLoad->get_Property(_T("Radius"), &var);
+      m_Radius = var.dblVal;
+      if (!std::isfinite(m_Radius) || m_Radius < 0 ||
+          (m_TransitionType != ttStraight && m_Radius == 0)) throw E_FAIL;
+      var.vt = VT_BOOL;
+      hr = pStrLoad->get_Property(_T("EndPoint"), &var);
+      m_IsEndPoint = var.boolVal != VARIANT_FALSE;
 
       hr = pStrLoad->EndUnit(); // Pier Point
    }
@@ -220,9 +206,6 @@ Float64 CPierPointData::GetRadius() const
 
 void CPierPointData::UpdateEndPoint(std::vector<CPierPointData>& points, Float64 length, Float64 depth)
 {
-   // Reuse an explicitly entered beam endpoint from an older profile.
-   if (!points.empty() && IsEqual(points.back().Get_X(), length) && IsEqual(points.back().Get_Y(), depth))
-      points.back().SetEndPoint(true);
    if (points.empty() || !points.back().IsEndPoint())
    {
       CPierPointData endPoint;

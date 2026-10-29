@@ -542,7 +542,7 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress>
 
    // Make sure outside changes to the bridge haven't made our data out of sync
    ProtectBearingData();
-   pStrSave->BeginUnit(_T("PierDataDetails"),23.0);
+   pStrSave->BeginUnit(_T("PierDataDetails"),22.0);
    
    pStrSave->put_Property(_T("ID"),CComVariant(m_PierID));
 
@@ -587,10 +587,10 @@ HRESULT CPierData2::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress>
       pStrSave->put_Property(_T("XBeamOverhang_Left"),CComVariant(m_XBeamOverhang[pgsTypes::stLeft]));
       pStrSave->put_Property(_T("XBeamOverhang_Right"),CComVariant(m_XBeamOverhang[pgsTypes::stRight]));
       pStrSave->put_Property(_T("XBeamWidth"),CComVariant(m_XBeamWidth));
-      pStrSave->put_Property(_T("XBeamOverhangRadius_Left"),CComVariant(m_XBeamOverhangRadius[pgsTypes::stLeft]));  // added in version 23
-      pStrSave->put_Property(_T("XBeamOverhangRadius_Right"),CComVariant(m_XBeamOverhangRadius[pgsTypes::stRight]));  // added in version 23
+      pStrSave->put_Property(_T("XBeamOverhangRadius_Left"),CComVariant(m_XBeamOverhangRadius[pgsTypes::stLeft]));  // added in version 22
+      pStrSave->put_Property(_T("XBeamOverhangRadius_Right"),CComVariant(m_XBeamOverhangRadius[pgsTypes::stRight]));  // added in version 22
 
-      pStrSave->put_Property(_T("PierPointCount"), CComVariant(m_PierPoints.size()));  // added in version 23
+      pStrSave->put_Property(_T("PierPointCount"), CComVariant(m_PierPoints.size()));  // added in version 22
       std::vector<CPierPointData>::iterator ppIterBegin = m_PierPoints.begin();
       std::vector<CPierPointData>::iterator ppIter = ppIterBegin;
       std::vector<CPierPointData>::iterator ppIterEnd = m_PierPoints.end();
@@ -989,7 +989,7 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress>
             hr = pStrLoad->get_Property(_T("XBeamWidth"),&var);
             m_XBeamWidth = var.dblVal;
 
-			if (22 < version)
+            if (version >= 22)
             {
                 hr = pStrLoad->get_Property(_T("XBeamOverhangRadius_Left"), &var);
                 m_XBeamOverhangRadius[pgsTypes::stLeft] = var.dblVal;
@@ -1003,18 +1003,10 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress>
                     var.vt = VT_INDEX;
                     hr = pStrLoad->get_Property(_T("PierPointCount"), &var);
                     PierPointIndexType nPierPoints = VARIANT2INDEX(var);
-                    CPierPointData previousPoint; // Legacy transitions belonged to the preceding point.
                     for (PierPointIndexType ppIdx = 0; ppIdx < nPierPoints; ppIdx++)
                     {
                         CPierPointData pierPointData(this);
-                        bool legacyTransition = false;
-                        pierPointData.Load(pStrLoad, pProgress, &legacyTransition);
-                        if (legacyTransition)
-                        {
-                            CPierPointData outgoing = pierPointData;
-                            pierPointData.SetTransition(previousPoint.GetTransitionType(), previousPoint.GetRadius());
-                            previousPoint = outgoing;
-                        }
+                        pierPointData.Load(pStrLoad, pProgress);
                         m_PierPoints.push_back(pierPointData);
                     }
                 }
@@ -1060,7 +1052,7 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress>
                     hr = pStrLoad->get_Property(_T("Spacing"), &var);
                     m_ColumnSpacing.push_back(var.dblVal);
 
-                    if (version >= 23)
+                    if (version >= 22)
                     {
                         var.vt = VT_R8;
                         hr = pStrLoad->get_Property(_T("Radii"), &var);
@@ -1074,7 +1066,7 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress>
                     }
                 }
 
-                if (version >= 23)
+                if (version >= 22)
                 {
                     var.vt = VT_R8;
                     hr = pStrLoad->get_Property(_T("Depths"), &var);

@@ -59,7 +59,7 @@ public:
    void Set_Y(Float64 ppY);
    Float64 Get_Y() const;
 
-	HRESULT Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress, bool* pLegacyTransition = nullptr);
+	HRESULT Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress);
 	HRESULT Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress> pProgress);
 
 #if defined _DEBUG

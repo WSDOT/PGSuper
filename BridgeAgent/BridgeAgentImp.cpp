@@ -2935,11 +2935,9 @@ bool CBridgeAgentImp::LayoutPiers()
           auto vPoints = pPierData->GetPierPointData();
           CPierPointData::UpdateEndPoint(vPoints,
               OHL + OHR + pPierData->GetColumnSpacingWidth() - X1L - X1R, H1R);
-          CComQIPtr<IPointDefinedCrossBeam2> transitions(uxbeam);
-          if (!transitions) return false;
           for (IndexType idx = 0; idx < vPoints.size(); ++idx)
           {
-             hr = transitions->SetTransition(idx,
+             hr = uxbeam->SetTransition(idx,
                 static_cast<CrossBeamTransition>(vPoints[idx].GetTransitionType()), vPoints[idx].GetRadius());
              if (FAILED(hr)) return false;
           }
