@@ -1003,10 +1003,18 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress>
                     var.vt = VT_INDEX;
                     hr = pStrLoad->get_Property(_T("PierPointCount"), &var);
                     PierPointIndexType nPierPoints = VARIANT2INDEX(var);
+                    CPierPointData previousPoint; // Legacy transitions belonged to the preceding point.
                     for (PierPointIndexType ppIdx = 0; ppIdx < nPierPoints; ppIdx++)
                     {
                         CPierPointData pierPointData(this);
-                        pierPointData.Load(pStrLoad, pProgress);
+                        bool legacyTransition = false;
+                        pierPointData.Load(pStrLoad, pProgress, &legacyTransition);
+                        if (legacyTransition)
+                        {
+                            CPierPointData outgoing = pierPointData;
+                            pierPointData.SetTransition(previousPoint.GetTransitionType(), previousPoint.GetRadius());
+                            previousPoint = outgoing;
+                        }
                         m_PierPoints.push_back(pierPointData);
                     }
                 }

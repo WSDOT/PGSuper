@@ -150,6 +150,15 @@ void CUserDefinedPierLayoutDlg::DoDataExchange(CDataExchange* pDX)
     CColumnLayoutGrid::DDV_ColumnGrid(pDX, m_ColumnLayoutGrid);
     CColumnLayoutGrid::DDX_ColumnGrid(pDX, m_ColumnLayoutGrid, &m_Pier);
 
+    if (pDX->m_bSaveAndValidate)
+    {
+        Float64 length = m_XBeamOverhang[0] + m_XBeamOverhang[1] -
+            m_XBeamEndSlopeOffset[0] - m_XBeamEndSlopeOffset[1];
+        for (ColumnIndexType idx = 1; idx < m_Pier.GetColumnCount(); ++idx)
+            length += m_Pier.GetColumnSpacing(idx - 1);
+        m_PierPointGrid.UpdateEndPoint(length, m_XBeamHeight[1], m_XBeamHeight[0]);
+    }
+
     CPierPointGrid::DDV_PierPointGrid(pDX, m_PierPointGrid);
     CPierPointGrid::DDX_PierPointGrid(pDX, m_PierPointGrid, &m_Pier);
 
@@ -439,6 +448,11 @@ void CUserDefinedPierLayoutDlg::ChangePierLayout()
 
     m_Pier.SetXBeamOverhang(pgsTypes::stLeft, m_XBeamOverhang[pgsTypes::stLeft]);
     m_Pier.SetXBeamOverhang(pgsTypes::stRight, m_XBeamOverhang[pgsTypes::stRight]);
+
+    const Float64 length = m_XBeamOverhang[0] + m_XBeamOverhang[1] + m_Pier.GetColumnSpacingWidth() -
+        m_XBeamEndSlopeOffset[0] - m_XBeamEndSlopeOffset[1];
+    m_PierPointGrid.UpdateEndPoint(length, m_XBeamHeight[1], m_XBeamHeight[0]);
+    m_PierPointGrid.GetPierPointData(m_Pier);
 
     if (pPage->m_pPierLayoutPopout != nullptr)
     {

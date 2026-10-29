@@ -59,6 +59,7 @@ public:
 // Implementation
 public:
    void CustomInit();
+   void UpdateEndPoint(Float64 length, Float64 depth, Float64 startDepth);
 
    static void DDX_PierPointGrid(CDataExchange* pDX, CPierPointGrid& grid, CPierData2* pPier);
    static void DDV_PierPointGrid(CDataExchange* pDX, CPierPointGrid& grid);
@@ -75,6 +76,7 @@ protected:
    virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
 
 private:
+   Float64 m_StartDepth = 0;
    void AddPierPoint(const CPierPointData& pierPoint);
    void SetPierPointData(ROWCOL row,const CPierPointData& pierPoint);
    void GetPierPointData(ROWCOL row,CPierPointData* pierPoint);

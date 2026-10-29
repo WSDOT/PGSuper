@@ -53,7 +53,7 @@ void CPierPointGrid::DDV_PierPointGrid(CDataExchange* pDX, CPierPointGrid& grid)
            for (ROWCOL col = 1; col <= 4; ++col)
            {
               if (col == 3 || (col == 4 &&
-                  (row == grid.GetRowCount() || grid.GetCellValue(row,3) == _T("Straight"))))
+                  grid.GetCellValue(row,3) == _T("Straight")))
                  continue;
               Float64 value;
               if (!grid.ReadNumber(row, col, value) || (col == 4 && value <= 0))
@@ -155,12 +155,12 @@ void CPierPointGrid::CustomInit()
 
 
    SetStyleRange(CGXRange(0,pp++), CGXStyle()
-      .SetWrapText(FALSE).SetEnabled(FALSE)
+      .SetWrapText(TRUE).SetEnabled(FALSE)
       .SetHorizontalAlignment(DT_CENTER).SetVerticalAlignment(DT_VCENTER)
-      .SetValue(_T("Transition to next")));
+      .SetValue(_T("Transition from\nprevious point")));
    cv.Format(_T("Radius (%s)"), pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
    SetStyleRange(CGXRange(0,pp++), CGXStyle()
-      .SetWrapText(FALSE).SetEnabled(FALSE)
+      .SetWrapText(TRUE).SetEnabled(FALSE)
       .SetHorizontalAlignment(DT_CENTER).SetVerticalAlignment(DT_VCENTER).SetValue(cv));
    ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
 
@@ -180,28 +180,27 @@ void CPierPointGrid::CustomInit()
 
 void CPierPointGrid::AddPierPoint()
 {
-    ROWCOL nRows = GetRowCount();
-
+    // The last row is the fixed beam endpoint. Insert new points before it.
+    const ROWCOL endRow = GetRowCount();
+    if (endRow == 0) return;
     CPierPointData pierPointData;
-
-    if (0 < nRows)
-    {
-        GetPierPointData(nRows, &pierPointData); // get pier point data from the last row
-    }
-
+    if (endRow > 1)
+       GetPierPointData(endRow - 1, &pierPointData);
+    else
+       pierPointData.Set_Y(m_StartDepth);
+    Float64 endX = 0;
+    ReadNumber(endRow, 1, endX);
+    auto pBroker = EAFGetBroker();
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    endX = WBFL::Units::ConvertToSysUnits(endX, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+    // Start halfway along the remaining segment, with a straight transition.
+    pierPointData.Set_X((pierPointData.Get_X() + endX) / 2);
+    pierPointData.SetTransition(CPierPointData::ttStraight, 0);
+    pierPointData.SetEndPoint(false);
     GetParam()->EnableUndo(FALSE);
     GetParam()->SetLockReadOnly(FALSE);
-
-    if (nRows == 0)
-    {
-        AddPierPoint(pierPointData);
-    }
-    else
-    {
-        pierPointData.Set_X(pierPointData.Get_X() + WBFL::Units::ConvertToSysUnits(4.0, WBFL::Units::Measure::Feet));
-        // add the new column (adds row to the grid)
-        AddPierPoint(pierPointData);
-    }
+    InsertRows(endRow, 1);
+    SetPierPointData(endRow, pierPointData);
 
     UpdateTransitionCells();
     ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
@@ -220,7 +219,8 @@ void CPierPointGrid::RemoveSelectedPierPoints()
    for ( int r = nSelRows-1; r >= 0; r-- )
    {
       ROWCOL selRow = selRows[r];
-      RemoveRows(selRow,selRow);
+      if (selRow > 0 && selRow < GetRowCount())
+         RemoveRows(selRow,selRow);
    }
    UpdateTransitionCells();
 
@@ -253,12 +253,17 @@ void CPierPointGrid::SetPierPointData(const CPierData2& pier)
    }
 
 
-   IndexType nPierPoints = pier.GetPierPointCount();
-   for ( IndexType ppIdx = 0; ppIdx < nPierPoints; ppIdx++ )
-   {
-       const CPierPointData& pierPoint = pier.GetPierPointData(ppIdx);
-       AddPierPoint(pierPoint);
-   }
+   Float64 h1l, h1r, h2, x2, x1l, x1r;
+   pier.GetXBeamDimensions(pgsTypes::stLeft, &h1l, &h2, &x2, &x1l);
+   pier.GetXBeamDimensions(pgsTypes::stRight, &h1r, &h2, &x2, &x1r);
+   Float64 length = pier.GetXBeamOverhang(pgsTypes::stLeft) + pier.GetXBeamOverhang(pgsTypes::stRight) - x1l - x1r;
+   std::vector<CPierPointData> points = pier.GetPierPointData();
+   for (ColumnIndexType idx = 1; idx < pier.GetColumnCount(); ++idx)
+      length += pier.GetColumnSpacing(idx - 1);
+   CPierPointData::UpdateEndPoint(points, length, h1r);
+   m_StartDepth = h1l;
+   for (const auto& point : points)
+      AddPierPoint(point);
 
    UpdateTransitionCells();
    ResizeColWidthsToFit(CGXRange(0,0,GetRowCount(),GetColCount()));
@@ -323,8 +328,8 @@ void CPierPointGrid::GetPierPointData(ROWCOL row,CPierPointData* pPierPoint)
    Float64 Y = _tstof(GetCellValue(row,col));
    Y = WBFL::Units::ConvertToSysUnits(Y, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
    pPierPoint->Set_Y(Y);
+   pPierPoint->SetEndPoint(row == GetRowCount());
    CPierPointData::TransitionType type = CPierPointData::ttStraight;
-   if (row < GetRowCount())
    {
       const CString transition = GetCellValue(row,3);
       if (transition == _T("Arc upward")) type = CPierPointData::ttArcUpward;
@@ -371,7 +376,7 @@ bool CPierPointGrid::ReadNumber(ROWCOL row, ROWCOL col, Float64& value)
 void CPierPointGrid::UpdateRadiusCell(ROWCOL row)
 {
    const CString transition = GetCellValue(row,3);
-   const BOOL enabled = row < GetRowCount() &&
+   const BOOL enabled =
       (transition == _T("Arc upward") || transition == _T("Arc downward"));
    SetStyleRange(CGXRange(row,4), CGXStyle()
       .SetEnabled(enabled).SetReadOnly(!enabled)
@@ -384,27 +389,47 @@ void CPierPointGrid::UpdateRadiusCell(ROWCOL row)
       Float64 radius;
       if (!ReadNumber(row,4,radius) || radius <= 0)
       {
-         const Float64 dx = _tstof(GetCellValue(row+1,1)) - _tstof(GetCellValue(row,1));
-         const Float64 dy = _tstof(GetCellValue(row+1,2)) - _tstof(GetCellValue(row,2));
+         auto pBroker = EAFGetBroker();
+         GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+         const Float64 previousX = row > 1 ? _tstof(GetCellValue(row-1,1)) : 0;
+         const Float64 previousY = row > 1 ? _tstof(GetCellValue(row-1,2)) :
+            WBFL::Units::ConvertFromSysUnits(m_StartDepth, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+         const Float64 dx = _tstof(GetCellValue(row,1)) - previousX;
+         const Float64 dy = _tstof(GetCellValue(row,2)) - previousY;
          radius = 10 * std::hypot(dx,dy);
          SetStyleRange(CGXRange(row,4), CGXStyle().SetValue(radius));
       }
    }
 }
 
+void CPierPointGrid::UpdateEndPoint(Float64 length, Float64 depth, Float64 startDepth)
+{
+   m_StartDepth = startDepth;
+   const ROWCOL row = GetRowCount();
+   if (row == 0) return;
+   auto pBroker = EAFGetBroker();
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GetParam()->SetLockReadOnly(FALSE);
+   SetStyleRange(CGXRange(row,1), CGXStyle().SetValue(
+      WBFL::Units::ConvertFromSysUnits(length, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure)));
+   SetStyleRange(CGXRange(row,2), CGXStyle().SetValue(
+      WBFL::Units::ConvertFromSysUnits(depth, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure)));
+   GetParam()->SetLockReadOnly(TRUE);
+}
+
 void CPierPointGrid::UpdateTransitionCells()
 {
    for (ROWCOL row = 1; row <= GetRowCount(); ++row)
    {
-      const BOOL enabled = row < GetRowCount();
-      SetStyleRange(CGXRange(row,3), CGXStyle()
-         .SetEnabled(enabled).SetReadOnly(!enabled)
-         .SetInterior(::GetSysColor(enabled ? COLOR_WINDOW : COLOR_BTNFACE))
-         .SetTextColor(::GetSysColor(enabled ? COLOR_WINDOWTEXT : COLOR_GRAYTEXT)));
-      if (!enabled)
-         SetStyleRange(CGXRange(row,3), CGXStyle().SetValue(_T("End")));
-      else if (GetValueRowCol(row,3) == _T("End"))
-         SetStyleRange(CGXRange(row,3), CGXStyle().SetValue(_T("Straight")));
+      const BOOL endPoint = row == GetRowCount();
+      CString label;
+      if (endPoint) label = _T("End");
+      else label.Format(_T("%d"), row);
+      SetStyleRange(CGXRange(row,0), CGXStyle().SetValue(label));
+      SetStyleRange(CGXRange(row,1,row,2), CGXStyle()
+         .SetEnabled(!endPoint).SetReadOnly(endPoint)
+         .SetInterior(::GetSysColor(endPoint ? COLOR_BTNFACE : COLOR_WINDOW)));
+      SetStyleRange(CGXRange(row,3), CGXStyle().SetEnabled(TRUE).SetReadOnly(FALSE));
       UpdateRadiusCell(row);
    }
 }

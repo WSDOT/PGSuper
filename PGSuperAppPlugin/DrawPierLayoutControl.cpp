@@ -908,14 +908,17 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
         }
 
         Float64 origX = pBridge->ConvertCrossBeamToPierCoordinate(*pPier, 0.0);
-        Float64 origY = fnTop.Evaluate(origX) - H1L;
+        Float64 origY = fnTop.Evaluate(origX - X1L) - H1L;
         WBFL::Geometry::Point2d origin(origX, origY);
 
         auto doOrigin = WBFL::DManip::PointDisplayObject::Create();
         doOrigin->SetPosition(origin, false, false);
         displayList->AddDisplayObject(doOrigin);
 
-        CString strBlcLabel = _T("(0, 0)");
+        GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+        CString strBlcLabel;
+        const CString startDepth = FormatDimension(H1L, pDisplayUnits->GetSpanLengthUnit());
+        strBlcLabel.Format(_T("(0,%s)"), startDepth.GetString());
 
         auto doBlcLabel = WBFL::DManip::TextBlock::Create();
         doBlcLabel->SetText(strBlcLabel);
@@ -924,14 +927,18 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
         doBlcLabel->SetPosition(origin);
         displayList->AddDisplayObject(doBlcLabel);
 
-        for (IndexType pointIdx = 0; pointIdx < pPier->GetPierPointData().size(); ++pointIdx)
+        auto points = pPier->GetPierPointData();
+        const Float64 length = lbrc - lblc;
+        CPierPointData::UpdateEndPoint(points, length, H1R);
+        Float64 previousX = origX, previousY = origY;
+        for (IndexType pointIdx = 0; pointIdx < points.size(); ++pointIdx)
         {
-            const auto& pnt = pPier->GetPierPointData()[pointIdx];
+            const auto& pnt = points[pointIdx];
             Float64 Xxb = pnt.Get_X();
 
             Float64 Xp = pBridge->ConvertCrossBeamToPierCoordinate(*pPier, Xxb);
 
-            const Float64 Ytop = fnTop.Evaluate(Xp);
+            const Float64 Ytop = fnTop.Evaluate(Xp + (pnt.IsEndPoint() ? X1R : 0));
 
             const Float64 Ypoint = Ytop - pnt.Get_Y();
 
@@ -952,13 +959,10 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
             auto doPoint = WBFL::DManip::PointDisplayObject::Create();
             doPoint->SetPosition(pp, false, false);
             displayList->AddDisplayObject(doPoint);
-            if (pointIdx + 1 < pPier->GetPierPointData().size() && pnt.GetTransitionType() != CPierPointData::ttStraight)
+            if (pnt.GetTransitionType() != CPierPointData::ttStraight)
             {
-                const auto& next = pPier->GetPierPointData()[pointIdx+1];
-                const Float64 nx = pBridge->ConvertCrossBeamToPierCoordinate(*pPier,next.Get_X());
-                const Float64 ny = fnTop.Evaluate(nx) - next.Get_Y();
                 WBFL::Geometry::PointDefinedArc arc;
-                if (arc.Initialize(Xp,Ypoint,nx,ny,pnt.GetRadius(),pnt.GetTransitionType() == CPierPointData::ttArcUpward))
+                if (arc.Initialize(previousX,previousY,Xp,Ypoint,pnt.GetRadius(),pnt.GetTransitionType() == CPierPointData::ttArcUpward))
                 {
                     Float64 mx,my;
                     arc.PointAtFraction(0.5,mx,my);
@@ -973,6 +977,8 @@ void CDrawPierLayoutControl::UpdateDimensionsDisplayObjects()
                     displayList->AddDisplayObject(label);
                 }
             }
+            previousX = Xp;
+            previousY = Ypoint;
         }
 
     }

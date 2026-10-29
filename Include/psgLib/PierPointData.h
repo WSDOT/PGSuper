@@ -22,6 +22,7 @@
 #pragma once
 
 #include "PsgLibLib.h"
+#include <vector>
 
 class CPierData2;
 
@@ -42,10 +43,15 @@ public:
    const CPierData2* GetPier() const;
    CPierData2* GetPier();
 
+   // Each transition connects the previous point to this point.
    enum TransitionType { ttStraight = 0, ttArcUpward = 1, ttArcDownward = 2 };
    void SetTransition(TransitionType type, Float64 radius);
    TransitionType GetTransitionType() const;
    Float64 GetRadius() const;
+
+   bool IsEndPoint() const { return m_IsEndPoint; }
+   void SetEndPoint(bool endPoint) { m_IsEndPoint = endPoint; }
+   static void UpdateEndPoint(std::vector<CPierPointData>& points, Float64 length, Float64 depth);
 
    void Set_X(Float64 ppX);
    Float64 Get_X() const;
@@ -53,7 +59,7 @@ public:
    void Set_Y(Float64 ppY);
    Float64 Get_Y() const;
 
-	HRESULT Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress);
+	HRESULT Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress, bool* pLegacyTransition = nullptr);
 	HRESULT Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress> pProgress);
 
 #if defined _DEBUG
@@ -73,4 +79,5 @@ private:
    Float64 m_Y;
    TransitionType m_TransitionType = ttStraight;
    Float64 m_Radius = 0;
+   bool m_IsEndPoint = false;
 };
