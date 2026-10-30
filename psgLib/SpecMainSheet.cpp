@@ -1481,6 +1481,8 @@ void CSpecMainSheet::ExchangeBearingsData(CDataExchange* pDX)
    DDV_LimitOrMore(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_pImpl->m_BearingCriteria.TaperedSolePlateInclinationThreshold, 0.0);
    DDX_Check_Bool(pDX, IDC_BEARING_REACTION_IMPACT, m_Entry.m_pImpl->m_BearingCriteria.bUseImpactForBearingReactions);
 
+   DDX_Check_Bool(pDX, IDC_ABSOLUTE_STRAIN_SUM, m_Entry.m_pImpl->m_BearingCriteria.bUseAbsoluteStrainSum);
+
    DDX_Radio(pDX, IDC_BEARING_METHOD_A, (int&)m_Entry.m_pImpl->m_BearingCriteria.AnalysisMethod);
 
    DDX_UnitValueAndTag(pDX, IDC_SHEAR_MOD_MIN_LIMIT, IDC_SHEAR_MOD_MIN_LIMIT_UNIT,
@@ -1499,7 +1501,7 @@ void CSpecMainSheet::ExchangeBearingsData(CDataExchange* pDX)
 
    DDX_Check_Bool(pDX, IDC_MIN_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMinimumBearingEdgeToGirderEdgeDistance);
    DDX_UnitValueAndTag(pDX, IDC_MIN_BEARING_GIRDER_EDGE, IDC_MIN_BEARING_GIRDER_EDGE_UNIT,
-       m_Entry.m_pImpl->m_BearingCriteria.MinimumTotalBearingHeight, pDisplayUnits->ComponentDim);
+       m_Entry.m_pImpl->m_BearingCriteria.MinimumBearingEdgeToGirderEdgeDistance, pDisplayUnits->ComponentDim);
 
    DDX_Check_Bool(pDX, IDC_MAX_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMaximumBearingEdgeToGirderEdgeDistance);
    DDX_UnitValueAndTag(pDX, IDC_MAX_BEARING_GIRDER_EDGE, IDC_MAX_BEARING_GIRDER_EDGE_UNIT,
