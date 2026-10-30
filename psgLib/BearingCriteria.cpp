@@ -35,7 +35,9 @@ bool BearingCriteria::operator!=(const BearingCriteria& other) const
       or
       !IsEqual(TaperedSolePlateInclinationThreshold, other.TaperedSolePlateInclinationThreshold)
       or
-      bUseImpactForBearingReactions != bUseImpactForBearingReactions;
+      bUseImpactForBearingReactions != other.bUseImpactForBearingReactions
+      or
+      bUseAbsoluteStrainSum != other.bUseAbsoluteStrainSum;
 }
 
 bool BearingCriteria::Compare(const BearingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<PGS::Library::DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
@@ -60,6 +62,13 @@ bool BearingCriteria::Compare(const BearingCriteria& other, const SpecLibraryEnt
    {
       bSame = false;
       vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Bearing reactions dynamic load allowances are different"), _T(""), _T("")));
+      if (bReturnOnFirstDifference) return false;
+   }
+
+   if (bUseAbsoluteStrainSum != other.bUseAbsoluteStrainSum)
+   {
+      bSame = false;
+      vDifferences.emplace_back(std::make_unique<PGS::Library::DifferenceStringItem>(_T("Bearing combined shear strain summation methods are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -92,11 +101,16 @@ void BearingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUn
       *pPara << _T("not ");
    }
    *pPara << _T("included in live load reactions and rotations.") << rptNewLine;
+   if (AnalysisMethod == WBFL::EngTools::BearingAnalysisMethod::MethodB)
+   {
+      *pPara << _T("Method B combined shear strain summation: ")
+         << (bUseAbsoluteStrainSum ? _T("absolute contributions.") : _T("signed contributions.")) << rptNewLine;
+   }
 }
 
 void BearingCriteria::Save(WBFL::System::IStructuredSave* pSave) const
 {
-   pSave->BeginUnit(_T("BearingCriteria"), 2.0);
+   pSave->BeginUnit(_T("BearingCriteria"), 3.0);
 
    pSave->Property(_T("bAlertTaperedSolePlateRequirement"), bAlertTaperedSolePlateRequirement);
    pSave->Property(_T("TaperedSolePlateInclinationThreshold"), TaperedSolePlateInclinationThreshold);
@@ -122,6 +136,8 @@ void BearingCriteria::Save(WBFL::System::IStructuredSave* pSave) const
    pSave->Property(_T("bMaximumTotalLoad"), bMaximumTotalLoad);
    pSave->Property(_T("MaximumTotalLoad"), MaximumTotalLoad);
 
+   pSave->Property(_T("bUseAbsoluteStrainSum"), bUseAbsoluteStrainSum);
+
    pSave->EndUnit();
 
 }
@@ -129,9 +145,12 @@ void BearingCriteria::Save(WBFL::System::IStructuredSave* pSave) const
 void BearingCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
 {
 
-   PRECONDITION(83 <= pLoad->GetVersion());
+   const Float64 specificationVersion = pLoad->GetVersion();
+   PRECONDITION(83 <= specificationVersion);
 
     if (!pLoad->BeginUnit(_T("BearingCriteria")))  THROW_LOAD(InvalidFileFormat, pLoad);
+    const Float64 version = pLoad->GetVersion();
+    if (version < 1.0) THROW_LOAD(BadVersion, pLoad);
 
     if (!pLoad->Property(_T("bAlertTaperedSolePlateRequirement"), &bAlertTaperedSolePlateRequirement)) THROW_LOAD(InvalidFileFormat, pLoad);
     if (!pLoad->Property(_T("TaperedSolePlateInclinationThreshold"), &TaperedSolePlateInclinationThreshold)) THROW_LOAD(InvalidFileFormat, pLoad);
@@ -159,6 +178,13 @@ void BearingCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
         if (!pLoad->Property(_T("MaximumLiveLoadDeflection"), &MaximumLiveLoadDeflection)) THROW_LOAD(InvalidFileFormat, pLoad);
         if (!pLoad->Property(_T("bMaximumTotalLoad"), &bMaximumTotalLoad)) THROW_LOAD(InvalidFileFormat, pLoad);
         if (!pLoad->Property(_T("MaximumTotalLoad"), &MaximumTotalLoad)) THROW_LOAD(InvalidFileFormat, pLoad);
+    }
+
+    // Preserve the signed calculations of files saved before the option was added.
+    bUseAbsoluteStrainSum = false;
+    if (pLoad->GetVersion() > 2.0)
+    {
+        if (!pLoad->Property(_T("bUseAbsoluteStrainSum"), &bUseAbsoluteStrainSum)) THROW_LOAD(InvalidFileFormat, pLoad);
     }
 
     if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);

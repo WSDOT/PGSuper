@@ -63,6 +63,9 @@ BEGIN_MESSAGE_MAP(CSpecBearingsPage, CPropertyPage)
 		// NOTE: the ClassWizard will add message map macros here
 	//}}AFX_MSG_MAP
 	ON_BN_CLICKED(ID_HELP,OnHelp)
+   ON_BN_CLICKED(IDC_BEARING_METHOD_A, OnBearingMethodChanged)
+   ON_BN_CLICKED(IDC_BEARING_METHOD_B, OnBearingMethodChanged)
+   ON_BN_CLICKED(IDC_ABSOLUTE_STRAIN_SUM, OnAbsoluteStrainSumChanged)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -76,9 +79,25 @@ void CSpecBearingsPage::OnHelp()
 BOOL CSpecBearingsPage::OnInitDialog()
 {
    CPropertyPage::OnInitDialog();
+   OnBearingMethodChanged();
 
    return TRUE;  // return TRUE unless you set the focus to a control
    // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+void CSpecBearingsPage::OnBearingMethodChanged()
+{
+   GetDlgItem(IDC_ABSOLUTE_STRAIN_SUM)->EnableWindow(IsDlgButtonChecked(IDC_BEARING_METHOD_B) == BST_CHECKED);
+}
+
+void CSpecBearingsPage::OnAbsoluteStrainSumChanged()
+{
+   if (IsDlgButtonChecked(IDC_ABSOLUTE_STRAIN_SUM) == BST_UNCHECKED)
+   {
+      ::AfxMessageBox(_T("Using signed strain contributions can produce artificially low combined strains when opposite-sign dead- and live-load rotations cancel after applying the 1.75 cyclic amplification factor. ")
+         _T("AASHTO LRFD Commentary C14.7.5.3.3 advises using the sum of absolute values when the directions of the loading components in the critical combination are unclear. ")
+         _T("Verify that the signed combination represents the governing case."), MB_OK | MB_ICONWARNING);
+   }
 }
 
 BOOL CSpecBearingsPage::OnSetActive()
