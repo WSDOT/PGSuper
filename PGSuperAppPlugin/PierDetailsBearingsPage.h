@@ -62,6 +62,7 @@ private:
    BearingInputData m_BearingInputData;
 
    CBearingData2 m_Bearings[2]; // bearing data for each line in dialog
+   bool m_HasBearings[2] = { true, true };
 
    CBearingDetailsDlg m_details_dlg;
 
