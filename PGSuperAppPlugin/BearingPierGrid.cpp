@@ -172,6 +172,7 @@ void BearingInputData::CopyFromBridgeDescription(const CBridgeDescription2* pBri
          const CGirderGroupData* pGroup = pPier->GetGirderGroup(pierFaces[ibrg]);
 
          BearingPierData brgData;
+         brgData.m_HasBearings = pPier->HasBearings(pierFaces[ibrg]);
 
          // Save pier and group data to make updating bridge description easier
          brgData.m_PierIndex   = ipier;
@@ -194,6 +195,11 @@ void BearingInputData::CopyFromBridgeDescription(const CBridgeDescription2* pBri
          {
             const CBearingData2* pBr = pPier->GetBearingData(ig, pierFaces[ibrg]);
             brgData.m_BearingsForGirders.push_back(*pBr);
+            if (!brgData.m_HasBearings)
+            {
+               // Keep the dimensions used to locate the face of support.
+               brgData.m_BearingsForGirders.back().DefinitionType = btBasic;
+            }
          }
 
          m_Bearings.push_back( brgData );
@@ -670,6 +676,15 @@ void CBearingPierGrid::FillGrid(const BearingInputData& BearingData)
       OnModifyCell(row, m_DGetter.m_BearingDefTypeCol);
       OnModifyCell(row, m_DGetter.m_BearingShapeCol);
       OnModifyCell(row, m_DGetter.m_BearingCountCol);
+
+      if (!hp.m_HasBearings)
+      {
+         SetStyleRange(CGXRange(row, m_DGetter.m_BearingDefTypeCol), CGXStyle()
+            .SetReadOnly(TRUE)
+            .SetEnabled(FALSE)
+            .SetInterior(::GetSysColor(COLOR_BTNFACE))
+            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT)));
+      }
 
       if (hp.m_BPDType!=BearingPierData::bpdBack)
          PierNo++;
