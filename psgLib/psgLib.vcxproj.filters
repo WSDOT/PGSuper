@@ -538,6 +538,9 @@
     <ClCompile Include="LoadFactors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PierPointData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AASHTOConcretePage.h">
@@ -1096,6 +1099,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\psgLib\LoadFactors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\psgLib\PierPointData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

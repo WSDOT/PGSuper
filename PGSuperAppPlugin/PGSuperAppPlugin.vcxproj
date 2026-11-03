@@ -213,12 +213,17 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="BridgeDescFramingGrid.cpp" />
     <ClCompile Include="BridgeDescFramingPage.cpp" />
     <ClCompile Include="BridgeDescGeneralPage.cpp" />
+    <ClCompile Include="ColumnLayoutGrid.cpp" />
+    <ClCompile Include="CommonPierLayoutDlg.cpp" />
     <ClCompile Include="CopyBearingDlg.cpp" />
     <ClCompile Include="CopyPierDlg.cpp" />
     <ClCompile Include="CopyPierPropertiesCallbacks.cpp" />
     <ClCompile Include="CopyTempSupportDlg.cpp" />
     <ClCompile Include="CopyTempSupportPropertiesCallbacks.cpp" />
+    <ClCompile Include="ScallopedColumnLayoutGrid.cpp" />
+    <ClCompile Include="UserDefinedPierLayoutDlg.cpp" />
     <ClCompile Include="DrawDeckRegionControl.cpp" />
+    <ClCompile Include="DrawPierLayoutControl.cpp" />
     <ClCompile Include="EditHaunchACamberDlg.cpp" />
     <ClCompile Include="EditHaunchByHaunchDlg.cpp" />
     <ClCompile Include="FileSaveWarningDlg.cpp" />
@@ -244,7 +249,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="BridgeViewPane.cpp" />
     <ClCompile Include="BridgeViewPrintJob.cpp" />
     <ClCompile Include="ChildFrm.cpp" />
-    <ClCompile Include="ColumnLayoutGrid.cpp" />
     <ClCompile Include="ConnectionDisplayObjectEvents.cpp" />
     <ClCompile Include="ConstructionLoadDlg.cpp" />
     <ClCompile Include="convert.cpp" />
@@ -312,6 +316,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="HaunchDirectSameAsGrid.cpp" />
     <ClCompile Include="HaunchDirectSegmentGrid.cpp" />
     <ClCompile Include="HaunchDirectSpansGrid.cpp" />
+    <ClCompile Include="ScallopedPierLayoutDlg.cpp" />
     <ClCompile Include="HorizontalAlignmentGrid.cpp" />
     <ClCompile Include="HorizontalAlignmentPage.cpp" />
     <ClCompile Include="InplaceEditDisplayObjectEvents.cpp" />
@@ -364,6 +369,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="PierGirderSpacingPage.cpp" />
     <ClCompile Include="PierLayoutPage.cpp" />
     <ClCompile Include="PierLocationPage.cpp" />
+    <ClCompile Include="PierPointGrid.cpp" />
     <ClCompile Include="PluginManagerDlg.cpp" />
     <ClCompile Include="PluginPage.cpp" />
     <ClCompile Include="PointLoadDrawStrategyImpl.cpp" />
@@ -509,10 +515,14 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="TimelineGrid.cpp" />
     <ClCompile Include="TimeStepPropertiesPage.cpp" />
     <ClCompile Include="Utilities.cpp" />
+    <ClCompile Include="XBeamCutLocation.cpp" />
+    <ClCompile Include="XBeamDisplayObjectFactory.cpp" />
+    <ClCompile Include="XBeamSectionCut.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\PGSplice.tip" />
     <None Include="..\PGSuper.tip" />
+    <None Include="res\CommonPierLayout.emf" />
     <None Include="res\Connection_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
     <None Include="res\Connection_BrgAlongGdr_EndAlongGdrFromPier.emf" />
     <None Include="res\Connection_BrgAlongGdr_EndAlongNormalFromBrg.emf" />
@@ -575,6 +585,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <None Include="res\SA_BrgAlongNormal_EndAlongGdrFromPier.emf" />
     <None Include="res\SA_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
     <None Include="res\SA_BrgAlongNormal_EndAlongNormalFromPier.emf" />
+    <None Include="res\ScallopedPierLayout.emf" />
     <None Include="res\StrandSpacing.emf" />
     <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
     <None Include="res\TempSupportClosure_BrgAlongGdr_EndAlongGdrFromPier.emf" />
@@ -585,6 +596,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
     <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromPier.emf" />
     <None Include="res\TempSupportContinuousSegment.emf" />
+    <None Include="res\UserDefinedPierLayout.emf" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Hints.h" />
@@ -610,12 +622,17 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="BridgeDescFramingPage.h" />
     <ClInclude Include="BridgeDescGeneralPage.h" />
     <ClInclude Include="CLSID.h" />
+    <ClInclude Include="ColumnLayoutGrid.h" />
+    <ClInclude Include="CommonPierLayoutDlg.h" />
     <ClInclude Include="CopyBearingDlg.h" />
     <ClInclude Include="CopyPierDlg.h" />
     <ClInclude Include="CopyPierPropertiesCallbacks.h" />
     <ClInclude Include="CopyTempSupportDlg.h" />
     <ClInclude Include="CopyTempSupportPropertiesCallbacks.h" />
+    <ClInclude Include="ScallopedColumnLayoutGrid.h" />
+    <ClInclude Include="UserDefinedPierLayoutDlg.h" />
     <ClInclude Include="DrawDeckRegionControl.h" />
+    <ClInclude Include="DrawPierLayoutControl.h" />
     <ClInclude Include="EditAnalysisType.h" />
     <ClInclude Include="EditHaunchACamberDlg.h" />
     <ClInclude Include="EditHaunchByHaunchDlg.h" />
@@ -642,7 +659,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="BridgeViewPane.h" />
     <ClInclude Include="BridgeViewPrintJob.h" />
     <ClInclude Include="ChildFrm.h" />
-    <ClInclude Include="ColumnLayoutGrid.h" />
     <ClInclude Include="ConnectionDisplayObjectEvents.h" />
     <ClInclude Include="ConstructionLoadDlg.h" />
     <ClInclude Include="convert.h" />
@@ -712,6 +728,8 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="HaunchDirectSameAsGrid.h" />
     <ClInclude Include="HaunchDirectSegmentGrid.h" />
     <ClInclude Include="HaunchDirectSpansGrid.h" />
+    <ClInclude Include="ScallopedPierLayoutDlg.h" />
+    <ClInclude Include="ScallopGeometry.h" />
     <ClInclude Include="HorizontalAlignmentGrid.h" />
     <ClInclude Include="HorizontalAlignmentPage.h" />
     <ClInclude Include="..\Include\BridgeModelViewController.h" />
@@ -788,6 +806,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="PierGirderSpacingPage.h" />
     <ClInclude Include="PierLayoutPage.h" />
     <ClInclude Include="PierLocationPage.h" />
+    <ClInclude Include="PierPointGrid.h" />
     <ClInclude Include="PluginManagerDlg.h" />
     <ClInclude Include="PluginPage.h" />
     <ClInclude Include="PointLoadDrawStrategy.h" />
@@ -915,6 +934,9 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="TimelineGrid.h" />
     <ClInclude Include="TimeStepPropertiesPage.h" />
     <ClInclude Include="Utilities.h" />
+    <ClInclude Include="XBeamCutLocation.h" />
+    <ClInclude Include="XBeamDisplayObjectFactory.h" />
+    <ClInclude Include="XBeamSectionCut.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\AnalysisResultsView.ico" />

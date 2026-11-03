@@ -281,7 +281,8 @@ bool CBridgePlanViewBearingDisplayObjectEvents::OnContextMenu(std::shared_ptr<iD
 
     if (pDO->IsSelected())
     {
-        auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
+        auto pDisp = pDO->GetDisplayList()->GetDisplayMgr()->GetDisplay();
+        auto pView = dynamic_cast<CDisplayView*>(pDisp);
         CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
 

@@ -24,13 +24,36 @@
 #include "ColumnLayoutGrid.h"
 
 #include <IFace/Tools.h>
-#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PGSuperUIUtil.h>
 
 
 GRID_IMPLEMENT_REGISTER(CColumnLayoutGrid, CS_DBLCLKS, 0, 0, 0);
+
+void CColumnLayoutGrid::DDX_ColumnGrid(CDataExchange* pDX, CColumnLayoutGrid& grid, CPierData2* pPier)
+{
+    if (pDX->m_bSaveAndValidate)
+    {
+        grid.GetColumnData(*pPier);
+    }
+    else
+    {
+        grid.SetColumnData(*pPier);
+    }
+}
+
+void CColumnLayoutGrid::DDV_ColumnGrid(CDataExchange* pDX, CColumnLayoutGrid& grid)
+{
+    if (pDX->m_bSaveAndValidate)
+    {
+        if (grid.GetRowCount() == 0)
+        {
+            AfxMessageBox(_T("The pier must have at least one column"), MB_OK | MB_ICONEXCLAMATION);
+            pDX->Fail();
+        }
+    }
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // CColumnLayoutGrid
@@ -66,7 +89,7 @@ void CColumnLayoutGrid::CustomInit()
    SetMergeCellsMode(gxnMergeDelayEval);
 
    const int num_rows = 0;
-   const int num_cols = 6;
+   const int num_cols = GetGridColumnCount();;
 
 	SetRowCount(num_rows);
 	SetColCount(num_cols);
@@ -270,6 +293,15 @@ void CColumnLayoutGrid::GetColumnData(CPierData2& pier)
          pier.SetColumnSpacing(colIdx,S);
       }
    }
+   const auto& nCols = pier.GetColumnCount();
+   ColumnIndexType refColumnIdx;
+   Float64 offset;
+   pgsTypes::OffsetMeasurementType offsetType;
+   pier.GetTransverseOffset(&refColumnIdx, &offset, &offsetType);
+   if (refColumnIdx >= nCols)
+   {
+	   pier.SetTransverseOffset(nCols - 1, offset, offsetType);
+   }
 }
 
 void CColumnLayoutGrid::SetColumnData(const CPierData2& pier)
@@ -471,6 +503,9 @@ void CColumnLayoutGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
 
 void CColumnLayoutGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 {
+   if (NotifyDuringCellEdit() && GetParent())
+		GetParent()->SendMessage(WM_COLUMN_GRID_CELL_CHANGED, (WPARAM)nRow, (LPARAM)nCol);
+
    if ( nCol == 3 )
    {
       GetParam()->EnableUndo(FALSE);
@@ -505,4 +540,19 @@ void CColumnLayoutGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    {
       __super::OnModifyCell(nRow, nCol);
    }
+}
+
+void CColumnLayoutGrid::UpdateLastRowStyles()
+{
+    ROWCOL nRows = GetRowCount();
+    if (0 < nRows)
+    {
+        SetStyleRange(CGXRange(nRows, 6), CGXStyle()
+            .SetEnabled(FALSE)
+            .SetReadOnly(TRUE)
+            .SetInterior(::GetSysColor(COLOR_BTNFACE))
+            .SetTextColor(::GetSysColor(COLOR_BTNFACE))
+            .SetHorizontalAlignment(DT_RIGHT)
+        );
+    }
 }

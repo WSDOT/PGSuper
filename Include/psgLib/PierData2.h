@@ -21,13 +21,14 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-
 #include "PsgLibLib.h"
 #include <PsgLib\GirderSpacing2.h>
 #include <PsgLib\ColumnData.h>
+#include <PsgLib\PierPointData.h>
 #include <PsgLib\ConcreteMaterial.h>
 #include <PsgLib\BearingData2.h>
 #include <psgLib/ConnectionLibraryEntry.h>
+
 
 #include <MathEx.h>
 #include <StrData.h>
@@ -52,6 +53,8 @@ DESCRIPTION
 LOG
    rab : 08.25.1998 : Created file
 *****************************************************************************/
+
+#define WM_PIER_LAYOUT_CHANGED (WM_APP + 101)  // defined here for common use in the pier dialogs
 
 class PSGLIBCLASS CPierData2
 {
@@ -195,6 +198,7 @@ public:
 
    CBearingData2* GetBearingData(GirderIndexType gdrIdx, pgsTypes::PierFaceType face);
    const CBearingData2* GetBearingData(GirderIndexType gdrIdx, pgsTypes::PierFaceType face) const;
+   const std::vector<CBearingData2> GetPierBearingData(pgsTypes::PierFaceType face) const;
 
    // get support width and net bearing height without having to get all bearing data
    Float64 GetSupportWidth(GirderIndexType gdrIdx, pgsTypes::PierFaceType face) const;
@@ -225,6 +229,10 @@ public:
    pgsTypes::PierModelType GetPierModelType() const;
    void SetPierModelType(pgsTypes::PierModelType modelType);
 
+   // Set/Get the pier layout type.
+   pgsTypes::PierLayoutType GetPierLayoutType() const;
+   void SetPierLayoutType(pgsTypes::PierLayoutType layoutType);
+
    void SetConcrete(const CConcreteMaterial& concrete);
    CConcreteMaterial& GetConcrete();
    const CConcreteMaterial& GetConcrete() const;
@@ -247,8 +255,10 @@ public:
    void SetXBeamWidth(Float64 width);
    Float64 GetXBeamWidth() const;
    void SetXBeamOverhang(pgsTypes::SideType side,Float64 overhang);
+   void SetXBeamOverhangRadius(pgsTypes::SideType side,Float64 overhangRadius);
    void SetXBeamOverhangs(Float64 leftOverhang,Float64 rightOverhang);
    Float64 GetXBeamOverhang(pgsTypes::SideType side) const;
+   Float64 GetXBeamOverhangRadius(pgsTypes::SideType side) const;
    void GetXBeamOverhangs(Float64* pLeftOverhang,Float64* pRightOverhang) const;
    Float64 GetXBeamLength() const;
 
@@ -272,6 +282,14 @@ public:
    // Sets the definition of a column
    void SetColumnData(ColumnIndexType colIdx,const CColumnData& columnData);
 
+   void SetColumnScallopDepth(ColumnIndexType colIdx, Float64 depth);
+
+   Float64 GetColumnScallopDepth(ColumnIndexType colIdx) const;
+
+   void SetColumnScallopRadius(ColumnIndexType colIdx, Float64 radius);
+
+   Float64 GetColumnScallopRadius(ColumnIndexType colIdx) const;
+
    // Sets the number of columns... if the column count increases, the new columns
    // are copies of the right most column at the right most spacing.
    void SetColumnCount(ColumnIndexType nColumns);
@@ -290,6 +308,21 @@ public:
 
    // Returns the definition of a column
    const CColumnData& GetColumnData(ColumnIndexType colIdx) const;
+
+   // =================================================================================
+   // Bottom Profile Data
+   // =================================================================================
+
+   PierPointIndexType GetPierPointCount() const;
+
+   // Sets the definition of a pier point
+   void SetPierPointData(PierPointIndexType ppIdx, const CPierPointData& columnData);
+
+   void SetPierPointCount(PierPointIndexType nPierPoints);
+
+   const CPierPointData& GetPierPointData(PierPointIndexType pplIdx) const;
+   const std::vector<CPierPointData>& GetPierPointData() const;
+
 
    // =================================================================================
    // Diaphragm
@@ -356,8 +389,12 @@ private:
 
 
    pgsTypes::PierModelType m_PierModelType; 
+   pgsTypes::PierLayoutType m_PierLayoutType; 
 
    CConcreteMaterial m_Concrete;
+
+   std::vector<Float64> m_ScallopDepths;
+   std::vector<Float64> m_ScallopRadii;
 
    // This data only used if m_PierModelType is pgsTypes::pmtPhysical
    // Transverse location of the pier relative to the alignment or bridge line
@@ -371,12 +408,14 @@ private:
    std::array<Float64, 2> m_XBeamTaperLength;
    std::array<Float64, 2> m_XBeamEndSlopeOffset;
    std::array<Float64, 2> m_XBeamOverhang;
+   std::array<Float64, 2> m_XBeamOverhangRadius;
    Float64 m_XBeamWidth;
 
    // Column Dimensions and Layout
    pgsTypes::ColumnLongitudinalBaseFixityType m_ColumnFixity;
    std::vector<Float64> m_ColumnSpacing;
    std::vector<CColumnData> m_Columns;
+   std::vector<CPierPointData> m_PierPoints;
 
    std::array<Float64, 2> m_DiaphragmHeight;
    std::array<Float64, 2> m_DiaphragmWidth;
