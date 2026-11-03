@@ -69,77 +69,23 @@ void CBearingMultiViewReportDlg::DoDataExchange(CDataExchange* pDX)
 
     CMultiViewReportDlg::DoDataExchange(pDX);
 
-    GET_IFACE(IBearingDesign, pBearingDesign);
-    GET_IFACE(IIntervals, pIntervals);
-    GET_IFACE(IBridge, pBridge);
-    GET_IFACE(IBridgeDescription, pIBridgeDesc);
-    GET_IFACE(IPointOfInterest, pPoi);
-
-    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
-
-    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, m_GirderKey));
-
-    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge, pPoi);
-    iter.First();
-    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
-
-    CComboBox* pBrgBox = (CComboBox*)GetDlgItem(IDC_FACE);
-
-    m_RLmenuItems.clear();
-
-    // Use iterator to walk locations
-    for (iter.First(); !iter.IsDone(); iter.Next())
+    if (!pDX->m_bSaveAndValidate)
     {
-
-        const ReactionLocation& reactionLocation(iter.CurrentItem());
-
-        m_RLmenuItems.emplace_back(reactionLocation);
-
-
-        const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
-        CString bcType;
-
-        if (pPier->IsBoundaryPier())
-        {
-            bool bNoDeck = IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType());
-            bcType = CPierData2::AsString(pPier->GetBoundaryConditionType(), bNoDeck);
-        }
-        else
-        {
-            bcType = CPierData2::AsString(pPier->GetSegmentConnectionType());
-        }
-
-
-
-        CString strBrg = reactionLocation.PierLabel.c_str();
-
-        if (bcType == _T("Hinge"))
-        {
-            CString hingeBrgStr;
-            hingeBrgStr.Format(_T("%s (Hinged)"), strBrg);
-            pBrgBox->AddString(hingeBrgStr);
-        }
-        else
-        {
-            pBrgBox->AddString(strBrg);
-        }
-
+        UpdateBearingComboBox();
     }
-
-    if (pDX->m_bSaveAndValidate)
+    else
     {
-        IndexType idx;
-        DDX_CBIndex(pDX, IDC_FACE, idx);
-
-        m_ReactionLocation = m_RLmenuItems[idx];
-
-        // Girder list
-        // Make list of one if single girder is checked
-        BOOL enab_sgl = IsDlgButtonChecked(IDC_RADIO1) == BST_CHECKED ? TRUE : FALSE;
-        if (enab_sgl)
+        BOOL single = IsDlgButtonChecked(IDC_RADIO1) == BST_CHECKED;
+        if (single)
         {
+            int idx = ((CComboBox*)GetDlgItem(IDC_FACE))->GetCurSel();
+            if (idx == CB_ERR || idx >= m_RLmenuItems.size())
+            {
+                pDX->PrepareCtrl(IDC_FACE);
+                AfxMessageBox(_T("There are no bearings for the selected span or group."));
+                pDX->Fail();
+            }
+            m_ReactionLocation = m_RLmenuItems[idx];
             m_ReactionLocations.clear();
             m_ReactionLocations.push_back(m_ReactionLocation);
         }
@@ -148,7 +94,6 @@ void CBearingMultiViewReportDlg::DoDataExchange(CDataExchange* pDX)
             AfxMessageBox(_T("You must select at least one bearing"));
             pDX->Fail();
         }
-
     }
 }
 
@@ -239,7 +184,8 @@ void CBearingMultiViewReportDlg::OnBnClickedRadio()
 
    GetDlgItem(IDC_SPAN)->EnableWindow(enab_sgl);
    GetDlgItem(IDC_GIRDER)->EnableWindow(enab_sgl);
-   GetDlgItem(IDC_FACE)->EnableWindow(enab_sgl);
+   GetDlgItem(IDC_FACE)->EnableWindow(enab_sgl && !m_RLmenuItems.empty());
+   GetDlgItem(IDOK)->EnableWindow(!enab_sgl || !m_RLmenuItems.empty());
 
 
 
@@ -260,7 +206,8 @@ void CBearingMultiViewReportDlg::UpdateSpanComboBox()
 
 void CBearingMultiViewReportDlg::UpdateGirderComboBox()
 {
-    CMultiViewReportDlg::UpdateGirderComboBox(m_ReactionLocation.GirderKey.groupIndex);
+    CComboBox* pGroupBox = (CComboBox*)GetDlgItem(IDC_SPAN);
+    CMultiViewReportDlg::UpdateGirderComboBox((GroupIndexType)pGroupBox->GetCurSel());
 
     UpdateBearingComboBox();
 }
@@ -310,6 +257,12 @@ void CBearingMultiViewReportDlg::UpdateBearingComboBox()
 
 
         const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
+        pgsTypes::PierFaceType face = reactionLocation.Face == rftBack ? pgsTypes::Back : pgsTypes::Ahead;
+        if (!pPier->HasBearings(face))
+        {
+            m_RLmenuItems.pop_back();
+            continue;
+        }
         CString bcType;
 
         if (pPier->IsBoundaryPier())
@@ -337,6 +290,14 @@ void CBearingMultiViewReportDlg::UpdateBearingComboBox()
         }
 
     }
+
+    if (m_RLmenuItems.empty())
+    {
+        pBrgBox->AddString(_T("(no bearings)"));
+    }
+    BOOL single = IsDlgButtonChecked(IDC_RADIO2) != BST_CHECKED;
+    pBrgBox->EnableWindow(single && !m_RLmenuItems.empty());
+    GetDlgItem(IDOK)->EnableWindow(!single || !m_RLmenuItems.empty());
 
     if (pBrgBox->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR)
     {
