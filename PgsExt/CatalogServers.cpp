@@ -69,7 +69,7 @@ const CCatalogServer* CCatalogServers::GetServer(IndexType index) const
 
 const CCatalogServer* CCatalogServers::GetServer(LPCTSTR strName) const
 {
-   ServerPtr target(new CFtpCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
+   ServerPtr target(new CHttpCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
    Servers::const_iterator found = m_Servers.find( target );
 
    if(found == m_Servers.end())
@@ -94,7 +94,7 @@ void CCatalogServers::RemoveServer(IndexType index)
 
 void CCatalogServers::RemoveServer(LPCTSTR strName)
 {
-   ServerPtr target(new CFtpCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
+   ServerPtr target(new CHttpCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
    Servers::iterator found = m_Servers.find(target);
    if (found != m_Servers.end())
    {
@@ -104,7 +104,7 @@ void CCatalogServers::RemoveServer(LPCTSTR strName)
 
 bool CCatalogServers::IsServerDefined(LPCTSTR strName) const
 {
-   ServerPtr target(new CFtpCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
+   ServerPtr target(new CHttpCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
    Servers::const_iterator found = m_Servers.find(target);
    return ( found == m_Servers.end() ? false : true );
 }
@@ -151,8 +151,8 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
          DWORD dwIndex = 0;
          TCHAR serverName[SHORT_MAX];
          TCHAR serverString[SHORT_MAX];
-         DWORD serverNameSize = sizeof(serverName);
-         DWORD serverStringSize = sizeof(serverString);
+         DWORD serverNameSize = _countof(serverName); // characters
+         DWORD serverStringSize = sizeof(serverString); // bytes
          DWORD type;
          while ( ::RegEnumValue(hSecKey,dwIndex++,&serverName[0],&serverNameSize,nullptr,&type,(LPBYTE)&serverString[0],&serverStringSize) != ERROR_NO_MORE_ITEMS )
          {
@@ -162,7 +162,7 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
                m_Servers.insert( ServerPtr(pServer) );
             }
 
-            serverNameSize = sizeof(serverName);
+            serverNameSize = _countof(serverName);
             serverStringSize = sizeof(serverString);
          };
 
@@ -172,26 +172,29 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
 
    ::RegCloseKey(hAppKey);
 
+   // The WSDOT configurations moved from the WSDOT FTP site to the WSDOT web site.
+   // Point any server that still uses an old WSDOT address at the new one, keeping its name,
+   // so the selected server and configuration don't change.
+   std::vector<CString> legacyServers;
+   for (const auto& server : m_Servers)
+   {
+      const CHttpCatalogServer* pServer = dynamic_cast<const CHttpCatalogServer*>(server.get());
+      if (pServer && IsLegacyWSDOTAddress(pServer->GetAddress()))
+      {
+         legacyServers.push_back(pServer->GetServerName());
+      }
+   }
+
+   for (const auto& name : legacyServers)
+   {
+      RemoveServer(name);
+      m_Servers.insert( ServerPtr(new CHttpCatalogServer(m_AppName,name,GetWSDOTConfigurationServerAddress(),m_strExt)) );
+   }
+
    // Always have a WSDOT and TxDOT server
-
-   // This doesn't work... HTTP server wont allow configuration files.
-   //if (m_AppName == _T("PGSuper") || m_AppName == _T("PGSplice"))
-   //{
-   //   const CCatalogServer* pServer = GetServer(_T("WSDOT"));
-   //   if (pServer && pServer->GetServerType() == srtInternetFtp)
-   //   {
-   //      // the official WSDOT server has moved from FTP to HTTP...
-   //      // still referencing the old FTP server
-   //      // remove the server then it will be redefined below
-   //      RemoveServer(_T("WSDOT"));
-   //      pServer = nullptr;
-   //   }
-   //}
-
    if (!IsServerDefined(_T("WSDOT")) && m_AppName != _T("TOGA")) // don't need a wsdot toga server
    {
-      m_Servers.insert( ServerPtr(new CFtpCatalogServer(m_AppName,m_strExt)) ); // wsdot
-      //m_Servers.insert( ServerPtr(new CHttpCatalogServer(m_AppName,m_strExt)) ); // wsdot
+      m_Servers.insert( ServerPtr(new CHttpCatalogServer(m_AppName,m_strExt)) ); // wsdot
    }
 
    if (!IsServerDefined(_T("TxDOT")) && m_AppName != _T("PGSplice")) // TxDOT does not have a PGSplice server

@@ -126,7 +126,6 @@
       <Message>Copying files to BridgeLink</Message>
       <Command>xcopy /y/d $(ARPDIR)\PGSuper\PGSuper.tip $(ARPDIR)\BridgeLink\
 xcopy /y/d $(ARPDIR)\PGSuper\PGSplice.tip $(ARPDIR)\BridgeLink\
-xcopy /y/d $(ARPDIR)\PGSuper\md5deep.exe $(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
 xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configurations\
 </Command>
     </PostBuildEvent>
@@ -186,7 +185,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
       <Message>Copying files to BridgeLink</Message>
       <Command>xcopy /y/d $(ARPDIR)\PGSuper\PGSuper.tip $(ARPDIR)\BridgeLink\
 xcopy /y/d $(ARPDIR)\PGSuper\PGSplice.tip $(ARPDIR)\BridgeLink\
-xcopy /y/d $(ARPDIR)\PGSuper\md5deep.exe $(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)
 xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configurations\
 </Command>
     </PostBuildEvent>
@@ -356,7 +354,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="PGSuperProjectImporterPluginApp.cpp" />
     <ClCompile Include="PGSuperProjectImporterMgr.cpp" />
     <ClCompile Include="PGSuperStatusBar.cpp" />
-    <ClCompile Include="PGSuperTemplateManager.cpp" />
     <ClCompile Include="PGSuperUnits.cpp" />
     <ClCompile Include="PierConnectionsPage.cpp" />
     <ClCompile Include="PierDetailsDlg.cpp" />
@@ -781,7 +778,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="PGSuperProjectImporterPluginApp.h" />
     <ClInclude Include="PGSuperProjectImporterMgr.h" />
     <ClInclude Include="PGSuperStatusBar.h" />
-    <ClInclude Include="PGSuperTemplateManager.h" />
     <ClInclude Include="PierConnectionsPage.h" />
     <ClInclude Include="PierDetailsDlg.h" />
     <ClInclude Include="PierDisplayObjectEvents.h" />
@@ -1012,7 +1008,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
       <Project>{c6f6e6a6-916e-491d-a1df-dc1e8814c3fb}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\MakePgz\MakePgz.vcxproj">
+    <ProjectReference Include="..\ConfigPackager\ConfigPackager.vcxproj">
       <Project>{e8657e0c-0dad-4abd-a464-7a8e8b890e6f}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

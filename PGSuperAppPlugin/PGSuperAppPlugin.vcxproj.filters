@@ -649,9 +649,6 @@
     <ClCompile Include="PGSuperStatusBar.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PGSuperTemplateManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PGSuperUnits.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -1606,9 +1603,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PGSuperStatusBar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PGSuperTemplateManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PierConnectionsPage.h">

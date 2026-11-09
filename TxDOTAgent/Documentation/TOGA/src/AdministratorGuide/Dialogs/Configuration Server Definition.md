@@ -6,9 +6,10 @@ Item | Description
 -----|------------
 Name | Enter a name for the server definition
 Server Type | Select the server type
-Server Address (URL) | Enter the address of the server (see examples below)
+Server Address (URL) | Enter the address of the server (see examples below). The address must start with https://
 Master Library File | Enter the location of the master library file (see examples below)
 Path to Template Files | Enter the path to the template files (see examples below)
+Folder containing ConfigurationPackages.json | Enter the folder that holds the list of configurations (see examples below)
 [Test Server Connection] | Press to test the connection with the server
 
 
@@ -20,17 +21,14 @@ This type of server is the simplest to set up and is typically used on a compute
 
 ![](FileConfigurationServer.png)
 
-### FTP Server ###
-This type of server is typically used to share a configuration across the internet. 
-
-![](FTPConfigurationServer.png)
-
-### HTTP Server ###
-This type of server is typically used to share a configuration across the internet. 
+### Internet HTTPS Server ###
+This type of server is typically used to share a configuration across the internet. Enter the address of the folder that holds the configurations, or the full address of the configuration server's .json file. The address must start with https://.
 
 ![](HTTPConfigurationServer.png)
 
-### Local or Network File System Using a .ini File ###
-This type of server uses a network file system and has the ability to use a .ini file and (*.pgz) files. This has advantages over the normal file system server by allowing multiple configurations at one network location, and versioning of the .pgz configurations. Refer to @ref configuration_server_files for information about how to create .ini and .pgz files.
+> NOTE: FTP servers are no longer supported. Servers that were defined with an FTP or http:// address continue to work when the same location is available over https://, and the address is updated automatically.
+
+### Local or Network File System Using ConfigurationPackages.json ###
+This type of server uses a folder on your computer or network that holds the list of configurations (ConfigurationPackages.json) and configuration packages. This has advantages over the normal file system server by allowing multiple configurations at one network location, and versioning of the configurations. Refer to @ref configuration_server_files for information about how to create these files.
 
 ![](FileIniConfigurationServer.png)

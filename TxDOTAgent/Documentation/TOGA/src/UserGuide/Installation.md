@@ -13,7 +13,7 @@ TOGA is installed along with the main PGSuper installation and is part of the Tx
 
 TOGA Configurations
 -------------------
-At BridgeLink installation, TOGA will be configured to access the TxDOT configuration on TxDOT's Internet ftp server. This is the recommended configuration for most users since it is published by TxDOT and will automatically update itself each time you run TOGA. 
+At BridgeLink installation, TOGA will be configured to access the TxDOT configuration on TxDOT's Internet server. This is the recommended configuration for most users since it is published by TxDOT and will automatically update itself each time you run TOGA. 
 
 If you have problems, you may need to configure TOGA manually as follows:
 
@@ -37,13 +37,13 @@ This can happen if you are attempting to modify TOGA by creating your own .toga 
 If this happens, a dialog is presented with the message: \"<i>The Project Criteria library entry with the name $$$ that was originally selected and saved in this TOGA project file does not exist in the current PGSuper Master Library...</i>\" You are then asked to select another Project Criteria entry. If this happens it is most likely that have a very old TOGA project file that references a TxDOT Project Criteria entry that has been removed from the master library file on TxDOT's web server. Contact TxDOT PGSuper support for advice on which current library entry to select.
 
 ### The TxDOT Server Does Not Appear in the Libraries and Templates list on the Configure TOGA Dialog
-This means that the PGSuper.exe program cannot see TxDOT's ftp server over the internet. Here are some possible causes in order of likelihood: 
+This means that the PGSuper.exe program cannot see TxDOT's configuration server over the internet. Here are some possible causes in order of likelihood: 
 
 1. Your computer is not connected to the Internet. Use your web browser to check http://www.dot.state.tx.us  
 2. Firewall software on your computer  is blocking PGSuper.exe from accessing the Internet. Check your firewall configuration or contact your System Admin
-3. The TxDOT ftp server is down. Use a client ftp program (e.g., FileZilla) to test an anonymous connection ftp://ftp.dot.state.tx.us/pub/txdot-info/brg/pgsuper/<br>
+3. The TxDOT configuration server is down. Use a web browser to open https://ftp.dot.state.tx.us/pub/txdot-info/brg/toga/TOGAPackages.ini<br>
    If no connection, try again later
-4. A network/Internet error is blocking access to the TxDOT ftp server. Try again later or use an alternate Internet access method (e.g., wired connection, or cell phone tether).
+4. A network/Internet error is blocking access to the TxDOT configuration server. Try again later or use an alternate Internet access method (e.g., wired connection, or cell phone tether).
 5. If all else fails, contact [Support](@ref support)
 
 Another fix is to select the Default TOGA configuration from the Configure TOGA dialog. This uses a configuration that is installed onto your hard drive at installation time, and will not be updated if TxDOT makes changes to their libraries. This may be considered a "last ditch" option to get the program running.

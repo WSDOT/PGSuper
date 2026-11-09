@@ -34,7 +34,7 @@
 CCatalogServerAppMixin::CCatalogServerAppMixin(void)
 {
    m_CacheUpdateFrequency = Daily;
-   m_SharedResourceType = srtInternetFtp;
+   m_SharedResourceType = srtInternetHttp;
 }
 
 CCatalogServerAppMixin::~CCatalogServerAppMixin(void)
@@ -82,7 +82,7 @@ void CCatalogServerAppMixin::LoadRegistrySettings()
    // If the default values are missing, the hard coded defaults found herein are used.
    // Install writers can create MSI transforms to alter the "defaults" by changing the registry values
 
-   int iDefaultSharedResourceType     = pApp->GetLocalMachineInt(   _T("Settings"),_T("SharedResourceType"),    1);
+   int iDefaultSharedResourceType     = pApp->GetLocalMachineInt(   _T("Settings"),_T("SharedResourceType"),    srtInternetHttp);
    int iDefaultCacheUpdateFrequency   = pApp->GetLocalMachineInt(   _T("Settings"),_T("CacheUpdateFrequency"),  2);
 
    /////////////////////////////////
@@ -91,6 +91,12 @@ void CCatalogServerAppMixin::LoadRegistrySettings()
 
    m_SharedResourceType   = (SharedResourceType)  pApp->GetProfileInt(_T("Settings"),_T("SharedResourceType"),  iDefaultSharedResourceType);
    m_CacheUpdateFrequency = (CacheUpdateFrequency)pApp->GetProfileInt(_T("Settings"),_T("CacheUpdateFrequency"),iDefaultCacheUpdateFrequency);
+
+   if (m_SharedResourceType == srtInternetFtp)
+   {
+      // FTP servers are no longer supported. FTP servers are now read as web servers (see CreateCatalogServer).
+      m_SharedResourceType = srtInternetHttp;
+   }
 }
 
 void CCatalogServerAppMixin::LoadRegistryOptions()
@@ -114,12 +120,8 @@ void CCatalogServerAppMixin::LoadRegistryOptions()
    // defaults
    CString strVersion = CCatalog::GetAppVersion();
 
-   CString strFTPServer(_T("ftp://ftp.wsdot.wa.gov/public/Bridge/Software"));
-   //CString strFTPServer(_T("http://www.wsdot.wa.gov/eesc/bridge/software"));
-   CString strDefaultMasterLibraryURL;
-   strDefaultMasterLibraryURL.Format(_T("%s/Version_%s/WSDOT.lbr"),strFTPServer,strVersion);
-   CString strDefaultWorkgroupTemplateFolderURL;
-   strDefaultWorkgroupTemplateFolderURL.Format(_T("%s/Version_%s/WSDOT_Templates/"),strFTPServer,strVersion);
+   // Location of the master library, for reports. It is replaced when the configuration is downloaded.
+   CString strDefaultMasterLibraryURL = GetWSDOTConfigurationServerAddress();
 
    m_MasterLibraryFileURL = pApp->GetProfileString(_T("Options"),GetMasterLibraryURLKey(),strDefaultMasterLibraryURL);
 
@@ -266,7 +268,7 @@ CString CCatalogServerAppMixin::GetMasterLibraryPublisher() const
       break;
 
    case srtLocalIni:
-      strPublisher = _T("INI File Published on Local Network");
+      strPublisher = _T("Published on Local Network");
       break;
 
    default:
@@ -398,6 +400,23 @@ void CCatalogServerAppMixin::UpdateCache()
    }
    catch(CCatalogServerException exp)
    {
+      if (exp.GetErrorType() == CCatalogServerException::ceFtpNotSupported)
+      {
+         // The server is an FTP server that couldn't be reached over HTTPS. Keep using the
+         // configuration downloaded earlier, and say so once for this server.
+         CAutoRegistry autoReg(GetAppName(),pApp);
+         CString strKey(_T("FtpNoticeShown_") + m_CurrentCatalogServer);
+         if (pApp->GetProfileInt(_T("Settings"),strKey,0) == 0)
+         {
+            ::AfxMessageBox(exp.GetErrorMessage(),MB_OK | MB_ICONINFORMATION);
+            pApp->WriteProfileInt(_T("Settings"),strKey,1);
+         }
+
+         WBFL::System::Date now;
+         SetLastCacheUpdateDate(now);
+         return;
+      }
+
       // catch and report error message
       error_msg = exp.GetErrorMessage();
       was_error = true;
@@ -800,7 +819,7 @@ CString CCatalogServerAppMixin::GetSaveCacheFolder() const
 
    if ( SUCCEEDED(hr) )
    {
-      return CString(path) + GetAppName() + CString(_T("_Save\\"));
+      return CString(path) + CString(_T("\\")) + GetAppName() + CString(_T("_Save\\"));
    }
    else
    {

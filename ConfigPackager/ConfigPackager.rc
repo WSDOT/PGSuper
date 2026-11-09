@@ -71,11 +71,11 @@ BEGIN
         BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
-            VALUE "FileDescription", "MakePgz Application"
+            VALUE "FileDescription", "ConfigPackager Application"
             VALUE "FileVersion", "2.3.0.1"
-            VALUE "InternalName", "MakePgz"
-            VALUE "OriginalFilename", "MakePgz.exe"
-            VALUE "ProductName", "MakePgz Application"
+            VALUE "InternalName", "ConfigPackager"
+            VALUE "OriginalFilename", "ConfigPackager.exe"
+            VALUE "ProductName", "ConfigPackager Application"
             VALUE "ProductVersion", "2.3.0.1"
         END
     END

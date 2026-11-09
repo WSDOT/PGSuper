@@ -350,6 +350,7 @@ BEGIN
     LTEXT           "Server Address (URL)",IDC_URL_STATIC,7,81,70,8
     EDITTEXT        IDC_LIBRARY_FILE_LOCATION,7,91,271,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_URL,7,98,280,14,ES_AUTOHSCROLL
+    LTEXT           "A folder, or the full address of a .json file. Must start with https://",IDC_URL_HINT,7,115,280,8
     LTEXT           "Path to Template Files",IDC_TEMPLATE_STATIC,7,116,258,8
     EDITTEXT        IDC_WORKGROUP_TEMPLATE_LOCATION,7,128,271,14,ES_AUTOHSCROLL
     PUSHBUTTON      "Test Server Connection",IDC_TEST_SERVER,19,157,85,15

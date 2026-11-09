@@ -137,6 +137,7 @@
 #define IDC_URL                         1518
 #define IDC_UPDATENOW                   1519
 #define IDC_URL_STATIC                  1535
+#define IDC_URL_HINT                    1371
 #define IDC_UPDATES_STATIC              1536
 #define IDC_TEMPLATE_STATIC             1536
 #define IDC_PUBLISHER_HYPERLINK         1537
@@ -169,7 +170,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        304
 #define _APS_NEXT_COMMAND_VALUE         32776
-#define _APS_NEXT_CONTROL_VALUE         1371
+#define _APS_NEXT_CONTROL_VALUE         1372
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

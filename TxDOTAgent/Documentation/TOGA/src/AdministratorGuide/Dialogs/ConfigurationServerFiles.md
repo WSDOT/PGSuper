@@ -1,8 +1,8 @@
 Configuration Servers - The Details {#configuration_server_files}
 ============
-Configuration Servers are more of a concept than what we traditionally think of as a server. Examples of the servers we traditionally think of are FTP, HTTP, PHP, SQL, and the like. All of these servers use dedicated hardware running specialized software. The Configuration Servers we refer to are basically locations where some files can be stored and accessed by users. 
+Configuration Servers are more of a concept than what we traditionally think of as a server. The Configuration Servers we refer to are basically locations where some files can be stored and accessed by users.
 
-Our Configuration Servers can use a local or network file system on your computer, an FTP server or an HTTP server to store and provide access to Configurations.
+Our Configuration Servers can use a local or network file system on your computer, or an HTTPS web server to store and provide access to Configurations.
 
 In this topic we will describe how to setup configuration servers.
 
@@ -14,8 +14,8 @@ To set up the server:
 1. Determine the location on your file system where you would like the server to reside. Let's say G:\\MyTOGA\\.
 2. Copy your Master Library to G:\\MyTOGA\\. The Master Library is a file you create with the PGS Library Editor application. The file has a .LBR extension.
 3. Create a folder for template files, let's say G:\\MyTOGA\\MyTemplates\\
-3. Copy your TOGA Project Templates (*.togt), icon files (*.ico) and TogaTemplate.pgs to G:\\MyTOGA\\MyTemplates. 
-4. Let everyone know how to access your configuration.
+4. Copy your TOGA Project Templates (*.togt), icon files (*.ico) and TogaTemplate.pgs to G:\\MyTOGA\\MyTemplates. 
+5. Let everyone know how to access your configuration.
 
 > NOTE: Local and Network File System based servers do not use publishing instructions or configuration documentation.
 
@@ -28,9 +28,16 @@ Server Type | Local or Network File System
 Master Library File | The full path to your Master Library file. (e.g. G:\\MyTOGA\\MasterLibrary.lbr)
 Path to Template Files | The full path to the folder containing your Project Templates. (e.g. G:\\MyTOGA\\MyTemplates\\). The TOGA Project Templates folder contains all of your templates (*.togt), icon files (*.ico) and TogaTemplate.pgs
 
-FTP and HTTP based Configuration Servers
-----------------------------------------
-We have a little more work to do before setting up an FTP or HTTP based configuration server. 
+TOGA checks this kind of server for updates using checksum lists. If the lists are missing, the configuration is copied again at every update check. Create the lists with ConfigPackager, and run the commands again whenever you change the files:
+
+    ConfigPackager.exe /Md5List G:\MyTOGA\MasterLibrary.lbr G:\MyTOGA\MasterLibrary.lbr.md5
+    ConfigPackager.exe /Md5List G:\MyTOGA\MyTemplates\ G:\MyTOGA\MyTemplates\WorkgroupTemplates.md5
+
+HTTPS and Network Folder based Configuration Servers
+----------------------------------------------------
+Configurations that are shared over the Internet are published on an HTTPS web server. The same files can also be published in a folder on your network. A configuration server of this type holds configuration packages, a list of configurations named ConfigurationPackages.json, and optional configuration documentation.
+
+> NOTE: Web servers must use HTTPS (addresses that start with https://). FTP servers are no longer supported.
 
 ### Configuration Documentation ###
 Let's start by writing the optional configuration documentation. This is simply an HTML page that contains information about your configuration. You can create any web page you want, but the documentation generally should contain the following information:
@@ -40,89 +47,106 @@ Let's start by writing the optional configuration documentation. This is simply 
 * Support contact information
 * Revision log
 
-The configuration documentation must be placed on an HTTP or FTP server where users can access it. The location of the configuration documentation is recorded in the publishing instructions as described below. The @ref dialogs_configure window has a hyperlink that, when pressed, will display your configuration documentation.
+The configuration documentation must be placed on a web server where users can access it. The location of the configuration documentation is recorded in the list of configurations as described below. The @ref dialogs_configure window has a hyperlink that, when pressed, will display your configuration documentation.
 
 ![](ConfigureWindow.png)
 
 ### Building the Configuration Package ###
-The Master Library and Project Templates must be placed into a Configuration Package file (*.pgz) that will be stored on the configuration server. The configuration package allows the software to download a single file when installing a configuration, rather than downloading the Master Library file and additional files for each Project Template. TOGA validates the file contents using an mD5 checksum to insure that the file contents have not been corrupted during download.
+The Master Library and Project Templates must be placed into a Configuration Package that will be stored on the configuration server. The configuration package allows the software to download a single file when installing a configuration, rather than downloading the Master Library file and additional files for each Project Template. A configuration package is a standard zip file; give it a .zip extension. (Packages with the older .pgz extension still work.)
 
-The MakePGZ.exe utility program was installed with BrigeLink. It can be found in the BridgeLink application folder. MakePGZ creates the Configuration Package.
+The ConfigPackager.exe utility program was installed with BridgeLink. It can be found in the BridgeLink application folder. ConfigPackager creates the Configuration Package. (ConfigPackager was called MakePGZ in earlier versions.)
 
 To make a configuration package, use the command:
-   
-     MakePGZ.exe pgz_file master_library_file project_template_folder TOGT PGS
+
+     ConfigPackager.exe package_file master_library_file project_template_folder TOGT PGS
 
 where
 
 Parameter | Description
 ----------|------------
-pgz_file | The name of the TOGA Configuration Package (PGZ file) that will be created
+package_file | The name of the TOGA Configuration Package that will be created (e.g. MyState.zip)
 master_library_file | The name of your Master Library file
 project_template_folder | The name of the folder containing your project templates (*.togt files), icon files (*.ico) and TogaTemplate.pgs. 
 TOGT PGS | The file extension for your templates and pgs file (use TOGT PGS literally)
 
 Example:
 
-    C:\Program Files\WSDOT\BridgeLink\MakePGZ.exe C:\MyFolder\MyState.pgz  G:\MyTOGA\MasterLibrary.lbr  G:\MyTOGA\MyTemplates\ TOGT PGS
+    "C:\Program Files\WSDOT\BridgeLink\ConfigPackager.exe" C:\Publish\TOGA\9.1.0\MyState.zip  G:\MyTOGA\MasterLibrary.lbr  G:\MyTOGA\MyTemplates\ TOGT PGS
 
-This command will generate two files: C:\\MyFolder\\MyState.pgz, and C:\\MyFolder\\MyState.pgz.mD5. Both of these files should be published onto your server.
-	
-> Note: The template folder is a single folder containing all of your *.togt files, *.ico files, and TogaTemplate.pgs. This is unlike how a multi-folder structure is used in PGSuper or PGSplice templates. Also, note that MakePGZ.exe is dumb: it does not verify that all of the files necessary to run TOGA are present.
+This command also writes C:\\Publish\\TOGA\\9.1.0\\MyState.zip.md5. You only need to publish that file if you also publish a TOGAPackages.ini file for older versions of TOGA (see below).
 
-### Publishing Instructions ###
-Next, we have to create the publishing instructions file. Publishing instructions are provided in a specially-named text file called TOGAPackages.ini. The content of the file provides information about the configurations you are publishing. 
+> Note: The template folder is a single folder containing all of your *.togt files, *.ico files, and TogaTemplate.pgs. This is unlike how a multi-folder structure is used in PGSuper or PGSplice templates. Also, note that ConfigPackager does not verify that all of the files necessary to run TOGA are present.
 
-Here is an example TOGAPackages.ini file for an FTP server:
+### The List of Configurations ###
+Next, we have to create the list of configurations, a text file named ConfigurationPackages.json. Here is an example:
 
-    [WSDOT]
-    WebLink="http://www.wsdot.wa.gov/eesc/bridge/software/TOGA/LibraryInfo.html"
-    Format="pgz"
-    Version_2.9.1_PgzFiles="ftp://ftp.wsdot.wa.gov/public/bridge/Software/TOGA/Version_2.9.1/WSDOT.pgz"
-    Version_3.0.0_PgzFiles="ftp://ftp.wsdot.wa.gov/public/bridge/Software/TOGA/Version_3.0.0/WSDOT.pgz"
+    {
+      "schemaVersion": 1,
+      "applications": {
+        "TOGA": {
+          "configurations": [
+            {
+              "name": "MyState",
+              "webLink": "https://www.mystate.gov/bridge/TOGA/MyState.html",
+              "packages": [
+                { "appVersion": "9.0.0", "url": "TOGA/9.0.0/MyState.zip", "md5": "9e107d9d372bb6826bd81d3542a419d6" },
+                { "appVersion": "9.1.0", "url": "TOGA/9.1.0/MyState.zip", "md5": "e4d909c290d0fb1ca068ffaddf22cbd0" }
+              ]
+            }
+          ]
+        }
+      }
+    }
 
-    [AASHTO]
-    WebLink="http://www.wsdot.wa.gov/eesc/bridge/software/TOGA/LibraryInfo.html"
-    Format="pgz"
-    Version_2.9.1_PgzFiles="ftp://ftp.wsdot.wa.gov/public/bridge/Software/TOGA/Version_2.9.1/AASHTO.pgz"
-    Version_3.0.0_PgzFiles="ftp://ftp.wsdot.wa.gov/public/bridge/Software/TOGA/Version_3.0.0/AASHTO.pgz"
+The same file can also list configurations for PGSuper and PGSplice, in their own sections.
 
-Here is an example TOGAPackages.ini file for a file system server:
+Field | Description
+------|-----------
+schemaVersion | Version of the file format. Use 1.
+applications | One section for each program (TOGA, PGSuper, PGSplice)
+name | Name of the configuration. This is the name users see in the Configure window.
+webLink | URL of the configuration documentation. Omit if configuration documentation is not used.
+appVersion | The lowest TOGA version the package is for, in the form x.y.z
+url | Location of the configuration package. A relative location is relative to the folder that holds ConfigurationPackages.json. A full address must start with https://.
+md5 | Checksum of the configuration package, used to tell when a configuration has changed. ConfigPackager fills it in.
 
-	[TxDOT]
-	Format="pgz"
-	WebLink="http://ftp.dot.state.tx.us/pub/txdot-info/brg/TOGA/TxDOT_TOGA_LibraryInfo.htm"
-	Version_2.9.1_PgzFiles="C:\Shared\TogaServers\txdot.pgz" 
-	Version_3.0.0_PgzFiles="C:\Shared\TogaServers\txdot30.pgz" 
+When installing a configuration, TOGA will look for the configuration package with the highest version number that is not greater than its own version number. If you use TOGA Version 9.0.5, the configuration package for version 9.0.0 will be installed.
 
-Instructions for a configuration begin with the configuration name in square brackets. For the FTP example, publishing instructions are for two configurations; WSDOT and AASHTO.
+ConfigPackager creates and checks this file for you:
 
-Following the configuration name are the publishing instructions for the configuration. The instructions are a keyword-value pair.
+    ConfigPackager.exe /AddPackage C:\Publish\ConfigurationPackages.json TOGA "MyState" 9.1.0 C:\Publish\TOGA\9.1.0\MyState.zip /WebLink=https://www.mystate.gov/bridge/TOGA/MyState.html
+    ConfigPackager.exe /Check C:\Publish\ConfigurationPackages.json
 
-Keyword | Description
---------|-----------
-WebLink | URL of the configuration documentation. Omit if configuration documentation is not used.
-Format  | Format of the configuration package. "pgz" is the only valid value at this time
-Version_x.y.z_PgzFiles | Location of the configuration package. Substitute the application version number for x.y.z. In the examples above, configuration packages are available for TOGA version 2.9.1 and 3.0.0
+To create the file from an existing TOGAPackages.ini file:
 
-When installing a configuration, TOGA will look for the configuration package with the highest version number that is not greater than its own version number. If you are use TOGA Version 2.9.5, the configuration package for version 2.9.1 will be installed.
+    ConfigPackager.exe /Convert C:\Publish\ConfigurationPackages.json C:\Publish\TOGAPackages.ini /Base=https://www.mystate.gov/bridge/
+    ConfigPackager.exe /UpdateMd5 C:\Publish\ConfigurationPackages.json
 
-> NOTE: All configuration packages in an .ini file must be of the same type (e.g., links in an .ini file on an FTP server must all be FTP links). The server type must match the type defined in the @ref configuration_server_definition.
-
-Use NOTEPAD.EXE or any other plain text editor to create your publishing instructions. Be sure to save your publishing instructions with the name TOGAPackages.ini
+> NOTE: A typing mistake anywhere in the file stops TOGA from reading it, so always run ConfigPackager /Check before publishing.
 
 ### Publishing your Configuration ###
 Your configuration is now ready to be published on the configuration server and accessed by engineers all around the world.
 
 To publish your configuration:
-1. Open Windows Explorer or an ftp client to the location on your HTTP server where the configuration documentation will be stored. Copy the documentation onto the server
-2. Open Windows Explorer or an ftp client to the location on the server where you will be storing the publishing instructions and configuration packages. Copy the publishing instructions (TOGAPackages.ini) and the configuration packages (the .PGZ and .PGZ.mD5 files).
+1. Copy the configuration documentation onto your web server.
+2. Copy ConfigurationPackages.json and the configuration packages to the server, keeping the folder structure used by the relative package locations.
 3. Let everyone know how to access your configuration.
 
-See @ref configurations to learn how to configure TOGA to use an FTP or HTTP based configuration. You will want to provide your users with the following information that is to be entered in the PGSuper Configuration Server Definition window.
+See @ref configurations to learn how to configure TOGA to use your configuration server. You will want to provide your users with the following information that is to be entered in the Configuration Server Definition window.
 
 Item | Value
 -----|----------
 Name | This can be any name. Specify one or let your users decide
-Server Type | The server type you are using, either Internet FTP Server, Internet HTTP Server, or file system.
-Server Address (URL) | The fully qualified URL for your server. This is the location where the INI file is stored. (e.g. http://www.mycompany.com/PGSuper/ConfigurationServer/)
+Server Type | Internet HTTPS Server, or Local or Network File System Using ConfigurationPackages.json for a network folder
+Server Address (URL) | The address of the folder that holds ConfigurationPackages.json (e.g. https://www.mystate.gov/bridge/). For a network folder, the folder path.
+
+### Older Versions of TOGA ###
+Versions of TOGA released before ConfigurationPackages.json was introduced read TOGAPackages.ini instead. If your users still run those versions, keep publishing TOGAPackages.ini, and the .md5 file for each package, next to ConfigurationPackages.json. Current versions of TOGA read ConfigurationPackages.json when it is there, and read TOGAPackages.ini when it isn't.
+
+    [MyState]
+    WebLink="https://www.mystate.gov/bridge/TOGA/MyState.html"
+    Format="pgz"
+    Version_9.0.0_PgzFiles="https://www.mystate.gov/bridge/TOGA/9.0.0/MyState.zip"
+    Version_9.1.0_PgzFiles="https://www.mystate.gov/bridge/TOGA/9.1.0/MyState.zip"
+
+Some web servers, including Microsoft IIS, refuse to deliver .ini and .md5 files unless they are configured to. See the PGSuper Administrator Guide (Configuration Servers) for a sample web.config file.

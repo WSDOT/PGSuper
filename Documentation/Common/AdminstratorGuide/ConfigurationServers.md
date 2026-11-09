@@ -1,8 +1,8 @@
 Configuration Servers {#configuration_server_files}
 ============
-Configuration Servers are more of a concept than what we traditionally think of as a server. Examples of the servers we traditionally think of are FTP, HTTP, PHP, SQL, and the like. All of these servers use dedicated hardware running specialized software. The Configuration Servers we are talking about are basically locations where some files can be stored and accessed by users. 
+Configuration Servers are more of a concept than what we traditionally think of as a server. The Configuration Servers we are talking about are basically locations where some files can be stored and accessed by users.
 
-Our Configuration Servers can use a local disk on your computer, a network file system, an FTP server or an HTTP server to store and provide access to Configurations.
+Our Configuration Servers can use a local disk on your computer, a network file system, or an HTTPS web server to store and provide access to Configurations.
 
 In this topic we will describe how to setup configuration servers.
 
@@ -27,9 +27,23 @@ Server Type | Local or Network File System
 Master Library File | The full path to your Master Library file. (e.g. G:\\PGSuper\\MasterLibrary.lbr)
 Path to Template Files | The full path to root folder for your Project Templates. (e.g. G:\\PGSuper\\)
 
-FTP and HTTP based Configuration Servers
-----------------------------------------
-We have a little more work to do before setting up an FTP or HTTP based configuration server. 
+PGSuper and PGSplice check this kind of server for updates using checksum lists next to the Master Library and in the template folder. If the lists are missing, the configuration is copied again at every update check. Create the lists with ConfigPackager:
+
+    ConfigPackager.exe /Md5List G:\PGSuper\MasterLibrary.lbr G:\PGSuper\MasterLibrary.lbr.md5
+    ConfigPackager.exe /Md5List G:\PGSuper\ G:\PGSuper\WorkgroupTemplates.md5
+
+Run these commands again whenever you change the Master Library or the Project Templates.
+
+HTTPS and Network Folder based Configuration Servers
+----------------------------------------------------
+Configurations that are shared over the Internet are published on an HTTPS web server. The same files can also be published in a folder on your network.
+
+A configuration server of this type holds three kinds of files:
+* Configuration Packages - one file for each configuration and program version, containing the Master Library and Project Templates
+* The list of configurations - a file named ConfigurationPackages.json that tells PGSuper and PGSplice which configurations you publish, and where to find their packages
+* Configuration Documentation (optional) - a web page about each configuration
+
+> NOTE: Web servers must use HTTPS (addresses that start with https://). FTP servers are no longer supported.
 
 ### Configuration Documentation ###
 Let's start by writing the configuration documentation. This is simply an HTML page that contains information about your configuration. The documentation often contains the following information:
@@ -39,80 +53,143 @@ Let's start by writing the configuration documentation. This is simply an HTML p
 * Support contact information
 * Revision log
 
-The configuration documentation must be placed on an HTTP server so users can read it. The location of the configuration documentation is recorded in the publishing instructions as described below. The @ref ug_dialogs_configure window has a hyperlink that, when pressed, will display your configuration documentation.
+The configuration documentation must be placed on a web server so users can read it. The location of the configuration documentation is recorded in the list of configurations as described below. The @ref ug_dialogs_configure window has a hyperlink that, when pressed, will display your configuration documentation.
 
 ![](ConfigureWindow.png)
 
 ### Building the Configuration Package ###
-The Master Library and Project Templates must be placed into a Configuration Package that will be stored on the configuration server. The configuration package allows the software to download a single file when installing a configuration rather than downloading the Master Library file and one additional file for each Project Template.
+The Master Library and Project Templates are placed into a Configuration Package that is stored on the configuration server. The configuration package allows the software to download a single file when installing a configuration rather than downloading the Master Library file and one additional file for each Project Template.
 
-The MakePGZ.exe utility program was installed with PGSuper and PGSplice. It can be found in the BridgeLink application folder. MakePGZ creates the Configuration Package.
+A configuration package is a standard zip file. Give it a .zip extension. Web servers deliver .zip files without any extra settings. (Packages published with the older .pgz extension still work.)
+
+The ConfigPackager.exe utility program is installed with PGSuper and PGSplice. It can be found in the BridgeLink application folder. ConfigPackager creates the Configuration Package. (ConfigPackager was called MakePgz in earlier versions.)
 
 To make a configuration package use the command
-   
-     MakePGZ.exe pgz_file master_library_file project_template_folder template_extension
+
+     ConfigPackager.exe package_file master_library_file project_template_folder template_extension
 
 where
 
 Parameter | Description
 ----------|------------
-pgz_file | The name of the Configuration Package (PGZ file) that will be created
+package_file | The name of the Configuration Package that will be created (e.g. MyState.zip)
 master_library_file | The name of your Master Library file
 project_template_folder | The name of the root folder for your project templates. This folder is searched recursively for all project templates
 template_extension | The file extension for your templates (PGT for PGSuper and SPT for PGSplice)
 
 Example:
 
-    C:\Program Files\WSDOT\BridgeLink\MakePGZ.exe C:\PGSuper\MyState.pgz C:\PGSuper\MyState.lbr C:\PGSuper\MyTemplates PGT
+    "C:\Program Files\WSDOT\BridgeLink\ConfigPackager.exe" C:\Publish\PGSuper\9.1.0\MyState.zip C:\PGSuper\MyState.lbr C:\PGSuper\MyTemplates PGT
 
+ConfigPackager also writes MyState.zip.md5. You only need to publish this file if you also publish an INI file for older program versions (see below).
 
+### The List of Configurations ###
+Next we create the list of configurations. It is a text file named ConfigurationPackages.json. One file lists the configurations for PGSuper and PGSplice (and TOGA), so a server needs only one.
 
-### Publishing Instructions ###
-Next we have to create the publishing instructions. Publishing instructions are provided in a specially named text file called PGSuperPackages.ini (or PGSplicePackages.ini for PGSplice). The content of this file provides information about the configurations you are publishing. 
+Here is an example.
 
-Here is an example of publishing instructions.
+    {
+      "schemaVersion": 1,
+      "applications": {
+        "PGSuper": {
+          "configurations": [
+            {
+              "name": "MyState",
+              "webLink": "https://www.mystate.gov/bridge/PGSuper/MyState.html",
+              "packages": [
+                { "appVersion": "9.0.0", "url": "PGSuper/9.0.0/MyState.zip", "md5": "9e107d9d372bb6826bd81d3542a419d6" },
+                { "appVersion": "9.1.0", "url": "PGSuper/9.1.0/MyState.zip", "md5": "e4d909c290d0fb1ca068ffaddf22cbd0" }
+              ]
+            }
+          ]
+        },
+        "PGSplice": {
+          "configurations": [
+            {
+              "name": "MyState",
+              "packages": [
+                { "appVersion": "9.1.0", "url": "PGSplice/9.1.0/MyState.zip", "md5": "d41d8cd98f00b204e9800998ecf8427e" }
+              ]
+            }
+          ]
+        }
+      }
+    }
 
-    [WSDOT]
-    WebLink="http://www.wsdot.wa.gov/eesc/bridge/software/PGSuper/LibraryInfo.html"
-    Format="pgz"
-    Version_2.9.1_PgzFiles="ftp://ftp.wsdot.wa.gov/public/bridge/Software/PGSuper/Version_2.9.1/WSDOT.pgz"
-    Version_3.0.0_PgzFiles="ftp://ftp.wsdot.wa.gov/public/bridge/Software/PGSuper/Version_3.0.0/WSDOT.pgz"
+Field | Description
+------|-----------
+schemaVersion | Version of the file format. Use 1.
+applications | One section for each program: PGSuper, PGSplice or TOGA. Leave out programs you don't publish configurations for.
+name | Name of the configuration. This is the name users see in the Configure window.
+webLink | URL of the configuration documentation. Omit if configuration documentation is not used.
+appVersion | The lowest program version the package is for, in the form x.y.z
+url | Location of the configuration package. A relative location, such as PGSuper/9.1.0/MyState.zip, is relative to the folder that holds ConfigurationPackages.json. A full address must start with https://.
+md5 | Checksum of the configuration package. PGSuper and PGSplice use it to tell when a configuration has changed and to verify downloads. ConfigPackager fills it in.
 
-    [AASHTO]
-    WebLink="http://www.wsdot.wa.gov/eesc/bridge/software/PGSuper/LibraryInfo.html"
-    Format="pgz"
-    Version_2.9.1_PgzFiles="ftp://ftp.wsdot.wa.gov/public/bridge/Software/PGSuper/Version_2.9.1/AASHTO.pgz"
-    Version_3.0.0_PgzFiles="ftp://ftp.wsdot.wa.gov/public/bridge/Software/PGSuper/Version_3.0.0/AASHTO.pgz"
+When installing a configuration, PGSuper will look for the configuration package with the highest version number that is not greater than its own version number. If you use PGSuper Version 9.0.5, the configuration package for version 9.0.0 will be installed.
 
+You don't need to write this file by hand. ConfigPackager creates and updates it:
 
-Instructions for a configuration begin with the configuration name in square brackets. These publishing instructions are for two configurations; WSDOT and AASHTO.
+Command | What it does
+--------|-------------
+ConfigPackager.exe /AddPackage ConfigurationPackages.json PGSuper "MyState" 9.1.0 PGSuper\\9.1.0\\MyState.zip /WebLink=https://www.mystate.gov/bridge/PGSuper/MyState.html | Adds the package for PGSuper 9.1.0 to the MyState configuration, with its checksum. The file is created if it doesn't exist. The package location is written relative to the JSON file.
+ConfigPackager.exe /UpdateMd5 ConfigurationPackages.json | Recomputes the checksum of every package stored with the JSON file. Run it after replacing a package.
+ConfigPackager.exe /Check ConfigurationPackages.json | Checks the file before you publish it: format, version numbers, addresses, and that each package is present and matches its checksum.
+ConfigPackager.exe /Convert ConfigurationPackages.json PGSuperPackages.ini PGSplicePackages.ini /Base=https://www.mystate.gov/bridge/ | Creates the file from existing INI files (see below). Package addresses under the /Base address become relative.
 
-Following the configuration name are the publishing instructions for the configuration. The instructions are a keyword-value pair.
-
-Keyword | Description
---------|-----------
-WebLink | URL of the configuration documentation. Omit if configuration documentation is not used.
-Format  | Format of the configuration package. "pgz" is the only valid value at this time
-Version_x.y.z_PgzFiles | Location of the configuration package. Substitute the application version number for x.y.z. In the example above, configuration packages are available for PGSuper version 2.9.1 and 3.0.0.
-
-When installing a configuration, PGSuper will look for the configuration package with the highest version number that is not greater than its own version number. If you are use PGSuper Version 2.9.5, the configuration package for version 2.9.1 will be installed.
-
-> NOTE: All configuration packages must be on either an FTP or an HTTP server. The server type must match the type defined in the @ref ug_dialogs_configuration_server_definition.
-
-Use NOTEPAD.EXE or any other plain text editor to create your publishing instructions. Be sure to save your publishing instructions with the name PGSuperPackages.ini (or PGSplicePackages.ini).
+> NOTE: The file must be valid JSON. A typing mistake anywhere in the file stops every program from reading it, so always run ConfigPackager /Check before publishing.
 
 ### Publishing your Configuration ###
 Your configuration is now ready to be published on the configuration server and used by engineers all around the world.
 
 To publish your configuration:
-1. Open Windows Explorer to the location on your HTTP server where the configuration documentation will be stored. Copy the documentation onto the server
-2. Open Windows Explorer to the location on the server where you will be storing the publishing instructions and configuration packages. Copy the publishing instructions (PGSuperPackages.ini or PGSplicePackages.ini) and the configuration packages (the .PGZ files).
+1. Copy the configuration documentation onto your web server.
+2. Copy ConfigurationPackages.json and the configuration packages to the server, keeping the folder structure used by the relative package locations (e.g. PGSuper\\9.1.0\\MyState.zip).
 3. Let everyone know how to access your configuration.
 
-See @ref ug_configurations in the @ref user_guide to learn how to configure PGSuper and PGSplice to use an FTP or HTTP based configuration. You will want to provide your users with the following information that is to be entered in the PGSuper Configuration Server Definition window.
+See @ref ug_configurations in the @ref user_guide to learn how to configure PGSuper and PGSplice to use your configuration server. You will want to provide your users with the following information that is to be entered in the Configuration Server Definition window.
 
 Item | Value
 -----|----------
 Name | This can be any name. Specify one or let your users decide
-Server Type | The server type you are using, either Internet FTP Server or Internet HTTP Server.
-Server Address (URL) | The fully qualified URL for your server. This is the location where the INI file is stored. (e.g. http://www.mycompany.com/PGSuper/ConfigurationServer/)
+Server Type | Internet HTTPS Server, or Local or Network File System Using ConfigurationPackages.json for a network folder
+Server Address (URL) | The address of the folder that holds ConfigurationPackages.json (e.g. https://www.mystate.gov/bridge/), or the full address of the JSON file. For a network folder, the folder path.
+
+### Web Server Settings ###
+Most web servers deliver .json and .zip files without any extra settings. Some web servers, including Microsoft IIS, refuse to deliver file types they don't recognize, such as .ini, .pgz and .md5. If you must serve those files from IIS (for example, the INI files described below), add a web.config file to the folder:
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <configuration>
+      <system.webServer>
+        <staticContent>
+          <remove fileExtension=".ini" />
+          <mimeMap fileExtension=".ini" mimeType="text/plain" />
+          <remove fileExtension=".pgz" />
+          <mimeMap fileExtension=".pgz" mimeType="application/zip" />
+          <remove fileExtension=".md5" />
+          <mimeMap fileExtension=".md5" mimeType="text/plain" />
+        </staticContent>
+      </system.webServer>
+    </configuration>
+
+Your web server administrator may need to allow web.config files in that folder.
+
+### Older Program Versions ###
+Program versions released before ConfigurationPackages.json was introduced read a different file: PGSuperPackages.ini (PGSplicePackages.ini for PGSplice, TOGAPackages.ini for TOGA). If your users still run those versions, keep publishing the INI files next to ConfigurationPackages.json. Current program versions read ConfigurationPackages.json when it is there, and read the INI file when it isn't.
+
+Here is an example INI file.
+
+    [MyState]
+    WebLink="https://www.mystate.gov/bridge/PGSuper/MyState.html"
+    Format="pgz"
+    Version_9.0.0_PgzFiles="https://www.mystate.gov/bridge/PGSuper/9.0.0/MyState.zip"
+    Version_9.1.0_PgzFiles="https://www.mystate.gov/bridge/PGSuper/9.1.0/MyState.zip"
+
+Keyword | Description
+--------|-----------
+[MyState] | The configuration name
+WebLink | URL of the configuration documentation. Omit if configuration documentation is not used.
+Format  | Format of the configuration package. "pgz" is the only valid value
+Version_x.y.z_PgzFiles | Full address of the configuration package for program version x.y.z
+
+Older program versions check for configuration changes with a checksum file next to each package (MyState.zip.md5, written by ConfigPackager). Publish those files with the INI file. See Web Server Settings above if your server refuses .ini or .md5 files.

@@ -38,8 +38,7 @@ xcopy /Y /d images\*.jpg				%BINTARGET%\images\
 xcopy /Y /d images\*.png				%BINTARGET%\images\
 
 REM - Application files
-xcopy /Y /d md5deep.exe			  	%BINTARGET%\App\
-xcopy /Y /d %REGFREECOM%\x64\Release\MakePgz.exe  	%BINTARGET%\App\x64\
+xcopy /Y /d %REGFREECOM%\x64\Release\ConfigPackager.exe  	%BINTARGET%\App\x64\
 xcopy /Y /d PGSuper.tip				%BINTARGET%\App\
 xcopy /Y /d License.txt				%BINTARGET%\App\
 xcopy /Y /d Trucks.pgs				%BINTARGET%\App\

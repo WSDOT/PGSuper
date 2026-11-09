@@ -20,10 +20,10 @@ The Master Library contains predefined objects such as girders, barriers, live l
 
 Project Templates define the default settings for new projects. PGSuper and PGSplice do not have any default values per se. New projects are always created by opening a Project Template and loading the supplied information. The information in the Project Template becomes the default settings. The information in Project Templates can be set to reflect an owner's design policies. @ref project_templates are discussed later in this guide.
 
-Publishing instructions tell the configuration server important information about a configuration so that it is published and presented properly to the design engineer.
+Publishing instructions (the list of configurations, ConfigurationPackages.json) tell PGSuper and PGSplice which configurations a configuration server publishes and where to find them, so that each configuration is presented properly to the design engineer.
 
 Configuration document is optional, but recommended. This documentation provides information about a configuration so the design engineer can make informed decisions about using it.
 
 Configuration Servers
 ----------------------
-The Master Library, Project Templates, publishing instructions and configuration documentation are packaged together to form a Configuration. After configurations have been developed, they are hosted on a Configuration Server. A Configuration Server can be your local file system, a network file system, an FTP server or an HTTP server. It is the Administrator's job to create configurations and host them on configuration servers. @ref configuration_server_files are discussed later in this guide.
+The Master Library, Project Templates, publishing instructions and configuration documentation are packaged together to form a Configuration. After configurations have been developed, they are hosted on a Configuration Server. A Configuration Server can be your local file system, a network file system, or an HTTPS web server. It is the Administrator's job to create configurations and host them on configuration servers. @ref configuration_server_files are discussed later in this guide.

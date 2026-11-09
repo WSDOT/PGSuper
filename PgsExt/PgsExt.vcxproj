@@ -173,19 +173,25 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\MakePgz\unzip.cpp">
+    <ClCompile Include="..\ConfigPackager\ConfigurationManifest.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\MakePgz\UnzipPgz.cpp">
+    <ClCompile Include="..\ConfigPackager\unzip.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\MakePgz\zip.cpp">
+    <ClCompile Include="..\ConfigPackager\UnzipPgz.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\ConfigPackager\zip.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -374,9 +380,10 @@
     <ClInclude Include="..\Include\PgsExt\TransferLength.h" />
     <ClInclude Include="..\Include\PgsExt\TxnManager.h" />
     <ClInclude Include="..\Include\PgsExt\YieldStressRatioArtifact.h" />
-    <ClInclude Include="..\MakePgz\unzip.h" />
-    <ClInclude Include="..\MakePgz\UnzipPgz.h" />
-    <ClInclude Include="..\MakePgz\zip.h" />
+    <ClInclude Include="..\ConfigPackager\ConfigurationManifest.h" />
+    <ClInclude Include="..\ConfigPackager\unzip.h" />
+    <ClInclude Include="..\ConfigPackager\UnzipPgz.h" />
+    <ClInclude Include="..\ConfigPackager\zip.h" />
     <ClInclude Include="ACIParametersDlg.h" />
     <ClInclude Include="BoundaryConditionDlg.h" />
     <ClInclude Include="CatalogServerDlg.h" />
