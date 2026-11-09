@@ -91,12 +91,6 @@ void CCatalogServerAppMixin::LoadRegistrySettings()
 
    m_SharedResourceType   = (SharedResourceType)  pApp->GetProfileInt(_T("Settings"),_T("SharedResourceType"),  iDefaultSharedResourceType);
    m_CacheUpdateFrequency = (CacheUpdateFrequency)pApp->GetProfileInt(_T("Settings"),_T("CacheUpdateFrequency"),iDefaultCacheUpdateFrequency);
-
-   if (m_SharedResourceType == srtInternetFtp)
-   {
-      // FTP servers are no longer supported. FTP servers are now read as web servers (see CreateCatalogServer).
-      m_SharedResourceType = srtInternetHttp;
-   }
 }
 
 void CCatalogServerAppMixin::LoadRegistryOptions()
@@ -400,23 +394,6 @@ void CCatalogServerAppMixin::UpdateCache()
    }
    catch(CCatalogServerException exp)
    {
-      if (exp.GetErrorType() == CCatalogServerException::ceFtpNotSupported)
-      {
-         // The server is an FTP server that couldn't be reached over HTTPS. Keep using the
-         // configuration downloaded earlier, and say so once for this server.
-         CAutoRegistry autoReg(GetAppName(),pApp);
-         CString strKey(_T("FtpNoticeShown_") + m_CurrentCatalogServer);
-         if (pApp->GetProfileInt(_T("Settings"),strKey,0) == 0)
-         {
-            ::AfxMessageBox(exp.GetErrorMessage(),MB_OK | MB_ICONINFORMATION);
-            pApp->WriteProfileInt(_T("Settings"),strKey,1);
-         }
-
-         WBFL::System::Date now;
-         SetLastCacheUpdateDate(now);
-         return;
-      }
-
       // catch and report error message
       error_msg = exp.GetErrorMessage();
       was_error = true;

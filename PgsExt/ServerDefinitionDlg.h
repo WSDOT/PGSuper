@@ -45,7 +45,7 @@ public:
 	//{{AFX_DATA(CServerDefinitionDlg)
 	enum { IDD = IDD_SERVERDATA };
 	CString	m_ServerName;
-	CString	m_ServerAddress;          // used for https
+	CString	m_ServerAddress;          // used for https and ftp
    CString	m_LocalMasterLibraryFile; // used for file system
    CString	m_LocalWorkgroupTemplateFolder;
 	//}}AFX_DATA

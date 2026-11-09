@@ -2,7 +2,7 @@ Configuration Servers - The Details {#configuration_server_files}
 ============
 Configuration Servers are more of a concept than what we traditionally think of as a server. The Configuration Servers we refer to are basically locations where some files can be stored and accessed by users.
 
-Our Configuration Servers can use a local or network file system on your computer, or an HTTPS web server to store and provide access to Configurations.
+Our Configuration Servers can use a local or network file system on your computer, an HTTPS web server, or an FTP server to store and provide access to Configurations.
 
 In this topic we will describe how to setup configuration servers.
 
@@ -33,11 +33,11 @@ TOGA checks this kind of server for updates using checksum lists. If the lists a
     ConfigPackager.exe /Md5List G:\MyTOGA\MasterLibrary.lbr G:\MyTOGA\MasterLibrary.lbr.md5
     ConfigPackager.exe /Md5List G:\MyTOGA\MyTemplates\ G:\MyTOGA\MyTemplates\WorkgroupTemplates.md5
 
-HTTPS and Network Folder based Configuration Servers
-----------------------------------------------------
+HTTPS, FTP and Network Folder based Configuration Servers
+---------------------------------------------------------
 Configurations that are shared over the Internet are published on an HTTPS web server. The same files can also be published in a folder on your network. A configuration server of this type holds configuration packages, a list of configurations named ConfigurationPackages.json, and optional configuration documentation.
 
-> NOTE: Web servers must use HTTPS (addresses that start with https://). FTP servers are no longer supported.
+> NOTE: Web servers must use HTTPS (addresses that start with https://). The same files can also be published on an FTP server that allows anonymous login (addresses that start with ftp://).
 
 ### Configuration Documentation ###
 Let's start by writing the optional configuration documentation. This is simply an HTML page that contains information about your configuration. You can create any web page you want, but the documentation generally should contain the following information:
@@ -137,8 +137,8 @@ See @ref configurations to learn how to configure TOGA to use your configuration
 Item | Value
 -----|----------
 Name | This can be any name. Specify one or let your users decide
-Server Type | Internet HTTPS Server, or Local or Network File System Using ConfigurationPackages.json for a network folder
-Server Address (URL) | The address of the folder that holds ConfigurationPackages.json (e.g. https://www.mystate.gov/bridge/). For a network folder, the folder path.
+Server Type | Internet HTTPS Server, Internet FTP Server, or Local or Network File System Using ConfigurationPackages.json for a network folder
+Server Address (URL) | The address of the folder that holds ConfigurationPackages.json (e.g. https://www.mystate.gov/bridge/ or ftp://ftp.mystate.gov/bridge/). For a network folder, the folder path.
 
 ### Older Versions of TOGA ###
 Versions of TOGA released before ConfigurationPackages.json was introduced read TOGAPackages.ini instead. If your users still run those versions, keep publishing TOGAPackages.ini, and the .md5 file for each package, next to ConfigurationPackages.json. Current versions of TOGA read ConfigurationPackages.json when it is there, and read TOGAPackages.ini when it isn't.

@@ -178,7 +178,7 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
    std::vector<CString> legacyServers;
    for (const auto& server : m_Servers)
    {
-      const CHttpCatalogServer* pServer = dynamic_cast<const CHttpCatalogServer*>(server.get());
+      const CManifestCatalogServer* pServer = dynamic_cast<const CManifestCatalogServer*>(server.get());
       if (pServer && IsLegacyWSDOTAddress(pServer->GetAddress()))
       {
          legacyServers.push_back(pServer->GetServerName());

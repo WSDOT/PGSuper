@@ -44,10 +44,12 @@ bool IsLegacyWSDOTAddress(const CString& address)
 
 static CCatalogServer* CreateServer(LPCTSTR strAppName, const CString& strType, const CString& strName, const CString& strAddress, const CString& strExt)
 {
-   if (strType == _T("FTP") || strType == _T("HTTP"))
+   if (strType == _T("FTP"))
    {
-      // FTP servers are no longer supported. The HTTP server tries the same host and path over HTTPS
-      // and saves the new address if that works.
+      return new CFtpCatalogServer(strAppName, strName, strAddress, strExt);
+   }
+   else if (strType == _T("HTTP"))
+   {
       return new CHttpCatalogServer(strAppName, strName, strAddress, strExt);
    }
    else if (strType == _T("FILSYS"))
@@ -147,13 +149,17 @@ CString GetCreationString(const CCatalogServer* pServer)
 {
    CString creastr;
    SharedResourceType type = pServer->GetServerType();
-   if (type==srtInternetHttp || type==srtInternetFtp)
+   if (type==srtInternetFtp)
+   {
+      const CFtpCatalogServer* psvr = dynamic_cast<const CFtpCatalogServer*>(pServer);
+      ATLASSERT(psvr);
+      creastr.Format(_T("FTP|%s"), psvr->GetAddress());
+   }
+   else if (type==srtInternetHttp)
    {
       const CHttpCatalogServer* psvr = dynamic_cast<const CHttpCatalogServer*>(pServer);
       ATLASSERT(psvr);
-      // An address that is still ftp:// keeps the FTP tag so it is clear in the registry
-      CString strAddress(psvr->GetAddress());
-      creastr.Format(_T("%s|%s"), ConfigManifest::StartsWithNoCase((LPCTSTR)strAddress, L"ftp://") ? _T("FTP") : _T("HTTP"), strAddress);
+      creastr.Format(_T("HTTP|%s"), psvr->GetAddress());
    }
    else if (type==srtLocal)
    {
@@ -322,11 +328,6 @@ void CManifestCatalogServer::OnCatalogFound(const CString& strAddress) const
 {
 }
 
-bool CManifestCatalogServer::IsLegacyFtp() const
-{
-   return false;
-}
-
 bool CManifestCatalogServer::LocateCatalog(const CString& strLocalFile, CString& strFoundAddress, CString& strCatalogURL, bool& bIsJson, CString& strError, bool& bConnectionError) const
 {
    strError.Empty();
@@ -411,14 +412,6 @@ void CManifestCatalogServer::FetchCatalog(IProgressMonitor* pProgress) const
       bool bIsJson, bConnectionError;
       if (!LocateCatalog(m_strLocalCatalog, strFoundAddress, strCatalogURL, bIsJson, strError, bConnectionError))
       {
-         if (IsLegacyFtp())
-         {
-            CString msg;
-            msg.Format(_T("The configuration server \"%s\" uses FTP, which %s no longer supports.\n\n%s will keep using the configuration it downloaded earlier. Ask the publisher of this configuration for an HTTPS address, then update the server with Configure %s > Manage."),
-               GetServerName(), m_AppName, m_AppName, m_AppName);
-            throw CCatalogServerException(CCatalogServerException::ceFtpNotSupported, msg);
-         }
-
          throw CCatalogServerException(CCatalogServerException::ceGettingCatalogFile, strError);
       }
 
@@ -658,22 +651,12 @@ CHttpCatalogServer::CHttpCatalogServer(LPCTSTR strAppName,LPCTSTR strServerName,
 {
 }
 
-bool CHttpCatalogServer::IsLegacyFtp() const
-{
-   return ConfigManifest::StartsWithNoCase((LPCTSTR)m_ServerAddress, L"ftp://");
-}
-
 std::vector<CString> CHttpCatalogServer::GetCandidateAddresses() const
 {
    CString strAddress = CleanUpURL(m_ServerAddress, IsJsonAddress(m_ServerAddress));
 
    std::vector<CString> addresses;
-   if (ConfigManifest::StartsWithNoCase((LPCTSTR)strAddress, L"ftp://"))
-   {
-      // FTP is no longer supported. Try the same host and path over HTTPS.
-      addresses.push_back(_T("https://") + strAddress.Mid(6));
-   }
-   else if (ConfigManifest::StartsWithNoCase((LPCTSTR)strAddress, L"http://"))
+   if (ConfigManifest::StartsWithNoCase((LPCTSTR)strAddress, L"http://"))
    {
       // Try HTTPS first. Use HTTP only if the server can't be reached over HTTPS.
       addresses.push_back(_T("https://") + strAddress.Mid(7));
@@ -699,7 +682,8 @@ std::vector<CString> CHttpCatalogServer::GetDownloadCandidates(const CString& st
    return urls;
 }
 
-CString CHttpCatalogServer::ResolvePackageURL(const CString& strURL) const
+// Resolves a package location against the address of the catalog (https:// or ftp://)
+static CString ResolveURL(const CString& strCatalogURL, const CString& strURL)
 {
    if (ConfigManifest::IsAbsoluteLocation((LPCTSTR)strURL))
    {
@@ -712,19 +696,24 @@ CString CHttpCatalogServer::ResolvePackageURL(const CString& strURL) const
    if (strRelative.Left(1) == _T("/"))
    {
       // relative to the host
-      int start = m_CatalogURL.Find(_T("://"));
-      int end = m_CatalogURL.Find(_T('/'), start + 3);
-      return (end == -1 ? m_CatalogURL : m_CatalogURL.Left(end)) + strRelative;
+      int start = strCatalogURL.Find(_T("://"));
+      int end = strCatalogURL.Find(_T('/'), start + 3);
+      return (end == -1 ? strCatalogURL : strCatalogURL.Left(end)) + strRelative;
    }
 
    // relative to the folder that holds the catalog
-   int end = m_CatalogURL.ReverseFind(_T('/'));
-   return m_CatalogURL.Left(end + 1) + strRelative;
+   int end = strCatalogURL.ReverseFind(_T('/'));
+   return strCatalogURL.Left(end + 1) + strRelative;
+}
+
+CString CHttpCatalogServer::ResolvePackageURL(const CString& strURL) const
+{
+   return ResolveURL(m_CatalogURL, strURL);
 }
 
 void CHttpCatalogServer::OnCatalogFound(const CString& strAddress) const
 {
-   // Save the upgraded address (http:// or ftp:// to https://) so it is used from now on
+   // Save the upgraded address (http:// to https://) so it is used from now on
    if (ConfigManifest::StartsWithNoCase((LPCTSTR)strAddress, L"https://") && !ConfigManifest::StartsWithNoCase((LPCTSTR)m_ServerAddress, L"https://"))
    {
       m_ServerAddress = strAddress;
@@ -825,18 +814,84 @@ CManifestCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& s
 
 CString CHttpCatalogServer::CleanUpURL(const CString& strURL, bool isFile) const
 {
-   if (ConfigManifest::StartsWithNoCase((LPCTSTR)strURL, L"ftp://"))
+   return CleanHTTPURL(strURL, isFile);
+}
+
+/// CFtpCatalogServer ///
+CString CFtpCatalogServer::CleanUpURL(const CString& strURL, bool isFile) const
+{
+   CString url(strURL);
+   url.Trim();
+
+   // FTP addresses use forward slashes
+   url.Replace(_T("\\"), _T("/"));
+
+   // if no scheme was typed, use ftp://
+   if (url.Find(_T("://")) == -1 && !url.IsEmpty())
    {
-      CString url(strURL);
-      url.Replace(_T("\\"), _T("/"));
-      if (!isFile && url.Right(1) != _T("/"))
-      {
-         url += _T("/");
-      }
-      return url;
+      url.Insert(0, _T("ftp://"));
    }
 
-   return CleanHTTPURL(strURL, isFile);
+   // folders end with / so file names can be added
+   if (!isFile && !url.IsEmpty() && url.Right(1) != _T("/"))
+   {
+      url += _T("/");
+   }
+
+   return url;
+}
+
+std::vector<CString> CFtpCatalogServer::GetCandidateAddresses() const
+{
+   return std::vector<CString>{CleanUpURL(m_ServerAddress, IsJsonAddress(m_ServerAddress))};
+}
+
+CString CFtpCatalogServer::ResolvePackageURL(const CString& strURL) const
+{
+   return ResolveURL(m_CatalogURL, strURL);
+}
+
+CManifestCatalogServer::gwResult CFtpCatalogServer::GetWebFile(const CString& strFileURL, const CString& strLocalTargetFile, CString& strError) const
+{
+   strError.Empty();
+
+   DWORD dwServiceType;
+   CString strServer, strObject;
+   INTERNET_PORT nPort;
+   if (!AfxParseURL(strFileURL, dwServiceType, strServer, strObject, nPort) || dwServiceType != AFX_INET_SERVICE_FTP)
+   {
+      return gwInvalidUrl;
+   }
+
+   CInternetSession session(m_AppName);
+   std::unique_ptr<CFtpConnection> pFTP;
+   try
+   {
+      // anonymous login, passive mode
+      pFTP.reset(session.GetFtpConnection(strServer, nullptr, nullptr, nPort, TRUE));
+   }
+   catch (CInternetException* pEx)
+   {
+      TCHAR szErr[512];
+      pEx->GetErrorMessage(szErr, 512);
+      strError.Format(_T("%s (error %d)"), szErr, pEx->m_dwError);
+      strError.Trim();
+      pEx->Delete();
+      return gwConnectionError;
+   }
+
+   // The server answered. A file it can't send is reported as not found.
+   BOOL bSuccess = pFTP->GetFile(strObject, strLocalTargetFile, FALSE, FILE_ATTRIBUTE_NORMAL, FTP_TRANSFER_TYPE_BINARY | INTERNET_FLAG_RELOAD);
+   DWORD dwError = ::GetLastError();
+   pFTP->Close();
+
+   if (!bSuccess)
+   {
+      strError.Format(_T("The FTP server could not send %s (error %d)"), strFileURL, dwError);
+      return gwNotFound;
+   }
+
+   return gwOk;
 }
 
 /// CFileSystemIniCatalogServer ///

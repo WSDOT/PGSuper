@@ -2,7 +2,7 @@ Configuration Servers {#configuration_server_files}
 ============
 Configuration Servers are more of a concept than what we traditionally think of as a server. The Configuration Servers we are talking about are basically locations where some files can be stored and accessed by users.
 
-Our Configuration Servers can use a local disk on your computer, a network file system, or an HTTPS web server to store and provide access to Configurations.
+Our Configuration Servers can use a local disk on your computer, a network file system, an HTTPS web server, or an FTP server to store and provide access to Configurations.
 
 In this topic we will describe how to setup configuration servers.
 
@@ -34,8 +34,8 @@ PGSuper and PGSplice check this kind of server for updates using checksum lists 
 
 Run these commands again whenever you change the Master Library or the Project Templates.
 
-HTTPS and Network Folder based Configuration Servers
-----------------------------------------------------
+HTTPS, FTP and Network Folder based Configuration Servers
+---------------------------------------------------------
 Configurations that are shared over the Internet are published on an HTTPS web server. The same files can also be published in a folder on your network.
 
 A configuration server of this type holds three kinds of files:
@@ -43,7 +43,7 @@ A configuration server of this type holds three kinds of files:
 * The list of configurations - a file named ConfigurationPackages.json that tells PGSuper and PGSplice which configurations you publish, and where to find their packages
 * Configuration Documentation (optional) - a web page about each configuration
 
-> NOTE: Web servers must use HTTPS (addresses that start with https://). FTP servers are no longer supported.
+> NOTE: Web servers must use HTTPS (addresses that start with https://). The same files can also be published on an FTP server that allows anonymous login (addresses that start with ftp://).
 
 ### Configuration Documentation ###
 Let's start by writing the configuration documentation. This is simply an HTML page that contains information about your configuration. The documentation often contains the following information:
@@ -152,8 +152,8 @@ See @ref ug_configurations in the @ref user_guide to learn how to configure PGSu
 Item | Value
 -----|----------
 Name | This can be any name. Specify one or let your users decide
-Server Type | Internet HTTPS Server, or Local or Network File System Using ConfigurationPackages.json for a network folder
-Server Address (URL) | The address of the folder that holds ConfigurationPackages.json (e.g. https://www.mystate.gov/bridge/), or the full address of the JSON file. For a network folder, the folder path.
+Server Type | Internet HTTPS Server, Internet FTP Server, or Local or Network File System Using ConfigurationPackages.json for a network folder
+Server Address (URL) | The address of the folder that holds ConfigurationPackages.json (e.g. https://www.mystate.gov/bridge/ or ftp://ftp.mystate.gov/bridge/), or the full address of the JSON file. For a network folder, the folder path.
 
 ### Web Server Settings ###
 Most web servers deliver .json and .zip files without any extra settings. Some web servers, including Microsoft IIS, refuse to deliver file types they don't recognize, such as .ini, .pgz and .md5. If you must serve those files from IIS (for example, the INI files described below), add a web.config file to the folder:

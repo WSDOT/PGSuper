@@ -40,7 +40,7 @@ enum CacheUpdateFrequency
 enum SharedResourceType
 {
    srtDefault,     // use the default files provided by PGSuper
-   srtInternetFtp, // FTP servers are no longer supported. This value is read from older settings and treated as srtInternetHttp.
+   srtInternetFtp, // configurations published on an FTP server (ConfigurationPackages.json)
    srtLocal,       // use library file and workgroup templates published on a local network
    srtInternetHttp,// configurations published on an HTTPS web server (ConfigurationPackages.json)
    srtLocalIni     // configurations published in a local or network folder (ConfigurationPackages.json)
@@ -80,7 +80,6 @@ public:
       ceNetworkConnection,
       ceGettingCatalogFile,
       ceParsingURL,
-      ceFtpNotSupported, // the server is an FTP server that couldn't be reached over HTTPS
       ceFindingFile,
       ceDownloadingFile,
       ceServerNotFound
@@ -216,9 +215,6 @@ protected:
    // Called when the catalog was found at one of the candidate addresses
    virtual void OnCatalogFound(const CString& strAddress) const;
 
-   // True if the server was defined as an FTP server
-   virtual bool IsLegacyFtp() const;
-
 protected:
    void Init();
    void SetAddress(const CString& address);
@@ -245,8 +241,7 @@ protected:
 
 //////////////////////  CHttpCatalogServer    ////////////////////////////////
 // Configurations published on a web server. New servers must use HTTPS.
-// Servers stored with an http:// address are tried over HTTPS first. Servers stored with an
-// ftp:// address (FTP is no longer supported) are tried over HTTPS on the same host and path.
+// Servers stored with an http:// address are tried over HTTPS first.
 class CHttpCatalogServer : public CManifestCatalogServer
 {
 public:
@@ -262,7 +257,26 @@ protected:
    virtual std::vector<CString> GetDownloadCandidates(const CString& strURL) const override;
    virtual CString ResolvePackageURL(const CString& strURL) const override;
    virtual void OnCatalogFound(const CString& strAddress) const override;
-   virtual bool IsLegacyFtp() const override;
+};
+
+//////////////////////  CFtpCatalogServer    ////////////////////////////////
+// Configurations published on an FTP server (anonymous login), with the same files as a web
+// server: ConfigurationPackages.json and .zip packages. A legacy <App>Packages.ini is read when
+// the server has no ConfigurationPackages.json.
+class CFtpCatalogServer : public CManifestCatalogServer
+{
+public:
+   CFtpCatalogServer(LPCTSTR strAppName,LPCTSTR strServerName, const CString& address,const CString& strExt):
+      CManifestCatalogServer(strAppName, strServerName, srtInternetFtp, address, strExt)
+   {
+   }
+
+   virtual CString CleanUpURL(const CString& strURL, bool isFile) const override;
+
+protected:
+   virtual gwResult GetWebFile(const CString& strFileURL, const CString& strLocalTargetFile, CString& strError) const override;
+   virtual std::vector<CString> GetCandidateAddresses() const override;
+   virtual CString ResolvePackageURL(const CString& strURL) const override;
 };
 
 //////////////////////  CFileSystemIniCatalogServer    ////////////////////////////////

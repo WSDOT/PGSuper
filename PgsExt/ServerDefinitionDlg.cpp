@@ -55,9 +55,7 @@ CServerDefinitionDlg::CServerDefinitionDlg(const CCatalogServers& servers,const 
    // Type casting here a bit ugly, but we are bonded to our servers
    if (m_ServerType==srtInternetHttp || m_ServerType==srtInternetFtp)
    {
-      // FTP servers are no longer supported. They are kept as web servers.
-      m_ServerType = srtInternetHttp;
-      const CHttpCatalogServer* psvr = dynamic_cast<const CHttpCatalogServer*>(pCurrentServer);
+      const CManifestCatalogServer* psvr = dynamic_cast<const CManifestCatalogServer*>(pCurrentServer);
       ATLASSERT(psvr);
       m_ServerAddress = psvr->GetAddress();
       m_OriginalServerAddress = m_ServerAddress;
@@ -129,7 +127,7 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
 
       pDX->PrepareEditCtrl(IDC_URL);
       m_ServerAddress.Trim();
-      if ( m_ServerAddress.GetLength()==0 && m_ServerType==srtInternetHttp )
+      if ( m_ServerAddress.GetLength()==0 && (m_ServerType==srtInternetHttp || m_ServerType==srtInternetFtp) )
       {
          AfxMessageBox(_T("Please enter a server address"),MB_OK | MB_ICONEXCLAMATION);
          pDX->Fail();
@@ -147,6 +145,21 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
             CString strSuggestion(_T("https") + m_ServerAddress.Mid(scheme));
             CString strMsg;
             strMsg.Format(_T("The server address must start with https://.\n\nConfiguration servers must use a secure connection. Change the address to %s and try again."),strSuggestion);
+            AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+      }
+
+      // FTP server addresses must be ftp://
+      if ( m_ServerType==srtInternetFtp )
+      {
+         CString strAddress(m_ServerAddress);
+         strAddress.MakeLower();
+         int scheme = strAddress.Find(_T("://"));
+         if ( scheme != -1 && strAddress.Left(scheme) != _T("ftp") )
+         {
+            CString strMsg;
+            strMsg.Format(_T("The address of an FTP server must start with ftp://.\n\nFor a web server, choose Internet HTTPS Server as the Server Type."));
             AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
             pDX->Fail();
          }
@@ -172,6 +185,8 @@ BOOL CServerDefinitionDlg::OnInitDialog()
    ASSERT(ptype_ctrl!=0);
    int idx = ptype_ctrl->AddString(_T("Internet HTTPS Server"));
    ptype_ctrl->SetItemData(idx,srtInternetHttp);
+   idx = ptype_ctrl->AddString(_T("Internet FTP Server"));
+   ptype_ctrl->SetItemData(idx,srtInternetFtp);
    idx = ptype_ctrl->AddString(_T("Local or Network File System"));
    ptype_ctrl->SetItemData(idx,srtLocal);
    idx = ptype_ctrl->AddString(_T("Local or Network File System Using ConfigurationPackages.json"));
@@ -197,7 +212,7 @@ void CServerDefinitionDlg::ConfigureControls(SharedResourceType type)
    if (type==srtInternetFtp || type==srtInternetHttp)
    {
       GetDlgItem(IDC_URL_STATIC)->SetWindowText(_T("Server Address (URL)"));
-      GetDlgItem(IDC_URL_HINT)->SetWindowText(_T("A folder, or the full address of a .json file. Must start with https://"));
+      GetDlgItem(IDC_URL_HINT)->SetWindowText(type==srtInternetFtp ? _T("A folder, or the full address of a .json file. Must start with ftp://") : _T("A folder, or the full address of a .json file. Must start with https://"));
       show_local_libr = SW_HIDE;
       show_local_templ = SW_HIDE;
       show_internet = SW_SHOW;
@@ -262,7 +277,13 @@ void CServerDefinitionDlg::OnBnClickedTestServer()
 CCatalogServer* CServerDefinitionDlg::CreateServer()
 {
    // Factory up our server
-   if (m_ServerType==srtInternetHttp)
+   if (m_ServerType==srtInternetFtp)
+   {
+      CFtpCatalogServer* psvr = new CFtpCatalogServer(m_Servers.GetAppName(),m_ServerName, m_ServerAddress, m_TemplateFileExt);
+      ATLASSERT(psvr);
+      return psvr;
+   }
+   else if (m_ServerType==srtInternetHttp)
    {
       CHttpCatalogServer* psvr = new CHttpCatalogServer(m_Servers.GetAppName(),m_ServerName, m_ServerAddress, m_TemplateFileExt);
       ATLASSERT(psvr);

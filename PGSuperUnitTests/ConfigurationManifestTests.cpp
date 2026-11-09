@@ -188,6 +188,7 @@ namespace ConfigurationTests
          Assert::IsTrue(error.find(L"https://") != std::wstring::npos, L"message says https:// is required");
          Assert::IsFalse(ParseManifest(MakeManifest(R"({"appVersion":"9.1.0","url":"a.zip","md5":"1234"})"), manifest, error), L"bad md5");
          Assert::IsTrue(ParseManifest(MakeManifest(R"({"appVersion":"9.1.0","url":"https://example.org/a.zip"})"), manifest, error), L"https:// package address");
+         Assert::IsTrue(ParseManifest(MakeManifest(R"({"appVersion":"9.1.0","url":"ftp://ftp.example.org/a.zip"})"), manifest, error), L"ftp:// package address");
       }
 
       TEST_METHOD(WriteAndReadBack)

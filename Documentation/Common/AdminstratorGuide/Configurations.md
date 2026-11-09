@@ -26,4 +26,4 @@ Configuration document is optional, but recommended. This documentation provides
 
 Configuration Servers
 ----------------------
-The Master Library, Project Templates, publishing instructions and configuration documentation are packaged together to form a Configuration. After configurations have been developed, they are hosted on a Configuration Server. A Configuration Server can be your local file system, a network file system, or an HTTPS web server. It is the Administrator's job to create configurations and host them on configuration servers. @ref configuration_server_files are discussed later in this guide.
+The Master Library, Project Templates, publishing instructions and configuration documentation are packaged together to form a Configuration. After configurations have been developed, they are hosted on a Configuration Server. A Configuration Server can be your local file system, a network file system, an HTTPS web server, or an FTP server. It is the Administrator's job to create configurations and host them on configuration servers. @ref configuration_server_files are discussed later in this guide.
