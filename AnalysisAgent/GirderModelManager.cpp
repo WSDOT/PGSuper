@@ -12134,15 +12134,15 @@ void CGirderModelManager::ApplyIntermediateDiaphragmLoads( ILBAMModel* pLBAMMode
 
             CComBSTR bstrStage = GetLBAMStageName(castDiaphragmIntervalIdx);
 
-            CComPtr<IPointLoad> load;
-            load.CoCreateInstance(CLSID_PointLoad);
-            load->put_MemberType(mtSpan);
-            load->put_MemberID(spanKey.spanIndex);
-            load->put_Location(loc);
-            load->put_Fy(P);
+            CComPtr<IPointLoad> ld;
+            ld.CoCreateInstance(CLSID_PointLoad);
+            ld->put_MemberType(mtSpan);
+            ld->put_MemberID(spanKey.spanIndex);
+            ld->put_Location(loc);
+            ld->put_Fy(P);
 
             CComPtr<IPointLoadItem> item;
-            pointLoads->Add(bstrStage , bstrLoadGroup, load, &item);
+            pointLoads->Add(bstrStage , bstrLoadGroup, ld, &item);
          } // next load
       }
    } // next group
