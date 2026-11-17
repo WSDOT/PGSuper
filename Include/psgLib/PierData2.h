@@ -107,6 +107,7 @@ public:
    bool IsContinuousConnection() const; // returns true if the pier connection is modeled as continuous
    bool IsContinuous() const; // returns true if the girder is continuous over this pier
    void IsIntegral(bool* pbLeft,bool* pbRight) const; // if the boolean values are true, the girder on the left/right side are integral with this pier
+   bool HasBearings(pgsTypes::PierFaceType face) const; // physical bearings in the completed connection
 
    bool IsAbutment() const; // returns true if pier is an end abutment
    bool IsPier() const; // returns true if pier is an intermediate pier

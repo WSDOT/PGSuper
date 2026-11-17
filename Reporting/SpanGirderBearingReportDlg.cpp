@@ -70,12 +70,25 @@
             break;
     }
 
+    if (idx == m_RLmenuItems.size())
+        idx = 0;
     DDX_CBIndex(pDX, IDC_SPAN_ITEM, (int&)idx);
 
-    if (idx == m_RLmenuItems.size())
-        idx--; // no bearing at start pier
-
-    m_Bearing = m_RLmenuItems[idx];
+    if (m_RLmenuItems.empty())
+    {
+        if (pDX->m_bSaveAndValidate)
+        {
+            pDX->PrepareCtrl(IDC_SPAN_ITEM);
+            AfxMessageBox(_T("There are no bearings for the selected span or group."));
+            pDX->Fail();
+        }
+    }
+    else
+    {
+        if (idx >= m_RLmenuItems.size())
+            idx = 0;
+        m_Bearing = m_RLmenuItems[idx];
+    }
 
     CSpanItemReportDlg::DoDataExchange(pDX);
 
@@ -171,6 +184,12 @@
 
 
          const CPierData2* pPier = pBridgeDesc->GetPier(reactionLocation.PierIdx);
+         pgsTypes::PierFaceType face = reactionLocation.Face == rftBack ? pgsTypes::Back : pgsTypes::Ahead;
+         if (!pPier->HasBearings(face))
+         {
+             m_RLmenuItems.pop_back();
+             continue;
+         }
          CString bcType;
 
          if (pPier->IsBoundaryPier())
@@ -198,6 +217,13 @@
          }
 
      }
+
+     if (m_RLmenuItems.empty())
+     {
+         pBrgBox->AddString(_T("(no bearings)"));
+     }
+     pBrgBox->EnableWindow(!m_RLmenuItems.empty());
+     GetDlgItem(IDOK)->EnableWindow(!m_RLmenuItems.empty());
 
      if (pBrgBox->SetCurSel(curSel == CB_ERR ? 0 : curSel) == CB_ERR)
      {

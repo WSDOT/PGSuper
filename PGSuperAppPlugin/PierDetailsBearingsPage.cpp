@@ -91,11 +91,13 @@ void CPierDetailsBearingsPage::UpdateLocalData()
          if (m_bStoredSingleBL || brpierdat.m_BPDType != BearingPierData::bpdAhead )
          {
             // pier data is in girderline 0
-            m_Bearings[0] = brpierdat.m_BearingsForGirders[0]; 
+            m_Bearings[0] = brpierdat.m_BearingsForGirders[0];
+            m_HasBearings[0] = brpierdat.m_HasBearings;
          }
          else
          {
             m_Bearings[1] = brpierdat.m_BearingsForGirders[0];
+            m_HasBearings[1] = brpierdat.m_HasBearings;
          }
       }
    }
@@ -191,7 +193,13 @@ void CPierDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
    // First line of data
    CBearingData2& B1Dat = m_Bearings[0];
 
+   if (!m_HasBearings[0])
+   {
+      B1Dat.DefinitionType = btBasic;
+      ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE_1))->SetCurSel(btBasic);
+   }
    DDX_CBIndex(pDX, IDC_BRG_DEF_TYPE_1, (int&)B1Dat.DefinitionType);
+   GetDlgItem(IDC_BRG_DEF_TYPE_1)->EnableWindow(m_HasBearings[0]);
 
    GET_IFACE2(pBroker, ILibrary, pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -242,7 +250,13 @@ void CPierDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
    // Second line of data
    CBearingData2& B2Dat = m_Bearings[1];
 
+   if (!m_HasBearings[1])
+   {
+      B2Dat.DefinitionType = btBasic;
+      ((CComboBox*)GetDlgItem(IDC_BRG_DEF_TYPE_2))->SetCurSel(btBasic);
+   }
    DDX_CBIndex(pDX, IDC_BRG_DEF_TYPE_2, (int&)B2Dat.DefinitionType);
+   GetDlgItem(IDC_BRG_DEF_TYPE_2)->EnableWindow(m_HasBearings[1]);
 
    if (B2Dat.DefinitionType == BearingDefinitionType::btBasic/* || !criteria.bCheck*/)
    {

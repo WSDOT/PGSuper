@@ -2419,6 +2419,18 @@ void CPierData2::IsIntegral(bool* pbLeft,bool* pbRight) const
    }
 }
 
+bool CPierData2::HasBearings(pgsTypes::PierFaceType face) const
+{
+   if (IsBoundaryPier())
+   {
+      return !IsContinuousBoundaryCondition(face, m_BoundaryConditionType);
+   }
+
+   // A continuous segment can rest on bearings (for example, at a hammerhead
+   // pier). Closure joints and integral segments do not have permanent bearings.
+   return m_SegmentConnectionType == pgsTypes::psctContinuousSegment;
+}
+
 bool CPierData2::IsAbutment() const
 {
    return (m_pPrevSpan == nullptr || m_pNextSpan == nullptr) ? true : false;

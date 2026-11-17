@@ -34,6 +34,7 @@ typedef struct BearingPierData
    } BPDType;
 
    BPDType                 m_BPDType;
+   bool                    m_HasBearings = true; // otherwise only support geometry is applicable
    std::vector< CBearingData2 > m_BearingsForGirders; // for each girder at bearing line if BearingType is brtPier,
                                                       // if for all girders is in slot[0]
 
