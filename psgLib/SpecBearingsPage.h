@@ -59,6 +59,8 @@ protected:
 		// NOTE: the ClassWizard will add member functions here
 	//}}AFX_MSG
    afx_msg void OnHelp();
+   afx_msg void OnBearingMethodChanged();
+   afx_msg void OnAbsoluteStrainSumChanged();
 	DECLARE_MESSAGE_MAP()
 
 public:

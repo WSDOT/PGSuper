@@ -1493,8 +1493,9 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(BEARINGSHEARDEFORMATIO
         }
 
 
-        if ((criteria.bMinimumBearingEdgeToGirderEdgeDistance && dist < criteria.MinimumBearingEdgeToGirderEdgeDistance) ||
-            (criteria.bMaximumBearingEdgeToGirderEdgeDistance && dist > criteria.MaximumBearingEdgeToGirderEdgeDistance))
+        // Use the same tolerance as the bearing specification checks.
+        if ((criteria.bMinimumBearingEdgeToGirderEdgeDistance && !::IsGE(criteria.MinimumBearingEdgeToGirderEdgeDistance, dist, 0.000001)) ||
+            (criteria.bMaximumBearingEdgeToGirderEdgeDistance && !::IsLE(dist, criteria.MaximumBearingEdgeToGirderEdgeDistance, 0.000001)))
         {
             CString msg;
             GET_IFACE2(GetBroker(), IEAFDisplayUnits, pDisplayUnits);
