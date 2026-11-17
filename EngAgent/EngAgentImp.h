@@ -154,6 +154,7 @@ public:
    StatusCallbackIDType m_scidRefinedAnalysis;
    StatusCallbackIDType m_scidBridgeDescriptionError;
    StatusCallbackIDType m_scidLldfWarning;
+   StatusCallbackIDType m_scidBearingStrainWarning;
 
 // IAgent
 public:

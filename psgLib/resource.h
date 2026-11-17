@@ -1536,6 +1536,8 @@
 #define ID_STR_DELETE                   36879
 #define ID_MANAGE_PLUGINS               36880
 
+#define IDC_ABSOLUTE_STRAIN_SUM         1759
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
@@ -1543,7 +1545,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        335
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1758
+#define _APS_NEXT_CONTROL_VALUE         1760
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -56,6 +56,7 @@
 #include <psgLib/LiveLoadDistributionCriteria.h>
 #include <psgLib/ShearCapacityCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
+#include <psgLib/BearingCriteria.h>
 
 #include <Units\Convert.h>
 
@@ -228,6 +229,26 @@ void CEngAgentImp::InvalidateAll()
 {
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
    pStatusCenter->RemoveByStatusGroupID(m_StatusGroupID);
+
+   // Recreate one project-level warning without an Edit action.
+   GET_IFACE(ISpecification, pSpec);
+   const auto& specification = pSpec->GetSpecification();
+   if (!specification.empty())
+   {
+      GET_IFACE(ILibrary, pLib);
+      const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(specification.c_str());
+      if (pSpecEntry != nullptr)
+      {
+         const auto& criteria = pSpecEntry->GetBearingCriteria();
+         if (criteria.bCheck && criteria.AnalysisMethod == WBFL::EngTools::BearingAnalysisMethod::MethodB && !criteria.bUseAbsoluteStrainSum)
+         {
+            pStatusCenter->Add(std::make_shared<WBFL::EAF::DefaultStatusItem>(m_StatusGroupID, m_scidBearingStrainWarning,
+               _T("Using signed strain contributions can produce artificially low combined strains when opposite-sign dead- and live-load rotations cancel after applying the 1.75 cyclic amplification factor. ")
+               _T("AASHTO LRFD Commentary C14.7.5.3.3 advises using the sum of absolute values when the directions of the loading components in the critical combination are unclear. ")
+               _T("Verify that the signed combination represents the governing case. Go to Bearings tab in Project Criteria to modify.")));
+         }
+      }
+   }
 
    InvalidateHaunch();
    InvalidateLosses();
@@ -992,6 +1013,7 @@ bool CEngAgentImp::Init()
    m_scidRefinedAnalysis        = pStatusCenter->RegisterCallback( std::make_shared<pgsRefinedAnalysisStatusCallback>() );
    m_scidBridgeDescriptionError = pStatusCenter->RegisterCallback( std::make_shared<pgsBridgeDescriptionStatusCallback>(WBFL::EAF::StatusSeverityType::Error));
    m_scidLldfWarning            = pStatusCenter->RegisterCallback( std::make_shared<pgsLldfWarningStatusCallback>() );
+   m_scidBearingStrainWarning  = pStatusCenter->RegisterCallback(std::make_shared<WBFL::EAF::StatusItemCallback>(WBFL::EAF::StatusSeverityType::Warning));
 
    //
    // Attach to connection points for interfaces this agent depends on
