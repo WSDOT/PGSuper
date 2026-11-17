@@ -393,6 +393,21 @@ void CBearingGdrGrid::FillGrid()
       WriteBearingRow(BackRow,  rBack.m_BearingsForGirders[gdrIdx]);
       WriteBearingRow(AheadRow, rAhead.m_BearingsForGirders[gdrIdx]);
 
+      if (!rBack.m_HasBearings)
+      {
+         SetStyleRange(CGXRange(BackRow, m_DGetter.m_BearingDefTypeCol), CGXStyle()
+            .SetReadOnly(TRUE).SetEnabled(FALSE)
+            .SetInterior(::GetSysColor(COLOR_BTNFACE))
+            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT)));
+      }
+      if (!rAhead.m_HasBearings)
+      {
+         SetStyleRange(CGXRange(AheadRow, m_DGetter.m_BearingDefTypeCol), CGXStyle()
+            .SetReadOnly(TRUE).SetEnabled(FALSE)
+            .SetInterior(::GetSysColor(COLOR_BTNFACE))
+            .SetTextColor(::GetSysColor(COLOR_GRAYTEXT)));
+      }
+
       m_girderBearingDetailData.emplace_back(rBack.m_BearingsForGirders[gdrIdx]);
       m_girderBearingDetailData.emplace_back(rAhead.m_BearingsForGirders[gdrIdx]);
 

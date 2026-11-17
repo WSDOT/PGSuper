@@ -67,6 +67,7 @@ private:
    CBearingDetailsDlg m_details_dlg;
 
    bool m_IsMsgFromMe;
+   bool m_HasBearings[2] = { true, true };
 
 public:
    // Data for Bearing input

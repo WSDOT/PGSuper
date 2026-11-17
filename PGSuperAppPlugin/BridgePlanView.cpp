@@ -2314,6 +2314,13 @@ void CBridgePlanView::BuildPierDisplayObjects()
 void CBridgePlanView::DrawBearings(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, const ReactionLocation& reactionLocation, PierIndexType startPierIdx, GirderIndexType nGirders,
     std::shared_ptr<WBFL::DManip::CompoundDrawPointStrategy>& pStrategy)
 {
+    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+    pgsTypes::PierFaceType bearingFace = reactionLocation.Face == rftBack ? pgsTypes::Back : pgsTypes::Ahead;
+    if (!pIBridgeDesc->GetBridgeDescription()->GetPier(reactionLocation.PierIdx)->HasBearings(bearingFace))
+    {
+        return;
+    }
+
     SHEARDEFORMATIONDETAILS details;
     GET_IFACE2(pBroker, IBearingDesignParameters, pBearingParams);
     BEARINGPARAMETERS params;
@@ -2333,7 +2340,6 @@ void CBridgePlanView::DrawBearings(std::shared_ptr<WBFL::EAF::Broker> pBroker, c
         faceType = pgsTypes::PierFaceType::Ahead;
     }
 
-    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
     GET_IFACE2(pBroker, IBridge, pBridge);
     GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
 
