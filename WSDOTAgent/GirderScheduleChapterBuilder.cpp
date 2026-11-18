@@ -192,6 +192,12 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    ATLASSERT(pmid.size()==1);
    const pgsPointOfInterest& poiMidSpan(pmid.front());
 
+   PoiList php;
+   pPointOfInterest->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &php);
+   ATLASSERT(php.size() <= 2);
+   const pgsPointOfInterest& poiHarpPoint(php.front());
+
+
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IGirder,pIGirder);
 
@@ -367,11 +373,11 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
       (*pTable)(row  ,1) << _T("#");
    }
 
-   Float64 ybg = pSectProp->GetY(releaseIntervalIdx,poiMidSpan,pgsTypes::BottomGirder);
-   Float64 sse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiMidSpan,pgsTypes::Straight).Y();
    (*pTable)(++row,0) << _T("E");
    if (0 < Ns)
    {
+      Float64 ybg = pSectProp->GetY(releaseIntervalIdx, poiMidSpan, pgsTypes::BottomGirder);
+      Float64 sse = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMidSpan, pgsTypes::Straight).Y();
       (*pTable)(row,1) << gdim.SetValue(ybg-sse);
    }
    else
@@ -381,7 +387,11 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
 
    if ( CLSID_SlabBeamFamily != familyCLSID )
    {
-      Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,poiMidSpan,pgsTypes::Harped).Y();
+      // measure Fcl at the harp point - when there is precamber, the harp strand eccentricity varies
+      // between the harp points. The input for harped strand eccentricty and the Fcl on the WSDOT
+      // drawings is at the harp point
+      Float64 ybg = pSectProp->GetY(releaseIntervalIdx, poiHarpPoint, pgsTypes::BottomGirder);
+      Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiHarpPoint,pgsTypes::Harped).Y();
       (*pTable)(++row,0) << Sub2(_T("F"),_T("C.L."));
       if (0 < Nh)
       {
