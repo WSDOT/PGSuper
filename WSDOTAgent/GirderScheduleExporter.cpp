@@ -718,6 +718,11 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
             ATLASSERT(pmid.size() == 1);
             const pgsPointOfInterest& poiMidSpan(pmid.front());
 
+            PoiList php;
+            pPointOfInterest->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &php);
+            ATLASSERT(php.size() <= 2);
+            const pgsPointOfInterest& poiHarpPoint(php.front());
+
             CString strValue;
 
             //Set Girder Series or Height and Width
@@ -955,7 +960,8 @@ HRESULT CGirderScheduleExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBrok
                     rowData.E = ybg - sse;
                 }
 
-                Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMidSpan, pgsTypes::Harped).Y();
+                ybg = pSectProp->GetY(releaseIntervalIdx, poiHarpPoint, pgsTypes::BottomGirder);
+                Float64 hse = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiHarpPoint, pgsTypes::Harped).Y();
                 if (0 < Nh)
                 {
                     rowData.Fcl = ybg - hse;

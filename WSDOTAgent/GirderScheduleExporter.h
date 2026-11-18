@@ -101,7 +101,7 @@ private:
 		std::array<std::map<Float64, StrandIndexType>, 2> nDebondedPerLength; // number of de-bonded strands per de-bonded length
 		std::array<std::map<Float64, ConfigStrandFillVector>, 2> strandIdsPerLength; // de-bonded strand IDs per de-bonded length
 		Float64 E = 0; // location of straight strand C.G. from girder neutral axis at midspan
-		Float64 Fcl = 0; // location of harped strand C.G. from girder neutral axis at midspan
+		Float64 Fcl = 0; // location of harped strand C.G. from girder neutral axis at harp point
 		Float64 Fo = 0; // location of harped strand C.G. from girder neutral axis at end
 		Float64 A = 0; // uniform design haunch
 		Float64 Aend1 = 0; //design haunch at end 1
