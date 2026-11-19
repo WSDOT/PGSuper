@@ -41,7 +41,8 @@ CConnectionDisplayObjectEvents::CConnectionDisplayObjectEvents(PierIndexType pie
 
 void CConnectionDisplayObjectEvents::EditPier(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
+   auto pDisp = pDO->GetDisplayList()->GetDisplayMgr()->GetDisplay();
+   auto pView = dynamic_cast<CDisplayView*>(pDisp);
    CDocument* pDoc = pView->GetDocument();
 
    ((CPGSuperDoc*)pDoc)->EditPierDescription(m_PierIdx,PIERDLG_PAGE_CONNECTIONS);

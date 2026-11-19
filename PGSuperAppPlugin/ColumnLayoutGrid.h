@@ -25,7 +25,6 @@
 #include <PsgLib\PierData2.h>
 
 // ColumnLayoutGrid.h : header file
-//
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -44,11 +43,11 @@ public:
 
 // Operations
 public:
-   void AddColumn();
+   virtual void AddColumn();
    void RemoveSelectedColumns();
 
-   void GetColumnData(CPierData2& pier);
-   void SetColumnData(const CPierData2& pier);
+   virtual void GetColumnData(CPierData2& pier);
+   virtual void SetColumnData(const CPierData2& pier);
 
    void SetHeightMeasurementType(CColumnData::ColumnHeightMeasurementType measure);
 
@@ -59,7 +58,10 @@ public:
 
 // Implementation
 public:
-   void CustomInit();
+   virtual void CustomInit();
+
+   static void DDX_ColumnGrid(CDataExchange* pDX, CColumnLayoutGrid& grid, CPierData2* pPier);
+   static void DDV_ColumnGrid(CDataExchange* pDX, CColumnLayoutGrid& grid);
 
 	// Generated message map functions
 protected:
@@ -70,12 +72,20 @@ protected:
    
    virtual void OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol);
    virtual void OnModifyCell(ROWCOL nRow,ROWCOL nCol);
+   virtual bool NotifyDuringCellEdit() const { return true; }
 
 private:
    void AddColumn(const CColumnData& column,Float64 S);
    void SetColumnData(ROWCOL row,const CColumnData& column,Float64 S);
    void GetColumnData(ROWCOL row,CColumnData* pColumn,Float64* pS);
+
+
+protected:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
+
+   virtual int GetGridColumnCount() const { return 6; }
+
+   virtual void UpdateLastRowStyles();
 };
 
 /////////////////////////////////////////////////////////////////////////////

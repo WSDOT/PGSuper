@@ -104,7 +104,8 @@ bool CGMDisplayMgrEventsImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDispl
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CDisplayView* pView = pDisplayMgr->GetView();
+   CDisplay* pDisp = pDisplayMgr->GetDisplay();
+   auto pView = dynamic_cast<CDisplayView*>(pDisp);
    CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
    auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());

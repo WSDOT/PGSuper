@@ -23,6 +23,7 @@
 #pragma once
 #include <vector>
 #include <functional>
+#include <Math\Math.h>
 
 #include <PGSuperTypes.h>
 #include <Details.h>
@@ -58,6 +59,7 @@ class CPTData;
 class CDuctData;
 class CSegmentPTData;
 class CSegmentDuctData;
+class CPierData2;
 
 interface IRCBeam2Ex;
 class IEAFDisplayUnits;
@@ -486,6 +488,7 @@ public:
    ///////////////////////////////////////////////////
 
    virtual void GetPierDiaphragmSize(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,Float64* pW,Float64* pH) const = 0;
+   virtual void GetPierDiaphragmSize(const CPierData2& pierData,pgsTypes::PierFaceType pierFace,Float64* pW,Float64* pH) const = 0;
    // return true if weight of diaphragm is carried by girder
    virtual bool DoesPierDiaphragmLoadGirder(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const = 0;
    // Get location of end diaphragm load (c.g.) measured from c.l. bearing along girder
@@ -680,6 +683,36 @@ public:
    // returns the type of model used to define a pier
    virtual pgsTypes::PierModelType GetPierModelType(PierIndexType pierIdx) const = 0;
 
+   virtual Float64 GetDeckThickness() const = 0;
+    // Returns the cross beam profile in Pier Coordinates
+   virtual void GetUpperXBeamProfile(PierIndexType pierIdx, IShape** ppShape) const = 0;
+   virtual void GetUpperXBeamProfile(const CPierData2& pierData, IPoint2dCollection** ppPoints) const = 0;
+   virtual void GetLowerXBeamProfile(PierIndexType pierIdx, IShape** ppShape) const = 0;
+   virtual void GetLowerXBeamProfile(const CPierData2& pierData, IPoint2dCollection** ppPoints) const = 0;
+   virtual void GetBottomXBeamProfile(const CPierData2& pierData, IPoint2dCollection** ppPoints) const = 0;
+   virtual void GetXBeamProfile(const CPierData2& pierData, pgsTypes::Stage stage, IShape** ppShape) const = 0;
+   virtual void GetPierBottomSurface(const CPierData2& pierData, IPoint2dCollection** ppPoints) const = 0;
+   virtual Float64 ConvertPierToCurbLineCoordinate(PierIndexType pierIdx, Float64 Xpier) const = 0;
+   virtual Float64 ConvertPierToCurbLineCoordinate(const CPierData2& pierData, Float64 Xpier) const = 0;
+   virtual Float64 GetElevation(PierIndexType pierIdx, Float64 Xcl) const = 0;
+   virtual Float64 GetElevation(const CPierData2& pierData, Float64 Xcl) const = 0;
+   virtual void CreateDeckProfileFunction(const CPierData2& pierData, WBFL::Math::PiecewiseFunction* pFN) const = 0;
+   virtual Float64 GetMaxColumnHeight(PierIndexType pierIdx) const = 0;
+   virtual Float64 ConvertPierToCrossBeamCoordinate(PierIndexType pierIdx, Float64 Xpier) const = 0;
+   virtual Float64 ConvertCurbLineToPierCoordinate(const CPierData2& pierData, Float64 Xcl) const = 0;
+   virtual Float64 ConvertCurbLineToCrossBeamCoordinate(const CPierData2& pierData, Float64 Xcl) const = 0;
+   virtual Float64 ConvertPierToCrossBeamCoordinate(const CPierData2& pierData, Float64 Xpier) const = 0;
+   virtual void GetXBeamShape(PierIndexType pierIdx, pgsTypes::Stage stage, Float64 Xxb, IShape** ppShape) const = 0;
+   virtual void GetXBeamShape(const CPierData2& pierData, pgsTypes::Stage stage, Float64 Xxb, IShape** ppShape) const = 0;
+   virtual void GetUpperXBeamShape(const CPierData2& pierData, Float64 Xxb, IShape** ppShape) const = 0;
+   virtual void GetLowerXBeamShape(const CPierData2& pierData, Float64 Xxb, IShape** ppShape) const = 0;
+   virtual void GetUpperXBeamDimensions(PierIndexType pierIdx, Float64* pd, Float64* pw) const = 0;
+   virtual void GetUpperXBeamDimensions(const CPierData2& pierData, Float64* pd, Float64* pw) const = 0;
+   virtual Float64 GetPierDepth(PierIndexType pierIdx, pgsTypes::Stage stage, Float64 xLoc) const = 0;
+   virtual Float64 GetPierDepth(const CPierData2& pierData, pgsTypes::Stage stage, Float64 xLoc) const = 0;
+   virtual pgsTypes::PierType GetPierType(PierIndexType pierIdx) const = 0;
+   virtual pgsTypes::PierType GetPierType(const CPierData2& pierData) const = 0;
+
    // returns the number of columns at a pier.
    virtual ColumnIndexType GetColumnCount(PierIndexType pierIdx) const = 0;
 
@@ -687,6 +720,16 @@ public:
    // to be the same. if bSkewAdjust is true, the column properties are adjusted for skew and the
    // moment of inertia about an axis normal to the alignment is returned
    virtual void GetColumnProperties(PierIndexType pierIdx,ColumnIndexType colIdx,bool bSkewAdjust,Float64* pHeight,Float64* pA,Float64* pI) const = 0;
+
+   virtual Float64 GetColumnLocation(PierIndexType pierIdx, IndexType colIdx) const = 0;
+   virtual Float64 GetColumnLocation(const CPierData2& pierData, IndexType colIdx) const = 0;
+   virtual Float64 GetTopColumnElevation(PierIndexType pierIdx, IndexType colIdx) const = 0;
+   virtual Float64 GetTopColumnElevation(const CPierData2& pierData, IndexType colIdx) const = 0;
+   virtual Float64 GetBottomColumnElevation(const CPierData2& pierData, IndexType colIdx) const = 0;
+   virtual Float64 GetDelta(const CPierData2& pierData) const = 0;
+   virtual Float64 ConvertCrossBeamToPierCoordinate(PierIndexType pierIdx, Float64 Xxb) const = 0;
+   virtual Float64 ConvertCrossBeamToPierCoordinate(const CPierData2& pierData, Float64 Xxb) const = 0;
+   virtual Float64 ConvertCrossBeamToCurbLineCoordinate(const CPierData2& pierData, Float64 Xxb) const = 0;
 
    // negative moment calculations and results need not be processed if a simple span analysis is
    // used or if there isn't any continuity.

@@ -252,6 +252,7 @@
     <ClCompile Include="MomentLoadData.cpp" />
     <ClCompile Include="PierData.cpp" />
     <ClCompile Include="PierData2.cpp" />
+    <ClCompile Include="PierPointData.cpp" />
     <ClCompile Include="PointLoadData.cpp" />
     <ClCompile Include="PointOfInterest.cpp" />
     <ClCompile Include="PrecastSegmentData.cpp" />
@@ -449,6 +450,7 @@
     <ClInclude Include="..\Include\psgLib\LongRebarInstance.h" />
     <ClInclude Include="..\Include\psgLib\MomentLoadData.h" />
     <ClInclude Include="..\Include\psgLib\PierData2.h" />
+    <ClInclude Include="..\Include\psgLib\PierPointData.h" />
     <ClInclude Include="..\Include\psgLib\PointLoadData.h" />
     <ClInclude Include="..\Include\psgLib\PointOfInterest.h" />
     <ClInclude Include="..\Include\psgLib\PrecastSegmentData.h" />

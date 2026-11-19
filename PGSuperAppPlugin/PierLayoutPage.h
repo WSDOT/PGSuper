@@ -31,13 +31,21 @@
 
 #include "resource.h"
 #include <PsgLib\PierData2.h>
-#include "ColumnLayoutGrid.h"
-#include <PgsExt\ColumnFixityComboBox.h>
+#include "CommonPierLayoutDlg.h"
+#include "ScallopedPierLayoutDlg.h"
+#include "UserDefinedPierLayoutDlg.h"
+#include <WBFLGenericBridge.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CPierLayoutPage dialog
 class CPierLayoutPage : public CPropertyPage
 {
+	friend class CCommonPierLayoutDlg;
+	friend class CScallopedPierLayoutDlg;
+	friend class CUserDefinedPierLayoutDlg;
+	friend class CPierDetailsDlg;
+	friend class CPierConnectionsPage;
+
 	DECLARE_DYNCREATE(CPierLayoutPage)
 
 // Construction
@@ -75,41 +83,50 @@ protected:
    afx_msg void OnUserEc();
    afx_msg void OnMoreProperties();
    afx_msg void OnPierModelTypeChanged();
-   afx_msg void OnColumnShapeChanged();
-   afx_msg void OnColumnCountChanged(NMHDR* pNMHDR, LRESULT* pResult);
-   afx_msg void OnHeightMeasureChanged();
-   afx_msg void OnAddColumn();
-   afx_msg void OnRemoveColumns();
+   afx_msg void OnPierLayoutTypeChanged();
+   afx_msg void OnShowLiveClicked();
+   afx_msg LRESULT OnPierLayoutPopoutClosed(WPARAM wParam, LPARAM lParam);
+   afx_msg LRESULT OnPierLayoutChanged(WPARAM wParam, LPARAM lParam);
+
+   void RefreshPierLayoutPopout();
+
+   void SwapDialogs();
+
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   CMetaFileStatic m_LayoutPicture;
-   CColumnLayoutGrid m_ColumnLayoutGrid;
-   CColumnFixityComboBox m_cbColumnFixity;
-
    void FillPierModelTypeComboBox();
-   void FillRefColumnComboBox(ColumnIndexType nColumns=INVALID_INDEX);
-   void FillHeightMeasureComboBox();
-   void FillTransverseLocationComboBox();
+   void FillPierLayoutTypeComboBox();
+
+   CDrawPierLayoutControl* m_pPierLayoutPopout = nullptr;
+
+   void ShowPierLayoutPopout();
 
    CPierData2* m_pPier;
    PierIndexType m_PierIdx;
 
    pgsTypes::PierModelType m_PierModelType;
+   pgsTypes::PierLayoutType m_PierLayoutType;
+
+   // Embedded dialogs
+   CCommonPierLayoutDlg m_CommonPierLayoutDlg;
+   CScallopedPierLayoutDlg m_ScallopedPierLayoutDlg;
+   CUserDefinedPierLayoutDlg m_UserDefinedPierLayoutDlg;
+
+   bool SaveColumnLayout(CDialog& dialog, CColumnLayoutGrid& grid);
+   void LoadColumnLayout(CDialog& dialog, CColumnLayoutGrid& grid, CPierData2& pier);
+
+   bool CommitCommonPierLayout();
+   bool CommitScallopedPierLayout();
+   bool CommitUserDefinedPierLayout();
+
+   BOOL OnKillActive();
+
+   BOOL OnApply();
 
    void UpdateConcreteTypeLabel();
    void UpdateEc();
 
-   ColumnIndexType m_RefColumnIdx;
-   Float64 m_TransverseOffset;
-   pgsTypes::OffsetMeasurementType m_TransverseOffsetMeasurement;
-   Float64 m_XBeamWidth;
-   Float64 m_XBeamHeight[2];
-   Float64 m_XBeamTaperHeight[2];
-   Float64 m_XBeamTaperLength[2];
-   Float64 m_XBeamEndSlopeOffset[2];
-   Float64 m_XBeamOverhang[2];
-   pgsTypes::ColumnLongitudinalBaseFixityType m_ColumnFixity;
 };
 
 //{{AFX_INSERT_LOCATION}}

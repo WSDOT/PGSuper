@@ -437,6 +437,34 @@ void CPierConnectionsPage::OnBoundaryConditionChanged()
    OnAheadDiaphragmLoadTypeChanged();
 
    UpdateConnectionPicture();
+
+   CPierDetailsDlg* pDlg = DYNAMIC_DOWNCAST(CPierDetailsDlg, GetParent());
+   if (pDlg)
+   {
+       CComboBox* pcbConnectionType = (CComboBox*)GetDlgItem(IDC_BOUNDARY_CONDITIONS);
+       int curSel = pcbConnectionType->GetCurSel();
+       pgsTypes::BoundaryConditionType connectionType = (pgsTypes::BoundaryConditionType)pcbConnectionType->GetItemData(curSel);
+
+       switch(pDlg->m_PierLayoutPage.m_PierLayoutType)
+       {
+           case pgsTypes::pltCommon:
+           {
+               CCommonPierLayoutDlg* plDlg = &pDlg->m_PierLayoutPage.m_CommonPierLayoutDlg;
+               plDlg->m_Pier.SetBoundaryConditionType(connectionType);
+           }
+           case pgsTypes::pltScalloped:
+           {
+               CScallopedPierLayoutDlg* plDlg = &pDlg->m_PierLayoutPage.m_ScallopedPierLayoutDlg;
+               plDlg->m_Pier.SetBoundaryConditionType(connectionType);
+           }
+           case pgsTypes::pltUserDefined:
+           {
+               CUserDefinedPierLayoutDlg* plDlg = &pDlg->m_PierLayoutPage.m_UserDefinedPierLayoutDlg;
+               plDlg->m_Pier.SetBoundaryConditionType(connectionType);
+           }
+       }
+	   pDlg->OnPierConnectionChanged();
+   }
 }
 
 void CPierConnectionsPage::UpdateConnectionPicture()

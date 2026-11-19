@@ -180,7 +180,8 @@ bool CAlignmentDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDisplayObject
    {
       auto pList = pDO->GetDisplayList();
       auto pDispMgr = pList->GetDisplayMgr();
-      auto pView = pDispMgr->GetView();
+      auto pDisp = pDispMgr->GetDisplay();
+      auto pView = dynamic_cast<CDisplayView*>(pDisp);
 
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 

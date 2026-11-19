@@ -48,6 +48,8 @@
 
 class CPierDetailsDlg : public CPropertySheet, public IEditPierData
 {
+	friend class CPierConnectionsPage;
+
 	DECLARE_DYNAMIC(CPierDetailsDlg)
 
 // Construction
@@ -92,6 +94,8 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 	afx_msg LRESULT OnKickIdle(WPARAM, LPARAM);
+
+   void OnPierConnectionChanged();
 
    void CommonInitPages();
    void InitPages();

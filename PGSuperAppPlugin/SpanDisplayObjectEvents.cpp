@@ -57,7 +57,8 @@ CBridgePlanViewSpanDisplayObjectEvents::CBridgePlanViewSpanDisplayObjectEvents(S
 
 void CBridgePlanViewSpanDisplayObjectEvents::EditSpan(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
+   auto pDisp = pDO->GetDisplayList()->GetDisplayMgr()->GetDisplay();
+   auto pView = dynamic_cast<CDisplayView*>(pDisp);
    CDocument* pDoc = pView->GetDocument();
 
    ((CPGSDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,SPANDLG_PAGE_LAYOUT);
@@ -220,7 +221,8 @@ bool CBridgePlanViewSpanDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL:
 
    if ( pDO->IsSelected() )
    {
-      auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
+      auto pDisp = pDO->GetDisplayList()->GetDisplayMgr()->GetDisplay();
+      auto pView = dynamic_cast<CDisplayView*>(pDisp);
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
@@ -284,7 +286,8 @@ CBridgeSectionViewSpanDisplayObjectEvents::CBridgeSectionViewSpanDisplayObjectEv
 
 void CBridgeSectionViewSpanDisplayObjectEvents::EditSpan(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
+   auto pDisp = pDO->GetDisplayList()->GetDisplayMgr()->GetDisplay();
+   auto pView = dynamic_cast<CDisplayView*>(pDisp);
    CDocument* pDoc = pView->GetDocument();
 
    ((CPGSDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,SPANDLG_PAGE_LAYOUT);

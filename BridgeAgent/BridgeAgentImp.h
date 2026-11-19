@@ -281,6 +281,7 @@ public:
    void GetClosureJointSize(const CClosureKey& closureKey,Float64* pLeft,Float64* pRight) const override;
    void GetAngleBetweenSegments(const CClosureKey& closureKey,IAngle** ppAngle) const override;
    void GetPierDiaphragmSize(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,Float64* pW,Float64* pH) const override;
+   void GetPierDiaphragmSize(const CPierData2& pierData,pgsTypes::PierFaceType pierFace,Float64* pW,Float64* pH) const override;
    bool DoesPierDiaphragmLoadGirder(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const override;
    Float64 GetPierDiaphragmLoadLocation(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endTYpe) const override;
    std::vector<IntermediateDiaphragm> GetPrecastDiaphragms(const CSegmentKey& segmentKey) const override;
@@ -361,6 +362,17 @@ public:
    pgsTypes::PierModelType GetPierModelType(PierIndexType pierIdx) const override;
    ColumnIndexType GetColumnCount(PierIndexType pierIdx) const override;
    void GetColumnProperties(PierIndexType pierIdx,ColumnIndexType colIdx,bool bSkewAdjust,Float64* pHeight,Float64* pA,Float64* pI) const override;
+   Float64 GetColumnLocation(PierIndexType pierIdx, IndexType colIdx) const override;
+   Float64 GetColumnLocation(const CPierData2& pierData, IndexType colIdx) const override;
+   Float64 GetTopColumnElevation(PierIndexType pierIdx, IndexType colIdx) const override;
+   Float64 GetTopColumnElevation(const CPierData2& pierData, IndexType colIdx) const override;
+   Float64 GetBottomColumnElevation(const CPierData2& pierData, IndexType colIdx) const override;
+   Float64 GetDelta(const CPierData2& pierData) const override;
+   Float64 ConvertCrossBeamToPierCoordinate(PierIndexType pierIdx, Float64 Xxb) const override;
+   Float64 ConvertCrossBeamToPierCoordinate(const CPierData2& pierData, Float64 Xxb) const override;
+   Float64 ConvertCurbLineToCrossBeamCoordinate(const CPierData2& pierData, Float64 Xcl) const override;
+   Float64 ConvertPierToCrossBeamCoordinate(const CPierData2& pierData, Float64 Xpier) const override;
+   Float64 ConvertCrossBeamToCurbLineCoordinate(const CPierData2& pierData, Float64 Xxb) const override;
    bool ProcessNegativeMoments(SpanIndexType spanIdx) const override;
    pgsTypes::BoundaryConditionType GetBoundaryConditionType(PierIndexType pierIdx) const override;
    pgsTypes::PierSegmentConnectionType GetPierSegmentConnectionType(PierIndexType pierIdx) const override;
@@ -380,6 +392,35 @@ public:
    std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face,GirderIndexType gdrIdx, bool bIgnoreUnrecoverableDeformations) const override;
    std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face,GirderIndexType gdrIdx) const override;
    void GetPierDisplaySettings(pgsTypes::DisplayEndSupportType* pStartPierType, pgsTypes::DisplayEndSupportType* pEndPierType, PierIndexType* pStartPierNumber) const override;
+   Float64 GetDeckThickness() const override;
+   void GetUpperXBeamProfile(PierIndexType pierIdx, IShape** ppShape) const override;
+   void GetUpperXBeamProfile(const CPierData2& pierData, IPoint2dCollection** ppPoints) const override;
+   void GetLowerXBeamProfile(PierIndexType pierIdx, IShape** ppShape) const override;
+   void GetLowerXBeamProfile(const CPierData2& pierData, IPoint2dCollection** ppPoints) const override;
+   void GetBottomXBeamProfile(const CPierData2& pierData, IPoint2dCollection** ppPoints) const override;
+   void GetXBeamProfile(const CPierData2& pierData, pgsTypes::Stage stage, IShape** ppShape) const override;
+   StageIndexType GetStageIndex(pgsTypes::Stage stage) const;
+   void GetPierBottomSurface(const CPierData2& pierData, IPoint2dCollection** ppPoints) const override;
+   Float64 ConvertPierToCurbLineCoordinate(PierIndexType pierIdx, Float64 Xpier) const override;
+   Float64 ConvertPierToCurbLineCoordinate(const CPierData2& pierData, Float64 Xpier) const override;
+   Float64 GetElevation(PierIndexType pierIdx, Float64 Xcl) const override;
+   Float64 GetElevation(const CPierData2& pierData, Float64 Xcl) const override;
+   void CreateDeckProfileFunction(const CPierData2& pierData, WBFL::Math::PiecewiseFunction* pFN) const override;
+   Float64 GetMaxColumnHeight(PierIndexType pierIdx) const override;
+   Float64 ConvertPierToCrossBeamCoordinate(PierIndexType pierIdx, Float64 Xpier) const override;
+   Float64 ConvertCurbLineToPierCoordinate(const CPierData2& pierData, Float64 Xcl) const override;
+   void GetXBeamShape(PierIndexType pierIdx, pgsTypes::Stage stage, Float64 Xxb, IShape** ppShape) const override;
+   void GetXBeamShape(const CPierData2& pierData, pgsTypes::Stage stage, Float64 Xxb, IShape** ppShape) const override;
+   void GetUpperXBeamShape(const CPierData2& pierData, Float64 Xxb, IShape** ppShape) const override;
+   void GetLowerXBeamShape(const CPierData2& pierData, Float64 Xxb, IShape** ppShape) const override;
+   void GetUpperXBeamDimensions(const CPierData2& pierData, Float64* pd, Float64* pw) const override;
+   void GetUpperXBeamDimensions(PierIndexType pierIdx, Float64* pd, Float64* pw) const override;
+   Float64 GetPierDepth(PierIndexType pierIdx, pgsTypes::Stage stage, Float64 xLoc) const override;
+   Float64 GetPierDepth(const CPierData2& pierData, pgsTypes::Stage stage, Float64 xLoc) const override;
+   pgsTypes::PierType GetPierType(const CPierData2& pierData) const override;
+   pgsTypes::PierType GetPierType(PierIndexType pierIdx) const override;
+
+
 
 // IMaterials
 public:
@@ -1453,7 +1494,7 @@ private:
    std::pair<Float64,Float64> ComputeReasonableSurfaceStationRange(const CBridgeDescription2* pBridgeDesc, const AlignmentData2& alignmentData, IAlignment* pAlignment);
 
    // helper functions for building the bridge model
-   bool LayoutPiers(const CBridgeDescription2* pBridgeDesc);
+   bool LayoutPiers();
    bool LayoutGirders(const CBridgeDescription2* pBridgeDesc);
    bool LayoutSsmHaunches();
    void GetHaunchDepth4ADimInput(const CPrecastSegmentData* pSegment,CComPtr<IDblArray>& pHaunchDepths);
@@ -1667,6 +1708,7 @@ private:
 
    Float64 ComputePierDiaphragmHeight(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const;
    Float64 ComputePierDiaphragmWidth(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const;
+   Float64 ComputePierDiaphragmWidth(const CPierData2& pierData, pgsTypes::PierFaceType pierFace) const;
 
    WBFL::LRFD::REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, Float64 distFromBottom, bool bEpoxyCoated, bool bMeetsCoverRequirements) const;
 

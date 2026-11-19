@@ -290,11 +290,31 @@ typedef struct pgsTypes
                              bctIntegralBeforeDeckHingeAhead = 10
    } BoundaryConditionType;
 
+   typedef enum Stage
+   {
+       Stage1, // lower cross beam only
+       Stage2  // upper and lower cross beam together
+   } Stage;
+
    typedef enum PierModelType
    {
       pmtIdealized, // pier is modeled with an idealized support object
       pmtPhysical   // pier is modeled with a physical description
    } PierModelType;
+
+   typedef enum PierLayoutType
+   {
+       pltCommon,       // common pier layout
+	   pltScalloped,    // pier layout based on haunch radius
+       pltUserDefined   // lower cross-beam manually defined by adding points
+   } PierLayoutType;
+
+   typedef enum PierType
+   {
+       pctContinuous, // superstructure is continuous but hinged with substructure
+       pctIntegral,   // superstructure is fully continuous with substructure
+       pctExpansion   // no moment connectivity at pier
+   } PierType;
 
    // Bridge models can begin and/or end with a pier or an abutment starting with an arbitrary number (e.g., Pier 3)
    // This enum indicates what type of permanent support is at either end of the bridge
