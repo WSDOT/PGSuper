@@ -164,12 +164,13 @@ void CDrawDeckRegionControl::OnPaint()
    CBrush* pOldBrush = dc.SelectObject(&pm_brush);
    CFont* pOldFont = dc.SelectObject(pFont);
 
+   IndexType nPoints = 4; // 10;
    for (IndexType regionIdx = 0; regionIdx < nRegions; regionIdx++)
    {
       CCastingRegion::RegionType regionType;
       IndexType sequenceIdx;
       CComPtr<IPoint2dCollection> regionPoints;
-      pBridge->GetDeckCastingRegionPerimeter(regionIdx, 10, pgsTypes::pcLocal, &regionType, &sequenceIdx, &castDeckActivity, &regionPoints);
+      pBridge->GetDeckCastingRegionPerimeter(regionIdx, nPoints, pgsTypes::pcLocal, &regionType, &sequenceIdx, &castDeckActivity, &regionPoints);
 
       dc.SelectObject(regionType == CCastingRegion::Span ? &pm_brush : &nm_brush);
 
