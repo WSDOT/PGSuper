@@ -4,7 +4,7 @@ ReadMe.txt file for PGSuper
 1.0 Notice
 ----------
 
-Copyright (C) 1999-2010, Washington State Department of Transportation
+Copyright © 1999-2026, Washington State Department of Transportation
                          Bridge and Structures Office
 
 This software was developed as part of the Alternate Route Project

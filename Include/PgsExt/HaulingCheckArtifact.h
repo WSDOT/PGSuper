@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2022  Washington State Department of Transportation
+// Copyright © 1999-2026  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -57,7 +57,7 @@ DESCRIPTION
 
 
 COPYRIGHT
-   Copyright (c) 1999
+   Copyright © 1999-2026
    Washington State Department Of Transportation
    All Rights Reserved
 
@@ -159,7 +159,7 @@ DESCRIPTION
 
 
 COPYRIGHT
-   Copyright (c) 1999
+   Copyright © 1999-2026
    Washington State Department Of Transportation
    All Rights Reserved
 
@@ -258,7 +258,7 @@ DESCRIPTION
 
 
 COPYRIGHT
-   Copyright © 1999-2022
+   Copyright © 1999-2026
    Washington State Department Of Transportation
    All Rights Reserved
 

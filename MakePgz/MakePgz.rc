@@ -71,6 +71,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
+            VALUE "LegalCopyright", "Copyright © 1999-2026, Washington State Department of Transportation, All Rights Reserved\0"
             VALUE "FileDescription", "MakePgz Application"
             VALUE "FileVersion", "2.3.0.1"
             VALUE "InternalName", "MakePgz"
