@@ -1,5 +1,6 @@
 cd %ARPDIR%\PGSuper\KDOTExport\Documentation
 
+rmdir /S /Q doc
 doxygen Doxygen.dox
 
 rem ** The code below replaces Doxygen's search.js file with version from https://github.com/divideconcept/DoxygenDeepSearch
@@ -15,8 +16,10 @@ echo ^</script^> >> %SEARCH_HTML%
 
 
 %ARPDIR%\BridgeLink\RegFreeCOM\x64\Release\MakeDocMap KDOT
-rmdir /S /Q %ARPDIR%\BridgeLink\Docs\KDOT\%1\
-mkdir %ARPDIR%\BridgeLink\Docs\KDOT\%1\
-xcopy /s /y /d %ARPDIR%\PGSuper\KDOTExport\Documentation\doc\html\* %ARPDIR%\BridgeLink\Docs\KDOT\%1\
-copy %ARPDIR%\PGSuper\KDOTExport\Documentation\KDOT.dm %ARPDIR%\BridgeLink\Docs\KDOT\%1\
+rem ** Make the BridgeLink copy the same as the build, copying only changed files so unchanged files keep
+rem    their timestamps (PublishDocumentation.bat then sends only what changed to the server)
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\KDOTExport\Documentation\doc\html -Target %ARPDIR%\BridgeLink\Docs\KDOT\%1 -Keep *.dm
+if errorlevel 1 exit /B 1
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\KDOTExport\Documentation\KDOT.dm -Target %ARPDIR%\BridgeLink\Docs\KDOT\%1\KDOT.dm
+if errorlevel 1 exit /B 1
 

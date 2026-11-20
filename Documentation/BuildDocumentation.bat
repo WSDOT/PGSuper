@@ -21,20 +21,26 @@ copy PGSuper.dm PGSplice.dm
 copy PGSuper.dm PGSLibrary.dm
 
 REM - Copy the documentation to BridgeLink
-rmdir /S /Q %ARPDIR%\BridgeLink\Docs\PGSuper\%1\
-mkdir %ARPDIR%\BridgeLink\Docs\PGSuper\%1\
-xcopy /s /y /d %ARPDIR%\PGSuper\Documentation\PGSuper\doc\html\* %ARPDIR%\BridgeLink\Docs\PGSuper\%1\
-copy %ARPDIR%\PGSuper\Documentation\PGSuper.dm %ARPDIR%\BridgeLink\Docs\PGSuper\%1\
+rem ** Make the BridgeLink copy the same as the build, copying only changed files so unchanged files keep
+rem    their timestamps (PublishDocumentation.bat then sends only what changed to the server)
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSuper\doc\html -Target %ARPDIR%\BridgeLink\Docs\PGSuper\%1 -Keep *.dm
+if errorlevel 1 exit /B 1
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSuper.dm -Target %ARPDIR%\BridgeLink\Docs\PGSuper\%1\PGSuper.dm
+if errorlevel 1 exit /B 1
 
-rmdir /S /Q %ARPDIR%\BridgeLink\Docs\PGSplice\%1\
-mkdir %ARPDIR%\BridgeLink\Docs\PGSplice\%1\
-xcopy /s /y /d %ARPDIR%\PGSuper\Documentation\PGSplice\doc\html\* %ARPDIR%\BridgeLink\Docs\PGSplice\%1\
-copy %ARPDIR%\PGSuper\Documentation\PGSplice.dm %ARPDIR%\BridgeLink\Docs\PGSplice\%1\
+rem ** Make the BridgeLink copy the same as the build, copying only changed files so unchanged files keep
+rem    their timestamps (PublishDocumentation.bat then sends only what changed to the server)
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSplice\doc\html -Target %ARPDIR%\BridgeLink\Docs\PGSplice\%1 -Keep *.dm
+if errorlevel 1 exit /B 1
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSplice.dm -Target %ARPDIR%\BridgeLink\Docs\PGSplice\%1\PGSplice.dm
+if errorlevel 1 exit /B 1
 
-rmdir /S /Q %ARPDIR%\BridgeLink\Docs\PGSLibrary\%1\
-mkdir %ARPDIR%\BridgeLink\Docs\PGSLibrary\%1\
-xcopy /s /y /d %ARPDIR%\PGSuper\Documentation\PGSLibrary\doc\html\* %ARPDIR%\BridgeLink\Docs\PGSLibrary\%1\
-copy %ARPDIR%\PGSuper\Documentation\PGSLibrary.dm %ARPDIR%\BridgeLink\Docs\PGSLibrary\%1\
+rem ** Make the BridgeLink copy the same as the build, copying only changed files so unchanged files keep
+rem    their timestamps (PublishDocumentation.bat then sends only what changed to the server)
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSLibrary\doc\html -Target %ARPDIR%\BridgeLink\Docs\PGSLibrary\%1 -Keep *.dm
+if errorlevel 1 exit /B 1
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSLibrary.dm -Target %ARPDIR%\BridgeLink\Docs\PGSLibrary\%1\PGSLibrary.dm
+if errorlevel 1 exit /B 1
 
 goto :eof
 
