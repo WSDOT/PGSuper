@@ -11,6 +11,7 @@
 #include "PGSuperVersion.h"
 #endif
 #include "afxres.h"
+#include <EAF\EAFResources.h>
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -39,6 +40,7 @@ BEGIN
     "#include ""PGSuperVersion.h""\r\n"
     "#endif\r\n"
     "#include ""afxres.h""\r\n"
+    "#include <EAF\\EAFResources.h>\r\n"
     "\0"
 END
 

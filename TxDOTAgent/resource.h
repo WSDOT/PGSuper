@@ -2,16 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by TxDOTAgent.rc
 //
-#define EAFID_INDICATOR_MIN             1
-#define EAFID_INDICATOR_MODIFIED        1
-#define EAFID_INDICATOR_STATUS          2
-#define EAFID_INDICATOR_AUTOCALC_ON     3
 #define IDCANCEL2                       3
-#define EAFID_INDICATOR_AUTOCALC_OFF    4
-#define EAFID_INDICATOR_MAX             4
-#define EAF_TOOLBAR_MENU_COUNT          40
-#define EAF_REPORT_MENU_COUNT           50
-#define EAF_GRAPH_MENU_COUNT            50
 #define IDS_PROJNAME                    100
 #define IDR_TXDOTAGENT                  101
 #define IDS_TEMPLATE_SUFFIX             101
@@ -172,8 +163,6 @@
 #define IDS_GDR_ERROR3                  1756
 #define IDC_GROUP                       3003
 #define IDS_E_NOGIRDERS                 3005
-#define EAF_RESERVED_COMMAND_BASE       0x8000
-#define EAFID_HELP_SOURCE               32782
 #define ID_LEFTEND                      36864
 #define ID_RIGHTEND                     36865
 #define ID_LEFT_HP                      36866
@@ -191,7 +180,6 @@
 #define ID_VIEW_SECTIONCUTLOCATION      36879
 #define ID_VIEW_GIRDERVIEWSETTINGS      36880
 #define ID_STATUSCENTER_VIEW            36881
-#define EAFID_OPTIONS_AUTOSAVE          36884
 #define ID_UPDATE_TOGA_TEMPLATE         37201
 
 // Next default values for new objects

@@ -35,7 +35,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 BEGIN
     "resource.h\0"
     "..\\PGSuperCommandIDs.h\0"
-    "EAF\\EAFResources.h\0"
     "\0"
 END
 

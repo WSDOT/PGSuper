@@ -11,9 +11,6 @@
 #define IDS_LIVE_LOAD_FACTOR_DISABLED_TOOLTIP 10
 #define IDS_CREATE_NEW_EVENT            11
 #define IDS_NWC_MESSAGE                 12
-#define EAF_TOOLBAR_MENU_COUNT          40
-#define EAF_REPORT_MENU_COUNT           50
-#define EAF_GRAPH_MENU_COUNT            50
 #define IDR_PGSuperPluginApp            101
 #define IDC_CONCRETE_TYPE_LABEL         102
 #define IDR_PGSuperPluginAppIMPL        103
