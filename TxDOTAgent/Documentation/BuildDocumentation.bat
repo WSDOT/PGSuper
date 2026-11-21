@@ -1,3 +1,7 @@
+REM - The documentation version (x.y) comes from WBFL_VERSION_STRING in WBFL\Include\WBFLVersion.h
+call %ARPDIR%\BridgeLink\GetVersion.bat
+if errorlevel 1 exit /B 1
+
 cd %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TOGA
 
 rmdir /S /Q doc
@@ -18,9 +22,9 @@ echo ^</script^> >> %SEARCH_HTML%
 %ARPDIR%\BridgeLink\RegFreeCOM\x64\Release\MakeDocMap Toga
 rem ** Make the BridgeLink copy the same as the build, copying only changed files so unchanged files keep
 rem    their timestamps (PublishDocumentation.bat then sends only what changed to the server)
-powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TOGA\doc\html -Target %ARPDIR%\BridgeLink\Docs\TOGA\%1 -Keep *.dm
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TOGA\doc\html -Target %ARPDIR%\BridgeLink\Docs\TOGA\%ARP_DOCUMENTATION_VERSION% -Keep *.dm
 if errorlevel 1 exit /B 1
-powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TOGA\Toga.dm -Target %ARPDIR%\BridgeLink\Docs\TOGA\%1\Toga.dm
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TOGA\Toga.dm -Target %ARPDIR%\BridgeLink\Docs\TOGA\%ARP_DOCUMENTATION_VERSION%\Toga.dm
 if errorlevel 1 exit /B 1
 
 cd %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TxCADExport
@@ -37,9 +41,9 @@ echo ^</script^> >> %SEARCH_HTML%
 %ARPDIR%\BridgeLink\RegFreeCOM\x64\Release\MakeDocMap TxCADExport
 rem ** Make the BridgeLink copy the same as the build, copying only changed files so unchanged files keep
 rem    their timestamps (PublishDocumentation.bat then sends only what changed to the server)
-powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TxCADExport\doc\html -Target %ARPDIR%\BridgeLink\Docs\TxCADExport\%1 -Keep *.dm
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TxCADExport\doc\html -Target %ARPDIR%\BridgeLink\Docs\TxCADExport\%ARP_DOCUMENTATION_VERSION% -Keep *.dm
 if errorlevel 1 exit /B 1
-powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TxCADExport\TxCADExport.dm -Target %ARPDIR%\BridgeLink\Docs\TxCADExport\%1\TxCADExport.dm
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\TxDOTAgent\Documentation\TxCADExport\TxCADExport.dm -Target %ARPDIR%\BridgeLink\Docs\TxCADExport\%ARP_DOCUMENTATION_VERSION%\TxCADExport.dm
 if errorlevel 1 exit /B 1
 
 cd %ARPDIR%\PGSuper\TxDOTAgent\Documentation

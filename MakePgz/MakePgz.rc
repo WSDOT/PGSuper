@@ -41,50 +41,14 @@ END
 3 TEXTINCLUDE 
 BEGIN
     "\r\n"
+    "#include ""res\\MakePgz.rc2""  // version resource; uses the version number in WBFLVersion.h\r\n"
     "\0"
 END
 
 #endif    // APSTUDIO_INVOKED
 
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,3,0,1
- PRODUCTVERSION 2,3,0,1
- FILEFLAGSMASK 0x17L
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904b0"
-        BEGIN
-            VALUE "Comments", "A member of the Alternate Route Project"
-            VALUE "CompanyName", "Washington State Department of Transportation"
-            VALUE "LegalCopyright", "Copyright © 1999-2026, Washington State Department of Transportation, All Rights Reserved\0"
-            VALUE "FileDescription", "MakePgz Application"
-            VALUE "FileVersion", "2.3.0.1"
-            VALUE "InternalName", "MakePgz"
-            VALUE "OriginalFilename", "MakePgz.exe"
-            VALUE "ProductName", "MakePgz Application"
-            VALUE "ProductVersion", "2.3.0.1"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1200
-    END
-END
+// The version resource is in res\MakePgz.rc2 (version resource; uses the version number in WBFLVersion.h)
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
@@ -97,6 +61,8 @@ END
 // Generated from the TEXTINCLUDE 3 resource.
 //
 
+
+#include "res\MakePgz.rc2"  // version resource; uses the version number in WBFLVersion.h
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED

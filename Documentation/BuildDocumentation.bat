@@ -1,3 +1,7 @@
+REM - The documentation version (x.y) comes from WBFL_VERSION_STRING in WBFL\Include\WBFLVersion.h
+call %ARPDIR%\BridgeLink\GetVersion.bat
+if errorlevel 1 exit /B 1
+
 REM Use subroutine to do hard work of generating html with search capabilities
 
 REM - Build PGSuper Documentation
@@ -23,23 +27,23 @@ copy PGSuper.dm PGSLibrary.dm
 REM - Copy the documentation to BridgeLink
 rem ** Make the BridgeLink copy the same as the build, copying only changed files so unchanged files keep
 rem    their timestamps (PublishDocumentation.bat then sends only what changed to the server)
-powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSuper\doc\html -Target %ARPDIR%\BridgeLink\Docs\PGSuper\%1 -Keep *.dm
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSuper\doc\html -Target %ARPDIR%\BridgeLink\Docs\PGSuper\%ARP_DOCUMENTATION_VERSION% -Keep *.dm
 if errorlevel 1 exit /B 1
-powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSuper.dm -Target %ARPDIR%\BridgeLink\Docs\PGSuper\%1\PGSuper.dm
-if errorlevel 1 exit /B 1
-
-rem ** Make the BridgeLink copy the same as the build, copying only changed files so unchanged files keep
-rem    their timestamps (PublishDocumentation.bat then sends only what changed to the server)
-powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSplice\doc\html -Target %ARPDIR%\BridgeLink\Docs\PGSplice\%1 -Keep *.dm
-if errorlevel 1 exit /B 1
-powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSplice.dm -Target %ARPDIR%\BridgeLink\Docs\PGSplice\%1\PGSplice.dm
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSuper.dm -Target %ARPDIR%\BridgeLink\Docs\PGSuper\%ARP_DOCUMENTATION_VERSION%\PGSuper.dm
 if errorlevel 1 exit /B 1
 
 rem ** Make the BridgeLink copy the same as the build, copying only changed files so unchanged files keep
 rem    their timestamps (PublishDocumentation.bat then sends only what changed to the server)
-powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSLibrary\doc\html -Target %ARPDIR%\BridgeLink\Docs\PGSLibrary\%1 -Keep *.dm
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSplice\doc\html -Target %ARPDIR%\BridgeLink\Docs\PGSplice\%ARP_DOCUMENTATION_VERSION% -Keep *.dm
 if errorlevel 1 exit /B 1
-powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSLibrary.dm -Target %ARPDIR%\BridgeLink\Docs\PGSLibrary\%1\PGSLibrary.dm
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSplice.dm -Target %ARPDIR%\BridgeLink\Docs\PGSplice\%ARP_DOCUMENTATION_VERSION%\PGSplice.dm
+if errorlevel 1 exit /B 1
+
+rem ** Make the BridgeLink copy the same as the build, copying only changed files so unchanged files keep
+rem    their timestamps (PublishDocumentation.bat then sends only what changed to the server)
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSLibrary\doc\html -Target %ARPDIR%\BridgeLink\Docs\PGSLibrary\%ARP_DOCUMENTATION_VERSION% -Keep *.dm
+if errorlevel 1 exit /B 1
+powershell -NoProfile -ExecutionPolicy Bypass -File %ARPDIR%\BridgeLink\SyncFolder.ps1 -Source %ARPDIR%\PGSuper\Documentation\PGSLibrary.dm -Target %ARPDIR%\BridgeLink\Docs\PGSLibrary\%ARP_DOCUMENTATION_VERSION%\PGSLibrary.dm
 if errorlevel 1 exit /B 1
 
 goto :eof

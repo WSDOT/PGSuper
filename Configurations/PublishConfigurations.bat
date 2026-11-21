@@ -1,10 +1,15 @@
 REM - Script to publish templates and master library to WSDOT ftp server
 
+REM - The target folders are Version_x.y.z, from WBFL_VERSION_STRING in WBFL\Include\WBFLVersion.h
+call %ARPDIR%\BridgeLink\GetVersion.bat
+if errorlevel 1 exit /B 1
+
 REM -------------------------------------------
 REM - Publish PGSuper Configurations
 REM -------------------------------------------
 
-SET PGSUPER_TARGET=\\wsdot\resources\Topics\Publish\FTP\Data\public\Bridge\Software\PGSuper\Version_9.0.0
+SET PGSUPER_TARGET=\\wsdot\resources\Topics\Publish\FTP\Data\public\Bridge\Software\PGSuper\Version_%ARP_RELEASE_VERSION%
+if not exist %PGSUPER_TARGET%\ mkdir %PGSUPER_TARGET%
 SET PGSUPER_TEMPLATE_EXTENSION=PGT
 
 del %PGSUPER_TARGET%\WSDOT.*
@@ -22,7 +27,8 @@ REM - Publish PGSplice Configurations
 REM -------------------------------------------
 
 
-SET PGSPLICE_TARGET=\\wsdot\resources\Topics\Publish\FTP\Data\public\Bridge\Software\PGSplice\Version_9.0.0
+SET PGSPLICE_TARGET=\\wsdot\resources\Topics\Publish\FTP\Data\public\Bridge\Software\PGSplice\Version_%ARP_RELEASE_VERSION%
+if not exist %PGSPLICE_TARGET%\ mkdir %PGSPLICE_TARGET%
 SET PGSPLICE_TEMPLATE_EXTENSION=SPT
 
 del %PGSPLICE_TARGET%\WSDOT.*
