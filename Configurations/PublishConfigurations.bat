@@ -6,8 +6,8 @@ REM
 REM The packages are published on the WSDOT web site and listed in ConfigurationPackages.json:
 REM    https://wsdot.wa.gov/eesc/bridge/software/configurations/
 REM
-REM Until version 10.0, the same packages are also copied to the WSDOT FTP site as .pgz files
-REM for program versions that read PGSuperPackages.ini and PGSplicePackages.ini.
+REM For now, the same packages are also copied to the WSDOT FTP site as .pgz files
+REM for older program versions that read PGSuperPackages.ini and PGSplicePackages.ini.
 REM Update those INI files on the FTP site by hand, as before.
 REM
 REM Every package is built, but only configurations marked LIST are added to
