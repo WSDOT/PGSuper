@@ -1,5 +1,5 @@
 //
-// MakePgz.rc2 - resources Microsoft Visual C++ does not edit directly
+// ConfigPackager.rc2 - resources Microsoft Visual C++ does not edit directly
 //
 
 #ifdef APSTUDIO_INVOKED
@@ -37,11 +37,11 @@ BEGIN
             VALUE "Comments", "A member of the Alternate Route Project"
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "LegalCopyright", "Copyright © 1999-2026, Washington State Department of Transportation, All Rights Reserved\0"
-            VALUE "FileDescription", "MakePgz Application"
+            VALUE "FileDescription", "ConfigPackager Application"
             VALUE "FileVersion", WBFL_VERSION_STRING
-            VALUE "InternalName", "MakePgz"
-            VALUE "OriginalFilename", "MakePgz.exe"
-            VALUE "ProductName", "MakePgz Application"
+            VALUE "InternalName", "ConfigPackager"
+            VALUE "OriginalFilename", "ConfigPackager.exe"
+            VALUE "ProductName", "ConfigPackager Application"
             VALUE "ProductVersion", WBFL_VERSION_STRING
         END
     END

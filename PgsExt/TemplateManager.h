@@ -65,18 +65,3 @@ protected:
    virtual CFileFind* CreateFileFinder() override;
    virtual BOOL GetFile(const CString& strSource,const CString& strDestination) override;
 };
-
-////////////////////////////////////////////////////////////////
-// Template manager for templates stored on an FTP server
-class CFTPTemplateManager : public CTemplateManager
-{
-public:
-   CFTPTemplateManager(LPCTSTR strExt,CFtpConnection* pFTP);
-
-protected:
-   virtual CFileFind* CreateFileFinder() override;
-   virtual BOOL GetFile(const CString& strSource,const CString& strDestination) override;
-
-private:
-   CFtpConnection* m_pFTP;
-};

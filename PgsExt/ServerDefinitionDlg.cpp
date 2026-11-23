@@ -34,8 +34,8 @@ CServerDefinitionDlg::CServerDefinitionDlg(const CCatalogServers& servers,const 
 	: CDialog(CServerDefinitionDlg::IDD, pParent), m_Servers(servers), m_TemplateFileExt(strExt),
    m_AppName(appName)
 {
-   // default to ftp
-   m_ServerType = srtInternetFtp;
+   // default to https
+   m_ServerType = srtInternetHttp;
 
 	//{{AFX_DATA_INIT(CServerDefinitionDlg)
 	m_ServerName = _T("");
@@ -53,17 +53,12 @@ CServerDefinitionDlg::CServerDefinitionDlg(const CCatalogServers& servers,const 
    m_ServerType = pCurrentServer->GetServerType();
 
    // Type casting here a bit ugly, but we are bonded to our servers
-   if (m_ServerType==srtInternetFtp)
+   if (m_ServerType==srtInternetHttp || m_ServerType==srtInternetFtp)
    {
-      const CFtpCatalogServer* psvr = dynamic_cast<const CFtpCatalogServer*>(pCurrentServer);
+      const CManifestCatalogServer* psvr = dynamic_cast<const CManifestCatalogServer*>(pCurrentServer);
       ATLASSERT(psvr);
       m_ServerAddress = psvr->GetAddress();
-   }
-   else if (m_ServerType==srtInternetHttp)
-   {
-      const CHttpCatalogServer* psvr = dynamic_cast<const CHttpCatalogServer*>(pCurrentServer);
-      ATLASSERT(psvr);
-      m_ServerAddress = psvr->GetAddress();
+      m_OriginalServerAddress = m_ServerAddress;
    }
    else if (m_ServerType==srtLocal)
    {
@@ -108,7 +103,7 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
    DDX_FolderControl(pDX, IDC_WORKGROUP_TEMPLATE_LOCATION, IDC_WORKGROUP_TEMPLATE_BROWSE, m_ctrlWorkgroupFolder, 0, CString("Please specify a folder"));
    DDX_FolderValue(pDX, m_ctrlWorkgroupFolder, m_LocalWorkgroupTemplateFolder);
 
-   if ( pDX->m_bSaveAndValidate && m_ServerType==srtLocal &&  m_ServerType==srtLocalIni)
+   if ( pDX->m_bSaveAndValidate && (m_ServerType==srtLocal || m_ServerType==srtLocalIni) )
    {
       DDV_FolderControl(pDX, m_ctrlWorkgroupFolder, GFLDR_FOLDER_MUST_EXIST);
    }
@@ -131,10 +126,43 @@ void CServerDefinitionDlg::DoDataExchange(CDataExchange* pDX)
       }
 
       pDX->PrepareEditCtrl(IDC_URL);
-      if ( m_ServerAddress.GetLength()==0 && (m_ServerType==srtInternetFtp || m_ServerType==srtInternetHttp) )
+      m_ServerAddress.Trim();
+      if ( m_ServerAddress.GetLength()==0 && (m_ServerType==srtInternetHttp || m_ServerType==srtInternetFtp) )
       {
          AfxMessageBox(_T("Please enter a server address"),MB_OK | MB_ICONEXCLAMATION);
          pDX->Fail();
+      }
+
+      // New or changed web server addresses must use HTTPS. Addresses that aren't edited keep working
+      // and are upgraded to HTTPS automatically when possible.
+      if ( m_ServerType==srtInternetHttp && m_ServerAddress != m_OriginalServerAddress )
+      {
+         CString strAddress(m_ServerAddress);
+         strAddress.MakeLower();
+         int scheme = strAddress.Find(_T("://"));
+         if ( scheme != -1 && strAddress.Left(scheme) != _T("https") )
+         {
+            CString strSuggestion(_T("https") + m_ServerAddress.Mid(scheme));
+            CString strMsg;
+            strMsg.Format(_T("The server address must start with https://.\n\nConfiguration servers must use a secure connection. Change the address to %s and try again."),strSuggestion);
+            AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
+      }
+
+      // FTP server addresses must be ftp://
+      if ( m_ServerType==srtInternetFtp )
+      {
+         CString strAddress(m_ServerAddress);
+         strAddress.MakeLower();
+         int scheme = strAddress.Find(_T("://"));
+         if ( scheme != -1 && strAddress.Left(scheme) != _T("ftp") )
+         {
+            CString strMsg;
+            strMsg.Format(_T("The address of an FTP server must start with ftp://.\n\nFor a web server, choose Internet HTTPS Server as the Server Type."));
+            AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
+            pDX->Fail();
+         }
       }
    }
 }
@@ -155,13 +183,13 @@ BOOL CServerDefinitionDlg::OnInitDialog()
 {
    CComboBox* ptype_ctrl = (CComboBox*)GetDlgItem(IDC_SERVER_TYPE);
    ASSERT(ptype_ctrl!=0);
-   int idx = ptype_ctrl->AddString(_T("Internet FTP Server"));
-   ptype_ctrl->SetItemData(idx,srtInternetFtp);
-   idx = ptype_ctrl->AddString(_T("Internet HTTP/HTTPS Server"));
+   int idx = ptype_ctrl->AddString(_T("Internet HTTPS Server"));
    ptype_ctrl->SetItemData(idx,srtInternetHttp);
+   idx = ptype_ctrl->AddString(_T("Internet FTP Server"));
+   ptype_ctrl->SetItemData(idx,srtInternetFtp);
    idx = ptype_ctrl->AddString(_T("Local or Network File System"));
    ptype_ctrl->SetItemData(idx,srtLocal);
-   idx = ptype_ctrl->AddString(_T("Local or Network File System Using .ini File"));
+   idx = ptype_ctrl->AddString(_T("Local or Network File System Using ConfigurationPackages.json"));
    ptype_ctrl->SetItemData(idx,srtLocalIni);
 
 	CDialog::OnInitDialog();
@@ -184,6 +212,7 @@ void CServerDefinitionDlg::ConfigureControls(SharedResourceType type)
    if (type==srtInternetFtp || type==srtInternetHttp)
    {
       GetDlgItem(IDC_URL_STATIC)->SetWindowText(_T("Server Address (URL)"));
+      GetDlgItem(IDC_URL_HINT)->SetWindowText(type==srtInternetFtp ? _T("A folder, or the full address of a .json file. Must start with ftp://") : _T("A folder, or the full address of a .json file. Must start with https://"));
       show_local_libr = SW_HIDE;
       show_local_templ = SW_HIDE;
       show_internet = SW_SHOW;
@@ -191,7 +220,7 @@ void CServerDefinitionDlg::ConfigureControls(SharedResourceType type)
    else if (type==srtLocalIni)
    {
       GetDlgItem(IDC_URL_STATIC)->SetWindowText(_T(""));
-      GetDlgItem(IDC_TEMPLATE_STATIC)->SetWindowText(_T("Path to where .ini file is located"));
+      GetDlgItem(IDC_TEMPLATE_STATIC)->SetWindowText(_T("Folder containing ConfigurationPackages.json"));
       show_local_libr = SW_HIDE;
       show_local_templ = SW_SHOW;
       show_internet = SW_HIDE;
@@ -204,6 +233,7 @@ void CServerDefinitionDlg::ConfigureControls(SharedResourceType type)
    }
 
    GetDlgItem(IDC_URL)->ShowWindow(show_internet);
+   GetDlgItem(IDC_URL_HINT)->ShowWindow(show_internet);
    GetDlgItem(IDC_LIBRARY_FILE_LOCATION)->ShowWindow(show_local_libr);
    GetDlgItem(IDC_LIBRARY_FILE_BROWSE)->ShowWindow(show_local_libr);
    GetDlgItem(IDC_TEMPLATE_STATIC)->ShowWindow(show_local_templ);

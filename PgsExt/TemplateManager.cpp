@@ -127,30 +127,3 @@ BOOL CFileTemplateManager::GetFile(const CString& strSource,const CString& strDe
 {
    return ::CopyFile(strSource,strDestination,FALSE);
 }
-
-////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////
-CFTPTemplateManager::CFTPTemplateManager(LPCTSTR strExt,CFtpConnection* pFTP) :
-CTemplateManager(strExt,_T('/'))
-{
-   m_pFTP = pFTP;
-}
-
-CFileFind* CFTPTemplateManager::CreateFileFinder()
-{
-   return new CFtpFileFind(m_pFTP);
-}
-
-BOOL CFTPTemplateManager::GetFile(const CString& strSource,const CString& strDestination)
-{
-   BOOL bSuccess = false;
-   int count = 0;
-
-   do
-   {
-      bSuccess = m_pFTP->GetFile(strSource,strDestination,FALSE,FILE_ATTRIBUTE_NORMAL,FTP_TRANSFER_TYPE_ASCII | INTERNET_FLAG_RELOAD);
-   } while (!bSuccess && count++ < 3);
-
-   return bSuccess;
-}

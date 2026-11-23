@@ -223,16 +223,19 @@
     <ClCompile Include="TimelineItemListBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\MakePgz\unzip.cpp">
+    <ClCompile Include="..\ConfigPackager\ConfigurationManifest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\MakePgz\UnzipPgz.cpp">
+    <ClCompile Include="..\ConfigPackager\unzip.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ConfigPackager\UnzipPgz.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="YieldStressRatioArtifact.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\MakePgz\zip.cpp">
+    <ClCompile Include="..\ConfigPackager\zip.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TxnManager.cpp">
@@ -504,16 +507,19 @@
     <ClInclude Include="..\Include\PgsExt\TimelineItemListBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\MakePgz\unzip.h">
+    <ClInclude Include="..\ConfigPackager\ConfigurationManifest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\MakePgz\UnzipPgz.h">
+    <ClInclude Include="..\ConfigPackager\unzip.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ConfigPackager\UnzipPgz.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\PgsExt\YieldStressRatioArtifact.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\MakePgz\zip.h">
+    <ClInclude Include="..\ConfigPackager\zip.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\PgsExt\TxnManager.h">
