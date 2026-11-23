@@ -137,8 +137,8 @@ BOOL CAboutDlg::OnInitDialog()
    m_KDOT.SetTooltip(_T("http://www.ksdot.org"));
    m_KDOT.SizeToContent();
 
-   m_BridgeSight.SetURL(_T("http://www.bridgesight.com"));
-   m_BridgeSight.SetTooltip(_T("http://www.bridgesight.com"));
+   m_BridgeSight.SetURL(_T("https://www.bridgesight.com"));
+   m_BridgeSight.SetTooltip(_T("https://www.bridgesight.com"));
    m_BridgeSight.SizeToContent();
 
    // Fill the list control with plugin names
