@@ -112,6 +112,7 @@ bool CCatalogServers::IsServerDefined(LPCTSTR strName) const
 void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
 {
    m_Servers.clear();
+   m_MovedServers.clear();
 
    HKEY hAppKey = theApp->GetAppRegistryKey();
    HKEY hSecKey;
@@ -174,21 +175,24 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
 
    // The WSDOT configurations moved from the WSDOT FTP site to the WSDOT web site.
    // Point any server that still uses an old WSDOT address at the new one, keeping its name,
-   // so the selected server and configuration don't change.
-   std::vector<CString> legacyServers;
+   // so the selected server and configuration don't change. The old address stays in the
+   // registry (see SaveToRegistry) for earlier program versions, which can't read the new server.
+   std::vector<std::pair<CString, CString>> legacyServers; // name, settings string
    for (const auto& server : m_Servers)
    {
       const CManifestCatalogServer* pServer = dynamic_cast<const CManifestCatalogServer*>(server.get());
       if (pServer && IsLegacyWSDOTAddress(pServer->GetAddress()))
       {
-         legacyServers.push_back(pServer->GetServerName());
+         legacyServers.emplace_back(pServer->GetServerName(), GetCreationString(pServer));
       }
    }
 
-   for (const auto& name : legacyServers)
+   for (const auto& legacy : legacyServers)
    {
-      RemoveServer(name);
-      m_Servers.insert( ServerPtr(new CHttpCatalogServer(m_AppName,name,GetWSDOTConfigurationServerAddress(),m_strExt)) );
+      RemoveServer(legacy.first);
+      CCatalogServer* pServer = new CHttpCatalogServer(m_AppName,legacy.first,GetWSDOTConfigurationServerAddress(),m_strExt);
+      m_Servers.insert( ServerPtr(pServer) );
+      m_MovedServers[legacy.first] = std::make_pair(legacy.second, GetCreationString(pServer));
    }
 
    // Always have a WSDOT and TxDOT server
@@ -219,6 +223,14 @@ void CCatalogServers::SaveToRegistry(CWinApp* theApp) const
       CString server_creation_string = GetCreationString(pServer);
 
       CString key(pServer->GetServerName());
+
+      // A server moved from an old WSDOT address keeps its old address in the registry, unless it was changed
+      auto moved = m_MovedServers.find(key);
+      if (moved != m_MovedServers.end() && moved->second.second == server_creation_string)
+      {
+         server_creation_string = moved->second.first;
+      }
+
       theApp->WriteProfileString(_T("CatalogServers"), key, server_creation_string);
    }
 }

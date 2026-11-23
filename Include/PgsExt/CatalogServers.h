@@ -24,6 +24,7 @@
 #define INCLUDED_CATALOGSERVERS_H_
 
 #include <set>
+#include <map>
 #include "CatalogServer.h"
 #include <boost\shared_ptr.hpp>
 
@@ -60,6 +61,12 @@ private:
    typedef boost::shared_ptr<CCatalogServer> ServerPtr;
    typedef std::set<ServerPtr ,CatalogServerCompareByName> Servers;
    Servers m_Servers;
+
+   // Servers that were moved from an old WSDOT address when they were loaded.
+   // Key is the server name, value is (settings string as stored, settings string after the move).
+   // While a server is unchanged, the stored string is saved again, so earlier program versions
+   // that share these settings keep working. The move is repeated each time the servers are loaded.
+   std::map<CString, std::pair<CString, CString>> m_MovedServers;
    CString m_strExt;
    CString m_AppName;
 };

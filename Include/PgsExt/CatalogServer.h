@@ -206,7 +206,8 @@ protected:
    // Addresses to try, in order, when looking for the catalog. Each is a folder (ending with a separator) or a .json file.
    virtual std::vector<CString> GetCandidateAddresses() const = 0;
 
-   // Addresses to try, in order, when downloading a file whose full address is strURL
+   // Addresses to try, in order, when downloading a file whose full address is strURL.
+   // An http:// address is tried over HTTPS first.
    virtual std::vector<CString> GetDownloadCandidates(const CString& strURL) const;
 
    // Turns a package location from the catalog into a full address
@@ -254,7 +255,6 @@ public:
 protected:
    virtual gwResult GetWebFile(const CString& strFileURL, const CString& strLocalTargetFile, CString& strError) const override;
    virtual std::vector<CString> GetCandidateAddresses() const override;
-   virtual std::vector<CString> GetDownloadCandidates(const CString& strURL) const override;
    virtual CString ResolvePackageURL(const CString& strURL) const override;
    virtual void OnCatalogFound(const CString& strAddress) const override;
 };
@@ -262,7 +262,8 @@ protected:
 //////////////////////  CFtpCatalogServer    ////////////////////////////////
 // Configurations published on an FTP server (anonymous login), with the same files as a web
 // server: ConfigurationPackages.json and .zip packages. A legacy <App>Packages.ini is read when
-// the server has no ConfigurationPackages.json.
+// the server has no ConfigurationPackages.json. Packages listed with https:// addresses are
+// downloaded from the web server.
 class CFtpCatalogServer : public CManifestCatalogServer
 {
 public:

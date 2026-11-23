@@ -321,7 +321,14 @@ void CManifestCatalogServer::SetAddress(const CString& address)
 
 std::vector<CString> CManifestCatalogServer::GetDownloadCandidates(const CString& strURL) const
 {
-   return std::vector<CString>{strURL};
+   std::vector<CString> urls;
+   if (ConfigManifest::StartsWithNoCase((LPCTSTR)strURL, L"http://"))
+   {
+      // only legacy INI files can have http:// package addresses. Try HTTPS first.
+      urls.push_back(_T("https://") + strURL.Mid(7));
+   }
+   urls.push_back(strURL);
+   return urls;
 }
 
 void CManifestCatalogServer::OnCatalogFound(const CString& strAddress) const
@@ -670,18 +677,6 @@ std::vector<CString> CHttpCatalogServer::GetCandidateAddresses() const
    return addresses;
 }
 
-std::vector<CString> CHttpCatalogServer::GetDownloadCandidates(const CString& strURL) const
-{
-   std::vector<CString> urls;
-   if (ConfigManifest::StartsWithNoCase((LPCTSTR)strURL, L"http://"))
-   {
-      // only legacy INI files can have http:// package addresses. Try HTTPS first.
-      urls.push_back(_T("https://") + strURL.Mid(7));
-   }
-   urls.push_back(strURL);
-   return urls;
-}
-
 // Resolves a package location against the address of the catalog (https:// or ftp://)
 static CString ResolveURL(const CString& strCatalogURL, const CString& strURL)
 {
@@ -730,7 +725,8 @@ struct CInternetFileDeleter {
    }
 };
 
-CManifestCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& strFileURL, const CString& strLocalTargetFile, CString& strError) const
+// Downloads a file from a web server (https://, or http:// for legacy package addresses)
+static CManifestCatalogServer::gwResult GetHttpFile(LPCTSTR strAppName, const CString& strFileURL, const CString& strLocalTargetFile, CString& strError)
 {
    strError.Empty();
 
@@ -742,10 +738,10 @@ CManifestCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& s
    BOOL bSuccess = AfxParseURL(strFileURL,dwServiceType,strServer,strObject,nPort);
    if ( !bSuccess || (dwServiceType != AFX_INET_SERVICE_HTTP && dwServiceType != AFX_INET_SERVICE_HTTPS))
    {
-      return gwInvalidUrl;
+      return CManifestCatalogServer::gwInvalidUrl;
    }
 
-   CInternetSession session(m_AppName);
+   CInternetSession session(strAppName);
 
    try
    {
@@ -756,7 +752,7 @@ CManifestCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& s
       if (pHttpFile == nullptr)
       {
          strError.Format(_T("Could not open %s"), strFileURL);
-         return gwConnectionError;
+         return CManifestCatalogServer::gwConnectionError;
       }
 
       DWORD dwStatus = 0;
@@ -765,7 +761,7 @@ CManifestCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& s
       {
          // The server answered, but it doesn't have the file (or won't send it)
          strError.Format(_T("The server answered %d for %s"), dwStatus, strFileURL);
-         return gwNotFound;
+         return CManifestCatalogServer::gwNotFound;
       }
 
       // Never accept a secure request that was redirected to an insecure address
@@ -776,7 +772,7 @@ CManifestCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& s
          if (pHttpFile->QueryOption(INTERNET_OPTION_URL, finalURL, &dwLength) && ConfigManifest::StartsWithNoCase(finalURL, L"http://"))
          {
             strError.Format(_T("The server redirected %s to an insecure address (%s)"), strFileURL, finalURL);
-            return gwConnectionError;
+            return CManifestCatalogServer::gwConnectionError;
          }
       }
 
@@ -798,7 +794,7 @@ CManifestCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& s
       strError.Format(_T("%s (error %d)"), szErr, pEx->m_dwError);
       strError.Trim();
       pEx->Delete();
-      return gwConnectionError;
+      return CManifestCatalogServer::gwConnectionError;
    }
    catch (CFileException* pEx)
    {
@@ -806,10 +802,15 @@ CManifestCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& s
       pEx->GetErrorMessage(szErr, 512);
       strError = szErr;
       pEx->Delete();
-      return gwConnectionError;
+      return CManifestCatalogServer::gwConnectionError;
    }
 
-   return gwOk;
+   return CManifestCatalogServer::gwOk;
+}
+
+CManifestCatalogServer::gwResult CHttpCatalogServer::GetWebFile(const CString& strFileURL, const CString& strLocalTargetFile, CString& strError) const
+{
+   return GetHttpFile(m_AppName, strFileURL, strLocalTargetFile, strError);
 }
 
 CString CHttpCatalogServer::CleanUpURL(const CString& strURL, bool isFile) const
@@ -858,7 +859,18 @@ CManifestCatalogServer::gwResult CFtpCatalogServer::GetWebFile(const CString& st
    DWORD dwServiceType;
    CString strServer, strObject;
    INTERNET_PORT nPort;
-   if (!AfxParseURL(strFileURL, dwServiceType, strServer, strObject, nPort) || dwServiceType != AFX_INET_SERVICE_FTP)
+   if (!AfxParseURL(strFileURL, dwServiceType, strServer, strObject, nPort))
+   {
+      return gwInvalidUrl;
+   }
+
+   if (dwServiceType == AFX_INET_SERVICE_HTTPS || dwServiceType == AFX_INET_SERVICE_HTTP)
+   {
+      // A legacy <App>Packages.ini on an FTP server can list packages on a web server
+      return GetHttpFile(m_AppName, strFileURL, strLocalTargetFile, strError);
+   }
+
+   if (dwServiceType != AFX_INET_SERVICE_FTP)
    {
       return gwInvalidUrl;
    }
