@@ -221,6 +221,7 @@ rptRcTable* CPretensionStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBr
    pPoi->SortPoiList(&vPoi);
    pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
+   pPoi->RemovePointsOfInterestOffGirder(vPoi);
 
    GET_IFACE2(pBroker,IPretensionStresses,pPrestress);
 
