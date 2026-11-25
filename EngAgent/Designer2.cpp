@@ -4182,11 +4182,10 @@ void pgsDesigner2::CheckLongReinfShear(const pgsPointOfInterest& poi,
 
    // 9th edition added a requirement that ApsFps > AsFy
    // This requirement was developed primarily for simple span pretensioned girders. This limit will not be checked
-   // in negative moment regions where the tension tie is the deck rebar, unless there are PT tendons providing
-   // the tension tie
+   // in negative moment regions where the tension tie is the deck rebar. This limit is not applicable to PT.
    GET_IFACE2(GetBroker(),IGirderTendonGeometry, pGirderTendonGeometry);
    auto nDucts = pGirderTendonGeometry->GetDuctCount(segmentKey);
-   pArtifact->PretensionForceMustExceedBarForce((scd.bTensionBottom || 0 < nDucts) && WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false);
+   pArtifact->PretensionForceMustExceedBarForce((scd.bTensionBottom && 0 == nDucts) && WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false);
 
    // Longitudinal steel
    GET_IFACE2(GetBroker(),IMaterials, pMaterials);
