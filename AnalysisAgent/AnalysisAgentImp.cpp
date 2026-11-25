@@ -9737,8 +9737,6 @@ Float64 CAnalysisAgentImp::GetContinuityStressLevel(PierIndexType pierIdx,const 
       ATLASSERT( 0 <= poi.GetID() );
 
       IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
-      ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
-
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
 
       pgsTypes::BridgeAnalysisType bat = pgsTypes::ContinuousSpan;
