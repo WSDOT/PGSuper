@@ -11,7 +11,7 @@ There are two basic configuration options.
 Option | Description
 ------|--------------
 Use the default configuration | A default configuration was installed with BridgeLink. This configuration does not change and can become out of date over time. However, it provides a configuration when online configurations are not available. Think of this as a "fail safe" configuration.
-Use a configuration published on the local file system, network, or the Internet | These configurations are shared by users over the Internet. Using this type of configuration with the TxDOT ftp servers is the most common option. See Shared Configurations below for more information.
+Use a configuration published on the local file system, network, or the Internet | These configurations are shared by users over the Internet. Using this type of configuration with the TxDOT configuration server is the most common option. See Shared Configurations below for more information.
 
 ### Shared Configurations ###
 Shared configurations are "in the cloud" and can be shared by many engineers. Use the drop down list to select a Configuration Server. For TOGA, you will almost always want to use the TxDOT configuration since it is published and kept up to date by TxDOT.

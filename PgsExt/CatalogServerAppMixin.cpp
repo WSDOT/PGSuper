@@ -34,7 +34,7 @@
 CCatalogServerAppMixin::CCatalogServerAppMixin(void)
 {
    m_CacheUpdateFrequency = Daily;
-   m_SharedResourceType = srtInternetFtp;
+   m_SharedResourceType = srtInternetHttp;
 }
 
 CCatalogServerAppMixin::~CCatalogServerAppMixin(void)
@@ -82,7 +82,7 @@ void CCatalogServerAppMixin::LoadRegistrySettings()
    // If the default values are missing, the hard coded defaults found herein are used.
    // Install writers can create MSI transforms to alter the "defaults" by changing the registry values
 
-   int iDefaultSharedResourceType     = pApp->GetLocalMachineInt(   _T("Settings"),_T("SharedResourceType"),    1);
+   int iDefaultSharedResourceType     = pApp->GetLocalMachineInt(   _T("Settings"),_T("SharedResourceType"),    srtInternetHttp);
    int iDefaultCacheUpdateFrequency   = pApp->GetLocalMachineInt(   _T("Settings"),_T("CacheUpdateFrequency"),  2);
 
    /////////////////////////////////
@@ -114,12 +114,8 @@ void CCatalogServerAppMixin::LoadRegistryOptions()
    // defaults
    CString strVersion = CCatalog::GetAppVersion();
 
-   CString strFTPServer(_T("ftp://ftp.wsdot.wa.gov/public/Bridge/Software"));
-   //CString strFTPServer(_T("http://www.wsdot.wa.gov/eesc/bridge/software"));
-   CString strDefaultMasterLibraryURL;
-   strDefaultMasterLibraryURL.Format(_T("%s/Version_%s/WSDOT.lbr"),strFTPServer,strVersion);
-   CString strDefaultWorkgroupTemplateFolderURL;
-   strDefaultWorkgroupTemplateFolderURL.Format(_T("%s/Version_%s/WSDOT_Templates/"),strFTPServer,strVersion);
+   // Location of the master library, for reports. It is replaced when the configuration is downloaded.
+   CString strDefaultMasterLibraryURL = GetWSDOTConfigurationServerAddress();
 
    m_MasterLibraryFileURL = pApp->GetProfileString(_T("Options"),GetMasterLibraryURLKey(),strDefaultMasterLibraryURL);
 
@@ -266,7 +262,7 @@ CString CCatalogServerAppMixin::GetMasterLibraryPublisher() const
       break;
 
    case srtLocalIni:
-      strPublisher = _T("INI File Published on Local Network");
+      strPublisher = _T("Published on Local Network");
       break;
 
    default:
@@ -800,7 +796,7 @@ CString CCatalogServerAppMixin::GetSaveCacheFolder() const
 
    if ( SUCCEEDED(hr) )
    {
-      return CString(path) + GetAppName() + CString(_T("_Save\\"));
+      return CString(path) + CString(_T("\\")) + GetAppName() + CString(_T("_Save\\"));
    }
    else
    {

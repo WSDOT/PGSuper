@@ -67,8 +67,8 @@ WM_USER + 101;
 
 #include <afxdlgs.h>
 
-#include "..\MakePgz\zip.h"
-#include "..\MakePgz\unzip.h"
+#include "..\ConfigPackager\zip.h"
+#include "..\ConfigPackager\unzip.h"
 
 #include "..\Documentation\PGSuper.hh"
 

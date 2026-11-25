@@ -69,7 +69,7 @@ const CCatalogServer* CCatalogServers::GetServer(IndexType index) const
 
 const CCatalogServer* CCatalogServers::GetServer(LPCTSTR strName) const
 {
-   ServerPtr target(new CFtpCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
+   ServerPtr target(new CHttpCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
    Servers::const_iterator found = m_Servers.find( target );
 
    if(found == m_Servers.end())
@@ -94,7 +94,7 @@ void CCatalogServers::RemoveServer(IndexType index)
 
 void CCatalogServers::RemoveServer(LPCTSTR strName)
 {
-   ServerPtr target(new CFtpCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
+   ServerPtr target(new CHttpCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
    Servers::iterator found = m_Servers.find(target);
    if (found != m_Servers.end())
    {
@@ -104,7 +104,7 @@ void CCatalogServers::RemoveServer(LPCTSTR strName)
 
 bool CCatalogServers::IsServerDefined(LPCTSTR strName) const
 {
-   ServerPtr target(new CFtpCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
+   ServerPtr target(new CHttpCatalogServer(m_AppName,strName,CString("bogus"),m_strExt));
    Servers::const_iterator found = m_Servers.find(target);
    return ( found == m_Servers.end() ? false : true );
 }
@@ -112,6 +112,7 @@ bool CCatalogServers::IsServerDefined(LPCTSTR strName) const
 void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
 {
    m_Servers.clear();
+   m_MovedServers.clear();
 
    HKEY hAppKey = theApp->GetAppRegistryKey();
    HKEY hSecKey;
@@ -151,8 +152,8 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
          DWORD dwIndex = 0;
          TCHAR serverName[SHORT_MAX];
          TCHAR serverString[SHORT_MAX];
-         DWORD serverNameSize = sizeof(serverName);
-         DWORD serverStringSize = sizeof(serverString);
+         DWORD serverNameSize = _countof(serverName); // characters
+         DWORD serverStringSize = sizeof(serverString); // bytes
          DWORD type;
          while ( ::RegEnumValue(hSecKey,dwIndex++,&serverName[0],&serverNameSize,nullptr,&type,(LPBYTE)&serverString[0],&serverStringSize) != ERROR_NO_MORE_ITEMS )
          {
@@ -162,7 +163,7 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
                m_Servers.insert( ServerPtr(pServer) );
             }
 
-            serverNameSize = sizeof(serverName);
+            serverNameSize = _countof(serverName);
             serverStringSize = sizeof(serverString);
          };
 
@@ -172,26 +173,32 @@ void CCatalogServers::LoadFromRegistry(CWinApp* theApp)
 
    ::RegCloseKey(hAppKey);
 
+   // The WSDOT configurations moved from the WSDOT FTP site to the WSDOT web site.
+   // Point any server that still uses an old WSDOT address at the new one, keeping its name,
+   // so the selected server and configuration don't change. The old address stays in the
+   // registry (see SaveToRegistry) for earlier program versions, which can't read the new server.
+   std::vector<std::pair<CString, CString>> legacyServers; // name, settings string
+   for (const auto& server : m_Servers)
+   {
+      const CManifestCatalogServer* pServer = dynamic_cast<const CManifestCatalogServer*>(server.get());
+      if (pServer && IsLegacyWSDOTAddress(pServer->GetAddress()))
+      {
+         legacyServers.emplace_back(pServer->GetServerName(), GetCreationString(pServer));
+      }
+   }
+
+   for (const auto& legacy : legacyServers)
+   {
+      RemoveServer(legacy.first);
+      CCatalogServer* pServer = new CHttpCatalogServer(m_AppName,legacy.first,GetWSDOTConfigurationServerAddress(),m_strExt);
+      m_Servers.insert( ServerPtr(pServer) );
+      m_MovedServers[legacy.first] = std::make_pair(legacy.second, GetCreationString(pServer));
+   }
+
    // Always have a WSDOT and TxDOT server
-
-   // This doesn't work... HTTP server wont allow configuration files.
-   //if (m_AppName == _T("PGSuper") || m_AppName == _T("PGSplice"))
-   //{
-   //   const CCatalogServer* pServer = GetServer(_T("WSDOT"));
-   //   if (pServer && pServer->GetServerType() == srtInternetFtp)
-   //   {
-   //      // the official WSDOT server has moved from FTP to HTTP...
-   //      // still referencing the old FTP server
-   //      // remove the server then it will be redefined below
-   //      RemoveServer(_T("WSDOT"));
-   //      pServer = nullptr;
-   //   }
-   //}
-
    if (!IsServerDefined(_T("WSDOT")) && m_AppName != _T("TOGA")) // don't need a wsdot toga server
    {
-      m_Servers.insert( ServerPtr(new CFtpCatalogServer(m_AppName,m_strExt)) ); // wsdot
-      //m_Servers.insert( ServerPtr(new CHttpCatalogServer(m_AppName,m_strExt)) ); // wsdot
+      m_Servers.insert( ServerPtr(new CHttpCatalogServer(m_AppName,m_strExt)) ); // wsdot
    }
 
    if (!IsServerDefined(_T("TxDOT")) && m_AppName != _T("PGSplice")) // TxDOT does not have a PGSplice server
@@ -216,6 +223,14 @@ void CCatalogServers::SaveToRegistry(CWinApp* theApp) const
       CString server_creation_string = GetCreationString(pServer);
 
       CString key(pServer->GetServerName());
+
+      // A server moved from an old WSDOT address keeps its old address in the registry, unless it was changed
+      auto moved = m_MovedServers.find(key);
+      if (moved != m_MovedServers.end() && moved->second.second == server_creation_string)
+      {
+         server_creation_string = moved->second.first;
+      }
+
       theApp->WriteProfileString(_T("CatalogServers"), key, server_creation_string);
    }
 }
