@@ -695,7 +695,10 @@ CLSID MultiWeb2Factory::GetCLSID() const
 
 CLSID MultiWeb2Factory::GetFamilyCLSID() const
 {
-   return CLSID_RibbedBeamFamily;
+   // This factory is registered as a double tee factory (CATID_DoubleTeeBeamFactory) so it belongs
+   // to the double tee family. It used to return CLSID_RibbedBeamFamily. Projects saved with that
+   // family name are fixed up when loaded (see CProjectAgentImp::FixUpGirderFamilyName)
+   return CLSID_DoubleTeeBeamFamily;
 }
 
 std::_tstring MultiWeb2Factory::GetPublisher() const

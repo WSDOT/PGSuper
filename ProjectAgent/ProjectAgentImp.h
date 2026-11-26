@@ -936,6 +936,7 @@ private:
 
    void UseBridgeLibraryEntries();
    void UseGirderLibraryEntries();
+   void FixUpGirderFamilyName();
    void UseSegmentLibraryEntries(CPrecastSegmentData* pSegment);
    void UseDuctLibraryEntries();
    void UseDuctLibraryEntries(CPrecastSegmentData* pSegment);
