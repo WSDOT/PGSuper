@@ -5249,6 +5249,51 @@ void CProjectAgentImp::ReleaseSegmentLibraryEntries(CPrecastSegmentData* pSegmen
    ReleaseDuctLibraryEntries(pSegment);
 }
 
+void CProjectAgentImp::FixUpGirderFamilyName()
+{
+   // The girder family name is stored in the project file. If a beam factory changes the
+   // family it belongs to, the stored name no longer matches the girders in the bridge and
+   // the girder can't be selected in the Bridge Description dialog.
+   //
+   // Known case: The "Double Tee (WSDOT)" beam (MultiWeb2Factory) used to report the
+   // "Ribbed Girder" family. It now reports the "Double Tee" family.
+   //
+   // If every girder in the bridge belongs to the same family, and that isn't the family
+   // stored in the file, use the girders' family. If the girders belong to different families
+   // (e.g., a project mixing "Ribbed Girder" and "Double Tee (WSDOT)" girders saved when both
+   // reported the "Ribbed Girder" family) there isn't a single correct family so nothing is changed.
+   std::_tstring strFamilyName;
+   GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
+   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
+   {
+      const CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(grpIdx);
+      GirderIndexType nGirders = pGroup->GetGirderCount();
+      for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+      {
+         const GirderLibraryEntry* pGirderEntry = pGroup->GetGirder(gdrIdx)->GetGirderLibraryEntry();
+         if (pGirderEntry == nullptr)
+         {
+            return; // can't determine the family
+         }
+
+         std::_tstring strGirderFamilyName = pGirderEntry->GetGirderFamilyName();
+         if (strFamilyName.empty())
+         {
+            strFamilyName = strGirderFamilyName;
+         }
+         else if (strFamilyName != strGirderFamilyName)
+         {
+            return; // girders are from more than one family
+         }
+      }
+   }
+
+   if (!strFamilyName.empty() && strFamilyName != std::_tstring(m_BridgeDescription.GetGirderFamilyName()))
+   {
+      m_BridgeDescription.SetGirderFamilyName(strFamilyName.c_str());
+   }
+}
+
 void CProjectAgentImp::UseGirderLibraryEntries()
 {
    UseDuctLibraryEntries();
